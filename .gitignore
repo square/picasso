@@ -1,0 +1,27 @@
+# Eclipse
+.classpath
+.project
+.settings
+eclipsebin
+
+# Ant
+bin
+gen
+build
+out
+lib
+
+# Maven
+target
+pom.xml.*
+release.properties
+
+# IntelliJ
+.idea
+*.iml
+*.iws
+*.ipr
+classes
+gen-external-apklibs
+
+.DS_Store
