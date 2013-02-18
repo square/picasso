@@ -12,8 +12,14 @@
 
   <artifactId>picasso-sample</artifactId>
   <name>Picasso Sample</name>
+  <packaging>apk</packaging>
 
   <dependencies>
+    <dependency>
+      <groupId>com.google.android</groupId>
+      <artifactId>android</artifactId>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>com.squareup.picasso</groupId>
       <artifactId>picasso</artifactId>
