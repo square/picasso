@@ -47,7 +47,7 @@ public class SampleAdapter extends BaseAdapter {
     // Set the URL into the text field.
     holder.name.setText(url);
     // Trigger the download of the URL asynchronously into the image view.
-    load(url).into(holder.image);
+    load(url).placeholder(R.drawable.placeholder).into(holder.image);
 
     return convertView;
   }
