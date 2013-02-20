@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.squareup.picasso.external;
+package com.squareup.picasso;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

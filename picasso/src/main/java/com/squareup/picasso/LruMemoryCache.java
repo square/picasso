@@ -3,13 +3,12 @@ package com.squareup.picasso;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.Bitmap;
-import com.squareup.picasso.external.LruCache;
 
 import static android.content.Context.ACTIVITY_SERVICE;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.HONEYCOMB_MR1;
 
-public class LruMemoryCache implements MemoryCache {
+public class LruMemoryCache implements Cache {
 
   private final LruCache<String, Bitmap> lruCache;
 

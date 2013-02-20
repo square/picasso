@@ -7,7 +7,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
-import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -17,6 +16,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.squareup.picasso.RequestMetrics.LOADED_FROM_DISK;
+import static com.squareup.picasso.RequestMetrics.LOADED_FROM_MEM;
+import static com.squareup.picasso.RequestMetrics.LOADED_FROM_NETWORK;
 
 public class Picasso {
   private static final String TAG = "Picasso";
@@ -51,17 +54,14 @@ public class Picasso {
 
   final Loader loader;
   final ExecutorService service;
-  final MemoryCache memoryCache;
-  final DiskCache diskCache;
+  final Cache memoryCache;
   final Map<Object, Request> targetsToRequests;
   final boolean debugging;
 
-  private Picasso(Loader loader, ExecutorService service, MemoryCache memoryCache,
-      DiskCache diskCache, boolean debugging) {
+  private Picasso(Loader loader, ExecutorService service, Cache memoryCache, boolean debugging) {
     this.loader = loader;
     this.service = service;
     this.memoryCache = memoryCache;
-    this.diskCache = diskCache;
     this.debugging = debugging;
     this.targetsToRequests = new WeakHashMap<Object, Request>();
   }
@@ -117,26 +117,9 @@ public class Picasso {
     if (memoryCache != null) {
       cached = memoryCache.get(path);
       if (debugging && cached != null) {
-        loadedFrom = RequestMetrics.LOADED_FROM_MEM;
-      }
-    }
-
-    // Then try disk cache.
-    if (cached == null && diskCache != null) {
-      try {
-        cached = diskCache.get(path);
-      } catch (IOException e) {
-        if (debugging) {
-          Log.e(TAG, String.format("Failed to load image from disk cache!\n%s", request), e);
-        }
-      }
-
-      // If the disk cache has the bitmap, add it to our memory cache.
-      if (cached != null && memoryCache != null) {
-        memoryCache.set(path, cached);
-        if (debugging) {
-          loadedFrom = RequestMetrics.LOADED_FROM_DISK;
-        }
+        request.metrics.loadedFrom = LOADED_FROM_MEM;
+        request.result = cached;
+        HANDLER.sendMessage(HANDLER.obtainMessage(REQUEST_COMPLETE, request));
       }
     }
 
@@ -145,8 +128,6 @@ public class Picasso {
       if (debugging) {
         request.metrics.loadedFrom = loadedFrom;
       }
-      request.result = cached;
-      HANDLER.sendMessage(HANDLER.obtainMessage(REQUEST_COMPLETE, request));
     }
 
     return cached;
@@ -157,21 +138,27 @@ public class Picasso {
     Bitmap result = null;
     InputStream stream = null;
     try {
-      stream = loader.load(path);
+
+      Loader.Response response = loader.load(path, request.retryCount == 0);
+      if (response == null) {
+        return null;
+      }
+
+      stream = response.stream;
       result = BitmapFactory.decodeStream(stream, null, request.bitmapOptions);
       result = transformResult(request, result);
 
       if (debugging) {
-        request.metrics.loadedFrom = RequestMetrics.LOADED_FROM_NETWORK;
+        request.metrics.loadedFrom = response.cached ? LOADED_FROM_DISK : LOADED_FROM_NETWORK;
+      }
+
+      if (result != null && memoryCache != null) {
+        memoryCache.set(path, result);
       }
 
       request.result = result;
       HANDLER.sendMessage(HANDLER.obtainMessage(REQUEST_COMPLETE, request));
-
-      if (result != null) {
-        saveToCaches(path, result);
-      }
-    } catch (IOException e) {
+    } catch (Exception e) {
       HANDLER.sendMessageDelayed(HANDLER.obtainMessage(REQUEST_RETRY, request), RETRY_DELAY);
     } finally {
       if (stream != null) {
@@ -199,28 +186,11 @@ public class Picasso {
     return result;
   }
 
-  private void saveToCaches(String path, Bitmap result) throws IOException {
-    if (memoryCache != null) {
-      memoryCache.set(path, result);
-    }
-
-    if (diskCache != null) {
-      diskCache.set(path, result);
-    }
-  }
-
   public static Picasso with(Context context) {
     if (singleton == null) {
-      DiskCache diskCache = null;
-      try {
-        diskCache = new LruDiskCache(context);
-      } catch (IOException ignored) {
-      }
-
-      singleton = new Builder().loader(new ApacheHttpLoader())
+      singleton = new Builder().loader(new DefaultHttpLoader(context))
           .executor(Executors.newFixedThreadPool(3, new PicassoThreadFactory()))
           .memoryCache(new LruMemoryCache(context))
-          .diskCache(diskCache)
           .debug()
           .build();
     }
@@ -231,8 +201,7 @@ public class Picasso {
 
     private Loader loader;
     private ExecutorService service;
-    private MemoryCache memoryCache;
-    private DiskCache diskCache;
+    private Cache memoryCache;
     private boolean debugging;
 
     public Builder loader(Loader loader) {
@@ -245,13 +214,8 @@ public class Picasso {
       return this;
     }
 
-    public Builder memoryCache(MemoryCache memoryCache) {
+    public Builder memoryCache(Cache memoryCache) {
       this.memoryCache = memoryCache;
-      return this;
-    }
-
-    public Builder diskCache(DiskCache diskCache) {
-      this.diskCache = diskCache;
       return this;
     }
 
@@ -264,7 +228,7 @@ public class Picasso {
       if (loader == null || service == null) {
         throw new IllegalStateException("Must provide a Loader and an ExecutorService.");
       }
-      return new Picasso(loader, service, memoryCache, diskCache, debugging);
+      return new Picasso(loader, service, memoryCache, debugging);
     }
   }
 

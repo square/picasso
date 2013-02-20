@@ -87,15 +87,24 @@ public class Request implements Runnable {
 
   @Override public String toString() {
     return "Request["
-        + "picasso=" + picasso
-        + ", path=" + path
-        + ", target=" + target
-        + ", bitmapOptions=" + bitmapOptions
-        + ", transformations=" + transformations
-        + ", metrics=" + metrics
-        + ", future=" + future
-        + ", result=" + result
-        + ", retryCount=" + retryCount
+        + "picasso="
+        + picasso
+        + ", path="
+        + path
+        + ", target="
+        + target
+        + ", bitmapOptions="
+        + bitmapOptions
+        + ", transformations="
+        + transformations
+        + ", metrics="
+        + metrics
+        + ", future="
+        + future
+        + ", result="
+        + result
+        + ", retryCount="
+        + retryCount
         + ']';
   }
 
