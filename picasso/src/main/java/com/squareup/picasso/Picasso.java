@@ -3,12 +3,10 @@ package com.squareup.picasso;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
-import android.widget.ImageView;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -32,7 +30,7 @@ public class Picasso {
 
       switch (msg.what) {
         case REQUEST_COMPLETE:
-          request.picasso.complete(request);
+          request.complete();
           break;
 
         case REQUEST_RETRY:
@@ -40,7 +38,8 @@ public class Picasso {
           break;
 
         default:
-          throw new IllegalArgumentException("LOLWUT?!?");
+          throw new IllegalArgumentException(
+              String.format("Unknown handler message received! %d", msg.what));
       }
     }
   };
@@ -52,7 +51,7 @@ public class Picasso {
   final ExecutorService service;
   final Cache memoryCache;
   final Cache diskCache;
-  final Map<ImageView, Request> targetsToRequests = new WeakHashMap<ImageView, Request>();
+  final Map<Object, Request> targetsToRequests = new WeakHashMap<Object, Request>();
 
   public Picasso(Context context, boolean debugging) {
     this.loader = new ApacheHttpLoader();
@@ -76,7 +75,7 @@ public class Picasso {
   }
 
   void submit(Request request) {
-    ImageView target = request.target.get();
+    Object target = request.getTarget();
     if (target == null) return;
 
     Request existing = targetsToRequests.remove(target);
@@ -96,68 +95,24 @@ public class Picasso {
     return bitmap;
   }
 
-  void complete(Request request) {
-    Bitmap result = request.result;
-    if (result == null) {
-      throw new AssertionError(
-          String.format("Attempted to complete request with no result!\n%s", request));
-    }
-
-    ImageView imageView = request.target.get();
-    if (imageView != null) {
-      if (debugging) {
-        int color = RequestMetrics.getColorCodeForCacheHit(request.metrics.loadedFrom);
-        imageView.setBackgroundColor(color);
+  Bitmap quickMemoryCacheCheck(String path) {
+    Bitmap cached = null;
+    if (memoryCache != null) {
+      try {
+        cached = memoryCache.get(path);
+      } catch (IOException ignored) {
       }
-      imageView.setImageBitmap(result);
     }
-  }
-
-  void error(Request request) {
-    ImageView target = request.target.get();
-    if (target == null) {
-      return;
-    }
-
-    int errorResId = request.errorResId;
-    if (errorResId != 0) {
-      target.setImageResource(errorResId);
-      return;
-    }
-    Drawable errorDrawable = request.errorDrawable;
-    if (errorDrawable != null) {
-      target.setImageDrawable(errorDrawable);
-    }
+    return cached;
   }
 
   void retry(Request request) {
     if (request.retryCount > 0) {
       request.retryCount--;
-      request.future = request.picasso.service.submit(request);
+      request.future = service.submit(request);
     } else {
-      error(request);
+      request.error();
     }
-  }
-
-  boolean quickCacheCheck(ImageView target, String path, RequestMetrics metrics) {
-    Bitmap cached = null;
-    if (memoryCache != null) {
-      try {
-        cached = memoryCache.get(path);
-      } catch (IOException e) {
-        return false;
-      }
-
-      if (cached != null) {
-        target.setImageBitmap(cached);
-        if (debugging) {
-          metrics.executedTime = System.nanoTime();
-          metrics.loadedFrom = RequestMetrics.LOADED_FROM_MEM;
-          target.setBackgroundColor(RequestMetrics.getColorCodeForCacheHit(metrics.loadedFrom));
-        }
-      }
-    }
-    return cached != null;
   }
 
   private Bitmap loadFromCaches(Request request) {
