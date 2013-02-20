@@ -10,7 +10,7 @@ import java.io.OutputStream;
 
 import static com.squareup.picasso.Utils.checkNotMain;
 
-public class LruDiskCache implements Cache {
+public class LruDiskCache implements DiskCache {
 
   private static final String DIR = "picasso";
   private static final int QUALITY = 100;

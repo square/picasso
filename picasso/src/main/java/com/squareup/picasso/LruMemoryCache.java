@@ -9,7 +9,7 @@ import static android.content.Context.ACTIVITY_SERVICE;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.HONEYCOMB_MR1;
 
-public class LruMemoryCache implements Cache {
+public class LruMemoryCache implements MemoryCache {
 
   private final LruCache<String, Bitmap> lruCache;
 

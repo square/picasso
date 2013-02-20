@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.Process;
 import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +15,8 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Picasso {
   private static final String TAG = "Picasso";
@@ -46,28 +49,21 @@ public class Picasso {
 
   private static Picasso singleton = null;
 
-  final boolean debugging;
   final Loader loader;
   final ExecutorService service;
-  final Cache memoryCache;
-  final Cache diskCache;
-  final Map<Object, Request> targetsToRequests = new WeakHashMap<Object, Request>();
+  final MemoryCache memoryCache;
+  final DiskCache diskCache;
+  final Map<Object, Request> targetsToRequests;
+  final boolean debugging;
 
-  public Picasso(Context context, boolean debugging) {
-    this.loader = new ApacheHttpLoader();
-    this.service = Executors.newSingleThreadExecutor();
-
-    this.memoryCache = new LruMemoryCache(context);
-    Cache diskCache = null;
-    try {
-      diskCache = new LruDiskCache(context);
-    } catch (IOException e) {
-      if (debugging) {
-        Log.e(TAG, "Unable to create disk cache!", e);
-      }
-    }
+  private Picasso(Loader loader, ExecutorService service, MemoryCache memoryCache,
+      DiskCache diskCache, boolean debugging) {
+    this.loader = loader;
+    this.service = service;
+    this.memoryCache = memoryCache;
     this.diskCache = diskCache;
     this.debugging = debugging;
+    this.targetsToRequests = new WeakHashMap<Object, Request>();
   }
 
   public Request.Builder load(String path) {
@@ -98,10 +94,7 @@ public class Picasso {
   Bitmap quickMemoryCacheCheck(String path) {
     Bitmap cached = null;
     if (memoryCache != null) {
-      try {
-        cached = memoryCache.get(path);
-      } catch (IOException ignored) {
-      }
+      cached = memoryCache.get(path);
     }
     return cached;
   }
@@ -122,15 +115,9 @@ public class Picasso {
 
     // First check memory cache.
     if (memoryCache != null) {
-      try {
-        cached = memoryCache.get(path);
-        if (debugging && cached != null) {
-          loadedFrom = RequestMetrics.LOADED_FROM_MEM;
-        }
-      } catch (IOException e) {
-        if (debugging) {
-          Log.e(TAG, String.format("Failed to load image from memory!\n%s", request), e);
-        }
+      cached = memoryCache.get(path);
+      if (debugging && cached != null) {
+        loadedFrom = RequestMetrics.LOADED_FROM_MEM;
       }
     }
 
@@ -146,13 +133,7 @@ public class Picasso {
 
       // If the disk cache has the bitmap, add it to our memory cache.
       if (cached != null && memoryCache != null) {
-        try {
-          memoryCache.set(path, cached);
-        } catch (IOException e) {
-          if (debugging) {
-            Log.e(TAG, String.format("Failed to set image into memory cache!\n%s", request), e);
-          }
-        }
+        memoryCache.set(path, cached);
         if (debugging) {
           loadedFrom = RequestMetrics.LOADED_FROM_DISK;
         }
@@ -230,8 +211,72 @@ public class Picasso {
 
   public static Picasso with(Context context) {
     if (singleton == null) {
-      singleton = new Picasso(context.getApplicationContext(), true);
+      DiskCache diskCache = null;
+      try {
+        diskCache = new LruDiskCache(context);
+      } catch (IOException ignored) {
+      }
+
+      singleton = new Builder().loader(new ApacheHttpLoader())
+          .executor(Executors.newFixedThreadPool(3, new PicassoThreadFactory()))
+          .memoryCache(new LruMemoryCache(context))
+          .diskCache(diskCache)
+          .debug()
+          .build();
     }
     return singleton;
+  }
+
+  public static class Builder {
+
+    private Loader loader;
+    private ExecutorService service;
+    private MemoryCache memoryCache;
+    private DiskCache diskCache;
+    private boolean debugging;
+
+    public Builder loader(Loader loader) {
+      this.loader = loader;
+      return this;
+    }
+
+    public Builder executor(ExecutorService executorService) {
+      this.service = executorService;
+      return this;
+    }
+
+    public Builder memoryCache(MemoryCache memoryCache) {
+      this.memoryCache = memoryCache;
+      return this;
+    }
+
+    public Builder diskCache(DiskCache diskCache) {
+      this.diskCache = diskCache;
+      return this;
+    }
+
+    public Builder debug() {
+      debugging = true;
+      return this;
+    }
+
+    public Picasso build() {
+      if (loader == null || service == null) {
+        throw new IllegalStateException("Must provide a Loader and an ExecutorService.");
+      }
+      return new Picasso(loader, service, memoryCache, diskCache, debugging);
+    }
+  }
+
+  static class PicassoThreadFactory implements ThreadFactory {
+    private static final AtomicInteger id = new AtomicInteger();
+
+    @SuppressWarnings("NullableProblems") public Thread newThread(Runnable r) {
+      Thread t = new Thread(r);
+      t.setName("picasso-" + id.getAndIncrement());
+      t.setPriority(Process.THREAD_PRIORITY_BACKGROUND);
+
+      return t;
+    }
   }
 }
