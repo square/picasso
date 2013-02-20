@@ -15,25 +15,25 @@ import java.util.concurrent.Future;
 
 import static com.squareup.picasso.Utils.checkNotMain;
 
-public final class Request implements Runnable {
+public class Request implements Runnable {
   private static final int DEFAULT_RETRY_COUNT = 2;
 
   final Picasso picasso;
   final String path;
+  final int errorResId;
   final WeakReference<ImageView> target;
   final BitmapFactory.Options bitmapOptions;
   final List<Transformation> transformations;
   final RequestMetrics metrics;
-  final int errorResId;
   final Drawable errorDrawable;
 
   Future<?> future;
   Bitmap result;
   int retryCount;
 
-  private Request(Picasso picasso, String path, ImageView imageView,
-      BitmapFactory.Options bitmapOptions, List<Transformation> transformations,
-      RequestMetrics metrics, int errorResId, Drawable errorDrawable) {
+  Request(Picasso picasso, String path, ImageView imageView, BitmapFactory.Options bitmapOptions,
+      List<Transformation> transformations, RequestMetrics metrics, int errorResId,
+      Drawable errorDrawable) {
     this.picasso = picasso;
     this.path = path;
     this.errorResId = errorResId;
@@ -43,6 +43,42 @@ public final class Request implements Runnable {
     this.transformations = transformations;
     this.metrics = metrics;
     this.retryCount = DEFAULT_RETRY_COUNT;
+  }
+
+  Object getTarget() {
+    return target.get();
+  }
+
+  void complete() {
+    if (result == null) {
+      throw new AssertionError(
+          String.format("Attempted to complete request with no result!\n%s", this));
+    }
+
+    ImageView imageView = target.get();
+    if (imageView != null) {
+      if (picasso.debugging) {
+        int color = RequestMetrics.getColorCodeForCacheHit(metrics.loadedFrom);
+        imageView.setBackgroundColor(color);
+      }
+      imageView.setImageBitmap(result);
+    }
+  }
+
+  void error() {
+    ImageView target = this.target.get();
+    if (target == null) {
+      return;
+    }
+
+    if (errorResId != 0) {
+      target.setImageResource(errorResId);
+      return;
+    }
+
+    if (errorDrawable != null) {
+      target.setImageDrawable(errorDrawable);
+    }
   }
 
   @Override public void run() {
@@ -70,10 +106,10 @@ public final class Request implements Runnable {
     private final List<Transformation> transformations;
 
     private boolean deferredResize;
-    private BitmapFactory.Options bitmapOptions;
     private int placeholderResId;
-    private Drawable placeholderDrawable;
     private int errorResId;
+    private BitmapFactory.Options bitmapOptions;
+    private Drawable placeholderDrawable;
     private Drawable errorDrawable;
 
     public Builder(Picasso picasso, String path) {
@@ -86,7 +122,7 @@ public final class Request implements Runnable {
     }
 
     public Builder placeholder(int placeholderResId) {
-      if (placeholderResId != 0) {
+      if (placeholderResId == 0) {
         throw new IllegalArgumentException("Placeholder image resource invalid.");
       }
       if (placeholderDrawable != null) {
@@ -108,7 +144,7 @@ public final class Request implements Runnable {
     }
 
     public Builder error(int errorResId) {
-      if (errorResId != 0) {
+      if (errorResId == 0) {
         throw new IllegalArgumentException("Error image resource invalid.");
       }
       if (errorDrawable != null) {
@@ -169,7 +205,7 @@ public final class Request implements Runnable {
 
     public Builder transform(Transformation transformation) {
       if (transformation == null) {
-        throw new IllegalArgumentException("Tranformation may not be null.");
+        throw new IllegalArgumentException("Transformation may not be null.");
       }
       this.transformations.add(transformation);
       return this;
@@ -183,19 +219,42 @@ public final class Request implements Runnable {
       return picasso.run(request);
     }
 
+    public void into(Target target) {
+      if (target == null) {
+        throw new IllegalStateException("Target cannot be null.");
+      }
+
+      RequestMetrics metrics = createRequestMetrics();
+
+      Bitmap bitmap = picasso.quickMemoryCacheCheck(path);
+      if (bitmap != null) {
+        target.onSuccess(bitmap);
+        return;
+      }
+
+      Request request =
+          new TargetRequest(picasso, path, target, bitmapOptions, transformations, metrics,
+              errorResId, errorDrawable);
+      picasso.submit(request);
+    }
+
     public void into(ImageView target) {
       if (target == null) {
         throw new IllegalStateException("Target cannot be null.");
       }
 
-      RequestMetrics metrics = null;
-      if (picasso.debugging) {
-        metrics = new RequestMetrics();
-        metrics.createdTime = System.nanoTime();
-      }
+      RequestMetrics metrics = createRequestMetrics();
 
-      // Avoids Request object allocation.
-      if (picasso.quickCacheCheck(target, path, metrics)) return;
+      Bitmap bitmap = picasso.quickMemoryCacheCheck(path);
+      if (bitmap != null) {
+        target.setImageBitmap(bitmap);
+        if (picasso.debugging) {
+          metrics.executedTime = System.nanoTime();
+          metrics.loadedFrom = RequestMetrics.LOADED_FROM_MEM;
+          target.setBackgroundColor(RequestMetrics.getColorCodeForCacheHit(metrics.loadedFrom));
+        }
+        return;
+      }
 
       if (placeholderDrawable != null) {
         target.setImageDrawable(placeholderDrawable);
@@ -213,6 +272,15 @@ public final class Request implements Runnable {
           new Request(picasso, path, target, bitmapOptions, transformations, metrics, errorResId,
               errorDrawable);
       picasso.submit(request);
+    }
+
+    private RequestMetrics createRequestMetrics() {
+      RequestMetrics metrics = null;
+      if (picasso.debugging) {
+        metrics = new RequestMetrics();
+        metrics.createdTime = System.nanoTime();
+      }
+      return metrics;
     }
   }
 }

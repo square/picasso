@@ -7,9 +7,6 @@ import com.squareup.picasso.external.DiskLruCache;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 import static com.squareup.picasso.Utils.checkNotMain;
 
@@ -33,7 +30,7 @@ public class LruDiskCache implements Cache {
     checkNotMain();
     DiskLruCache.Snapshot snapshot = null;
     try {
-      snapshot = diskLruCache.get(createMd5Hash(key));
+      snapshot = diskLruCache.get(Utils.createMd5Hash(key));
       return snapshot != null ? BitmapFactory.decodeStream(snapshot.getInputStream(0)) : null;
     } finally {
       if (snapshot != null) {
@@ -46,7 +43,7 @@ public class LruDiskCache implements Cache {
     checkNotMain();
     DiskLruCache.Editor editor = null;
     try {
-      editor = diskLruCache.edit(createMd5Hash(key));
+      editor = diskLruCache.edit(Utils.createMd5Hash(key));
       OutputStream stream = editor.newOutputStream(0);
       bitmap.compress(Bitmap.CompressFormat.PNG, QUALITY, stream);
       editor.commit();
@@ -56,27 +53,5 @@ public class LruDiskCache implements Cache {
         editor.abortUnlessCommitted();
       }
     }
-  }
-
-  private static String createMd5Hash(String text) {
-    try {
-      // Create MD5 Hash.
-      MessageDigest digest = MessageDigest.getInstance("MD5");
-      digest.update(getBytes(text));
-      byte messageDigest[] = digest.digest();
-
-      // Create Hex String.
-      StringBuilder hexString = new StringBuilder();
-      for (byte b : messageDigest) {
-        hexString.append(Integer.toHexString(0xff & b));
-      }
-      return hexString.toString();
-    } catch (NoSuchAlgorithmException e) {
-      throw new AssertionError("Unable to construct MD5 hash!");
-    }
-  }
-
-  private static byte[] getBytes(String string) {
-    return string.getBytes(Charset.forName("UTF-8"));
   }
 }
