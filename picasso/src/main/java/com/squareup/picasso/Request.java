@@ -8,11 +8,12 @@ import com.squareup.picasso.transformations.DeferredResizeTransformation;
 import com.squareup.picasso.transformations.ResizeTransformation;
 import com.squareup.picasso.transformations.RotationTransformation;
 import com.squareup.picasso.transformations.ScaleTransformation;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+
+import static com.squareup.picasso.Picasso.checkNotMain;
 
 public class Request implements Runnable {
 
@@ -40,6 +41,20 @@ public class Request implements Runnable {
 
   @Override public void run() {
     picasso.run(this);
+  }
+
+  @Override public String toString() {
+    return "Request{" +
+        "picasso=" + picasso +
+        ", path=" + path +
+        ", target=" + target +
+        ", bitmapOptions=" + bitmapOptions +
+        ", transformations=" + transformations +
+        ", metrics=" + metrics +
+        ", future=" + future +
+        ", result=" + result +
+        ", retryCount=" + retryCount +
+        '}';
   }
 
   Future<?> getFuture() {
@@ -89,7 +104,7 @@ public class Request implements Runnable {
 
     public Builder placeholder(int placeholderResId) {
       if (placeholderDrawable != null) {
-        throw new IllegalStateException("TODO");
+        throw new IllegalStateException("Placeholder already set!");
       }
       this.placeholderResId = placeholderResId;
       return this;
@@ -97,7 +112,7 @@ public class Request implements Runnable {
 
     public Builder placeholder(Drawable placeholderDrawable) {
       if (placeholderResId != 0) {
-        throw new IllegalStateException("TODO");
+        throw new IllegalStateException("Placeholder already set!");
       }
       this.placeholderDrawable = placeholderDrawable;
       return this;
@@ -134,9 +149,15 @@ public class Request implements Runnable {
       return this;
     }
 
+    public Bitmap get() {
+      checkNotMain();
+      Request request = new Request(picasso, path, null, bitmapOptions, transformations, null);
+      return picasso.run(request);
+    }
+
     public void into(ImageView target) {
       if (target == null) {
-        throw new IllegalStateException("TODO");
+        throw new IllegalStateException("Target cannot be null.");
       }
 
       RequestMetrics metrics = null;
@@ -145,25 +166,8 @@ public class Request implements Runnable {
         metrics.createdTime = System.nanoTime();
       }
 
-      Cache memoryCache = picasso.memoryCache;
-      if (memoryCache != null) {
-        Bitmap cached;
-        try {
-          cached = memoryCache.get(path);
-          if (cached != null) {
-            target.setImageBitmap(cached);
-
-            if (picasso.debugging) {
-              metrics.executedTime = System.nanoTime();
-              metrics.loadedFrom = RequestMetrics.LOADED_FROM_MEM;
-              target.setBackgroundColor(RequestMetrics.getColorCodeForCacheHit(metrics.loadedFrom));
-            }
-
-            return;
-          }
-        } catch (IOException ignored) {
-        }
-      }
+      // Avoids Request object allocation.
+      if (picasso.quickCacheCheck(target, path, metrics)) return;
 
       if (placeholderDrawable != null) {
         target.setImageDrawable(placeholderDrawable);

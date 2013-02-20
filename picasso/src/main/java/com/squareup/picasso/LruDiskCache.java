@@ -3,7 +3,6 @@ package com.squareup.picasso;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Looper;
 import com.squareup.picasso.external.DiskLruCache;
 import java.io.File;
 import java.io.IOException;
@@ -12,6 +11,7 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import static com.squareup.picasso.Picasso.checkNotMain;
 import static com.squareup.picasso.external.DiskLruCache.open;
 
 public class LruDiskCache implements Cache {
@@ -56,12 +56,6 @@ public class LruDiskCache implements Cache {
       if (editor != null) {
         editor.abortUnlessCommitted();
       }
-    }
-  }
-
-  private void checkNotMain() {
-    if (Looper.getMainLooper().getThread() == Thread.currentThread()) {
-      throw new AssertionError("Doing file operations on the main thread is not permitted.");
     }
   }
 
