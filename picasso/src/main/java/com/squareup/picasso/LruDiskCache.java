@@ -11,8 +11,7 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import static com.squareup.picasso.Picasso.checkNotMain;
-import static com.squareup.picasso.external.DiskLruCache.open;
+import static com.squareup.picasso.Utils.checkNotMain;
 
 public class LruDiskCache implements Cache {
 
@@ -27,7 +26,7 @@ public class LruDiskCache implements Cache {
   }
 
   public LruDiskCache(File directory, long maxSize) throws IOException {
-    diskLruCache = open(directory, 1, 1, maxSize);
+    diskLruCache = DiskLruCache.open(directory, 1, 1, maxSize);
   }
 
   @Override public Bitmap get(String key) throws IOException {

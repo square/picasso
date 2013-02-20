@@ -13,9 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 
-import static com.squareup.picasso.Picasso.checkNotMain;
+import static com.squareup.picasso.Utils.checkNotMain;
 
-public class Request implements Runnable {
+public final class Request implements Runnable {
+  private static final int DEFAULT_RETRY_COUNT = 2;
 
   final Picasso picasso;
   final String path;
@@ -23,20 +24,25 @@ public class Request implements Runnable {
   final BitmapFactory.Options bitmapOptions;
   final List<Transformation> transformations;
   final RequestMetrics metrics;
+  final int errorResId;
+  final Drawable errorDrawable;
 
-  private Future<?> future;
-  private Bitmap result;
+  Future<?> future;
+  Bitmap result;
   int retryCount;
 
-  Request(Picasso picasso, String path, ImageView imageView, BitmapFactory.Options bitmapOptions,
-      List<Transformation> transformations, RequestMetrics metrics) {
+  private Request(Picasso picasso, String path, ImageView imageView,
+      BitmapFactory.Options bitmapOptions, List<Transformation> transformations,
+      RequestMetrics metrics, int errorResId, Drawable errorDrawable) {
     this.picasso = picasso;
     this.path = path;
+    this.errorResId = errorResId;
+    this.errorDrawable = errorDrawable;
     this.target = new WeakReference<ImageView>(imageView);
     this.bitmapOptions = bitmapOptions;
     this.transformations = transformations;
     this.metrics = metrics;
-    this.retryCount = 2;
+    this.retryCount = DEFAULT_RETRY_COUNT;
   }
 
   @Override public void run() {
@@ -44,95 +50,112 @@ public class Request implements Runnable {
   }
 
   @Override public String toString() {
-    return "Request{" +
-        "picasso=" + picasso +
-        ", path=" + path +
-        ", target=" + target +
-        ", bitmapOptions=" + bitmapOptions +
-        ", transformations=" + transformations +
-        ", metrics=" + metrics +
-        ", future=" + future +
-        ", result=" + result +
-        ", retryCount=" + retryCount +
-        '}';
+    return "Request["
+        + "picasso=" + picasso
+        + ", path=" + path
+        + ", target=" + target
+        + ", bitmapOptions=" + bitmapOptions
+        + ", transformations=" + transformations
+        + ", metrics=" + metrics
+        + ", future=" + future
+        + ", result=" + result
+        + ", retryCount=" + retryCount
+        + ']';
   }
 
-  Future<?> getFuture() {
-    return future;
-  }
-
-  RequestMetrics getMetrics() {
-    return metrics;
-  }
-
-  public String getPath() {
-    return path;
-  }
-
-  public ImageView getTarget() {
-    return target.get();
-  }
-
-  public Bitmap getResult() {
-    return result;
-  }
-
-  void setResult(Bitmap result) {
-    this.result = result;
-  }
-
-  void setFuture(Future<?> future) {
-    this.future = future;
-  }
-
-  @SuppressWarnings("UnusedDeclaration")
+  @SuppressWarnings("UnusedDeclaration") // Public API.
   public static class Builder {
     private final Picasso picasso;
     private final String path;
     private final List<Transformation> transformations;
 
-    private int placeholderResId;
     private boolean deferredResize;
     private BitmapFactory.Options bitmapOptions;
+    private int placeholderResId;
     private Drawable placeholderDrawable;
+    private int errorResId;
+    private Drawable errorDrawable;
 
     public Builder(Picasso picasso, String path) {
+      if (path == null) {
+        throw new IllegalArgumentException("Path may not be null.");
+      }
       this.picasso = picasso;
       this.path = path;
       this.transformations = new ArrayList<Transformation>(4);
     }
 
     public Builder placeholder(int placeholderResId) {
+      if (placeholderResId != 0) {
+        throw new IllegalArgumentException("Placeholder image resource invalid.");
+      }
       if (placeholderDrawable != null) {
-        throw new IllegalStateException("Placeholder already set!");
+        throw new IllegalStateException("Placeholder image already set.");
       }
       this.placeholderResId = placeholderResId;
       return this;
     }
 
     public Builder placeholder(Drawable placeholderDrawable) {
+      if (placeholderDrawable == null) {
+        throw new IllegalArgumentException("Placeholder image may not be null.");
+      }
       if (placeholderResId != 0) {
-        throw new IllegalStateException("Placeholder already set!");
+        throw new IllegalStateException("Placeholder image already set.");
       }
       this.placeholderDrawable = placeholderDrawable;
       return this;
     }
 
+    public Builder error(int errorResId) {
+      if (errorResId != 0) {
+        throw new IllegalArgumentException("Error image resource invalid.");
+      }
+      if (errorDrawable != null) {
+        throw new IllegalStateException("Error image already set.");
+      }
+      this.errorResId = errorResId;
+      return this;
+    }
+
+    public Builder error(Drawable errorDrawable) {
+      if (errorDrawable == null) {
+        throw new IllegalArgumentException("Error image may not be null.");
+      }
+      if (this.errorResId != 0) {
+        throw new IllegalStateException("Error image already set.");
+      }
+      this.errorDrawable = errorDrawable;
+      return this;
+    }
+
     public Builder bitmapOptions(BitmapFactory.Options bitmapOptions) {
+      if (bitmapOptions == null) {
+        throw new IllegalArgumentException("Bitmap options may not be null.");
+      }
       this.bitmapOptions = bitmapOptions;
       return this;
     }
 
-    public Builder resize() {
+    public Builder fit() {
       deferredResize = true;
       return this;
     }
 
     public Builder resize(int targetWidth, int targetHeight) {
+      if (targetWidth <= 0) {
+        throw new IllegalArgumentException("Width must be positive number.");
+      }
+      if (targetHeight <= 0) {
+        throw new IllegalArgumentException("Height must be positive number.");
+      }
       return transform(new ResizeTransformation(targetWidth, targetHeight));
     }
 
     public Builder scale(float factor) {
+      if (factor <= 0) {
+        throw new IllegalArgumentException("Scale factor must be positive number.");
+      }
       return transform(new ScaleTransformation(factor));
     }
 
@@ -145,13 +168,18 @@ public class Request implements Runnable {
     }
 
     public Builder transform(Transformation transformation) {
+      if (transformation == null) {
+        throw new IllegalArgumentException("Tranformation may not be null.");
+      }
       this.transformations.add(transformation);
       return this;
     }
 
     public Bitmap get() {
       checkNotMain();
-      Request request = new Request(picasso, path, null, bitmapOptions, transformations, null);
+      Request request =
+          new Request(picasso, path, null, bitmapOptions, transformations, null, errorResId,
+              errorDrawable);
       return picasso.run(request);
     }
 
@@ -181,7 +209,9 @@ public class Request implements Runnable {
         transformations.add(new DeferredResizeTransformation(target));
       }
 
-      Request request = new Request(picasso, path, target, bitmapOptions, transformations, metrics);
+      Request request =
+          new Request(picasso, path, target, bitmapOptions, transformations, metrics, errorResId,
+              errorDrawable);
       picasso.submit(request);
     }
   }

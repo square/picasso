@@ -3,6 +3,7 @@ package com.squareup.picasso;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -18,31 +19,33 @@ import java.util.concurrent.Executors;
 
 public class Picasso {
   private static final String TAG = "Picasso";
-
   private static final int RETRY_DELAY = 500;
   private static final int REQUEST_COMPLETE = 1;
   private static final int REQUEST_RETRY = 2;
 
-  private static Picasso singleton = null;
-  private static final Handler handler = new Handler(Looper.getMainLooper()) {
+  private static final Handler HANDLER = new Handler(Looper.getMainLooper()) {
     @Override public void handleMessage(Message msg) {
-      Request request;
+      Request request = (Request) msg.obj;
+      if (request.future.isCancelled()) {
+        return;
+      }
+
       switch (msg.what) {
         case REQUEST_COMPLETE:
-          request = (Request) msg.obj;
-          if (request.getFuture().isCancelled() || request.getResult() == null) return;
           request.picasso.complete(request);
           break;
-        case REQUEST_RETRY:
-          request = (Request) msg.obj;
-          if (request.getFuture().isCancelled() || request.retryCount == 0) return;
 
-          request.retryCount--;
-          request.setFuture(request.picasso.service.submit(request));
+        case REQUEST_RETRY:
+          request.picasso.retry(request);
           break;
+
+        default:
+          throw new IllegalArgumentException("LOLWUT?!?");
       }
     }
   };
+
+  private static Picasso singleton = null;
 
   final boolean debugging;
   final Loader loader;
@@ -60,7 +63,9 @@ public class Picasso {
     try {
       diskCache = new LruDiskCache(context);
     } catch (IOException e) {
-      Log.w(TAG, "Unable to create disk cache!", e);
+      if (debugging) {
+        Log.e(TAG, "Unable to create disk cache!", e);
+      }
     }
     this.diskCache = diskCache;
     this.debugging = debugging;
@@ -71,16 +76,16 @@ public class Picasso {
   }
 
   void submit(Request request) {
-    ImageView target = request.getTarget();
+    ImageView target = request.target.get();
     if (target == null) return;
 
     Request existing = targetsToRequests.remove(target);
     if (existing != null) {
-      existing.getFuture().cancel(true);
+      existing.future.cancel(true);
     }
 
     targetsToRequests.put(target, request);
-    request.setFuture(service.submit(request));
+    request.future = service.submit(request);
   }
 
   Bitmap run(Request request) {
@@ -92,7 +97,7 @@ public class Picasso {
   }
 
   void complete(Request request) {
-    Bitmap result = request.getResult();
+    Bitmap result = request.result;
     if (result == null) {
       throw new AssertionError(
           String.format("Attempted to complete request with no result!\n%s", request));
@@ -101,10 +106,36 @@ public class Picasso {
     ImageView imageView = request.target.get();
     if (imageView != null) {
       if (debugging) {
-        int color = RequestMetrics.getColorCodeForCacheHit(request.getMetrics().loadedFrom);
+        int color = RequestMetrics.getColorCodeForCacheHit(request.metrics.loadedFrom);
         imageView.setBackgroundColor(color);
       }
       imageView.setImageBitmap(result);
+    }
+  }
+
+  void error(Request request) {
+    ImageView target = request.target.get();
+    if (target == null) {
+      return;
+    }
+
+    int errorResId = request.errorResId;
+    if (errorResId != 0) {
+      target.setImageResource(errorResId);
+      return;
+    }
+    Drawable errorDrawable = request.errorDrawable;
+    if (errorDrawable != null) {
+      target.setImageDrawable(errorDrawable);
+    }
+  }
+
+  void retry(Request request) {
+    if (request.retryCount > 0) {
+      request.retryCount--;
+      request.future = request.picasso.service.submit(request);
+    } else {
+      error(request);
     }
   }
 
@@ -130,7 +161,7 @@ public class Picasso {
   }
 
   private Bitmap loadFromCaches(Request request) {
-    String path = request.getPath();
+    String path = request.path;
     Bitmap cached = null;
     int loadedFrom = 0;
 
@@ -142,7 +173,9 @@ public class Picasso {
           loadedFrom = RequestMetrics.LOADED_FROM_MEM;
         }
       } catch (IOException e) {
-        Log.e(TAG, String.format("Failed to load image from memory!\n%s", request), e);
+        if (debugging) {
+          Log.e(TAG, String.format("Failed to load image from memory!\n%s", request), e);
+        }
       }
     }
 
@@ -151,7 +184,9 @@ public class Picasso {
       try {
         cached = diskCache.get(path);
       } catch (IOException e) {
-        Log.e(TAG, String.format("Failed to load image from disk cache!\n%s", request), e);
+        if (debugging) {
+          Log.e(TAG, String.format("Failed to load image from disk cache!\n%s", request), e);
+        }
       }
 
       // If the disk cache has the bitmap, add it to our memory cache.
@@ -159,7 +194,9 @@ public class Picasso {
         try {
           memoryCache.set(path, cached);
         } catch (IOException e) {
-          Log.e(TAG, String.format("Failed to set image into memory cache!\n%s", request), e);
+          if (debugging) {
+            Log.e(TAG, String.format("Failed to set image into memory cache!\n%s", request), e);
+          }
         }
         if (debugging) {
           loadedFrom = RequestMetrics.LOADED_FROM_DISK;
@@ -170,17 +207,17 @@ public class Picasso {
     // Finally, if we found a cached image, set it as the result and finish.
     if (cached != null) {
       if (debugging) {
-        request.getMetrics().loadedFrom = loadedFrom;
+        request.metrics.loadedFrom = loadedFrom;
       }
-      request.setResult(cached);
-      handler.sendMessage(handler.obtainMessage(REQUEST_COMPLETE, request));
+      request.result = cached;
+      HANDLER.sendMessage(HANDLER.obtainMessage(REQUEST_COMPLETE, request));
     }
 
     return cached;
   }
 
   private Bitmap loadFromStream(Request request) {
-    String path = request.getPath();
+    String path = request.path;
     Bitmap result = null;
     InputStream stream = null;
     try {
@@ -189,17 +226,17 @@ public class Picasso {
       result = transformResult(request, result);
 
       if (debugging) {
-        request.getMetrics().loadedFrom = RequestMetrics.LOADED_FROM_NETWORK;
+        request.metrics.loadedFrom = RequestMetrics.LOADED_FROM_NETWORK;
       }
 
-      request.setResult(result);
-      handler.sendMessage(handler.obtainMessage(REQUEST_COMPLETE, request));
+      request.result = result;
+      HANDLER.sendMessage(HANDLER.obtainMessage(REQUEST_COMPLETE, request));
 
       if (result != null) {
         saveToCaches(path, result);
       }
     } catch (IOException e) {
-      handler.sendMessageDelayed(handler.obtainMessage(REQUEST_RETRY, request), RETRY_DELAY);
+      HANDLER.sendMessageDelayed(HANDLER.obtainMessage(REQUEST_RETRY, request), RETRY_DELAY);
     } finally {
       if (stream != null) {
         try {
@@ -241,11 +278,5 @@ public class Picasso {
       singleton = new Picasso(context.getApplicationContext(), true);
     }
     return singleton;
-  }
-
-  static void checkNotMain() {
-    if (Looper.getMainLooper().getThread() == Thread.currentThread()) {
-      throw new AssertionError("Method call should not happen from the main thread.");
-    }
   }
 }

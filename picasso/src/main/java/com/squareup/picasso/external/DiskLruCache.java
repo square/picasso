@@ -33,7 +33,6 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -97,6 +96,7 @@ public final class DiskLruCache implements Closeable {
   private static final String DIRTY = "DIRTY";
   private static final String REMOVE = "REMOVE";
   private static final String READ = "READ";
+  private static final int REDUNDANT_OP_COMPACT_THRESHOLD = 2000;
 
     /*
      * This cache uses a journal file named "journal". A typical journal file
@@ -328,7 +328,8 @@ public final class DiskLruCache implements Closeable {
    */
   private void processJournal() throws IOException {
     deleteIfExists(journalFileTmp);
-    for (Iterator<Entry> i = lruEntries.values().iterator(); i.hasNext(); ) {
+    Iterator<Entry> i = lruEntries.values().iterator();
+    while (i.hasNext()) {
       Entry entry = i.next();
       if (entry.currentEditor == null) {
         for (int t = 0; t < valueCount; t++) {
@@ -580,7 +581,6 @@ public final class DiskLruCache implements Closeable {
    * and eliminate at least 2000 ops.
    */
   private boolean journalRebuildRequired() {
-    final int REDUNDANT_OP_COMPACT_THRESHOLD = 2000;
     return redundantOpCount >= REDUNDANT_OP_COMPACT_THRESHOLD
         && redundantOpCount >= lruEntries.size();
   }
@@ -654,9 +654,7 @@ public final class DiskLruCache implements Closeable {
 
   private void trimToSize() throws IOException {
     while (size > maxSize) {
-      Map.Entry<String, Entry> toEvict =
-          lruEntries.entrySet().iterator().next();//lruEntries.eldest();
-      remove(toEvict.getKey());
+      remove(lruEntries.entrySet().iterator().next().getKey());
     }
   }
 
