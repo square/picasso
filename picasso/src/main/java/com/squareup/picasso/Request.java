@@ -31,6 +31,7 @@ public class Request implements Runnable {
   Future<?> future;
   Bitmap result;
   int retryCount;
+  boolean retryCancelled;
 
   Request(Picasso picasso, String path, ImageView imageView, BitmapFactory.Options bitmapOptions,
       List<Transformation> transformations, RequestMetrics metrics, int errorResId,
@@ -89,7 +90,9 @@ public class Request implements Runnable {
 
   @Override public String toString() {
     return "Request["
-        + "picasso="
+        + "hashCode="
+        + hashCode()
+        + ", picasso="
         + picasso
         + ", path="
         + path
@@ -237,7 +240,7 @@ public class Request implements Runnable {
 
       RequestMetrics metrics = createRequestMetrics();
 
-      Bitmap bitmap = picasso.quickMemoryCacheCheck(path);
+      Bitmap bitmap = picasso.quickMemoryCacheCheck(target, path);
       if (bitmap != null) {
         target.onSuccess(bitmap);
         return;
@@ -256,7 +259,7 @@ public class Request implements Runnable {
 
       RequestMetrics metrics = createRequestMetrics();
 
-      Bitmap bitmap = picasso.quickMemoryCacheCheck(path);
+      Bitmap bitmap = picasso.quickMemoryCacheCheck(target, path);
       if (bitmap != null) {
         target.setImageBitmap(bitmap);
         if (picasso.debugging) {

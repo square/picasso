@@ -73,10 +73,7 @@ public class Picasso {
     Object target = request.getTarget();
     if (target == null) return;
 
-    Request existing = targetsToRequests.remove(target);
-    if (existing != null) {
-      existing.future.cancel(true);
-    }
+    cancelExistingRequest(target);
 
     targetsToRequests.put(target, request);
     request.future = service.submit(request);
@@ -90,15 +87,20 @@ public class Picasso {
     return bitmap;
   }
 
-  Bitmap quickMemoryCacheCheck(String path) {
+  Bitmap quickMemoryCacheCheck(Object target, String path) {
     Bitmap cached = null;
     if (memoryCache != null) {
       cached = memoryCache.get(path);
     }
+
+    cancelExistingRequest(target);
+
     return cached;
   }
 
   void retry(Request request) {
+    if (request.retryCancelled) return;
+
     if (request.retryCount > 0) {
       request.retryCount--;
       request.future = service.submit(request);
@@ -107,26 +109,31 @@ public class Picasso {
     }
   }
 
+  private void cancelExistingRequest(Object target) {
+    Request existing = targetsToRequests.remove(target);
+    if (existing != null) {
+      if (!existing.future.isDone()) {
+        existing.future.cancel(true);
+      } else {
+        existing.retryCancelled = true;
+      }
+    }
+  }
+
   private Bitmap loadFromCaches(Request request) {
     String path = request.path;
     Bitmap cached = null;
-    int loadedFrom = 0;
 
     if (memoryCache != null) {
       cached = memoryCache.get(path);
-      if (debugging && cached != null) {
-        request.metrics.loadedFrom = LOADED_FROM_MEM;
+      if (cached != null) {
+        if (debugging) {
+          request.metrics.loadedFrom = LOADED_FROM_MEM;
+        }
         request.result = cached;
         HANDLER.sendMessage(HANDLER.obtainMessage(REQUEST_COMPLETE, request));
       }
     }
-
-    if (cached != null) {
-      if (debugging) {
-        request.metrics.loadedFrom = loadedFrom;
-      }
-    }
-
     return cached;
   }
 
