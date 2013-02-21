@@ -27,7 +27,12 @@ final class Utils {
         builder.append(transformation.toString());
       }
     }
-    request.metrics.keyCreationTime = System.nanoTime() - start;
+
+    RequestMetrics metrics = request.metrics;
+    if (metrics != null) {
+      metrics.keyCreationTime = System.nanoTime() - start;
+    }
+
     // TODO Support bitmap options?
     return builder.toString();
   }
