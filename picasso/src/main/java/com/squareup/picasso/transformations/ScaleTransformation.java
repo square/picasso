@@ -5,9 +5,12 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import com.squareup.picasso.Transformation;
 
+import static android.graphics.Bitmap.Config.ARGB_8888;
+import static android.graphics.Paint.FILTER_BITMAP_FLAG;
+
 public class ScaleTransformation implements Transformation {
 
-  private static final Paint BITMAP_PAINT = new Paint(Paint.FILTER_BITMAP_FLAG);
+  private static final Paint BITMAP_PAINT = new Paint(FILTER_BITMAP_FLAG);
   private static final ThreadLocal<Canvas> CANVAS_LOCAL = new ThreadLocal<Canvas>() {
     @Override protected Canvas initialValue() {
       return new Canvas();
@@ -26,7 +29,7 @@ public class ScaleTransformation implements Transformation {
     int width = (int) (source.getWidth() * factor);
     int height = (int) (source.getHeight() * factor);
 
-    final Bitmap transformed = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+    final Bitmap transformed = Bitmap.createBitmap(width, height, ARGB_8888);
 
     Canvas canvas = CANVAS_LOCAL.get();
     canvas.setBitmap(transformed);

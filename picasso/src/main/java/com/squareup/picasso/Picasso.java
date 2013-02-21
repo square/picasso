@@ -49,7 +49,7 @@ public class Picasso {
     }
   };
 
-  private static Picasso singleton = null;
+  static Picasso singleton = null;
 
   final Loader loader;
   final ExecutorService service;
@@ -209,16 +209,34 @@ public class Picasso {
     private boolean debugging;
 
     public Builder loader(Loader loader) {
+      if (loader == null) {
+        throw new IllegalArgumentException("Loader may not be null.");
+      }
+      if (this.loader != null) {
+        throw new IllegalStateException("Loader already set.");
+      }
       this.loader = loader;
       return this;
     }
 
     public Builder executor(ExecutorService executorService) {
+      if (executorService == null) {
+        throw new IllegalArgumentException("Executor service may not be null.");
+      }
+      if (this.service != null) {
+        throw new IllegalStateException("Exector service already set.");
+      }
       this.service = executorService;
       return this;
     }
 
     public Builder memoryCache(Cache memoryCache) {
+      if (memoryCache == null) {
+        throw new IllegalArgumentException("Memory cache may not be null.");
+      }
+      if (this.memoryCache != null) {
+        throw new IllegalStateException("Memory cache already set.");
+      }
       this.memoryCache = memoryCache;
       return this;
     }

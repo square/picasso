@@ -24,4 +24,7 @@ release.properties
 classes
 gen-external-apklibs
 
+# Robolectric
+tmp
+
 .DS_Store

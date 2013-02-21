@@ -5,10 +5,13 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import com.squareup.picasso.Transformation;
 
+import static android.graphics.Bitmap.Config.ARGB_8888;
+import static android.graphics.Paint.FILTER_BITMAP_FLAG;
+
 public class RotationTransformation implements Transformation {
 
   private static final int DEFAULT_PIVOT = -1;
-  private static final Paint BITMAP_PAINT = new Paint(Paint.FILTER_BITMAP_FLAG);
+  private static final Paint BITMAP_PAINT = new Paint(FILTER_BITMAP_FLAG);
   private static final ThreadLocal<Canvas> CANVAS_LOCAL = new ThreadLocal<Canvas>() {
     @Override protected Canvas initialValue() {
       return new Canvas();
@@ -30,35 +33,30 @@ public class RotationTransformation implements Transformation {
   }
 
   @Override public Bitmap transform(Bitmap source) {
-    try {
-      float pivotX = this.pivotX;
-      float pivotY = this.pivotY;
+    float pivotX = this.pivotX;
+    float pivotY = this.pivotY;
 
-      boolean defaultPivot = pivotX == DEFAULT_PIVOT && pivotY == DEFAULT_PIVOT;
-      if (degrees == 0 && defaultPivot) return source;
-
-      Bitmap transformed =
-          Bitmap.createBitmap(source.getWidth(), source.getHeight(), Bitmap.Config.ARGB_8888);
-
-      Canvas canvas = CANVAS_LOCAL.get();
-      canvas.setBitmap(transformed);
-      canvas.save();
-
-      if (defaultPivot) {
-        pivotX = source.getWidth() / 2f;
-        pivotY = source.getHeight() / 2f;
-      }
-
-      canvas.rotate(degrees, pivotX, pivotY);
-      canvas.drawBitmap(source, 0, 0, BITMAP_PAINT);
-      canvas.restore();
-
-      source.recycle();
-      return transformed;
-    } catch (Exception e) {
-      e.printStackTrace();
+    if (degrees == 0) {
+      return source;
     }
-    return null;
+
+    Bitmap transformed = Bitmap.createBitmap(source.getWidth(), source.getHeight(), ARGB_8888);
+
+    Canvas canvas = CANVAS_LOCAL.get();
+    canvas.setBitmap(transformed);
+    canvas.save();
+
+    if (pivotX == DEFAULT_PIVOT && pivotY == DEFAULT_PIVOT) {
+      pivotX = source.getWidth() / 2f;
+      pivotY = source.getHeight() / 2f;
+    }
+
+    canvas.rotate(degrees, pivotX, pivotY);
+    canvas.drawBitmap(source, 0, 0, BITMAP_PAINT);
+    canvas.restore();
+
+    source.recycle();
+    return transformed;
   }
 
   @Override public String toString() {

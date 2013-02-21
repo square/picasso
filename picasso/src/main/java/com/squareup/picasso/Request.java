@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 import static com.squareup.picasso.Utils.checkNotMain;
+import static com.squareup.picasso.Utils.createKey;
 
 public class Request implements Runnable {
   private static final int DEFAULT_RETRY_COUNT = 2;
@@ -126,8 +127,11 @@ public class Request implements Runnable {
     private Drawable placeholderDrawable;
     private Drawable errorDrawable;
 
-    public Builder(Picasso picasso, String path) {
-      if (path == null) {
+    Builder(Picasso picasso, String path) {
+      if (picasso == null) {
+        throw new AssertionError();
+      }
+      if (path == null || path.trim().isEmpty()) {
         throw new IllegalArgumentException("Path may not be null.");
       }
       this.picasso = picasso;
@@ -235,7 +239,7 @@ public class Request implements Runnable {
 
     public void into(Target target) {
       if (target == null) {
-        throw new IllegalStateException("Target cannot be null.");
+        throw new IllegalArgumentException("Target cannot be null.");
       }
 
       RequestMetrics metrics = createRequestMetrics();
@@ -254,7 +258,7 @@ public class Request implements Runnable {
 
     public void into(ImageView target) {
       if (target == null) {
-        throw new IllegalStateException("Target cannot be null.");
+        throw new IllegalArgumentException("Target cannot be null.");
       }
 
       RequestMetrics metrics = createRequestMetrics();
@@ -296,22 +300,5 @@ public class Request implements Runnable {
       }
       return metrics;
     }
-  }
-
-  private static String createKey(Request request) {
-    long start = System.nanoTime();
-    StringBuilder builder = new StringBuilder();
-    builder.append(request.path);
-
-    List<Transformation> transformations = request.transformations;
-    if (!transformations.isEmpty()) {
-      for (Transformation transformation : transformations) {
-        builder.append('|');
-        builder.append(transformation.toString());
-      }
-    }
-    request.metrics.keyCreationTime = System.nanoTime() - start;
-    // TODO Support bitmap options?
-    return builder.toString();
   }
 }
