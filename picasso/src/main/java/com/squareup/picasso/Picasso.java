@@ -22,7 +22,6 @@ import static com.squareup.picasso.RequestMetrics.LOADED_FROM_MEM;
 import static com.squareup.picasso.RequestMetrics.LOADED_FROM_NETWORK;
 
 public class Picasso {
-  private static final String TAG = "Picasso";
   private static final int RETRY_DELAY = 500;
   private static final int REQUEST_COMPLETE = 1;
   private static final int REQUEST_RETRY = 2;
@@ -113,7 +112,6 @@ public class Picasso {
     Bitmap cached = null;
     int loadedFrom = 0;
 
-    // First check memory cache.
     if (memoryCache != null) {
       cached = memoryCache.get(path);
       if (debugging && cached != null) {
@@ -123,7 +121,6 @@ public class Picasso {
       }
     }
 
-    // Finally, if we found a cached image, set it as the result and finish.
     if (cached != null) {
       if (debugging) {
         request.metrics.loadedFrom = loadedFrom;
@@ -153,7 +150,7 @@ public class Picasso {
       }
 
       if (result != null && memoryCache != null) {
-        memoryCache.set(path, result);
+        memoryCache.set(request.key, result);
       }
 
       request.result = result;

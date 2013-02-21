@@ -20,6 +20,7 @@ public class Request implements Runnable {
 
   final Picasso picasso;
   final String path;
+  final String key;
   final int errorResId;
   final WeakReference<ImageView> target;
   final BitmapFactory.Options bitmapOptions;
@@ -43,6 +44,7 @@ public class Request implements Runnable {
     this.transformations = transformations;
     this.metrics = metrics;
     this.retryCount = DEFAULT_RETRY_COUNT;
+    this.key = createKey(this);
   }
 
   Object getTarget() {
@@ -291,5 +293,22 @@ public class Request implements Runnable {
       }
       return metrics;
     }
+  }
+
+  private static String createKey(Request request) {
+    long start = System.nanoTime();
+    StringBuilder builder = new StringBuilder();
+    builder.append(request.path);
+
+    List<Transformation> transformations = request.transformations;
+    if (!transformations.isEmpty()) {
+      for (Transformation transformation : transformations) {
+        builder.append('|');
+        builder.append(transformation.toString());
+      }
+    }
+    request.metrics.keyCreationTime = System.nanoTime() - start;
+    // TODO Support bitmap options?
+    return builder.toString();
   }
 }

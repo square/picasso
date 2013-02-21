@@ -10,6 +10,7 @@ public class RequestMetrics {
 
   long createdTime;
   long executedTime;
+  long keyCreationTime;
   long networkLoadTime;
   long cacheLoadTime;
   long executorWaitTime;
