@@ -9,17 +9,21 @@ import java.net.URL;
 
 public class DefaultHttpLoader implements Loader {
 
+  private static final String PICASSO_CACHE = "picasso-cache";
+  private static final int MAX_SIZE = 10 * 1024 * 1024;
+
+  private static final Object lock = new Object();
+  private static volatile HttpResponseCache cache;
+
+  private final Context context;
+
   public DefaultHttpLoader(Context context) {
-    if (HttpResponseCache.getInstalled() == null) {
-      try {
-        HttpResponseCache.install(new File(context.getCacheDir(), "picasso-cache"),
-            10 * 1024 * 1024);
-      } catch (IOException ignored) {
-      }
-    }
+    this.context = context.getApplicationContext();
   }
 
   @Override public Response load(String path, boolean allowExpired) throws IOException {
+    installCacheIfNeeded(context);
+
     HttpURLConnection connection = (HttpURLConnection) new URL(path).openConnection();
     connection.setUseCaches(true);
     if (allowExpired) {
@@ -29,5 +33,20 @@ public class DefaultHttpLoader implements Loader {
     // TODO Should handle this.
     boolean fromCache = false;
     return new Response(connection.getInputStream(), fromCache, allowExpired);
+  }
+
+  private static void installCacheIfNeeded(Context context) {
+    // DCL + volatile should be safe after Java 5.
+    if (cache == null) {
+      try {
+        synchronized (lock) {
+          if (cache == null) {
+            cache =
+                HttpResponseCache.install(new File(context.getCacheDir(), PICASSO_CACHE), MAX_SIZE);
+          }
+        }
+      } catch (IOException ignored) {
+      }
+    }
   }
 }
