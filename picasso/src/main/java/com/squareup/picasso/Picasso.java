@@ -235,7 +235,7 @@ public class Picasso {
         throw new IllegalArgumentException("Executor service may not be null.");
       }
       if (this.service != null) {
-        throw new IllegalStateException("Exector service already set.");
+        throw new IllegalStateException("Executor service already set.");
       }
       this.service = executorService;
       return this;
