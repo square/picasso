@@ -76,7 +76,7 @@ public class Picasso {
     Object target = request.getTarget();
     if (target == null) return;
 
-    cancelExistingRequest(target);
+    cancelExistingRequest(target, request.path);
 
     targetsToRequests.put(target, request);
     request.future = service.submit(request);
@@ -96,7 +96,7 @@ public class Picasso {
       cached = memoryCache.get(path);
     }
 
-    cancelExistingRequest(target);
+    cancelExistingRequest(target, path);
 
     return cached;
   }
@@ -117,12 +117,12 @@ public class Picasso {
     return BitmapFactory.decodeStream(stream, null, bitmapOptions);
   }
 
-  private void cancelExistingRequest(Object target) {
+  private void cancelExistingRequest(Object target, String path) {
     Request existing = targetsToRequests.remove(target);
     if (existing != null) {
       if (!existing.future.isDone()) {
         existing.future.cancel(true);
-      } else if (target != existing.getTarget()) {
+      } else if (!path.equals(existing.path)) {
         existing.retryCancelled = true;
       }
     }
