@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
+import android.text.TextUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.squareup.picasso.Loader.Response;
 import static com.squareup.picasso.RequestMetrics.LOADED_FROM_DISK;
 import static com.squareup.picasso.RequestMetrics.LOADED_FROM_MEM;
 import static com.squareup.picasso.RequestMetrics.LOADED_FROM_NETWORK;
@@ -26,7 +28,8 @@ public class Picasso {
   private static final int REQUEST_COMPLETE = 1;
   private static final int REQUEST_RETRY = 2;
 
-  private static final Handler HANDLER = new Handler(Looper.getMainLooper()) {
+  // TODO This should be static.
+  private final Handler handler = new Handler(Looper.getMainLooper()) {
     @Override public void handleMessage(Message msg) {
       Request request = (Request) msg.obj;
       if (request.future.isCancelled()) {
@@ -80,7 +83,7 @@ public class Picasso {
   }
 
   Bitmap run(Request request) {
-    Bitmap bitmap = loadFromCaches(request);
+    Bitmap bitmap = loadFromCache(request);
     if (bitmap == null) {
       bitmap = loadFromStream(request);
     }
@@ -103,10 +106,15 @@ public class Picasso {
 
     if (request.retryCount > 0) {
       request.retryCount--;
-      request.future = service.submit(request);
+      submit(request);
     } else {
       request.error();
     }
+  }
+
+  Bitmap decodeStream(InputStream stream, BitmapFactory.Options bitmapOptions) {
+    if (stream == null) return null;
+    return BitmapFactory.decodeStream(stream, null, bitmapOptions);
   }
 
   private void cancelExistingRequest(Object target) {
@@ -114,13 +122,13 @@ public class Picasso {
     if (existing != null) {
       if (!existing.future.isDone()) {
         existing.future.cancel(true);
-      } else {
+      } else if (target != existing.getTarget()) {
         existing.retryCancelled = true;
       }
     }
   }
 
-  private Bitmap loadFromCaches(Request request) {
+  private Bitmap loadFromCache(Request request) {
     String path = request.path;
     Bitmap cached = null;
 
@@ -131,25 +139,24 @@ public class Picasso {
           request.metrics.loadedFrom = LOADED_FROM_MEM;
         }
         request.result = cached;
-        HANDLER.sendMessage(HANDLER.obtainMessage(REQUEST_COMPLETE, request));
+        handler.sendMessage(handler.obtainMessage(REQUEST_COMPLETE, request));
       }
     }
     return cached;
   }
 
   private Bitmap loadFromStream(Request request) {
-    String path = request.path;
-    Bitmap result = null;
-    InputStream stream = null;
-    try {
+    if (request == null || (TextUtils.isEmpty(request.path))) return null;
 
-      Loader.Response response = loader.load(path, request.retryCount == 0);
+    Bitmap result = null;
+    Response response = null;
+    try {
+      response = loader.load(request.path, request.retryCount == 0);
       if (response == null) {
         return null;
       }
 
-      stream = response.stream;
-      result = BitmapFactory.decodeStream(stream, null, request.bitmapOptions);
+      result = decodeStream(response.stream, request.bitmapOptions);
       result = transformResult(request, result);
 
       if (debugging) {
@@ -161,13 +168,13 @@ public class Picasso {
       }
 
       request.result = result;
-      HANDLER.sendMessage(HANDLER.obtainMessage(REQUEST_COMPLETE, request));
-    } catch (Exception e) {
-      HANDLER.sendMessageDelayed(HANDLER.obtainMessage(REQUEST_RETRY, request), RETRY_DELAY);
+      handler.sendMessage(handler.obtainMessage(REQUEST_COMPLETE, request));
+    } catch (IOException e) {
+      handler.sendMessageDelayed(handler.obtainMessage(REQUEST_RETRY, request), RETRY_DELAY);
     } finally {
-      if (stream != null) {
+      if (response != null && response.stream != null) {
         try {
-          stream.close();
+          response.stream.close();
         } catch (IOException ignored) {
         }
       }

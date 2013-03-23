@@ -27,6 +27,7 @@ public class UtilsTest {
 
     List<Transformation> transformations1 = new ArrayList<Transformation>();
     transformations1.add(new ResizeTransformation(20, 20));
+
     List<Transformation> transformations2 = new ArrayList<Transformation>();
     transformations2.add(new ResizeTransformation(20, 20));
     Request single1 = new Request(picasso, URL, null, null, transformations1, metrics, 0, null);
@@ -36,6 +37,7 @@ public class UtilsTest {
     List<Transformation> transformations3 = new ArrayList<Transformation>();
     transformations3.add(new ResizeTransformation(20, 20));
     transformations3.add(new RotationTransformation(-50));
+
     List<Transformation> transformations4 = new ArrayList<Transformation>();
     transformations4.add(new ResizeTransformation(20, 20));
     transformations4.add(new RotationTransformation(-50));
@@ -43,15 +45,15 @@ public class UtilsTest {
     Request double2 = new Request(picasso, URL, null, null, transformations4, metrics, 0, null);
     assertThat(createKey(double1)).isEqualTo(createKey(double2));
 
-    // TODO support this:
-    //List<Transformation> transformations5 = new ArrayList<Transformation>();
-    //transformations5.add(new ResizeTransformation(20, 20));
-    //transformations5.add(new RotationTransformation(-50));
-    //List<Transformation> transformations6 = new ArrayList<Transformation>();
-    //transformations6.add(new RotationTransformation(-50));
-    //transformations6.add(new ResizeTransformation(20, 20));
-    //Request order1 = new Request(picasso, URL, null, null, transformations5, metrics, 0, null);
-    //Request order2 = new Request(picasso, URL, null, null, transformations6, metrics, 0, null);
-    //assertThat(createKey(order1)).isEqualTo(createKey(order2));
+    List<Transformation> transformations5 = new ArrayList<Transformation>();
+    transformations5.add(new ResizeTransformation(20, 20));
+    transformations5.add(new RotationTransformation(-50));
+
+    List<Transformation> transformations6 = new ArrayList<Transformation>();
+    transformations6.add(new RotationTransformation(-50));
+    transformations6.add(new ResizeTransformation(20, 20));
+    Request order1 = new Request(picasso, URL, null, null, transformations5, metrics, 0, null);
+    Request order2 = new Request(picasso, URL, null, null, transformations6, metrics, 0, null);
+    assertThat(createKey(order1)).isNotEqualTo(createKey(order2));
   }
 }

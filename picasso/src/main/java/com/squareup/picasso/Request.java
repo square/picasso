@@ -65,6 +65,7 @@ public class Request implements Runnable {
         int color = RequestMetrics.getColorCodeForCacheHit(metrics.loadedFrom);
         imageView.setBackgroundColor(color);
       }
+      picasso.targetsToRequests.remove(imageView);
       imageView.setImageBitmap(result);
     }
   }
@@ -83,6 +84,8 @@ public class Request implements Runnable {
     if (errorDrawable != null) {
       target.setImageDrawable(errorDrawable);
     }
+
+    picasso.targetsToRequests.remove(target);
   }
 
   @Override public void run() {
@@ -261,12 +264,11 @@ public class Request implements Runnable {
         throw new IllegalArgumentException("Target cannot be null.");
       }
 
-      RequestMetrics metrics = createRequestMetrics();
-
       Bitmap bitmap = picasso.quickMemoryCacheCheck(target, path);
       if (bitmap != null) {
         target.setImageBitmap(bitmap);
         if (picasso.debugging) {
+          RequestMetrics metrics = createRequestMetrics();
           metrics.executedTime = System.nanoTime();
           metrics.loadedFrom = RequestMetrics.LOADED_FROM_MEM;
           target.setBackgroundColor(RequestMetrics.getColorCodeForCacheHit(metrics.loadedFrom));
@@ -286,6 +288,7 @@ public class Request implements Runnable {
         transformations.add(new DeferredResizeTransformation(target));
       }
 
+      RequestMetrics metrics = new RequestMetrics();
       Request request =
           new Request(picasso, path, target, bitmapOptions, transformations, metrics, errorResId,
               errorDrawable);
