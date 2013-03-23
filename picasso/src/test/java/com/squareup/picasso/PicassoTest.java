@@ -31,6 +31,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -41,8 +42,8 @@ import static org.robolectric.Robolectric.runUiThreadTasksIncludingDelayedTasks;
 @RunWith(PicassoTestRunner.class)
 public class PicassoTest {
 
-  private static final String URI_1 = "UR1";
-  private static final String URI_2 = "UR2";
+  private static final String URI_1 = "URI1";
+  private static final String URI_2 = "URI2";
   private static final Answer NO_ANSWER = new Answer() {
     @Override public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
       return null;
@@ -71,9 +72,9 @@ public class PicassoTest {
 
   private static final Resources resources = Robolectric.application.getResources();
 
-  private static final Bitmap bitmap1 = Bitmap.createBitmap(10, 10, null);
-  private static final Bitmap bitmap2 = Bitmap.createBitmap(10, 10, null);
   private static final Bitmap placeHolder = Bitmap.createBitmap(5, 5, null);
+  private static final Bitmap bitmap1 = Bitmap.createBitmap(10, 10, null);
+  private static final Bitmap bitmap2 = Bitmap.createBitmap(15, 15, null);
   private static final BitmapDrawable placeholderDrawable =
       new BitmapDrawable(resources, placeHolder);
 
@@ -265,6 +266,23 @@ public class PicassoTest {
     verify(target2).setImageBitmap(bitmap1);
     verify(picasso.loader, times(1)).load(URI_1, false);
 
+    assertThat(picasso.targetsToRequests).isEmpty();
+  }
+
+  @Test public void withRecycledRetryRequestStopsRetrying() throws Exception {
+    when(cache.get(URI_1)).thenReturn(bitmap1);
+
+    ImageView target = mock(ImageView.class);
+
+    Picasso picasso = create(LOADER_IO_EXCEPTION_ANSWER, BITMAP1_ANSWER);
+    picasso.load(URI_1).into(target);
+    picasso.load(URI_2).into(target);
+    executor.flush();
+    picasso.load(URI_1).into(target);
+    runUiThreadTasksIncludingDelayedTasks();
+
+    verify(target, times(2)).setImageBitmap(bitmap1);
+    verify(target, never()).setImageBitmap(bitmap2);
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
