@@ -14,7 +14,6 @@ import java.util.concurrent.AbstractExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
@@ -92,7 +91,6 @@ public class PicassoTest {
     executor.runnables.clear();
   }
 
-  @Ignore // Robolectric doesn't like HttpResponseCache for some reason...
   @Test public void singleIsLazilyInitialized() throws Exception {
     assertThat(Picasso.singleton).isNull();
     Picasso.with(new Activity());
@@ -120,6 +118,7 @@ public class PicassoTest {
     verifyZeroInteractions(target);
     executor.flush();
     verify(target).onSuccess(bitmap1);
+    assertThat(picasso.targetsToRequests).isEmpty();
   }
 
   @Test public void loadIntoImageViewWithPlaceHolderDrawable() throws Exception {
@@ -131,6 +130,7 @@ public class PicassoTest {
     verify(target).setImageDrawable(placeholderDrawable);
     executor.flush();
     verify(target).setImageBitmap(bitmap1);
+    assertThat(picasso.targetsToRequests).isEmpty();
   }
 
   @Test public void loadIntoImageViewWithPlaceHolderResource() throws Exception {
@@ -145,6 +145,7 @@ public class PicassoTest {
     verify(target).setImageResource(placeholderResId);
     executor.flush();
     verify(target).setImageBitmap(bitmap1);
+    assertThat(picasso.targetsToRequests).isEmpty();
   }
 
   @Test public void loadIntoImageViewCachesResult() throws Exception {
@@ -155,6 +156,7 @@ public class PicassoTest {
 
     executor.flush();
     verify(cache).set(URI_1, bitmap1);
+    assertThat(picasso.targetsToRequests).isEmpty();
   }
 
   @Test public void loadIntoRetriesThreeTimesBeforeInvokingError() throws Exception {
@@ -169,6 +171,7 @@ public class PicassoTest {
     retryRequest(picasso, request);
     verify(picasso, times(3)).retry(request);
     verify(request).error();
+    assertThat(picasso.targetsToRequests).isEmpty();
   }
 
   @Test public void whenImageViewRequestFailsCleansUpTargetMap() throws Exception {
@@ -194,6 +197,7 @@ public class PicassoTest {
     verify(picasso, times(0)).submit(any(Request.class));
     verify(target).setImageBitmap(bitmap1);
     assertThat(executor.runnables).isEmpty();
+    assertThat(picasso.targetsToRequests).isEmpty();
   }
 
   @Test public void whenImageViewRequestCompletesCleansUpTargetMap() throws Exception {
@@ -240,13 +244,38 @@ public class PicassoTest {
     assertThat(picasso.targetsToRequests.size()).isEqualTo(1);
     executor.flush();
     verify(target).setImageBitmap(bitmap2);
+    assertThat(picasso.targetsToRequests).isEmpty();
+  }
+
+  @Test public void doesNotDecodeAgainIfBitmapAlreadyInCache() throws Exception {
+    // Tests that if one thread decodes a bitmap and another one was waiting to start
+    // it will instead pickup the bitmap from the cache instead of decoding it again.
+    ImageView target1 = mock(ImageView.class);
+    ImageView target2 = mock(ImageView.class);
+
+    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
+    picasso.load(URI_1).into(target1);
+    picasso.load(URI_1).into(target2);
+
+    executor.executeFirst();
+    when(cache.get(anyString())).thenReturn(bitmap1);
+    executor.flush();
+
+    verify(target1).setImageBitmap(bitmap1);
+    verify(target2).setImageBitmap(bitmap1);
+    verify(picasso.loader, times(1)).load(URI_1, false);
+
+    assertThat(picasso.targetsToRequests).isEmpty();
   }
 
   @Test public void loadIntoImageViewWithTransformations() throws Exception {
     ImageView target = mock(ImageView.class);
     Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
 
+    Bitmap transformationResult = mock(Bitmap.class);
+
     Transformation resize = mock(Transformation.class);
+    when(resize.transform(any(Bitmap.class))).thenReturn(transformationResult);
 
     List<Transformation> transformations = new ArrayList<Transformation>(1);
     transformations.add(resize);
@@ -257,15 +286,23 @@ public class PicassoTest {
     executor.flush();
 
     verify(resize).transform(bitmap1);
+
+    assertThat(picasso.targetsToRequests).isEmpty();
   }
 
   @Test public void loadIntoImageViewWithMultipleTransformations() throws Exception {
     ImageView target = mock(ImageView.class);
     Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
 
+    Bitmap transformationResult = mock(Bitmap.class);
+
     Transformation rotate = mock(Transformation.class);
     Transformation scale = mock(Transformation.class);
     Transformation resize = mock(Transformation.class);
+
+    when(rotate.transform(any(Bitmap.class))).thenReturn(transformationResult);
+    when(scale.transform(any(Bitmap.class))).thenReturn(transformationResult);
+    when(resize.transform(any(Bitmap.class))).thenReturn(transformationResult);
 
     List<Transformation> transformations = new ArrayList<Transformation>(3);
     transformations.add(rotate);
@@ -281,6 +318,8 @@ public class PicassoTest {
     inOrder.verify(rotate).transform(any(Bitmap.class));
     inOrder.verify(scale).transform(any(Bitmap.class));
     inOrder.verify(resize).transform(any(Bitmap.class));
+
+    assertThat(picasso.targetsToRequests).isEmpty();
   }
 
   @Test public void builderInvalidLoader() throws Exception {
@@ -400,6 +439,10 @@ public class PicassoTest {
         runnable.run();
       }
       runnables.clear();
+    }
+
+    public void executeFirst() {
+      runnables.remove(0).run();
     }
   }
 }

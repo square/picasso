@@ -61,7 +61,7 @@ public class Request implements Runnable {
 
     ImageView imageView = target.get();
     if (imageView != null) {
-      if (picasso.debugging) {
+      if (picasso.debugging && metrics != null) {
         int color = RequestMetrics.getColorCodeForCacheHit(metrics.loadedFrom);
         imageView.setBackgroundColor(color);
       }
