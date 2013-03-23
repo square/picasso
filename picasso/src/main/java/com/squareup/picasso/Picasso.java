@@ -129,13 +129,15 @@ public class Picasso {
   }
 
   private Bitmap loadFromCache(Request request) {
+    if (request == null || (TextUtils.isEmpty(request.path))) return null;
+
     String path = request.path;
     Bitmap cached = null;
 
     if (memoryCache != null) {
       cached = memoryCache.get(path);
       if (cached != null) {
-        if (debugging) {
+        if (debugging && request.metrics != null) {
           request.metrics.loadedFrom = LOADED_FROM_MEM;
         }
         request.result = cached;
@@ -160,7 +162,9 @@ public class Picasso {
       result = transformResult(request, result);
 
       if (debugging) {
-        request.metrics.loadedFrom = response.cached ? LOADED_FROM_DISK : LOADED_FROM_NETWORK;
+        if (request.metrics != null) {
+          request.metrics.loadedFrom = response.cached ? LOADED_FROM_DISK : LOADED_FROM_NETWORK;
+        }
       }
 
       if (result != null && memoryCache != null) {
