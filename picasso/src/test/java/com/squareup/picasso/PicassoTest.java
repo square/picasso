@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.Robolectric;
@@ -29,6 +30,7 @@ import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -238,6 +240,47 @@ public class PicassoTest {
     assertThat(picasso.targetsToRequests.size()).isEqualTo(1);
     executor.flush();
     verify(target).setImageBitmap(bitmap2);
+  }
+
+  @Test public void loadIntoImageViewWithTransformations() throws Exception {
+    ImageView target = mock(ImageView.class);
+    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
+
+    Transformation resize = mock(Transformation.class);
+
+    List<Transformation> transformations = new ArrayList<Transformation>(1);
+    transformations.add(resize);
+
+    Request request = new Request(picasso, URI_1, target, null, transformations, null, 0, null);
+    picasso.submit(request);
+
+    executor.flush();
+
+    verify(resize).transform(bitmap1);
+  }
+
+  @Test public void loadIntoImageViewWithMultipleTransformations() throws Exception {
+    ImageView target = mock(ImageView.class);
+    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
+
+    Transformation rotate = mock(Transformation.class);
+    Transformation scale = mock(Transformation.class);
+    Transformation resize = mock(Transformation.class);
+
+    List<Transformation> transformations = new ArrayList<Transformation>(3);
+    transformations.add(rotate);
+    transformations.add(scale);
+    transformations.add(resize);
+
+    Request request = new Request(picasso, URI_1, target, null, transformations, null, 0, null);
+    picasso.submit(request);
+
+    executor.flush();
+
+    InOrder inOrder = inOrder(rotate, scale, resize);
+    inOrder.verify(rotate).transform(any(Bitmap.class));
+    inOrder.verify(scale).transform(any(Bitmap.class));
+    inOrder.verify(resize).transform(any(Bitmap.class));
   }
 
   @Test public void builderInvalidLoader() throws Exception {
