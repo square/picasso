@@ -73,8 +73,10 @@ public class PicassoTest {
   private static final Resources resources = Robolectric.application.getResources();
 
   private static final Bitmap placeHolder = Bitmap.createBitmap(5, 5, null);
+  private static final Bitmap error = Bitmap.createBitmap(6, 6, null);
   private static final Bitmap bitmap1 = Bitmap.createBitmap(10, 10, null);
   private static final Bitmap bitmap2 = Bitmap.createBitmap(15, 15, null);
+  private static final BitmapDrawable errorDrawable = new BitmapDrawable(resources, error);
   private static final BitmapDrawable placeholderDrawable =
       new BitmapDrawable(resources, placeHolder);
 
@@ -175,6 +177,20 @@ public class PicassoTest {
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
+  @Test public void withErrorDrawableAndFailsRequestSetsErrorDrawable() throws Exception {
+    Picasso picasso = create(LOADER_IO_EXCEPTION_ANSWER, BITMAP1_ANSWER);
+    ImageView target = mock(ImageView.class);
+
+    Request request =
+        new Request(picasso, URI_1, target, null, Collections.<Transformation>emptyList(), null, 0,
+            errorDrawable);
+
+    retryRequest(picasso, request);
+    verify(target, never()).setImageBitmap(bitmap1);
+    verify(target).setImageDrawable(errorDrawable);
+    assertThat(picasso.targetsToRequests).isEmpty();
+  }
+
   @Test public void whenImageViewRequestFailsCleansUpTargetMap() throws Exception {
     Picasso picasso = create(LOADER_IO_EXCEPTION_ANSWER, BITMAP1_ANSWER);
     ImageView target = mock(ImageView.class);
@@ -235,7 +251,7 @@ public class PicassoTest {
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
-  @Test public void loadIntoImageViewWithDifferentURIRecyclesFirstOne() throws Exception {
+  @Test public void loadIntoImageViewWithDifferentUriRecyclesCorrectly() throws Exception {
     ImageView target = mock(ImageView.class);
 
     Picasso picasso = create(LOADER_ANSWER, BITMAP2_ANSWER);
@@ -244,6 +260,7 @@ public class PicassoTest {
 
     assertThat(picasso.targetsToRequests.size()).isEqualTo(1);
     executor.flush();
+    verify(target, never()).setImageBitmap(bitmap1);
     verify(target).setImageBitmap(bitmap2);
     assertThat(picasso.targetsToRequests).isEmpty();
   }
