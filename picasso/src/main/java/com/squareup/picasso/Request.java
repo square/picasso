@@ -242,14 +242,18 @@ public class Request implements Runnable {
         throw new IllegalArgumentException("Target cannot be null.");
       }
 
-      RequestMetrics metrics = createRequestMetrics();
-
-      Bitmap bitmap = picasso.quickMemoryCacheCheck(target, path);
+      Bitmap bitmap = picasso.quickMemoryCacheCheck(target, createKey(path, transformations, null));
       if (bitmap != null) {
+        if (picasso.debugging) {
+          RequestMetrics metrics = createRequestMetrics();
+          metrics.executedTime = System.nanoTime();
+          metrics.loadedFrom = RequestMetrics.LOADED_FROM_MEM;
+        }
         target.onSuccess(bitmap);
         return;
       }
 
+      RequestMetrics metrics = createRequestMetrics();
       Request request =
           new TargetRequest(picasso, path, target, bitmapOptions, transformations, metrics,
               errorResId, errorDrawable);
@@ -261,7 +265,11 @@ public class Request implements Runnable {
         throw new IllegalArgumentException("Target cannot be null.");
       }
 
-      Bitmap bitmap = picasso.quickMemoryCacheCheck(target, path);
+      if (deferredResize) {
+        transformations.add(new DeferredResizeTransformation(target));
+      }
+
+      Bitmap bitmap = picasso.quickMemoryCacheCheck(target, createKey(path, transformations, null));
       if (bitmap != null) {
         target.setImageBitmap(bitmap);
         if (picasso.debugging) {
@@ -279,10 +287,6 @@ public class Request implements Runnable {
 
       if (placeholderResId != 0) {
         target.setImageResource(placeholderResId);
-      }
-
-      if (deferredResize) {
-        transformations.add(new DeferredResizeTransformation(target));
       }
 
       RequestMetrics metrics = new RequestMetrics();

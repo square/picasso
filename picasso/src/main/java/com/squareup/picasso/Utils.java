@@ -16,19 +16,27 @@ final class Utils {
   }
 
   static String createKey(Request request) {
+    return createKey(request.path, request.transformations, request.metrics);
+  }
+
+  static String createKey(String path, List<Transformation> transformations,
+      RequestMetrics metrics) {
     long start = System.nanoTime();
     StringBuilder builder = new StringBuilder();
-    builder.append(request.path);
+    builder.append(path);
 
-    List<Transformation> transformations = request.transformations;
-    if (!transformations.isEmpty()) {
-      for (Transformation transformation : transformations) {
+    if (transformations != null && !transformations.isEmpty()) {
+      if (transformations.size() == 1) {
         builder.append('|');
-        builder.append(transformation.toString());
+        builder.append(transformations.get(0).toString());
+      } else {
+        for (Transformation transformation : transformations) {
+          builder.append('|');
+          builder.append(transformation.toString());
+        }
       }
     }
 
-    RequestMetrics metrics = request.metrics;
     if (metrics != null) {
       metrics.keyCreationTime = System.nanoTime() - start;
     }
