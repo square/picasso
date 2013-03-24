@@ -325,6 +325,28 @@ public class PicassoTest {
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
+  @Test public void reloadsTransformedBitmapFromCache() throws Exception {
+    ImageView target = mock(ImageView.class);
+    Bitmap transformationResult = mock(Bitmap.class);
+
+    Transformation transformation = mock(Transformation.class);
+    when(transformation.transform(any(Bitmap.class))).thenReturn(transformationResult);
+    when(transformation.toString()).thenReturn("transformation(something)");
+
+    List<Transformation> transformations = new ArrayList<Transformation>(1);
+    transformations.add(transformation);
+
+    // Assume a transformed image is already in cache with key 'URI1|transformation(something)'.
+    when(cache.get(Utils.createKey(URI_1, transformations, null))).thenReturn(transformationResult);
+
+    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
+    picasso.load(URI_1).transform(transformation).into(target);
+    executor.flush();
+
+    verify(loader, never()).load(URI_1, false);
+    assertThat(picasso.targetsToRequests).isEmpty();
+  }
+
   @Test public void loadIntoImageViewWithMultipleTransformations() throws Exception {
     ImageView target = mock(ImageView.class);
     Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
