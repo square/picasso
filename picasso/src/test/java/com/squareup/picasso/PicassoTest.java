@@ -195,7 +195,7 @@ public class PicassoTest {
     Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
     picasso.load(URI_1).into(target);
 
-    verify(picasso, times(0)).submit(any(Request.class));
+    verify(picasso, never()).submit(any(Request.class));
     verify(target).setImageBitmap(bitmap1);
     assertThat(executor.runnables).isEmpty();
     assertThat(picasso.targetsToRequests).isEmpty();

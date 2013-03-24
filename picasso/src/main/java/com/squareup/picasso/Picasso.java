@@ -38,6 +38,7 @@ public class Picasso {
 
       switch (msg.what) {
         case REQUEST_COMPLETE:
+          targetsToRequests.remove(request.getTarget());
           request.complete();
           break;
 
@@ -46,8 +47,7 @@ public class Picasso {
           break;
 
         default:
-          throw new IllegalArgumentException(
-              String.format("Unknown handler message received! %d", msg.what));
+          throw new AssertionError(String.format("Unknown handler message received! %d", msg.what));
       }
     }
   };
@@ -108,6 +108,7 @@ public class Picasso {
       request.retryCount--;
       submit(request);
     } else {
+      targetsToRequests.remove(request.getTarget());
       request.error();
     }
   }

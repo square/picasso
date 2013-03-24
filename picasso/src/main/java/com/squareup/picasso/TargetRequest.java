@@ -27,7 +27,6 @@ public class TargetRequest extends Request {
     }
     Target target = this.target.get();
     if (target != null) {
-      picasso.targetsToRequests.remove(target);
       target.onSuccess(result);
     }
   }
@@ -37,7 +36,6 @@ public class TargetRequest extends Request {
     if (target == null) {
       return;
     }
-    picasso.targetsToRequests.remove(target);
     target.onError();
   }
 }

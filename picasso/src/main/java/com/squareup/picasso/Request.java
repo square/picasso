@@ -65,7 +65,6 @@ public class Request implements Runnable {
         int color = RequestMetrics.getColorCodeForCacheHit(metrics.loadedFrom);
         imageView.setBackgroundColor(color);
       }
-      picasso.targetsToRequests.remove(imageView);
       imageView.setImageBitmap(result);
     }
   }
@@ -84,8 +83,6 @@ public class Request implements Runnable {
     if (errorDrawable != null) {
       target.setImageDrawable(errorDrawable);
     }
-
-    picasso.targetsToRequests.remove(target);
   }
 
   @Override public void run() {
