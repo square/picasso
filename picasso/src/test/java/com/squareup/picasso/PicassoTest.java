@@ -286,6 +286,39 @@ public class PicassoTest {
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
+  @Test public void doesNotDecodeAgainIfBitmapWithTransformationsAlreadyInCache() throws Exception {
+    // Ensures that threads use the correct request key (including transformations) when looking up
+    // an existing bitmap from cache.
+
+    ImageView target1 = mock(ImageView.class);
+    ImageView target2 = mock(ImageView.class);
+
+    Bitmap transformationResult = mock(Bitmap.class);
+
+    Transformation transformation = mock(Transformation.class);
+    when(transformation.transform(any(Bitmap.class))).thenReturn(transformationResult);
+    when(transformation.toString()).thenReturn("transformation(something)");
+
+    List<Transformation> transformations = new ArrayList<Transformation>(1);
+    transformations.add(transformation);
+
+    String key = Utils.createKey(URI_1, transformations, null);
+
+    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
+    picasso.load(URI_1).transform(transformation).into(target1);
+    picasso.load(URI_1).transform(transformation).into(target2);
+
+    executor.executeFirst();
+    when(cache.get(key)).thenReturn(transformationResult);
+    executor.flush();
+
+    verify(target1).setImageBitmap(transformationResult);
+    verify(target2).setImageBitmap(transformationResult);
+    verify(picasso.loader, times(1)).load(URI_1, false);
+
+    assertThat(picasso.targetsToRequests).isEmpty();
+  }
+
   @Test public void withRecycledRetryRequestStopsRetrying() throws Exception {
     when(cache.get(URI_1)).thenReturn(bitmap1);
 
