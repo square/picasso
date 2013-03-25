@@ -482,7 +482,6 @@ public class PicassoTest {
         .loader(loader) //
         .executor(executor) //
         .memoryCache(cache) //
-        .debug() //
         .build();
 
     picasso = spy(picasso);

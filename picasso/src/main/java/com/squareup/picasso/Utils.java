@@ -58,14 +58,14 @@ final class Utils {
     Paint paint = new Paint();
     paint.setColorFilter(filter);
 
-    Bitmap result = source.copy(source.getConfig(), true);
+    Bitmap output = Bitmap.createBitmap(source.getWidth(), source.getHeight(), source.getConfig());
 
-    Canvas canvas = new Canvas(result);
-    canvas.drawBitmap(result, 0, 0, paint);
+    Canvas canvas = new Canvas(output);
+    canvas.drawBitmap(source, 0, 0, paint);
 
     // Do not recycle source bitmap here. This is the image that is stored inside the cache and can
     // be used again when debugging is off.
     // source.recycle();
-    return result;
+    return output;
   }
 }
