@@ -132,11 +132,10 @@ public class Picasso {
   private Bitmap loadFromCache(Request request) {
     if (request == null || (TextUtils.isEmpty(request.path))) return null;
 
-    String path = request.path;
     Bitmap cached = null;
 
     if (memoryCache != null) {
-      cached = memoryCache.get(path);
+      cached = memoryCache.get(request.key);
       if (cached != null) {
         if (debugging && request.metrics != null) {
           request.metrics.loadedFrom = LOADED_FROM_MEM;
