@@ -61,10 +61,6 @@ public class Request implements Runnable {
 
     ImageView imageView = target.get();
     if (imageView != null) {
-      if (picasso.debugging && metrics != null) {
-        int color = RequestMetrics.getColorCodeForCacheHit(metrics.loadedFrom);
-        imageView.setBackgroundColor(color);
-      }
       imageView.setImageBitmap(result);
     }
   }
@@ -244,11 +240,6 @@ public class Request implements Runnable {
 
       Bitmap bitmap = picasso.quickMemoryCacheCheck(target, createKey(path, transformations, null));
       if (bitmap != null) {
-        if (picasso.debugging) {
-          RequestMetrics metrics = createRequestMetrics();
-          metrics.executedTime = System.nanoTime();
-          metrics.loadedFrom = RequestMetrics.LOADED_FROM_MEM;
-        }
         target.onSuccess(bitmap);
         return;
       }
@@ -272,12 +263,6 @@ public class Request implements Runnable {
       Bitmap bitmap = picasso.quickMemoryCacheCheck(target, createKey(path, transformations, null));
       if (bitmap != null) {
         target.setImageBitmap(bitmap);
-        if (picasso.debugging) {
-          RequestMetrics metrics = createRequestMetrics();
-          metrics.executedTime = System.nanoTime();
-          metrics.loadedFrom = RequestMetrics.LOADED_FROM_MEM;
-          target.setBackgroundColor(RequestMetrics.getColorCodeForCacheHit(metrics.loadedFrom));
-        }
         return;
       }
 
