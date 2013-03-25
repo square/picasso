@@ -94,6 +94,9 @@ public class Picasso {
     Bitmap cached = null;
     if (memoryCache != null) {
       cached = memoryCache.get(path);
+      if (debugging && cached != null) {
+        cached = Utils.applyDebugColorFilter(cached, LOADED_FROM_MEM);
+      }
     }
 
     cancelExistingRequest(target, path);
@@ -161,14 +164,18 @@ public class Picasso {
       result = decodeStream(response.stream, request.bitmapOptions);
       result = transformResult(request, result);
 
+      if (result != null && memoryCache != null) {
+        memoryCache.set(request.key, result);
+      }
+
       if (debugging) {
         if (request.metrics != null) {
           request.metrics.loadedFrom = response.cached ? LOADED_FROM_DISK : LOADED_FROM_NETWORK;
+          // For color coded debugging, apply color filter after the bitmap is added to the cache.
+          if (result != null) {
+            result = Utils.applyDebugColorFilter(result, request.metrics.loadedFrom);
+          }
         }
-      }
-
-      if (result != null && memoryCache != null) {
-        memoryCache.set(request.key, result);
       }
 
       request.result = result;

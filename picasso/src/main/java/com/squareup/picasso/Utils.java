@@ -1,5 +1,10 @@
 package com.squareup.picasso;
 
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.ColorFilter;
+import android.graphics.LightingColorFilter;
+import android.graphics.Paint;
 import android.os.Looper;
 import java.util.List;
 
@@ -43,5 +48,24 @@ final class Utils {
 
     // TODO Support bitmap options?
     return builder.toString();
+  }
+
+  static Bitmap applyDebugColorFilter(Bitmap source, int loadedFrom) {
+    int color = RequestMetrics.getColorCodeForCacheHit(loadedFrom);
+
+    ColorFilter filter = new LightingColorFilter(color, 1);
+
+    Paint paint = new Paint();
+    paint.setColorFilter(filter);
+
+    Bitmap result = source.copy(source.getConfig(), true);
+
+    Canvas canvas = new Canvas(result);
+    canvas.drawBitmap(result, 0, 0, paint);
+
+    // Do not recycle source bitmap here. This is the image that is stored inside the cache and can
+    // be used again when debugging is off.
+    // source.recycle();
+    return result;
   }
 }

@@ -293,10 +293,8 @@ public class PicassoTest {
     ImageView target1 = mock(ImageView.class);
     ImageView target2 = mock(ImageView.class);
 
-    Bitmap transformationResult = mock(Bitmap.class);
-
     Transformation transformation = mock(Transformation.class);
-    when(transformation.transform(any(Bitmap.class))).thenReturn(transformationResult);
+    when(transformation.transform(any(Bitmap.class))).thenReturn(bitmap1);
     when(transformation.toString()).thenReturn("transformation(something)");
 
     List<Transformation> transformations = new ArrayList<Transformation>(1);
@@ -309,11 +307,11 @@ public class PicassoTest {
     picasso.load(URI_1).transform(transformation).into(target2);
 
     executor.executeFirst();
-    when(cache.get(key)).thenReturn(transformationResult);
+    when(cache.get(key)).thenReturn(bitmap1);
     executor.flush();
 
-    verify(target1).setImageBitmap(transformationResult);
-    verify(target2).setImageBitmap(transformationResult);
+    verify(target1).setImageBitmap(bitmap1);
+    verify(target2).setImageBitmap(bitmap1);
     verify(picasso.loader, times(1)).load(URI_1, false);
 
     assertThat(picasso.targetsToRequests).isEmpty();
@@ -360,17 +358,16 @@ public class PicassoTest {
 
   @Test public void reloadsTransformedBitmapFromCache() throws Exception {
     ImageView target = mock(ImageView.class);
-    Bitmap transformationResult = mock(Bitmap.class);
 
     Transformation transformation = mock(Transformation.class);
-    when(transformation.transform(any(Bitmap.class))).thenReturn(transformationResult);
+    when(transformation.transform(any(Bitmap.class))).thenReturn(bitmap1);
     when(transformation.toString()).thenReturn("transformation(something)");
 
     List<Transformation> transformations = new ArrayList<Transformation>(1);
     transformations.add(transformation);
 
     // Assume a transformed image is already in cache with key 'URI1|transformation(something)'.
-    when(cache.get(Utils.createKey(URI_1, transformations, null))).thenReturn(transformationResult);
+    when(cache.get(Utils.createKey(URI_1, transformations, null))).thenReturn(bitmap1);
 
     Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
     picasso.load(URI_1).transform(transformation).into(target);

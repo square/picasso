@@ -37,7 +37,7 @@ public class RequestMetrics {
       case LOADED_FROM_NETWORK:
         return Color.RED;
       default:
-        throw new IllegalArgumentException("WTF DID YOU JUST PASS?");
+        throw new AssertionError("Unable to map color to source " + loadedFrom);
     }
   }
 }
