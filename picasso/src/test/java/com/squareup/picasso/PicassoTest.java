@@ -59,6 +59,11 @@ public class PicassoTest {
       throw new IOException();
     }
   };
+  private static final Answer NULL_ANSWER = new Answer() {
+    @Override public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+      return null;
+    }
+  };
   private static final Answer BITMAP1_ANSWER = new Answer() {
     @Override public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
       return bitmap1;
@@ -159,6 +164,23 @@ public class PicassoTest {
 
     executor.flush();
     verify(cache).set(URI_1, bitmap1);
+    assertThat(picasso.targetsToRequests).isEmpty();
+  }
+
+  @Test public void whenDecoderReturnsNullDoesNotCallComplete() throws Exception {
+    ImageView target = mock(ImageView.class);
+
+    Picasso picasso = create(LOADER_ANSWER, NULL_ANSWER);
+    Request request =
+        new Request(picasso, URI_1, target, null, Collections.<Transformation>emptyList(), null, 0,
+            errorDrawable);
+    request = spy(request);
+    picasso.submit(request);
+    executor.flush();
+
+    verify(request, never()).complete();
+    verify(request).error();
+    verify(target).setImageDrawable(errorDrawable);
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
