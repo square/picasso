@@ -7,7 +7,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
-import android.text.TextUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -27,6 +26,7 @@ public class Picasso {
   private static final int RETRY_DELAY = 500;
   private static final int REQUEST_COMPLETE = 1;
   private static final int REQUEST_RETRY = 2;
+  private static final int REQUEST_DECODE_FAILED = 3;
 
   // TODO This should be static.
   private final Handler handler = new Handler(Looper.getMainLooper()) {
@@ -44,6 +44,11 @@ public class Picasso {
 
         case REQUEST_RETRY:
           request.picasso.retry(request);
+          break;
+
+        case REQUEST_DECODE_FAILED:
+          targetsToRequests.remove(request.getTarget());
+          request.error();
           break;
 
         default:
@@ -133,8 +138,6 @@ public class Picasso {
   }
 
   private Bitmap loadFromCache(Request request) {
-    if (request == null || (TextUtils.isEmpty(request.path))) return null;
-
     Bitmap cached = null;
 
     if (memoryCache != null) {
@@ -151,8 +154,6 @@ public class Picasso {
   }
 
   private Bitmap loadFromStream(Request request) {
-    if (request == null || (TextUtils.isEmpty(request.path))) return null;
-
     Bitmap result = null;
     Response response = null;
     try {
@@ -162,6 +163,12 @@ public class Picasso {
       }
 
       result = decodeStream(response.stream, request.bitmapOptions);
+
+      if (result == null) {
+        handler.sendMessage(handler.obtainMessage(REQUEST_DECODE_FAILED, request));
+        return null;
+      }
+
       result = transformResult(request, result);
 
       if (result != null && memoryCache != null) {
