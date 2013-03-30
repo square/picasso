@@ -63,7 +63,8 @@ public class Picasso {
   final ExecutorService service;
   final Cache memoryCache;
   final Map<Object, Request> targetsToRequests;
-  final boolean debugging;
+
+  boolean debugging;
 
   private Picasso(Loader loader, ExecutorService service, Cache memoryCache, boolean debugging) {
     this.loader = loader;
@@ -75,6 +76,14 @@ public class Picasso {
 
   public Request.Builder load(String path) {
     return new Request.Builder(this, path);
+  }
+
+  public boolean isDebugging() {
+    return debugging;
+  }
+
+  public void setDebugging(boolean enabled) {
+    this.debugging = enabled;
   }
 
   void submit(Request request) {
