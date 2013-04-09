@@ -19,9 +19,13 @@ import static com.squareup.picasso.Utils.createKey;
 public class Request implements Runnable {
   private static final int DEFAULT_RETRY_COUNT = 2;
 
+  static final int TYPE_STREAM = 1;
+  static final int TYPE_FILE = 2;
+
   final Picasso picasso;
   final String path;
   final String key;
+  final int type;
   final int errorResId;
   final WeakReference<ImageView> target;
   final BitmapFactory.Options bitmapOptions;
@@ -35,10 +39,11 @@ public class Request implements Runnable {
   boolean retryCancelled;
 
   Request(Picasso picasso, String path, ImageView imageView, BitmapFactory.Options bitmapOptions,
-      List<Transformation> transformations, RequestMetrics metrics, int errorResId,
+      List<Transformation> transformations, RequestMetrics metrics, int type, int errorResId,
       Drawable errorDrawable) {
     this.picasso = picasso;
     this.path = path;
+    this.type = type;
     this.errorResId = errorResId;
     this.errorDrawable = errorDrawable;
     this.target = new WeakReference<ImageView>(imageView);
@@ -117,13 +122,14 @@ public class Request implements Runnable {
     private final List<Transformation> transformations;
 
     private boolean deferredResize;
+    private int type;
     private int placeholderResId;
     private int errorResId;
     private BitmapFactory.Options bitmapOptions;
     private Drawable placeholderDrawable;
     private Drawable errorDrawable;
 
-    Builder(Picasso picasso, String path) {
+    Builder(Picasso picasso, String path, int type) {
       if (picasso == null) {
         throw new AssertionError();
       }
@@ -132,6 +138,7 @@ public class Request implements Runnable {
       }
       this.picasso = picasso;
       this.path = path;
+      this.type = type;
       this.transformations = new ArrayList<Transformation>(4);
     }
 
@@ -228,7 +235,7 @@ public class Request implements Runnable {
     public Bitmap get() {
       checkNotMain();
       Request request =
-          new Request(picasso, path, null, bitmapOptions, transformations, null, errorResId,
+          new Request(picasso, path, null, bitmapOptions, transformations, null, type, errorResId,
               errorDrawable);
       return picasso.run(request);
     }
@@ -246,7 +253,7 @@ public class Request implements Runnable {
 
       RequestMetrics metrics = createRequestMetrics();
       Request request =
-          new TargetRequest(picasso, path, target, bitmapOptions, transformations, metrics,
+          new TargetRequest(picasso, path, target, bitmapOptions, transformations, metrics, type,
               errorResId, errorDrawable);
       picasso.submit(request);
     }
@@ -276,8 +283,8 @@ public class Request implements Runnable {
 
       RequestMetrics metrics = new RequestMetrics();
       Request request =
-          new Request(picasso, path, target, bitmapOptions, transformations, metrics, errorResId,
-              errorDrawable);
+          new Request(picasso, path, target, bitmapOptions, transformations, metrics, type,
+              errorResId, errorDrawable);
       picasso.submit(request);
     }
 
