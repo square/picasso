@@ -257,7 +257,7 @@ public class Picasso {
     if (singleton == null) {
       singleton = new Builder().loader(new DefaultHttpLoader(context))
           .executor(Executors.newFixedThreadPool(3, new PicassoThreadFactory()))
-          .memoryCache(new LruMemoryCache(context))
+          .memoryCache(new LruCache(context))
           .debug()
           .build();
     }
