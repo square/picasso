@@ -189,6 +189,7 @@ public class Picasso {
             if (response == null) {
               return null;
             }
+            result = decodeStream(response.stream, request.bitmapOptions);
           } finally {
             if (response != null && response.stream != null) {
               try {
@@ -197,8 +198,6 @@ public class Picasso {
               }
             }
           }
-
-          result = decodeStream(response.stream, request.bitmapOptions);
           fromDisk = response.cached;
           break;
         case TYPE_FILE:
