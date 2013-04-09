@@ -2,8 +2,6 @@ package com.squareup.picasso;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.ColorFilter;
-import android.graphics.LightingColorFilter;
 import android.graphics.Paint;
 import android.os.Looper;
 import java.util.List;
@@ -50,22 +48,31 @@ final class Utils {
     return builder.toString();
   }
 
+  private static final ThreadLocal<Paint> DEBUG_PAINT = new ThreadLocal<Paint>() {
+    @Override protected Paint initialValue() {
+      return new Paint();
+    }
+  };
+
   static Bitmap applyDebugColorFilter(Bitmap source, int loadedFrom) {
-    int color = RequestMetrics.getColorCodeForCacheHit(loadedFrom);
-
-    ColorFilter filter = new LightingColorFilter(color, 1);
-
-    Paint paint = new Paint();
-    paint.setColorFilter(filter);
-
+    Paint debugPaint = DEBUG_PAINT.get();
     Bitmap output = Bitmap.createBitmap(source.getWidth(), source.getHeight(), source.getConfig());
 
     Canvas canvas = new Canvas(output);
-    canvas.drawBitmap(source, 0, 0, paint);
+    canvas.drawBitmap(source, 0, 0, null);
+    canvas.rotate(45);
+
+    // Draw a white square for the indicator border.
+    debugPaint.setColor(0xFFFFFFFF);
+    canvas.drawRect(0, -20, 15, 20, debugPaint);
+
+    // Draw a slightly smaller square for the indicator color.
+    debugPaint.setColor(RequestMetrics.getColorCodeForCacheHit(loadedFrom));
+    canvas.drawRect(0, -18, 13, 18, debugPaint);
 
     // Do not recycle source bitmap here. This is the image that is stored inside the cache and can
     // be used again when debugging is off.
-    // source.recycle();
+
     return output;
   }
 }
