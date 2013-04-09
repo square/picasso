@@ -25,21 +25,18 @@ public class SampleActivity extends Activity {
     setContentView(lv);
   }
 
-  @Override public boolean onOptionsItemSelected(MenuItem item) {
-    if (item.getItemId() == 0) {
-      item.setChecked(!item.isChecked());
-
-      Picasso.with(this).setDebugging(item.isChecked());
-      adapter.notifyDataSetChanged();
-      return true;
-    }
-    return super.onOptionsItemSelected(item);
-  }
-
   @Override public boolean onCreateOptionsMenu(Menu menu) {
-    MenuItem debugItem = menu.add(0, 0, 0, "Debugging");
-    debugItem.setCheckable(true);
-    debugItem.setChecked(Picasso.with(this).isDebugging());
-    return super.onCreateOptionsMenu(menu);
+    menu.add("Debugging")
+        .setCheckable(true)
+        .setChecked(Picasso.with(this).isDebugging())
+        .setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+          @Override public boolean onMenuItemClick(MenuItem item) {
+            item.setChecked(!item.isChecked());
+            Picasso.with(SampleActivity.this).setDebugging(item.isChecked());
+            adapter.notifyDataSetChanged();
+            return true;
+          }
+        });
+    return true;
   }
 }
