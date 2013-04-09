@@ -6,6 +6,8 @@ import android.widget.ImageView;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.squareup.picasso.Request.Builder;
+import static com.squareup.picasso.Request.TYPE_STREAM;
 import static org.fest.assertions.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 
@@ -14,27 +16,27 @@ public class RequestTest {
   private static final String URL = "http://example.com/a.png";
 
   private Picasso picasso = mock(Picasso.class);
-  private Request.Builder builder = new Request.Builder(picasso, URL);
+  private Builder builder = new Builder(picasso, URL, TYPE_STREAM);
   private Drawable drawable = new ColorDrawable(0);
 
   @Test(expected = AssertionError.class)
   public void nullPicassoThrows() {
-    new Request.Builder(null, URL);
+    new Builder(null, URL, TYPE_STREAM);
   }
 
   @Test public void invalidPath() {
     try {
-      new Request.Builder(picasso, null);
+      new Builder(picasso, null, TYPE_STREAM);
       fail("Null path should throw exception.");
     } catch (IllegalArgumentException expected) {
     }
     try {
-      new Request.Builder(picasso, "");
+      new Builder(picasso, "", TYPE_STREAM);
       fail("Empty path should throw exception.");
     } catch (IllegalArgumentException expected) {
     }
     try {
-      new Request.Builder(picasso, "      ");
+      new Builder(picasso, "      ", TYPE_STREAM);
       fail("Blank path should throw exception.");
     } catch (IllegalArgumentException expected) {
     }

@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -17,7 +18,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static android.graphics.BitmapFactory.Options;
 import static com.squareup.picasso.Loader.Response;
+import static com.squareup.picasso.Request.TYPE_FILE;
+import static com.squareup.picasso.Request.TYPE_STREAM;
 import static com.squareup.picasso.RequestMetrics.LOADED_FROM_DISK;
 import static com.squareup.picasso.RequestMetrics.LOADED_FROM_MEM;
 import static com.squareup.picasso.RequestMetrics.LOADED_FROM_NETWORK;
@@ -75,7 +79,11 @@ public class Picasso {
   }
 
   public Request.Builder load(String path) {
-    return new Request.Builder(this, path);
+    return new Request.Builder(this, path, TYPE_STREAM);
+  }
+
+  public Request.Builder load(File file) {
+    return new Request.Builder(this, file.getPath(), TYPE_FILE);
   }
 
   public boolean isDebugging() {
@@ -99,7 +107,7 @@ public class Picasso {
   Bitmap run(Request request) {
     Bitmap bitmap = loadFromCache(request);
     if (bitmap == null) {
-      bitmap = loadFromStream(request);
+      bitmap = loadFromType(request);
     }
     return bitmap;
   }
@@ -130,9 +138,13 @@ public class Picasso {
     }
   }
 
-  Bitmap decodeStream(InputStream stream, BitmapFactory.Options bitmapOptions) {
+  Bitmap decodeStream(InputStream stream, Options bitmapOptions) {
     if (stream == null) return null;
     return BitmapFactory.decodeStream(stream, null, bitmapOptions);
+  }
+
+  Bitmap decodeFile(String path, Options bitmapOptions) {
+    return BitmapFactory.decodeFile(path, bitmapOptions);
   }
 
   private void cancelExistingRequest(Object target, String path) {
@@ -152,8 +164,11 @@ public class Picasso {
     if (memoryCache != null) {
       cached = memoryCache.get(request.key);
       if (cached != null) {
-        if (debugging && request.metrics != null) {
-          request.metrics.loadedFrom = LOADED_FROM_MEM;
+        if (debugging) {
+          if (request.metrics != null) {
+            request.metrics.loadedFrom = LOADED_FROM_MEM;
+          }
+          cached = Utils.applyDebugColorFilter(cached, LOADED_FROM_MEM);
         }
         request.result = cached;
         handler.sendMessage(handler.obtainMessage(REQUEST_COMPLETE, request));
@@ -162,16 +177,37 @@ public class Picasso {
     return cached;
   }
 
-  private Bitmap loadFromStream(Request request) {
+  private Bitmap loadFromType(Request request) {
     Bitmap result = null;
-    Response response = null;
+    boolean fromDisk;
     try {
-      response = loader.load(request.path, request.retryCount == 0);
-      if (response == null) {
-        return null;
-      }
+      switch (request.type) {
+        case TYPE_STREAM:
+          Response response = null;
+          try {
+            response = loader.load(request.path, request.retryCount == 0);
+            if (response == null) {
+              return null;
+            }
+          } finally {
+            if (response != null && response.stream != null) {
+              try {
+                response.stream.close();
+              } catch (IOException ignored) {
+              }
+            }
+          }
 
-      result = decodeStream(response.stream, request.bitmapOptions);
+          result = decodeStream(response.stream, request.bitmapOptions);
+          fromDisk = response.cached;
+          break;
+        case TYPE_FILE:
+          result = decodeFile(request.path, request.bitmapOptions);
+          fromDisk = true;
+          break;
+        default:
+          throw new AssertionError("Unknown request type. " + request.type);
+      }
 
       if (result == null) {
         handler.sendMessage(handler.obtainMessage(REQUEST_DECODE_FAILED, request));
@@ -186,7 +222,7 @@ public class Picasso {
 
       if (debugging) {
         if (request.metrics != null) {
-          request.metrics.loadedFrom = response.cached ? LOADED_FROM_DISK : LOADED_FROM_NETWORK;
+          request.metrics.loadedFrom = fromDisk ? LOADED_FROM_DISK : LOADED_FROM_NETWORK;
           // For color coded debugging, apply color filter after the bitmap is added to the cache.
           if (result != null) {
             result = Utils.applyDebugColorFilter(result, request.metrics.loadedFrom);
@@ -198,13 +234,6 @@ public class Picasso {
       handler.sendMessage(handler.obtainMessage(REQUEST_COMPLETE, request));
     } catch (IOException e) {
       handler.sendMessageDelayed(handler.obtainMessage(REQUEST_RETRY, request), RETRY_DELAY);
-    } finally {
-      if (response != null && response.stream != null) {
-        try {
-          response.stream.close();
-        } catch (IOException ignored) {
-        }
-      }
     }
 
     return result;
