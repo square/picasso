@@ -19,13 +19,15 @@ import static com.squareup.picasso.Utils.createKey;
 public class Request implements Runnable {
   private static final int DEFAULT_RETRY_COUNT = 2;
 
-  static final int TYPE_STREAM = 1;
-  static final int TYPE_FILE = 2;
+  enum Type {
+    STREAM,
+    FILE;
+  }
 
   final Picasso picasso;
   final String path;
   final String key;
-  final int type;
+  final Type type;
   final int errorResId;
   final WeakReference<ImageView> target;
   final BitmapFactory.Options bitmapOptions;
@@ -39,7 +41,7 @@ public class Request implements Runnable {
   boolean retryCancelled;
 
   Request(Picasso picasso, String path, ImageView imageView, BitmapFactory.Options bitmapOptions,
-      List<Transformation> transformations, RequestMetrics metrics, int type, int errorResId,
+      List<Transformation> transformations, RequestMetrics metrics, Type type, int errorResId,
       Drawable errorDrawable) {
     this.picasso = picasso;
     this.path = path;
@@ -122,14 +124,14 @@ public class Request implements Runnable {
     private final List<Transformation> transformations;
 
     private boolean deferredResize;
-    private int type;
+    private Type type;
     private int placeholderResId;
     private int errorResId;
     private BitmapFactory.Options bitmapOptions;
     private Drawable placeholderDrawable;
     private Drawable errorDrawable;
 
-    Builder(Picasso picasso, String path, int type) {
+    Builder(Picasso picasso, String path, Type type) {
       if (picasso == null) {
         throw new AssertionError();
       }
