@@ -4,9 +4,9 @@ import android.graphics.Color;
 
 public class RequestMetrics {
 
-  static final int LOADED_FROM_MEM = 1;
-  static final int LOADED_FROM_DISK = 2;
-  static final int LOADED_FROM_NETWORK = 3;
+  enum LoadedFrom {
+    MEM, DISK, NETWORK
+  }
 
   long createdTime;
   long executedTime;
@@ -15,7 +15,7 @@ public class RequestMetrics {
   long cacheLoadTime;
   long executorWaitTime;
 
-  int loadedFrom;
+  LoadedFrom loadedFrom;
 
   public long getExecutorWaitTime() {
     if (executedTime == 0) {
@@ -24,17 +24,17 @@ public class RequestMetrics {
     return executedTime - createdTime;
   }
 
-  public int getLoadedFrom() {
+  public LoadedFrom getLoadedFrom() {
     return loadedFrom;
   }
 
-  static int getColorCodeForCacheHit(int loadedFrom) {
+  static int getColorCodeForCacheHit(LoadedFrom loadedFrom) {
     switch (loadedFrom) {
-      case LOADED_FROM_MEM:
+      case MEM:
         return Color.GREEN;
-      case LOADED_FROM_DISK:
+      case DISK:
         return Color.YELLOW;
-      case LOADED_FROM_NETWORK:
+      case NETWORK:
         return Color.RED;
       default:
         throw new AssertionError("Unable to map color to source " + loadedFrom);

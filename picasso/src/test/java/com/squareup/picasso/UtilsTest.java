@@ -2,8 +2,8 @@ package com.squareup.picasso;
 
 import com.squareup.picasso.transformations.ResizeTransformation;
 import com.squareup.picasso.transformations.RotationTransformation;
-import edu.emory.mathcs.backport.java.util.Collections;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,9 +22,9 @@ public class UtilsTest {
 
   @Test public void matchingRequestsHaveSameKey() {
     Request simple1 =
-        new Request(picasso, URL, null, null, NO_TRANSFORMATIONS, metrics, 0, 0, null);
+        new Request(picasso, URL, null, null, NO_TRANSFORMATIONS, metrics, null, 0, null);
     Request simple2 =
-        new Request(picasso, URL, null, null, NO_TRANSFORMATIONS, metrics, 0, 0, null);
+        new Request(picasso, URL, null, null, NO_TRANSFORMATIONS, metrics, null, 0, null);
     assertThat(createKey(simple1)).isEqualTo(createKey(simple2));
 
     List<Transformation> transformations1 = new ArrayList<Transformation>();
@@ -32,8 +32,8 @@ public class UtilsTest {
 
     List<Transformation> transformations2 = new ArrayList<Transformation>();
     transformations2.add(new ResizeTransformation(20, 20));
-    Request single1 = new Request(picasso, URL, null, null, transformations1, metrics, 0, 0, null);
-    Request single2 = new Request(picasso, URL, null, null, transformations2, metrics, 0, 0, null);
+    Request single1 = new Request(picasso, URL, null, null, transformations1, metrics, null, 0, null);
+    Request single2 = new Request(picasso, URL, null, null, transformations2, metrics, null, 0, null);
     assertThat(createKey(single1)).isEqualTo(createKey(single2));
 
     List<Transformation> transformations3 = new ArrayList<Transformation>();
@@ -43,8 +43,8 @@ public class UtilsTest {
     List<Transformation> transformations4 = new ArrayList<Transformation>();
     transformations4.add(new ResizeTransformation(20, 20));
     transformations4.add(new RotationTransformation(-50));
-    Request double1 = new Request(picasso, URL, null, null, transformations3, metrics, 0, 0, null);
-    Request double2 = new Request(picasso, URL, null, null, transformations4, metrics, 0, 0, null);
+    Request double1 = new Request(picasso, URL, null, null, transformations3, metrics, null, 0, null);
+    Request double2 = new Request(picasso, URL, null, null, transformations4, metrics, null, 0, null);
     assertThat(createKey(double1)).isEqualTo(createKey(double2));
 
     List<Transformation> transformations5 = new ArrayList<Transformation>();
@@ -54,8 +54,8 @@ public class UtilsTest {
     List<Transformation> transformations6 = new ArrayList<Transformation>();
     transformations6.add(new RotationTransformation(-50));
     transformations6.add(new ResizeTransformation(20, 20));
-    Request order1 = new Request(picasso, URL, null, null, transformations5, metrics, 0, 0, null);
-    Request order2 = new Request(picasso, URL, null, null, transformations6, metrics, 0, 0, null);
+    Request order1 = new Request(picasso, URL, null, null, transformations5, metrics, null, 0, null);
+    Request order2 = new Request(picasso, URL, null, null, transformations6, metrics, null, 0, null);
     assertThat(createKey(order1)).isNotEqualTo(createKey(order2));
   }
 }

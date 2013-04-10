@@ -55,7 +55,7 @@ final class Utils {
     }
   };
 
-  static Bitmap applyDebugSourceIndicator(Bitmap source, int loadedFrom) {
+  static Bitmap applyDebugSourceIndicator(Bitmap source, RequestMetrics.LoadedFrom loadedFrom) {
     Paint debugPaint = DEBUG_PAINT.get();
     Bitmap output = Bitmap.createBitmap(source.getWidth(), source.getHeight(), source.getConfig());
 
