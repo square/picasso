@@ -1,6 +1,7 @@
 package com.squareup.picasso.sample;
 
 import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.view.Menu;
@@ -8,14 +9,17 @@ import android.view.MenuItem;
 import android.widget.ListView;
 import com.squareup.picasso.Picasso;
 
+import static android.os.StrictMode.ThreadPolicy;
+
 public class SampleActivity extends Activity {
   private SampleAdapter adapter;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
-    StrictMode.setThreadPolicy(
-        new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build());
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+      StrictMode.setThreadPolicy(new ThreadPolicy.Builder().detectAll().penaltyLog().build());
+    }
 
     adapter = new SampleAdapter(this);
 
