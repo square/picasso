@@ -111,6 +111,22 @@ public class PicassoTest {
     Picasso.singleton = null;
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void loadNullStringIsGuarded() throws Exception {
+    ImageView target = mock(ImageView.class);
+
+    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
+    picasso.load((String) null).into(target);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void loadNullFileIsGuarded() throws Exception {
+    ImageView target = mock(ImageView.class);
+
+    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
+    picasso.load((File) null).into(target);
+  }
+
   @Test public void loadIntoImageView() throws Exception {
     ImageView target = mock(ImageView.class);
 
@@ -588,7 +604,7 @@ public class PicassoTest {
     runUiThreadTasksIncludingDelayedTasks();
   }
 
-  private Picasso create(Answer loaderAnswer, Answer decoderAnswer) throws Exception {
+  private Picasso create(Answer loaderAnswer, Answer decoderAnswer) throws IOException {
     Picasso picasso = new Picasso.Builder() //
         .loader(loader) //
         .executor(executor) //

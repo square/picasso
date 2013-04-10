@@ -80,13 +80,14 @@ public class Picasso {
   }
 
   public Request.Builder load(String path) {
-    if (path.startsWith(FILE_URL_PREFIX)) {
+    if (path != null && path.startsWith(FILE_URL_PREFIX)) {
       return load(new File(path.substring(FILE_URL_PREFIX.length())));
     }
     return new Request.Builder(this, path, TYPE_STREAM);
   }
 
   public Request.Builder load(File file) {
+    if (file == null) throw new IllegalArgumentException("File may not be null.");
     return new Request.Builder(this, file.getPath(), TYPE_FILE);
   }
 
