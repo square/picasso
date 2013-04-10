@@ -2,6 +2,7 @@ package com.squareup.picasso;
 
 import android.content.Context;
 import android.net.http.HttpResponseCache;
+import android.os.Build;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -37,6 +38,9 @@ public class DefaultHttpLoader implements Loader {
   }
 
   private static void installCacheIfNeeded(Context context) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB_MR2) {
+      return;
+    }
     // DCL + volatile should be safe after Java 5.
     if (cache == null) {
       try {
