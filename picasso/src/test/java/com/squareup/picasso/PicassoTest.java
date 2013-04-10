@@ -47,6 +47,7 @@ public class PicassoTest {
   private static final String URI_1 = "URI1";
   private static final String URI_2 = "URI2";
   private static final File FILE_1 = new File("C:\\windows\\system32\\logo.exe");
+  private static final String FILE_1_URL = "file:///" + FILE_1.getPath();
 
   private static final Answer NO_ANSWER = new Answer() {
     @Override public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
@@ -110,6 +111,22 @@ public class PicassoTest {
     Picasso.singleton = null;
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void loadNullStringIsGuarded() throws Exception {
+    ImageView target = mock(ImageView.class);
+
+    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
+    picasso.load((String) null).into(target);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void loadNullFileIsGuarded() throws Exception {
+    ImageView target = mock(ImageView.class);
+
+    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
+    picasso.load((File) null).into(target);
+  }
+
   @Test public void loadIntoImageView() throws Exception {
     ImageView target = mock(ImageView.class);
 
@@ -150,6 +167,30 @@ public class PicassoTest {
 
     Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
     picasso.load(FILE_1).into(target);
+
+    verifyZeroInteractions(target);
+    executor.flush();
+    verify(target).onSuccess(bitmap1);
+    assertThat(picasso.targetsToRequests).isEmpty();
+  }
+
+  @Test public void loadFileUrlIntoImageView() throws Exception {
+    ImageView target = mock(ImageView.class);
+
+    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
+    picasso.load(FILE_1_URL).into(target);
+
+    verifyZeroInteractions(target);
+    executor.flush();
+    verifyZeroInteractions(loader);
+    verify(target).setImageBitmap(bitmap1);
+  }
+
+  @Test public void loadFileUrlIntoTarget() throws Exception {
+    Target target = mock(Target.class);
+
+    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
+    picasso.load(FILE_1_URL).into(target);
 
     verifyZeroInteractions(target);
     executor.flush();
@@ -563,7 +604,7 @@ public class PicassoTest {
     runUiThreadTasksIncludingDelayedTasks();
   }
 
-  private Picasso create(Answer loaderAnswer, Answer decoderAnswer) throws Exception {
+  private Picasso create(Answer loaderAnswer, Answer decoderAnswer) throws IOException {
     Picasso picasso = new Picasso.Builder() //
         .loader(loader) //
         .executor(executor) //

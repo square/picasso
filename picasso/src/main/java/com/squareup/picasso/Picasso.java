@@ -31,6 +31,7 @@ public class Picasso {
   private static final int REQUEST_COMPLETE = 1;
   private static final int REQUEST_RETRY = 2;
   private static final int REQUEST_DECODE_FAILED = 3;
+  private static final String FILE_URL_PREFIX = "file:///";
 
   // TODO This should be static.
   private final Handler handler = new Handler(Looper.getMainLooper()) {
@@ -79,10 +80,14 @@ public class Picasso {
   }
 
   public Request.Builder load(String path) {
+    if (path != null && path.startsWith(FILE_URL_PREFIX)) {
+      return load(new File(path.substring(FILE_URL_PREFIX.length())));
+    }
     return new Request.Builder(this, path, TYPE_STREAM);
   }
 
   public Request.Builder load(File file) {
+    if (file == null) throw new IllegalArgumentException("File may not be null.");
     return new Request.Builder(this, file.getPath(), TYPE_FILE);
   }
 
