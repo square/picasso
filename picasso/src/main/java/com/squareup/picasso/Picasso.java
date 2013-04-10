@@ -1,8 +1,10 @@
 package com.squareup.picasso;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -28,7 +30,9 @@ public class Picasso {
   private static final int REQUEST_COMPLETE = 1;
   private static final int REQUEST_RETRY = 2;
   private static final int REQUEST_DECODE_FAILED = 3;
+
   private static final String FILE_URL_PREFIX = "file:///";
+  private static final String CONTENT_URL_PREFIX = "content://";
 
   // TODO This should be static.
   private final Handler handler = new Handler(Looper.getMainLooper()) {
@@ -61,6 +65,7 @@ public class Picasso {
 
   static Picasso singleton = null;
 
+  final ContentResolver contentResolver;
   final Loader loader;
   final ExecutorService service;
   final Cache memoryCache;
@@ -68,7 +73,9 @@ public class Picasso {
 
   boolean debugging;
 
-  private Picasso(Loader loader, ExecutorService service, Cache memoryCache, boolean debugging) {
+  private Picasso(ContentResolver contentResolver, Loader loader, ExecutorService service,
+      Cache memoryCache, boolean debugging) {
+    this.contentResolver = contentResolver;
     this.loader = loader;
     this.service = service;
     this.memoryCache = memoryCache;
@@ -77,10 +84,16 @@ public class Picasso {
   }
 
   public Request.Builder load(String path) {
-    if (path != null && path.startsWith(FILE_URL_PREFIX)) {
-      return load(new File(path.substring(FILE_URL_PREFIX.length())));
+    Type type = Type.STREAM;
+
+    if (path != null) {
+      if (path.startsWith(FILE_URL_PREFIX)) {
+        return load(new File(path.substring(FILE_URL_PREFIX.length())));
+      }
+
+      if (path.startsWith(CONTENT_URL_PREFIX)) type = Type.CONTENT;
     }
-    return new Request.Builder(this, path, Type.STREAM);
+    return new Request.Builder(this, path, type);
   }
 
   public Request.Builder load(File file) {
@@ -184,6 +197,15 @@ public class Picasso {
     boolean fromDisk;
     try {
       switch (request.type) {
+        case CONTENT:
+          Uri path = Uri.parse(request.path);
+          result = decodeStream(contentResolver.openInputStream(path), request.bitmapOptions);
+          fromDisk = true;
+          break;
+        case FILE:
+          result = decodeFile(request.path, request.bitmapOptions);
+          fromDisk = true;
+          break;
         case STREAM:
           Response response = null;
           try {
@@ -201,10 +223,6 @@ public class Picasso {
             }
           }
           fromDisk = response.cached;
-          break;
-        case FILE:
-          result = decodeFile(request.path, request.bitmapOptions);
-          fromDisk = true;
           break;
         default:
           throw new AssertionError("Unknown request type. " + request.type);
@@ -256,7 +274,8 @@ public class Picasso {
 
   public static Picasso with(Context context) {
     if (singleton == null) {
-      singleton = new Builder().loader(new DefaultHttpLoader(context))
+      singleton = new Builder().contentResolver(context.getContentResolver())
+          .loader(new DefaultHttpLoader(context))
           .executor(Executors.newFixedThreadPool(3, new PicassoThreadFactory()))
           .memoryCache(new LruCache(context))
           .debug()
@@ -267,10 +286,22 @@ public class Picasso {
 
   public static class Builder {
 
+    private ContentResolver contentResolver;
     private Loader loader;
     private ExecutorService service;
     private Cache memoryCache;
     private boolean debugging;
+
+    public Builder contentResolver(ContentResolver contentResolver) {
+      if (contentResolver == null) {
+        throw new IllegalArgumentException("contentResolver may not be null.");
+      }
+      if (this.loader != null) {
+        throw new IllegalStateException("contentResolver already set.");
+      }
+      this.contentResolver = contentResolver;
+      return this;
+    }
 
     public Builder loader(Loader loader) {
       if (loader == null) {
@@ -314,7 +345,7 @@ public class Picasso {
       if (loader == null || service == null) {
         throw new IllegalStateException("Must provide a Loader and an ExecutorService.");
       }
-      return new Picasso(loader, service, memoryCache, debugging);
+      return new Picasso(contentResolver, loader, service, memoryCache, debugging);
     }
   }
 
