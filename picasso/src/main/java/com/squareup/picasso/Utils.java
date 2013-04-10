@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.os.Looper;
+import android.util.DisplayMetrics;
 import java.util.List;
 
 final class Utils {
@@ -54,7 +55,7 @@ final class Utils {
     }
   };
 
-  static Bitmap applyDebugColorFilter(Bitmap source, int loadedFrom) {
+  static Bitmap applyDebugSourceIndicator(Bitmap source, int loadedFrom) {
     Paint debugPaint = DEBUG_PAINT.get();
     Bitmap output = Bitmap.createBitmap(source.getWidth(), source.getHeight(), source.getConfig());
 
@@ -62,13 +63,15 @@ final class Utils {
     canvas.drawBitmap(source, 0, 0, null);
     canvas.rotate(45);
 
+    float pixelPerDp = source.getDensity() / ((float) DisplayMetrics.DENSITY_MEDIUM);
+
     // Draw a white square for the indicator border.
     debugPaint.setColor(0xFFFFFFFF);
-    canvas.drawRect(0, -20, 15, 20, debugPaint);
+    canvas.drawRect(0, -10 * pixelPerDp, 7.5f * pixelPerDp, 10 * pixelPerDp, debugPaint);
 
     // Draw a slightly smaller square for the indicator color.
     debugPaint.setColor(RequestMetrics.getColorCodeForCacheHit(loadedFrom));
-    canvas.drawRect(0, -18, 13, 18, debugPaint);
+    canvas.drawRect(0, -9 * pixelPerDp, 6.5f * pixelPerDp, 9 * pixelPerDp, debugPaint);
 
     // Do not recycle source bitmap here. This is the image that is stored inside the cache and can
     // be used again when debugging is off.
