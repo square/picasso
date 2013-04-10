@@ -133,7 +133,7 @@ public class Request implements Runnable {
       if (picasso == null) {
         throw new AssertionError();
       }
-      if (path == null || path.trim().isEmpty()) {
+      if (path == null || path.trim().length() == 0) {
         throw new IllegalArgumentException("Path may not be null.");
       }
       this.picasso = picasso;
