@@ -2,6 +2,7 @@ package com.squareup.picasso;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -65,7 +66,7 @@ public class Picasso {
 
   static Picasso singleton = null;
 
-  final ContentResolver contentResolver;
+  final Context context;
   final Loader loader;
   final ExecutorService service;
   final Cache memoryCache;
@@ -73,9 +74,9 @@ public class Picasso {
 
   boolean debugging;
 
-  private Picasso(ContentResolver contentResolver, Loader loader, ExecutorService service,
-      Cache memoryCache, boolean debugging) {
-    this.contentResolver = contentResolver;
+  private Picasso(Context context, Loader loader,
+      ExecutorService service, Cache memoryCache, boolean debugging) {
+    this.context = context;
     this.loader = loader;
     this.service = service;
     this.memoryCache = memoryCache;
@@ -91,14 +92,23 @@ public class Picasso {
         return load(new File(path.substring(FILE_URL_PREFIX.length())));
       }
 
-      if (path.startsWith(CONTENT_URL_PREFIX)) type = Type.CONTENT;
+      if (path.startsWith(CONTENT_URL_PREFIX)) {
+        type = Type.CONTENT;
+      }
     }
-    return new Request.Builder(this, path, type);
+    return new Request.Builder(this, path, 0, type);
   }
 
   public Request.Builder load(File file) {
     if (file == null) throw new IllegalArgumentException("File may not be null.");
-    return new Request.Builder(this, file.getPath(), Type.FILE);
+    return new Request.Builder(this, file.getPath(), 0, Type.FILE);
+  }
+
+  public Request.Builder load(int resourceId) {
+    if (resourceId == 0) {
+      throw new IllegalArgumentException("Resource ID must not be zero.");
+    }
+    return new Request.Builder(this, null, resourceId, Type.RESOURCE);
   }
 
   public boolean isDebugging() {
@@ -162,6 +172,10 @@ public class Picasso {
     return BitmapFactory.decodeFile(path, bitmapOptions);
   }
 
+  Bitmap decodeResource(Resources resources, int resourceId, Options bitmapOptions) {
+    return BitmapFactory.decodeResource(resources, resourceId, bitmapOptions);
+  }
+
   private void cancelExistingRequest(Object target, String path) {
     Request existing = targetsToRequests.remove(target);
     if (existing != null) {
@@ -198,13 +212,14 @@ public class Picasso {
     try {
       switch (request.type) {
         case CONTENT:
-          if (contentResolver == null) {
-            throw new IllegalStateException(
-                "Cannot handle content:// urls if built without a ContentResolver: "
-                    + request.path);
-          }
           Uri path = Uri.parse(request.path);
+          ContentResolver contentResolver = context.getContentResolver();
           result = decodeStream(contentResolver.openInputStream(path), request.bitmapOptions);
+          fromDisk = true;
+          break;
+        case RESOURCE:
+          Resources resources = context.getResources();
+          result = decodeResource(resources, request.resourceId, request.bitmapOptions);
           fromDisk = true;
           break;
         case FILE:
@@ -279,33 +294,24 @@ public class Picasso {
 
   public static Picasso with(Context context) {
     if (singleton == null) {
-      singleton = new Builder().contentResolver(context.getContentResolver())
-          .loader(new DefaultHttpLoader(context))
-          .executor(Executors.newFixedThreadPool(3, new PicassoThreadFactory()))
-          .memoryCache(new LruCache(context))
-          .debug()
-          .build();
+      singleton = new Builder(context).build();
     }
     return singleton;
   }
 
+  @SuppressWarnings("UnusedDeclaration") // Public API.
   public static class Builder {
-
-    private ContentResolver contentResolver;
+    private final Context context;
     private Loader loader;
     private ExecutorService service;
     private Cache memoryCache;
     private boolean debugging;
 
-    public Builder contentResolver(ContentResolver contentResolver) {
-      if (contentResolver == null) {
-        throw new IllegalArgumentException("ContentResolver may not be null.");
+    public Builder(Context context) {
+      if (context == null) {
+        throw new IllegalArgumentException("Context may not be null.");
       }
-      if (this.contentResolver != null) {
-        throw new IllegalStateException("ContentResolver already set.");
-      }
-      this.contentResolver = contentResolver;
-      return this;
+      this.context = context.getApplicationContext();
     }
 
     public Builder loader(Loader loader) {
@@ -347,10 +353,16 @@ public class Picasso {
     }
 
     public Picasso build() {
-      if (loader == null || service == null) {
-        throw new IllegalStateException("Must provide a Loader and an ExecutorService.");
+      if (loader == null) {
+        loader = new DefaultHttpLoader(context);
       }
-      return new Picasso(contentResolver, loader, service, memoryCache, debugging);
+      if (memoryCache == null) {
+        memoryCache = new LruCache(context);
+      }
+      if (service == null) {
+        service = Executors.newFixedThreadPool(3, new PicassoThreadFactory());
+      }
+      return new Picasso(context, loader, service, memoryCache, debugging);
     }
   }
 

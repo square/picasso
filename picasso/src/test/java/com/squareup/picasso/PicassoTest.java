@@ -2,6 +2,7 @@ package com.squareup.picasso;
 
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -34,6 +35,7 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -94,14 +96,19 @@ public class PicassoTest {
   private static final BitmapDrawable placeholderDrawable =
       new BitmapDrawable(resources, placeHolder);
 
+  private Context context;
   private SynchronousExecutorService executor;
   private ContentResolver contentResolver;
   private Loader loader;
   private Cache cache;
 
   @Before public void setUp() {
-    executor = new SynchronousExecutorService();
+    context = spy(new Activity());
     contentResolver = mock(ContentResolver.class);
+    doReturn(context).when(context).getApplicationContext();
+    doReturn(contentResolver).when(context).getContentResolver();
+
+    executor = new SynchronousExecutorService();
     loader = mock(Loader.class);
     cache = mock(Cache.class);
   }
@@ -131,6 +138,14 @@ public class PicassoTest {
 
     Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
     picasso.load((File) null).into(target);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void loadNoResourceIsGuarded() throws Exception {
+    ImageView target = mock(ImageView.class);
+
+    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
+    picasso.load(0).into(target);
   }
 
   @Test public void loadIntoImageView() throws Exception {
@@ -230,6 +245,30 @@ public class PicassoTest {
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
+  @Test public void loadResourceIntoImageView() throws Exception {
+    ImageView target = mock(ImageView.class);
+
+    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
+    picasso.load(123).into(target);
+
+    verifyZeroInteractions(target);
+    executor.flush();
+    verifyZeroInteractions(loader);
+    verify(target).setImageBitmap(bitmap1);
+  }
+
+  @Test public void loadResourceIntoTarget() throws Exception {
+    Target target = mock(Target.class);
+
+    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
+    picasso.load(123).into(target);
+
+    verifyZeroInteractions(target);
+    executor.flush();
+    verify(target).onSuccess(bitmap1);
+    assertThat(picasso.targetsToRequests).isEmpty();
+  }
+
   @Test public void loadIntoImageViewWithPlaceHolderDrawable() throws Exception {
     ImageView target = mock(ImageView.class);
 
@@ -273,7 +312,7 @@ public class PicassoTest {
 
     Picasso picasso = create(LOADER_ANSWER, NULL_ANSWER);
     Request request =
-        new Request(picasso, URI_1, target, null, Collections.<Transformation>emptyList(), null,
+        new Request(picasso, URI_1, 0, target, null, Collections.<Transformation>emptyList(), null,
             Request.Type.STREAM, 0, errorDrawable);
     request = spy(request);
     picasso.submit(request);
@@ -290,7 +329,7 @@ public class PicassoTest {
 
     Picasso picasso = create(NULL_ANSWER, NULL_ANSWER);
     Request request =
-        new Request(picasso, FILE_1_URL, target, null, Collections.<Transformation>emptyList(), null,
+        new Request(picasso, FILE_1_URL, 0, target, null, Collections.<Transformation>emptyList(), null,
             Type.FILE, 0, errorDrawable);
     request = spy(request);
     picasso.submit(request);
@@ -307,7 +346,7 @@ public class PicassoTest {
 
     Picasso picasso = create(NULL_ANSWER, NULL_ANSWER);
     Request request =
-        new Request(picasso, CONTENT_1_URL, target, null, Collections.<Transformation>emptyList(), null,
+        new Request(picasso, CONTENT_1_URL, 0, target, null, Collections.<Transformation>emptyList(), null,
             Type.CONTENT, 0, errorDrawable);
     request = spy(request);
     picasso.submit(request);
@@ -324,7 +363,7 @@ public class PicassoTest {
     ImageView target = mock(ImageView.class);
 
     Request request =
-        new Request(picasso, URI_1, target, null, Collections.<Transformation>emptyList(), null,
+        new Request(picasso, URI_1, 0, target, null, Collections.<Transformation>emptyList(), null,
             Request.Type.STREAM, 0, null);
     request = spy(request);
 
@@ -338,7 +377,7 @@ public class PicassoTest {
     Picasso picasso = create(NULL_ANSWER, IO_EXCEPTION_ANSWER);
     ImageView target = mock(ImageView.class);
 
-    Request request = new Request(picasso, FILE_1.getPath(), target, null,
+    Request request = new Request(picasso, FILE_1.getPath(), 0, target, null,
         Collections.<Transformation>emptyList(), null, Type.FILE, 0, null);
     request = spy(request);
 
@@ -353,7 +392,7 @@ public class PicassoTest {
     Picasso picasso = create(NULL_ANSWER, IO_EXCEPTION_ANSWER);
     ImageView target = mock(ImageView.class);
 
-    Request request = new Request(picasso, CONTENT_1_URL, target, null,
+    Request request = new Request(picasso, CONTENT_1_URL, 0, target, null,
         Collections.<Transformation>emptyList(), null, Type.CONTENT, 0, null);
     request = spy(request);
 
@@ -369,7 +408,7 @@ public class PicassoTest {
     ImageView target = mock(ImageView.class);
 
     Request request =
-        new Request(picasso, URI_1, target, null, Collections.<Transformation>emptyList(), null,
+        new Request(picasso, URI_1, 0, target, null, Collections.<Transformation>emptyList(), null,
             Request.Type.STREAM, 0, errorDrawable);
 
     retryRequest(picasso, request);
@@ -383,7 +422,7 @@ public class PicassoTest {
     ImageView target = mock(ImageView.class);
 
     Request request =
-        new Request(picasso, URI_1, target, null, Collections.<Transformation>emptyList(), null,
+        new Request(picasso, URI_1, 0, target, null, Collections.<Transformation>emptyList(), null,
             Request.Type.STREAM, 0, null);
 
     retryRequest(picasso, request);
@@ -420,7 +459,7 @@ public class PicassoTest {
     Target target = mock(Target.class);
 
     Request request =
-        new TargetRequest(picasso, URI_1, target, null, Collections.<Transformation>emptyList(),
+        new TargetRequest(picasso, URI_1, 0, target, null, Collections.<Transformation>emptyList(),
             null, Type.STREAM, 0, null);
 
     retryRequest(picasso, request);
@@ -534,7 +573,7 @@ public class PicassoTest {
     transformations.add(resize);
 
     Request request =
-        new Request(picasso, URI_1, target, null, transformations, null, Request.Type.STREAM, 0,
+        new Request(picasso, URI_1, 0, target, null, transformations, null, Request.Type.STREAM, 0,
             null);
     picasso.submit(request);
 
@@ -586,7 +625,7 @@ public class PicassoTest {
     transformations.add(resize);
 
     Request request =
-        new Request(picasso, URI_1, target, null, transformations, null, Request.Type.STREAM, 0,
+        new Request(picasso, URI_1, 0, target, null, transformations, null, Request.Type.STREAM, 0,
             null);
     picasso.submit(request);
 
@@ -602,12 +641,12 @@ public class PicassoTest {
 
   @Test public void builderInvalidLoader() throws Exception {
     try {
-      new Picasso.Builder().loader(null);
+      new Picasso.Builder(context).loader(null);
       fail("Null Loader should throw exception.");
     } catch (IllegalArgumentException expected) {
     }
     try {
-      new Picasso.Builder().loader(loader).loader(loader);
+      new Picasso.Builder(context).loader(loader).loader(loader);
       fail("Setting Loader twice should throw exception.");
     } catch (IllegalStateException expected) {
     }
@@ -615,12 +654,12 @@ public class PicassoTest {
 
   @Test public void builderInvalidExecutor() throws Exception {
     try {
-      new Picasso.Builder().executor(null);
+      new Picasso.Builder(context).executor(null);
       fail("Null Executor should throw exception.");
     } catch (IllegalArgumentException expected) {
     }
     try {
-      new Picasso.Builder().executor(executor).executor(executor);
+      new Picasso.Builder(context).executor(executor).executor(executor);
       fail("Setting Executor twice should throw exception.");
     } catch (IllegalStateException expected) {
     }
@@ -628,33 +667,22 @@ public class PicassoTest {
 
   @Test public void builderInvalidCache() throws Exception {
     try {
-      new Picasso.Builder().memoryCache(null);
+      new Picasso.Builder(context).memoryCache(null);
       fail("Null Cache should throw exception.");
     } catch (IllegalArgumentException expected) {
     }
     try {
-      new Picasso.Builder().memoryCache(cache).memoryCache(cache);
+      new Picasso.Builder(context).memoryCache(cache).memoryCache(cache);
       fail("Setting Cache twice should throw exception.");
     } catch (IllegalStateException expected) {
     }
   }
 
-  @Test public void builderMissingRequired() throws Exception {
-    try {
-      new Picasso.Builder().build();
-      fail("Loader and executor are required.");
-    } catch (IllegalStateException expected) {
-    }
-    try {
-      new Picasso.Builder().loader(loader).build();
-      fail("Loader and executor are required.");
-    } catch (IllegalStateException expected) {
-    }
-    try {
-      new Picasso.Builder().executor(executor).build();
-      fail("Loader and executor are required.");
-    } catch (IllegalStateException expected) {
-    }
+  @Test public void builderCreatesDefaults() throws Exception {
+    Picasso p = new Picasso.Builder(context).build();
+    assertThat(p.loader).isNotNull();
+    assertThat(p.memoryCache).isNotNull();
+    assertThat(p.service).isNotNull();
   }
 
   private void retryRequest(Picasso picasso, Request request) {
@@ -669,8 +697,7 @@ public class PicassoTest {
   }
 
   private Picasso create(Answer loaderAnswer, Answer decoderAnswer) throws IOException {
-    Picasso picasso = new Picasso.Builder() //
-        .contentResolver(contentResolver) //
+    Picasso picasso = new Picasso.Builder(context) //
         .loader(loader) //
         .executor(executor) //
         .memoryCache(cache) //
@@ -681,6 +708,8 @@ public class PicassoTest {
     doAnswer(loaderAnswer).when(loader).load(anyString(), anyBoolean());
     doAnswer(decoderAnswer).when(picasso).decodeStream(any(InputStream.class), any(Options.class));
     doAnswer(decoderAnswer).when(picasso).decodeFile(anyString(), any(Options.class));
+    doAnswer(decoderAnswer).when(picasso)
+        .decodeResource(any(Resources.class), anyInt(), any(Options.class));
     return picasso;
   }
 

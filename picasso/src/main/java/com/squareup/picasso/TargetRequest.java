@@ -9,11 +9,11 @@ public class TargetRequest extends Request {
 
   private WeakReference<Target> target;
 
-  TargetRequest(Picasso picasso, String path, Target target, BitmapFactory.Options bitmapOptions,
-      List<Transformation> transformations, RequestMetrics metrics, Type type, int errorResId,
-      Drawable errorDrawable) {
-    super(picasso, path, null, bitmapOptions, transformations, metrics, type, errorResId,
-        errorDrawable);
+  TargetRequest(Picasso picasso, String path, int resourceId, Target target,
+      BitmapFactory.Options bitmapOptions, List<Transformation> transformations,
+      RequestMetrics metrics, Type type, int errorResId, Drawable errorDrawable) {
+    super(picasso, path, resourceId, null, bitmapOptions, transformations, metrics, type,
+        errorResId, errorDrawable);
     this.target = new WeakReference<Target>(target);
   }
 

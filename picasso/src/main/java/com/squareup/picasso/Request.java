@@ -24,11 +24,13 @@ public class Request implements Runnable {
   enum Type {
     CONTENT,
     FILE,
-    STREAM
+    STREAM,
+    RESOURCE
   }
 
   final Picasso picasso;
   final String path;
+  final int resourceId;
   final String key;
   final Type type;
   final int errorResId;
@@ -43,11 +45,12 @@ public class Request implements Runnable {
   int retryCount;
   boolean retryCancelled;
 
-  Request(Picasso picasso, String path, ImageView imageView, BitmapFactory.Options bitmapOptions,
-      List<Transformation> transformations, RequestMetrics metrics, Type type, int errorResId,
-      Drawable errorDrawable) {
+  Request(Picasso picasso, String path, int resourceId, ImageView imageView,
+      BitmapFactory.Options bitmapOptions, List<Transformation> transformations,
+      RequestMetrics metrics, Type type, int errorResId, Drawable errorDrawable) {
     this.picasso = picasso;
     this.path = path;
+    this.resourceId = resourceId;
     this.type = type;
     this.errorResId = errorResId;
     this.errorDrawable = errorDrawable;
@@ -113,6 +116,8 @@ public class Request implements Runnable {
         + picasso
         + ", path="
         + path
+        + ", resourceId="
+        + resourceId
         + ", target="
         + target
         + ", bitmapOptions="
@@ -156,25 +161,29 @@ public class Request implements Runnable {
   public static class Builder {
     private final Picasso picasso;
     private final String path;
+    private final int resourceId;
+    private final Type type;
     private final List<Transformation> transformations;
 
     private boolean deferredResize;
-    private Type type;
     private int placeholderResId;
     private int errorResId;
     private BitmapFactory.Options bitmapOptions;
     private Drawable placeholderDrawable;
     private Drawable errorDrawable;
 
-    Builder(Picasso picasso, String path, Type type) {
+    Builder(Picasso picasso, String path, int resourceId, Type type) {
       if (picasso == null) {
         throw new AssertionError();
       }
-      if (path == null || path.trim().length() == 0) {
-        throw new IllegalArgumentException("Path may not be null.");
+      boolean hasPath = path != null && path.trim().length() != 0;
+      boolean hasResource = resourceId != 0;
+      if (!(hasPath ^ hasResource)) {
+          throw new IllegalArgumentException("A valid path or valid resource must be provided.");
       }
       this.picasso = picasso;
       this.path = path;
+      this.resourceId = resourceId;
       this.type = type;
       this.transformations = new ArrayList<Transformation>(4);
     }
@@ -272,8 +281,8 @@ public class Request implements Runnable {
     public Bitmap get() {
       checkNotMain();
       Request request =
-          new Request(picasso, path, null, bitmapOptions, transformations, null, type, errorResId,
-              errorDrawable);
+          new Request(picasso, path, resourceId, null, bitmapOptions, transformations, null, type,
+              errorResId, errorDrawable);
       return picasso.run(request);
     }
 
@@ -290,8 +299,8 @@ public class Request implements Runnable {
 
       RequestMetrics metrics = createRequestMetrics();
       Request request =
-          new TargetRequest(picasso, path, target, bitmapOptions, transformations, metrics, type,
-              errorResId, errorDrawable);
+          new TargetRequest(picasso, path, resourceId, target, bitmapOptions, transformations,
+              metrics, type, errorResId, errorDrawable);
       picasso.submit(request);
     }
 
@@ -320,8 +329,8 @@ public class Request implements Runnable {
 
       RequestMetrics metrics = new RequestMetrics();
       Request request =
-          new Request(picasso, path, target, bitmapOptions, transformations, metrics, type,
-              errorResId, errorDrawable);
+          new Request(picasso, path, resourceId, target, bitmapOptions, transformations, metrics,
+              type, errorResId, errorDrawable);
       picasso.submit(request);
     }
 
