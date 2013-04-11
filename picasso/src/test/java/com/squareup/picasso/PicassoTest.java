@@ -482,7 +482,7 @@ public class PicassoTest {
 
     Transformation transformation = mock(Transformation.class);
     when(transformation.transform(any(Bitmap.class))).thenReturn(bitmap1);
-    when(transformation.toString()).thenReturn("transformation(something)");
+    when(transformation.key()).thenReturn("transformation(something)");
 
     List<Transformation> transformations = new ArrayList<Transformation>(1);
     transformations.add(transformation);
@@ -550,7 +550,7 @@ public class PicassoTest {
 
     Transformation transformation = mock(Transformation.class);
     when(transformation.transform(any(Bitmap.class))).thenReturn(bitmap1);
-    when(transformation.toString()).thenReturn("transformation(something)");
+    when(transformation.key()).thenReturn("transformation(something)");
 
     List<Transformation> transformations = new ArrayList<Transformation>(1);
     transformations.add(transformation);
@@ -654,6 +654,36 @@ public class PicassoTest {
       new Picasso.Builder().executor(executor).build();
       fail("Loader and executor are required.");
     } catch (IllegalStateException expected) {
+    }
+  }
+
+  @Test public void nullTransform_throws() {
+
+    Picasso picasso = Picasso.with(new Activity());
+
+    Transformation okTransformation = mock(Transformation.class);
+    when(okTransformation.transform(any(Bitmap.class))).thenReturn(mock(Bitmap.class));
+    when(okTransformation.key()).thenReturn("ok()");
+
+    Transformation nullTransformation = mock(Transformation.class);
+    when(nullTransformation.transform(any(Bitmap.class))).thenReturn(null);
+    when(nullTransformation.key()).thenReturn("null()");
+
+    List<Transformation> transformations = new ArrayList<Transformation>();
+
+    transformations.add(okTransformation);
+    transformations.add(nullTransformation);
+
+    Request request =
+        new Request(picasso, CONTENT_1_URL, mock(ImageView.class), null, transformations, null,
+            Type.CONTENT, 0, null);
+
+    try {
+      picasso.transformResult(request, mock(Bitmap.class));
+      fail("transformResult should throw a NullPointerException when a tranformation returns null");
+    } catch (NullPointerException e) {
+      assertThat(e.getMessage()).contains("after 1 previous transformation");
+      assertThat(e.getMessage()).contains("null() returned null");
     }
   }
 
