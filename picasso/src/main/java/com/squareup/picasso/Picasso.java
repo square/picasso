@@ -263,7 +263,7 @@ public class Picasso {
     return result;
   }
 
-  private Bitmap transformResult(Request request, Bitmap result) {
+  Bitmap transformResult(Request request, Bitmap result) {
     List<Transformation> transformations = request.transformations;
     if (!transformations.isEmpty()) {
       //noinspection ForLoopReplaceableByForEach
@@ -271,7 +271,14 @@ public class Picasso {
         Transformation t = transformations.get(i);
         result = t.transform(result);
         if (result == null) {
-          throw new NullPointerException("Transformation " + t.key() + " returned null.");
+          throw new NullPointerException("Transformation "
+              + t.key()
+              + " returned null when transforming "
+              + request.path
+              + " after "
+              + i
+              + " previous transformations. Transformation list: "
+              + request.transformationKeys());
         }
       }
     }
