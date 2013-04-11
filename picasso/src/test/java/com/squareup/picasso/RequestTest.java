@@ -16,28 +16,36 @@ public class RequestTest {
   private static final String URL = "http://example.com/a.png";
 
   private Picasso picasso = mock(Picasso.class);
-  private Builder builder = new Builder(picasso, URL, Type.STREAM);
+  private Builder builder = new Builder(picasso, URL, 0, Type.STREAM);
   private Drawable drawable = new ColorDrawable(0);
 
   @Test(expected = AssertionError.class)
   public void nullPicassoThrows() {
-    new Builder(null, URL, Type.STREAM);
+    new Builder(null, URL, 0, Type.STREAM);
   }
 
   @Test public void invalidPath() {
     try {
-      new Builder(picasso, null, Type.STREAM);
+      new Builder(picasso, null, 0, Type.STREAM);
       fail("Null path should throw exception.");
     } catch (IllegalArgumentException expected) {
     }
     try {
-      new Builder(picasso, "", Type.STREAM);
+      new Builder(picasso, "", 0, Type.STREAM);
       fail("Empty path should throw exception.");
     } catch (IllegalArgumentException expected) {
     }
     try {
-      new Builder(picasso, "      ", Type.STREAM);
+      new Builder(picasso, "      ", 0, Type.STREAM);
       fail("Blank path should throw exception.");
+    } catch (IllegalArgumentException expected) {
+    }
+  }
+
+  @Test public void pathAndResource() {
+    try {
+      new Builder(picasso, "foo", 12, Type.STREAM);
+      fail("Path and resource should throw exception.");
     } catch (IllegalArgumentException expected) {
     }
   }
