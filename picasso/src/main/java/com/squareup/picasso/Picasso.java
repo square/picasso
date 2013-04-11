@@ -198,6 +198,11 @@ public class Picasso {
     try {
       switch (request.type) {
         case CONTENT:
+          if (contentResolver == null) {
+            throw new IllegalStateException(
+                "Cannot handle content:// urls if built without a ContentResolver: "
+                    + request.path);
+          }
           Uri path = Uri.parse(request.path);
           result = decodeStream(contentResolver.openInputStream(path), request.bitmapOptions);
           fromDisk = true;
@@ -294,10 +299,10 @@ public class Picasso {
 
     public Builder contentResolver(ContentResolver contentResolver) {
       if (contentResolver == null) {
-        throw new IllegalArgumentException("contentResolver may not be null.");
+        throw new IllegalArgumentException("ContentResolver may not be null.");
       }
-      if (this.loader != null) {
-        throw new IllegalStateException("contentResolver already set.");
+      if (this.contentResolver != null) {
+        throw new IllegalStateException("ContentResolver already set.");
       }
       this.contentResolver = contentResolver;
       return this;
