@@ -5,11 +5,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Transformation;
 
 import static android.widget.ImageView.ScaleType.FIT_CENTER;
 
 public class SampleAdapter extends BaseAdapter {
   private final Context context;
+  private final Transformation cropSquare = new CropSquareTransformation();
 
   public SampleAdapter(Context context) {
     this.context = context;
@@ -42,6 +44,7 @@ public class SampleAdapter extends BaseAdapter {
         .load(url) //
         .placeholder(R.drawable.placeholder) //
         .error(R.drawable.error) //
+        .transform(cropSquare) //
         .into(view);
 
     return view;

@@ -119,7 +119,6 @@ public class Request implements Runnable {
   }
 
   String transformationKeys() {
-
     if (transformations.isEmpty()) {
       return "[]";
     }
