@@ -20,8 +20,9 @@ public class Request implements Runnable {
   private static final int DEFAULT_RETRY_COUNT = 2;
 
   enum Type {
-    STREAM,
-    FILE;
+    CONTENT,
+    FILE,
+    STREAM
   }
 
   final Picasso picasso;
