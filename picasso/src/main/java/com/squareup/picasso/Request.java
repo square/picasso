@@ -1,7 +1,6 @@
 package com.squareup.picasso;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
@@ -35,7 +34,7 @@ public class Request implements Runnable {
   final Type type;
   final int errorResId;
   final WeakReference<ImageView> target;
-  final BitmapFactory.Options bitmapOptions;
+  final PicassoBitmapOptions bitmapOptions;
   final List<Transformation> transformations;
   final RequestMetrics metrics;
   final Drawable errorDrawable;
@@ -46,7 +45,7 @@ public class Request implements Runnable {
   boolean retryCancelled;
 
   Request(Picasso picasso, String path, int resourceId, ImageView imageView,
-      BitmapFactory.Options bitmapOptions, List<Transformation> transformations,
+      PicassoBitmapOptions bitmapOptions, List<Transformation> transformations,
       RequestMetrics metrics, Type type, int errorResId, Drawable errorDrawable) {
     this.picasso = picasso;
     this.path = path;
@@ -168,7 +167,7 @@ public class Request implements Runnable {
     private boolean deferredResize;
     private int placeholderResId;
     private int errorResId;
-    private BitmapFactory.Options bitmapOptions;
+    private PicassoBitmapOptions bitmapOptions;
     private Drawable placeholderDrawable;
     private Drawable errorDrawable;
 
@@ -179,7 +178,7 @@ public class Request implements Runnable {
       boolean hasPath = path != null && path.trim().length() != 0;
       boolean hasResource = resourceId != 0;
       if (!(hasPath ^ hasResource)) {
-          throw new IllegalArgumentException("A valid path or valid resource must be provided.");
+        throw new IllegalArgumentException("A valid path or valid resource must be provided.");
       }
       this.picasso = picasso;
       this.path = path;
@@ -232,14 +231,6 @@ public class Request implements Runnable {
       return this;
     }
 
-    public Builder bitmapOptions(BitmapFactory.Options bitmapOptions) {
-      if (bitmapOptions == null) {
-        throw new IllegalArgumentException("Bitmap options may not be null.");
-      }
-      this.bitmapOptions = bitmapOptions;
-      return this;
-    }
-
     public Builder fit() {
       deferredResize = true;
       return this;
@@ -252,6 +243,17 @@ public class Request implements Runnable {
       if (targetHeight <= 0) {
         throw new IllegalArgumentException("Height must be positive number.");
       }
+
+      // When decoding files from local resources, prefer to use bitmap options for better memory
+      // management.
+      if (type != Type.STREAM) {
+        if (bitmapOptions == null) {
+          bitmapOptions = new PicassoBitmapOptions(targetWidth, targetHeight, 0);
+        }
+        bitmapOptions.inJustDecodeBounds = true;
+        return this;
+      }
+
       return transform(new ResizeTransformation(targetWidth, targetHeight));
     }
 

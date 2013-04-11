@@ -1,6 +1,5 @@
 package com.squareup.picasso;
 
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -10,7 +9,7 @@ public class TargetRequest extends Request {
   private WeakReference<Target> target;
 
   TargetRequest(Picasso picasso, String path, int resourceId, Target target,
-      BitmapFactory.Options bitmapOptions, List<Transformation> transformations,
+      PicassoBitmapOptions bitmapOptions, List<Transformation> transformations,
       RequestMetrics metrics, Type type, int errorResId, Drawable errorDrawable) {
     super(picasso, path, resourceId, null, bitmapOptions, transformations, metrics, type,
         errorResId, errorDrawable);
