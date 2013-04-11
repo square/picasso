@@ -17,7 +17,7 @@ public class ResizeTransformation implements Transformation {
     return resize(source, targetWidth, targetHeight);
   }
 
-  @Override public String toString() {
+  @Override public String key() {
     return "resize(" + targetWidth + ',' + targetHeight + ')';
   }
 

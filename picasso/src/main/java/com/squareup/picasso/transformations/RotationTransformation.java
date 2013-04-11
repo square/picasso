@@ -59,7 +59,7 @@ public class RotationTransformation implements Transformation {
     return transformed;
   }
 
-  @Override public String toString() {
+  @Override public String key() {
     return "rotate(" + degrees + ',' + pivotX + ',' + pivotY + ')';
   }
 }
