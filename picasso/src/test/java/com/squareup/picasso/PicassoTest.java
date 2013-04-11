@@ -25,7 +25,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.Robolectric;
 
-import static android.graphics.BitmapFactory.Options;
 import static com.squareup.picasso.Request.Type;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.api.Assertions.fail;
@@ -98,15 +97,12 @@ public class PicassoTest {
 
   private Context context;
   private SynchronousExecutorService executor;
-  private ContentResolver contentResolver;
   private Loader loader;
   private Cache cache;
 
   @Before public void setUp() {
     context = spy(new Activity());
-    contentResolver = mock(ContentResolver.class);
     doReturn(context).when(context).getApplicationContext();
-    doReturn(contentResolver).when(context).getContentResolver();
 
     executor = new SynchronousExecutorService();
     loader = mock(Loader.class);
@@ -157,6 +153,7 @@ public class PicassoTest {
     verifyZeroInteractions(target);
     executor.flush();
     verify(target).setImageBitmap(bitmap1);
+    assertThat(picasso.targetsToRequests).isEmpty();
   }
 
   @Test public void loadIntoTarget() throws Exception {
@@ -181,6 +178,7 @@ public class PicassoTest {
     executor.flush();
     verifyZeroInteractions(loader);
     verify(target).setImageBitmap(bitmap1);
+    assertThat(picasso.targetsToRequests).isEmpty();
   }
 
   @Test public void loadFileIntoTarget() throws Exception {
@@ -205,6 +203,7 @@ public class PicassoTest {
     executor.flush();
     verifyZeroInteractions(loader);
     verify(target).setImageBitmap(bitmap1);
+    assertThat(picasso.targetsToRequests).isEmpty();
   }
 
   @Test public void loadFileUrlIntoTarget() throws Exception {
@@ -227,9 +226,9 @@ public class PicassoTest {
 
     verifyZeroInteractions(target);
     executor.flush();
-    verify(contentResolver).openInputStream(eq(Uri.parse(CONTENT_1_URL)));
     verifyZeroInteractions(loader);
     verify(target).setImageBitmap(bitmap1);
+    assertThat(picasso.targetsToRequests).isEmpty();
   }
 
   @Test public void loadContentUrlIntoTarget() throws Exception {
@@ -240,7 +239,6 @@ public class PicassoTest {
 
     verifyZeroInteractions(target);
     executor.flush();
-    verify(contentResolver).openInputStream(eq(Uri.parse(CONTENT_1_URL)));
     verify(target).onSuccess(bitmap1);
     assertThat(picasso.targetsToRequests).isEmpty();
   }
@@ -329,8 +327,8 @@ public class PicassoTest {
 
     Picasso picasso = create(NULL_ANSWER, NULL_ANSWER);
     Request request =
-        new Request(picasso, FILE_1_URL, 0, target, null, Collections.<Transformation>emptyList(), null,
-            Type.FILE, 0, errorDrawable);
+        new Request(picasso, FILE_1_URL, 0, target, null, Collections.<Transformation>emptyList(),
+            null, Type.FILE, 0, errorDrawable);
     request = spy(request);
     picasso.submit(request);
     executor.flush();
@@ -345,9 +343,8 @@ public class PicassoTest {
     ImageView target = mock(ImageView.class);
 
     Picasso picasso = create(NULL_ANSWER, NULL_ANSWER);
-    Request request =
-        new Request(picasso, CONTENT_1_URL, 0, target, null, Collections.<Transformation>emptyList(), null,
-            Type.CONTENT, 0, errorDrawable);
+    Request request = new Request(picasso, CONTENT_1_URL, 0, target, null,
+        Collections.<Transformation>emptyList(), null, Type.CONTENT, 0, errorDrawable);
     request = spy(request);
     picasso.submit(request);
     executor.flush();
@@ -388,7 +385,8 @@ public class PicassoTest {
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
-  @Test public void loadContentIntoImageViewRetriesThreeTimesBeforeInvokingError() throws Exception {
+  @Test public void loadContentIntoImageViewRetriesThreeTimesBeforeInvokingError()
+      throws Exception {
     Picasso picasso = create(NULL_ANSWER, IO_EXCEPTION_ANSWER);
     ImageView target = mock(ImageView.class);
 
@@ -703,7 +701,7 @@ public class PicassoTest {
     transformations.add(nullTransformation);
 
     Request request =
-        new Request(picasso, CONTENT_1_URL, mock(ImageView.class), null, transformations, null,
+        new Request(picasso, CONTENT_1_URL, 0, mock(ImageView.class), null, transformations, null,
             Type.CONTENT, 0, null);
 
     try {
@@ -736,10 +734,13 @@ public class PicassoTest {
     picasso = spy(picasso);
 
     doAnswer(loaderAnswer).when(loader).load(anyString(), anyBoolean());
-    doAnswer(decoderAnswer).when(picasso).decodeStream(any(InputStream.class), any(Options.class));
-    doAnswer(decoderAnswer).when(picasso).decodeFile(anyString(), any(Options.class));
+    doAnswer(decoderAnswer).when(picasso).decodeFile(anyString(), any(PicassoBitmapOptions.class));
     doAnswer(decoderAnswer).when(picasso)
-        .decodeResource(any(Resources.class), anyInt(), any(Options.class));
+        .decodeContentStream(any(Uri.class), any(PicassoBitmapOptions.class));
+    doAnswer(decoderAnswer).when(picasso)
+        .decodeStream(any(InputStream.class), any(PicassoBitmapOptions.class));
+    doAnswer(decoderAnswer).when(picasso)
+        .decodeResource(any(Resources.class), anyInt(), any(PicassoBitmapOptions.class));
     return picasso;
   }
 

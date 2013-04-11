@@ -78,4 +78,20 @@ final class Utils {
 
     return output;
   }
+
+  static void calculateInSampleSize(PicassoBitmapOptions options) {
+    final int height = options.outHeight;
+    final int width = options.outWidth;
+    final int reqHeight = options.targetHeight;
+    final int reqWidth = options.targetWidth;
+    int sampleSize = 1;
+    if (height > reqHeight || width > reqWidth) {
+      final int heightRatio = Math.round((float) height / (float) reqHeight);
+      final int widthRatio = Math.round((float) width / (float) reqWidth);
+      sampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+    }
+
+    options.inSampleSize = sampleSize;
+    options.inJustDecodeBounds = false;
+  }
 }

@@ -96,11 +96,6 @@ public class RequestTest {
     }
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void nullBitmapsAreInvalid() {
-    builder.bitmapOptions(null);
-  }
-
   @Test public void invalidResize() {
     try {
       builder.resize(-1, 10);

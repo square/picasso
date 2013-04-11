@@ -21,10 +21,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static android.graphics.BitmapFactory.Options;
 import static com.squareup.picasso.Loader.Response;
 import static com.squareup.picasso.Request.Type;
 import static com.squareup.picasso.RequestMetrics.LoadedFrom;
+import static com.squareup.picasso.Utils.calculateInSampleSize;
 
 public class Picasso {
   private static final int RETRY_DELAY = 500;
@@ -74,8 +74,8 @@ public class Picasso {
 
   boolean debugging;
 
-  private Picasso(Context context, Loader loader,
-      ExecutorService service, Cache memoryCache, boolean debugging) {
+  private Picasso(Context context, Loader loader, ExecutorService service, Cache memoryCache,
+      boolean debugging) {
     this.context = context;
     this.loader = loader;
     this.service = service;
@@ -163,16 +163,33 @@ public class Picasso {
     }
   }
 
-  Bitmap decodeStream(InputStream stream, Options bitmapOptions) {
+  Bitmap decodeStream(InputStream stream, PicassoBitmapOptions bitmapOptions) {
     if (stream == null) return null;
     return BitmapFactory.decodeStream(stream, null, bitmapOptions);
   }
 
-  Bitmap decodeFile(String path, Options bitmapOptions) {
+  Bitmap decodeContentStream(Uri path, PicassoBitmapOptions bitmapOptions) throws IOException {
+    ContentResolver contentResolver = context.getContentResolver();
+    if (bitmapOptions != null && bitmapOptions.inJustDecodeBounds) {
+      BitmapFactory.decodeStream(contentResolver.openInputStream(path), null, bitmapOptions);
+      calculateInSampleSize(bitmapOptions);
+    }
+    return BitmapFactory.decodeStream(contentResolver.openInputStream(path), null, bitmapOptions);
+  }
+
+  Bitmap decodeFile(String path, PicassoBitmapOptions bitmapOptions) {
+    if (bitmapOptions != null && bitmapOptions.inJustDecodeBounds) {
+      BitmapFactory.decodeFile(path, bitmapOptions);
+      calculateInSampleSize(bitmapOptions);
+    }
     return BitmapFactory.decodeFile(path, bitmapOptions);
   }
 
-  Bitmap decodeResource(Resources resources, int resourceId, Options bitmapOptions) {
+  Bitmap decodeResource(Resources resources, int resourceId, PicassoBitmapOptions bitmapOptions) {
+    if (bitmapOptions != null && bitmapOptions.inJustDecodeBounds) {
+      BitmapFactory.decodeResource(resources, resourceId, bitmapOptions);
+      calculateInSampleSize(bitmapOptions);
+    }
     return BitmapFactory.decodeResource(resources, resourceId, bitmapOptions);
   }
 
@@ -213,8 +230,7 @@ public class Picasso {
       switch (request.type) {
         case CONTENT:
           Uri path = Uri.parse(request.path);
-          ContentResolver contentResolver = context.getContentResolver();
-          result = decodeStream(contentResolver.openInputStream(path), request.bitmapOptions);
+          result = decodeContentStream(path, request.bitmapOptions);
           fromDisk = true;
           break;
         case RESOURCE:
