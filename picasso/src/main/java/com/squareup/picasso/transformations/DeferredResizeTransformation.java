@@ -25,7 +25,7 @@ public class DeferredResizeTransformation implements Transformation {
     return ResizeTransformation.resize(source, width, height);
   }
 
-  @Override public String toString() {
+  @Override public String key() {
     return "deferredResize()";
   }
 }

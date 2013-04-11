@@ -32,11 +32,11 @@ final class Utils {
     if (transformations != null && !transformations.isEmpty()) {
       if (transformations.size() == 1) {
         builder.append('|');
-        builder.append(transformations.get(0).toString());
+        builder.append(transformations.get(0).key());
       } else {
         for (Transformation transformation : transformations) {
           builder.append('|');
-          builder.append(transformation.toString());
+          builder.append(transformation.key());
         }
       }
     }

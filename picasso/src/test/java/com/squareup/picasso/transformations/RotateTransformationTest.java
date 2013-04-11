@@ -2,10 +2,12 @@ package com.squareup.picasso.transformations;
 
 import android.graphics.Bitmap;
 import com.squareup.picasso.PicassoTestRunner;
+import com.squareup.picasso.Transformation;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.fest.assertions.api.ANDROID.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(PicassoTestRunner.class)
 public class RotateTransformationTest {
@@ -47,5 +49,29 @@ public class RotateTransformationTest {
     Bitmap actual = transformation.transform(source);
     assertThat(actual).isNotSameAs(source).hasWidth(10).hasHeight(10).isNotRecycled();
     assertThat(source).isRecycled();
+  }
+
+  @Test public void keyDependsOnDegrees() {
+    Transformation transformation1 =  new RotationTransformation(43, 4, 4);
+    Transformation transformation2 =  new RotationTransformation(90, 4, 4);
+    assertThat(transformation1.key()).isNotEqualTo(transformation2.key());
+  }
+
+  @Test public void keyDependsOnPivotX() {
+    Transformation transformation1 =  new RotationTransformation(43, 4, 4);
+    Transformation transformation2 =  new RotationTransformation(43, 10, 4);
+    assertThat(transformation1.key()).isNotEqualTo(transformation2.key());
+  }
+
+  @Test public void keyDependsOnPivotY() {
+    Transformation transformation1 =  new RotationTransformation(43, 4, 4);
+    Transformation transformation2 =  new RotationTransformation(43, 4, 10);
+    assertThat(transformation1.key()).isNotEqualTo(transformation2.key());
+  }
+
+  @Test public void keyIsNotReferenceBased() {
+    Transformation transformation1 = new RotationTransformation(43, 4, 4);
+    Transformation transformation2 = new RotationTransformation(43, 4, 4);
+    assertThat(transformation1.key()).isEqualTo(transformation2.key());
   }
 }

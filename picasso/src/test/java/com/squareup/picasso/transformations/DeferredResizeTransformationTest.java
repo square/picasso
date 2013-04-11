@@ -4,12 +4,14 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.widget.ImageView;
 import com.squareup.picasso.PicassoTestRunner;
+import com.squareup.picasso.Transformation;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static android.view.View.MeasureSpec.EXACTLY;
 import static android.view.View.MeasureSpec.makeMeasureSpec;
 import static org.fest.assertions.api.ANDROID.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(PicassoTestRunner.class)
 public class DeferredResizeTransformationTest {
@@ -39,4 +41,13 @@ public class DeferredResizeTransformationTest {
     assertThat(actual).isNotSameAs(source).hasWidth(5).hasHeight(5).isNotRecycled();
     assertThat(source).isRecycled();
   }
+
+  @Test public void keyIsNotReferenceBased() {
+    ImageView view1 = new ImageView(new Activity());
+    ImageView view2 = new ImageView(new Activity());
+    Transformation transformation1 = new DeferredResizeTransformation(view1);
+    Transformation transformation2 = new DeferredResizeTransformation(view2);
+    assertThat(transformation1.key()).isEqualTo(transformation2.key());
+  }
+
 }

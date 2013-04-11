@@ -106,7 +106,7 @@ public class Request implements Runnable {
         + ", bitmapOptions="
         + bitmapOptions
         + ", transformations="
-        + transformations
+        + transformationKeys()
         + ", metrics="
         + metrics
         + ", future="
@@ -116,6 +116,29 @@ public class Request implements Runnable {
         + ", retryCount="
         + retryCount
         + ']';
+  }
+
+  String transformationKeys() {
+
+    if (transformations.isEmpty()) {
+      return "[]";
+    }
+
+    StringBuilder sb = new StringBuilder(transformations.size() * 16);
+
+    sb.append('[');
+    boolean first = true;
+    for (Transformation transformation : transformations) {
+      if (first) {
+        first = false;
+      } else {
+        sb.append(", ");
+      }
+      sb.append(transformation.key());
+    }
+    sb.append(']');
+
+    return sb.toString();
   }
 
   @SuppressWarnings("UnusedDeclaration") // Public API.

@@ -42,7 +42,7 @@ public class ScaleTransformation implements Transformation {
     return transformed;
   }
 
-  @Override public String toString() {
+  @Override public String key() {
     return "scale(" + factor + ')';
   }
 }

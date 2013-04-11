@@ -2,10 +2,12 @@ package com.squareup.picasso.transformations;
 
 import android.graphics.Bitmap;
 import com.squareup.picasso.PicassoTestRunner;
+import com.squareup.picasso.Transformation;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.fest.assertions.api.ANDROID.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(PicassoTestRunner.class)
 public class ScaleTransformationTest {
@@ -31,5 +33,17 @@ public class ScaleTransformationTest {
     Bitmap actual = transformation.transform(source);
     assertThat(actual).isNotSameAs(source).hasWidth(20).hasHeight(20).isNotRecycled();
     assertThat(source).isRecycled();
+  }
+
+  @Test public void keyDependsOnFactor() {
+    Transformation transformation1 =  new ScaleTransformation(2);
+    Transformation transformation2 =  new ScaleTransformation(4);
+    assertThat(transformation1.key()).isNotEqualTo(transformation2.key());
+  }
+
+  @Test public void keyIsNotReferenceBased() {
+    Transformation transformation1 = new ScaleTransformation(2);
+    Transformation transformation2 = new ScaleTransformation(2);
+    assertThat(transformation1.key()).isEqualTo(transformation2.key());
   }
 }
