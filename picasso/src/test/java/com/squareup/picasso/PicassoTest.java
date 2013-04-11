@@ -657,8 +657,7 @@ public class PicassoTest {
     }
   }
 
-  @Test public void nullTransform_throws() {
-
+  @Test public void withNullTransformThrows() {
     Picasso picasso = Picasso.with(new Activity());
 
     Transformation okTransformation = mock(Transformation.class);
