@@ -1,21 +1,18 @@
 package com.squareup.picasso.sample;
 
 import android.content.Context;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
-import android.widget.TextView;
 import com.squareup.picasso.Picasso;
+
+import static android.widget.ImageView.ScaleType.FIT_CENTER;
 
 public class SampleAdapter extends BaseAdapter {
   private final Context context;
-  private final LayoutInflater inflater;
 
   public SampleAdapter(Context context) {
     this.context = context;
-    this.inflater = LayoutInflater.from(context);
   }
 
   @Override public int getCount() {
@@ -31,36 +28,23 @@ public class SampleAdapter extends BaseAdapter {
   }
 
   @Override public View getView(int position, View convertView, ViewGroup parent) {
-    Holder holder;
-    if (convertView != null) {
-      holder = (Holder) convertView.getTag();
-    } else {
-      holder = new Holder();
-      convertView = inflater.inflate(R.layout.list_item, parent, false);
-      convertView.setTag(holder);
-      holder.image = (ImageView) convertView.findViewById(R.id.image);
-      holder.name = (TextView) convertView.findViewById(R.id.name);
+    SquaredImageView view = (SquaredImageView) convertView;
+    if (view == null) {
+      view = new SquaredImageView(context);
+      view.setScaleType(FIT_CENTER);
     }
 
     // Get the image URL for the current position.
     String url = getItem(position);
-
-    // Set the URL into the text field.
-    holder.name.setText(url);
 
     // Trigger the download of the URL asynchronously into the image view.
     Picasso.with(context) //
         .load(url) //
         .placeholder(R.drawable.placeholder) //
         .error(R.drawable.error) //
-        .into(holder.image);
+        .into(view);
 
-    return convertView;
-  }
-
-  private static class Holder {
-    ImageView image;
-    TextView name;
+    return view;
   }
 
   private static final String BASE = "http://upload.wikimedia.org/wikipedia/commons/thumb";

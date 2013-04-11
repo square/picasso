@@ -1,32 +1,33 @@
 package com.squareup.picasso.sample;
 
 import android.app.Activity;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ListView;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.GridView;
+import android.widget.Toast;
 import com.squareup.picasso.Picasso;
 
-import static android.os.StrictMode.ThreadPolicy;
+import static android.widget.Toast.LENGTH_SHORT;
 
 public class SampleActivity extends Activity {
   private SampleAdapter adapter;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
-      StrictMode.setThreadPolicy(new ThreadPolicy.Builder().detectAll().penaltyLog().build());
-    }
+    setContentView(R.layout.sample_activity);
 
     adapter = new SampleAdapter(this);
-
-    ListView lv = new ListView(this);
-    lv.setAdapter(adapter);
-
-    setContentView(lv);
+    GridView gv = (GridView) findViewById(R.id.grid_view);
+    gv.setAdapter(adapter);
+    gv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+      @Override
+      public void onItemClick(AdapterView<?> adapterView, View view, int position, long itemId) {
+        Toast.makeText(SampleActivity.this, adapter.getItem(position), LENGTH_SHORT).show();
+      }
+    });
   }
 
   @Override public boolean onCreateOptionsMenu(Menu menu) {
