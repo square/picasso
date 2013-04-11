@@ -266,11 +266,12 @@ public class Picasso {
   private Bitmap transformResult(Request request, Bitmap result) {
     List<Transformation> transformations = request.transformations;
     if (!transformations.isEmpty()) {
-      if (transformations.size() == 1) {
-        result = transformations.get(0).transform(result);
-      } else {
-        for (Transformation transformation : transformations) {
-          result = transformation.transform(result);
+      //noinspection ForLoopReplaceableByForEach
+      for (int i = 0, count = transformations.size(); i < count; i++) {
+        Transformation t = transformations.get(i);
+        result = t.transform(result);
+        if (result == null) {
+          throw new NullPointerException("Transformation " + t.key() + " returned null.");
         }
       }
     }
