@@ -702,7 +702,7 @@ public class PicassoTest {
     transformations.add(nullTransformation);
 
     Request request =
-        new Request(picasso, CONTENT_1_URL, mock(ImageView.class), null, transformations, null,
+        new Request(picasso, CONTENT_1_URL, 0, mock(ImageView.class), null, transformations, null,
             Type.CONTENT, 0, null);
 
     try {
