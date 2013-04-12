@@ -1,5 +1,6 @@
 package com.squareup.picasso;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
@@ -234,6 +235,13 @@ public class Request implements Runnable {
     public Builder fit() {
       deferredResize = true;
       return this;
+    }
+
+    public Builder resizeDimen(int targetWidthResId, int targetHeightResId) {
+      Resources resources = picasso.context.getResources();
+      int targetWidth = resources.getDimensionPixelSize(targetWidthResId);
+      int targetHeight = resources.getDimensionPixelSize(targetHeightResId);
+      return resize(targetWidth, targetHeight);
     }
 
     public Builder resize(int targetWidth, int targetHeight) {
