@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.squareup.picasso.Utils.createKey;
+import static com.squareup.picasso.Utils.parseResponseSourceHeader;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -55,5 +56,16 @@ public class UtilsTest {
     Request order1 = new Request(picasso, URL, 0, null, null, t5, metrics, null, 0, null);
     Request order2 = new Request(picasso, URL, 0, null, null, t6, metrics, null, 0, null);
     assertThat(createKey(order1)).isNotEqualTo(createKey(order2));
+  }
+
+  @Test public void loadedFromCache() {
+    assertThat(parseResponseSourceHeader(null)).isFalse();
+    assertThat(parseResponseSourceHeader("CACHE 200")).isTrue();
+    assertThat(parseResponseSourceHeader("STREAM 200")).isFalse();
+    assertThat(parseResponseSourceHeader("CONDITIONAL_CACHE 200")).isFalse();
+    assertThat(parseResponseSourceHeader("CONDITIONAL_CACHE 304")).isTrue();
+    assertThat(parseResponseSourceHeader("STREAM 304")).isFalse();
+    assertThat(parseResponseSourceHeader("")).isFalse();
+    assertThat(parseResponseSourceHeader("HELLO WORLD")).isFalse();
   }
 }
