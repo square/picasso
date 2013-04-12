@@ -1,7 +1,6 @@
 package com.squareup.picasso;
 
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -32,7 +31,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
@@ -52,6 +50,7 @@ public class PicassoTest {
   private static final String URI_2 = "URI2";
   private static final File FILE_1 = new File("C:\\windows\\system32\\logo.exe");
   private static final String FILE_1_URL = "file:///" + FILE_1.getPath();
+  private static final String FILE_1_URL_NO_AUTHORITY = "file:/" + FILE_1.getParent();
   private static final String CONTENT_1_URL = "content://zip/zap/zoop.jpg";
 
   private static final Answer NO_ANSWER = new Answer() {
@@ -198,6 +197,19 @@ public class PicassoTest {
 
     Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
     picasso.load(FILE_1_URL).into(target);
+
+    verifyZeroInteractions(target);
+    executor.flush();
+    verifyZeroInteractions(loader);
+    verify(target).setImageBitmap(bitmap1);
+    assertThat(picasso.targetsToRequests).isEmpty();
+  }
+
+  @Test public void loadFileUrlWithoutAuthorityIntoImageView() throws Exception {
+    ImageView target = mock(ImageView.class);
+
+    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
+    picasso.load(FILE_1_URL_NO_AUTHORITY).into(target);
 
     verifyZeroInteractions(target);
     executor.flush();

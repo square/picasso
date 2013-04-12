@@ -32,7 +32,7 @@ public class Picasso {
   private static final int REQUEST_RETRY = 2;
   private static final int REQUEST_DECODE_FAILED = 3;
 
-  private static final String FILE_URL_PREFIX = "file:///";
+  private static final String FILE_URL_SCHEME = "file:";
   private static final String CONTENT_URL_PREFIX = "content://";
 
   // TODO This should be static.
@@ -88,8 +88,9 @@ public class Picasso {
     Type type = Type.STREAM;
 
     if (path != null) {
-      if (path.startsWith(FILE_URL_PREFIX)) {
-        return load(new File(path.substring(FILE_URL_PREFIX.length())));
+      if (path.startsWith(FILE_URL_SCHEME)) {
+        path = path.replaceFirst(FILE_URL_SCHEME + "(\\/\\/)?", "");
+        return load(new File(path));
       }
 
       if (path.startsWith(CONTENT_URL_PREFIX)) {
