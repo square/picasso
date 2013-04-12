@@ -8,8 +8,10 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class DefaultHttpLoader implements Loader {
+import static com.squareup.picasso.Utils.parseResponseSourceHeader;
 
+public class DefaultHttpLoader implements Loader {
+  private static final String RESPONSE_SOURCE = "X-Android-Response-Source";
   private static final String PICASSO_CACHE = "picasso-cache";
   private static final int MAX_SIZE = 10 * 1024 * 1024;
 
@@ -22,17 +24,20 @@ public class DefaultHttpLoader implements Loader {
     this.context = context.getApplicationContext();
   }
 
+  protected HttpURLConnection openConnection(String path) throws IOException {
+    return (HttpURLConnection) new URL(path).openConnection();
+  }
+
   @Override public Response load(String path, boolean allowExpired) throws IOException {
     installCacheIfNeeded(context);
 
-    HttpURLConnection connection = (HttpURLConnection) new URL(path).openConnection();
+    HttpURLConnection connection = openConnection(path);
     connection.setUseCaches(true);
     if (allowExpired) {
       connection.setRequestProperty("Cache-Control", "only-if-cached");
     }
 
-    // TODO Should handle this.
-    boolean fromCache = false;
+    boolean fromCache = parseResponseSourceHeader(connection.getHeaderField(RESPONSE_SOURCE));
 
     return new Response(connection.getInputStream(), fromCache, allowExpired);
   }
