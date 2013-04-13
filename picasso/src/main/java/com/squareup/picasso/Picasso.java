@@ -297,7 +297,6 @@ public class Picasso {
   Bitmap transformResult(Request request, Bitmap result) {
     List<Transformation> transformations = request.transformations;
     if (!transformations.isEmpty()) {
-      //noinspection ForLoopReplaceableByForEach
       for (int i = 0, count = transformations.size(); i < count; i++) {
         Transformation t = transformations.get(i);
         result = t.transform(result);
