@@ -32,8 +32,8 @@ public class Picasso {
   private static final int REQUEST_RETRY = 2;
   private static final int REQUEST_DECODE_FAILED = 3;
 
-  private static final String FILE_URL_SCHEME = "file:";
-  private static final String CONTENT_URL_PREFIX = "content:";
+  private static final String FILE_SCHEME = "file:";
+  private static final String CONTENT_SCHEME = "content:";
 
   // TODO This should be static.
   private final Handler handler = new Handler(Looper.getMainLooper()) {
@@ -87,10 +87,10 @@ public class Picasso {
 
   public Request.Builder load(String path) {
     if (path != null) {
-      if (path.startsWith(FILE_URL_SCHEME)) {
+      if (path.startsWith(FILE_SCHEME)) {
         return new Request.Builder(this, Uri.parse(path).getPath(), 0, Type.FILE);
       }
-      if (path.startsWith(CONTENT_URL_PREFIX)) {
+      if (path.startsWith(CONTENT_SCHEME)) {
         return new Request.Builder(this, path, 0, Type.CONTENT);
       }
     }

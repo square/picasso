@@ -166,10 +166,10 @@ public class Request implements Runnable {
     private final List<Transformation> transformations;
 
     private boolean deferredResize;
-    private int placeholderResId;
-    private int errorResId;
     private PicassoBitmapOptions bitmapOptions;
+    private int placeholderResId;
     private Drawable placeholderDrawable;
+    private int errorResId;
     private Drawable errorDrawable;
 
     Builder(Picasso picasso, String path, int resourceId, Type type) {
