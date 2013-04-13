@@ -33,7 +33,7 @@ public class Picasso {
   private static final int REQUEST_DECODE_FAILED = 3;
 
   private static final String FILE_URL_SCHEME = "file:";
-  private static final String CONTENT_URL_PREFIX = "content://";
+  private static final String CONTENT_URL_PREFIX = "content:";
 
   // TODO This should be static.
   private final Handler handler = new Handler(Looper.getMainLooper()) {
@@ -43,18 +43,19 @@ public class Picasso {
         return;
       }
 
+      Picasso picasso = request.picasso;
       switch (msg.what) {
         case REQUEST_COMPLETE:
-          targetsToRequests.remove(request.getTarget());
+          picasso.targetsToRequests.remove(request.getTarget());
           request.complete();
           break;
 
         case REQUEST_RETRY:
-          request.picasso.retry(request);
+          picasso.retry(request);
           break;
 
         case REQUEST_DECODE_FAILED:
-          targetsToRequests.remove(request.getTarget());
+          picasso.targetsToRequests.remove(request.getTarget());
           request.error();
           break;
 
@@ -85,23 +86,21 @@ public class Picasso {
   }
 
   public Request.Builder load(String path) {
-    Type type = Type.STREAM;
-
     if (path != null) {
       if (path.startsWith(FILE_URL_SCHEME)) {
-        path = path.replaceFirst(FILE_URL_SCHEME + "(\\/\\/)?", "");
-        return load(new File(path));
+        return new Request.Builder(this, Uri.parse(path).getPath(), 0, Type.FILE);
       }
-
       if (path.startsWith(CONTENT_URL_PREFIX)) {
-        type = Type.CONTENT;
+        return new Request.Builder(this, path, 0, Type.CONTENT);
       }
     }
-    return new Request.Builder(this, path, 0, type);
+    return new Request.Builder(this, path, 0, Type.STREAM);
   }
 
   public Request.Builder load(File file) {
-    if (file == null) throw new IllegalArgumentException("File may not be null.");
+    if (file == null) {
+      throw new IllegalArgumentException("File may not be null.");
+    }
     return new Request.Builder(this, file.getPath(), 0, Type.FILE);
   }
 
