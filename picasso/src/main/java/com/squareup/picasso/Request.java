@@ -83,13 +83,9 @@ public class Request implements Runnable {
     if (target == null) {
       return;
     }
-
     if (errorResId != 0) {
       target.setImageResource(errorResId);
-      return;
-    }
-
-    if (errorDrawable != null) {
+    } else if (errorDrawable != null) {
       target.setImageDrawable(errorDrawable);
     }
   }
