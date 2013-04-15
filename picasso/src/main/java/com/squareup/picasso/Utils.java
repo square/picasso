@@ -6,6 +6,10 @@ import android.graphics.Paint;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 import java.util.List;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 
 final class Utils {
 
@@ -111,6 +115,17 @@ final class Utils {
       return "CONDITIONAL_CACHE".equals(parts[0]) && Integer.parseInt(parts[1]) == 304;
     } catch (NumberFormatException e) {
       return false;
+    }
+  }
+
+  static class PicassoThreadFactory implements ThreadFactory {
+    private static final AtomicInteger id = new AtomicInteger();
+
+    @SuppressWarnings("NullableProblems") public Thread newThread(Runnable r) {
+      Thread t = new Thread(r);
+      t.setName("picasso-" + id.getAndIncrement());
+      t.setPriority(THREAD_PRIORITY_BACKGROUND);
+      return t;
     }
   }
 }

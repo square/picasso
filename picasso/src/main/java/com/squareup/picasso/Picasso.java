@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.os.Process;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,8 +17,6 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.squareup.picasso.Loader.Response;
 import static com.squareup.picasso.Request.Type;
@@ -383,21 +380,9 @@ public class Picasso {
         memoryCache = new LruCache(context);
       }
       if (service == null) {
-        service = Executors.newFixedThreadPool(3, new PicassoThreadFactory());
+        service = Executors.newFixedThreadPool(3, new Utils.PicassoThreadFactory());
       }
       return new Picasso(context, loader, service, memoryCache, debugging);
-    }
-  }
-
-  static class PicassoThreadFactory implements ThreadFactory {
-    private static final AtomicInteger id = new AtomicInteger();
-
-    @SuppressWarnings("NullableProblems") public Thread newThread(Runnable r) {
-      Thread t = new Thread(r);
-      t.setName("picasso-" + id.getAndIncrement());
-      t.setPriority(Process.THREAD_PRIORITY_BACKGROUND);
-
-      return t;
     }
   }
 }
