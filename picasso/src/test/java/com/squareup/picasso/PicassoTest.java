@@ -112,10 +112,34 @@ public class PicassoTest {
     executor.runnables.clear();
   }
 
-  // TODO test load() doesn't accept empty string
-  // TODO test load() doesn't accept null string
-  // TODO test load() doesn't accept null file
-  // TODO test load() doesn't accept zero resource id
+  @Test public void loadDoesNotAcceptInvalidInput() throws IOException {
+    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
+    try {
+      picasso.load((String) null);
+      fail("Null URL should throw exception.");
+    } catch (IllegalArgumentException expected) {
+    }
+    try {
+      picasso.load("");
+      fail("Empty URL should throw exception.");
+    } catch (IllegalArgumentException expected) {
+    }
+    try {
+      picasso.load("      ");
+      fail("Empty URL should throw exception.");
+    } catch (IllegalArgumentException expected) {
+    }
+    try {
+      picasso.load((File) null);
+      fail("Null File should throw exception.");
+    } catch (IllegalArgumentException expected) {
+    }
+    try {
+      picasso.load(0);
+      fail("Null File should throw exception.");
+    } catch (IllegalArgumentException expected) {
+    }
+  }
 
   @Test public void singleIsLazilyInitialized() throws Exception {
     assertThat(Picasso.singleton).isNull();
@@ -316,9 +340,10 @@ public class PicassoTest {
 
     Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
     picasso.load(URI_1).into(target);
+    String key = Utils.createKey(URI_1, 0, null, null, null);
 
     executor.flush();
-    verify(cache).set(URI_1, bitmap1);
+    verify(cache).set(key, bitmap1);
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
@@ -446,7 +471,8 @@ public class PicassoTest {
 
   @Test public void loadIntoImageViewQuickCacheHit() throws Exception {
     // Assume bitmap is already in memory cache.
-    when(cache.get(URI_1)).thenReturn(bitmap1);
+    String key = Utils.createKey(URI_1, 0, null, null, null);
+    when(cache.get(key)).thenReturn(bitmap1);
 
     ImageView target = mock(ImageView.class);
     Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
@@ -541,7 +567,7 @@ public class PicassoTest {
     List<Transformation> transformations = new ArrayList<Transformation>(1);
     transformations.add(transformation);
 
-    String key = Utils.createKey(URI_1, transformations, null);
+    String key = Utils.createKey(URI_1, 0, null, transformations, null);
 
     Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
     picasso.load(URI_1).transform(transformation).into(target1);
@@ -559,7 +585,8 @@ public class PicassoTest {
   }
 
   @Test public void withRecycledRetryRequestStopsRetrying() throws Exception {
-    when(cache.get(URI_1)).thenReturn(bitmap1);
+    String key = Utils.createKey(URI_1, 0, null, null, null);
+    when(cache.get(key)).thenReturn(bitmap1);
 
     ImageView target = mock(ImageView.class);
 
@@ -579,12 +606,8 @@ public class PicassoTest {
     ImageView target = mock(ImageView.class);
     Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
 
-    Bitmap transformationResult = mock(Bitmap.class);
-
-    Transformation resize = mock(Transformation.class);
-    when(resize.transform(any(Bitmap.class))).thenReturn(transformationResult);
-
     List<Transformation> transformations = new ArrayList<Transformation>(1);
+    Transformation resize = spy(new TestTransformation("test"));
     transformations.add(resize);
 
     Request request =
@@ -609,8 +632,8 @@ public class PicassoTest {
     List<Transformation> transformations = new ArrayList<Transformation>(1);
     transformations.add(transformation);
 
-    // Assume a transformed image is already in cache with key 'URI1|transformation(something)'.
-    when(cache.get(Utils.createKey(URI_1, transformations, null))).thenReturn(bitmap1);
+    // Assume a transformed image is already in cache with matching key.
+    when(cache.get(Utils.createKey(URI_1, 0, null, transformations, null))).thenReturn(bitmap1);
 
     Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
     picasso.load(URI_1).transform(transformation).into(target);
@@ -713,31 +736,48 @@ public class PicassoTest {
 
     List<Transformation> transformations = new ArrayList<Transformation>();
 
-    transformations.add(okTransformation);
-    transformations.add(nullTransformation);
+    transformations.add(new TestTransformation("OK"));
+    transformations.add(new TestTransformation("NULL", null));
 
     Request request =
         new Request(picasso, CONTENT_1_URL, 0, mock(ImageView.class), null, transformations, null,
             Type.CONTENT, 0, null);
 
     try {
-      picasso.transformResult(request, mock(Bitmap.class));
-      fail("transformResult should throw a NullPointerException when a tranformation returns null");
+      Picasso.transformResult(request, Bitmap.createBitmap(10, 10, null));
+      fail("Should throw a NullPointerException when a transformation returns null.");
     } catch (NullPointerException e) {
       assertThat(e.getMessage()).contains("after 1 previous transformation");
-      assertThat(e.getMessage()).contains("null() returned null");
+      assertThat(e.getMessage()).contains("NULL returned null");
     }
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void notRecyclingTransformThrows() {
+    Picasso picasso = Picasso.with(new Activity());
+
+    Bitmap input = mock(Bitmap.class);
+    Bitmap output = mock(Bitmap.class);
+    Transformation badTransformation = mock(Transformation.class);
+    when(badTransformation.transform(input)).thenReturn(output);
+    when(input.isRecycled()).thenReturn(false);
+
+    List<Transformation> transformations = new ArrayList<Transformation>();
+    transformations.add(badTransformation);
+
+    Request request =
+        new Request(picasso, CONTENT_1_URL, 0, null, null, transformations, null, Type.CONTENT, 0,
+            null);
+    Picasso.transformResult(request, input);
   }
 
   private void retryRequest(Picasso picasso, Request request) {
     picasso.submit(request);
 
-    executor.flush();
-    runUiThreadTasksIncludingDelayedTasks();
-    executor.flush();
-    runUiThreadTasksIncludingDelayedTasks();
-    executor.flush();
-    runUiThreadTasksIncludingDelayedTasks();
+    for (int i = Request.DEFAULT_RETRY_COUNT; i >= 0; i--) {
+      executor.flush();
+      runUiThreadTasksIncludingDelayedTasks();
+    }
   }
 
   private Picasso create(Answer loaderAnswer, Answer decoderAnswer) throws IOException {
