@@ -691,7 +691,7 @@ public class PicassoTest {
   @Test public void builderCreatesDefaults() throws Exception {
     Picasso p = new Picasso.Builder(context).build();
     assertThat(p.loader).isNotNull();
-    assertThat(p.memoryCache).isNotNull();
+    assertThat(p.cache).isNotNull();
     assertThat(p.service).isNotNull();
   }
 

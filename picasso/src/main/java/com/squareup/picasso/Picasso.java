@@ -67,17 +67,17 @@ public class Picasso {
   final Context context;
   final Loader loader;
   final ExecutorService service;
-  final Cache memoryCache;
+  final Cache cache;
   final Map<Object, Request> targetsToRequests;
 
   boolean debugging;
 
-  private Picasso(Context context, Loader loader, ExecutorService service, Cache memoryCache,
+  private Picasso(Context context, Loader loader, ExecutorService service, Cache cache,
       boolean debugging) {
     this.context = context;
     this.loader = loader;
     this.service = service;
-    this.memoryCache = memoryCache;
+    this.cache = cache;
     this.debugging = debugging;
     this.targetsToRequests = new WeakHashMap<Object, Request>();
   }
@@ -135,12 +135,9 @@ public class Picasso {
   }
 
   Bitmap quickMemoryCacheCheck(Object target, String path) {
-    Bitmap cached = null;
-    if (memoryCache != null) {
-      cached = memoryCache.get(path);
-      if (debugging && cached != null) {
-        cached = Utils.applyDebugSourceIndicator(cached, LoadedFrom.MEM);
-      }
+    Bitmap cached = cache.get(path);
+    if (debugging && cached != null) {
+      cached = Utils.applyDebugSourceIndicator(cached, LoadedFrom.MEM);
     }
 
     cancelExistingRequest(target, path);
@@ -202,20 +199,16 @@ public class Picasso {
   }
 
   private Bitmap loadFromCache(Request request) {
-    Bitmap cached = null;
-
-    if (memoryCache != null) {
-      cached = memoryCache.get(request.key);
-      if (cached != null) {
-        if (debugging) {
-          if (request.metrics != null) {
-            request.metrics.loadedFrom = LoadedFrom.MEM;
-          }
-          cached = Utils.applyDebugSourceIndicator(cached, LoadedFrom.MEM);
+    Bitmap cached = cache.get(request.key);
+    if (cached != null) {
+      if (debugging) {
+        if (request.metrics != null) {
+          request.metrics.loadedFrom = LoadedFrom.MEM;
         }
-        request.result = cached;
-        handler.sendMessage(handler.obtainMessage(REQUEST_COMPLETE, request));
+        cached = Utils.applyDebugSourceIndicator(cached, LoadedFrom.MEM);
       }
+      request.result = cached;
+      handler.sendMessage(handler.obtainMessage(REQUEST_COMPLETE, request));
     }
     return cached;
   }
@@ -268,8 +261,8 @@ public class Picasso {
 
       result = transformResult(request, result);
 
-      if (result != null && memoryCache != null) {
-        memoryCache.set(request.key, result);
+      if (result != null) {
+        cache.set(request.key, result);
       }
 
       if (debugging) {
