@@ -10,17 +10,17 @@ import java.net.URL;
 
 import static com.squareup.picasso.Utils.parseResponseSourceHeader;
 
-public class DefaultHttpLoader implements Loader {
+public class DefaultLoader implements Loader {
   private static final String RESPONSE_SOURCE = "X-Android-Response-Source";
   private static final String PICASSO_CACHE = "picasso-cache";
-  private static final int MAX_SIZE = 10 * 1024 * 1024;
+  private static final int MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
   private static final Object lock = new Object();
   private static volatile HttpResponseCache cache;
 
   private final Context context;
 
-  public DefaultHttpLoader(Context context) {
+  public DefaultLoader(Context context) {
     this.context = context.getApplicationContext();
   }
 
@@ -51,8 +51,8 @@ public class DefaultHttpLoader implements Loader {
       try {
         synchronized (lock) {
           if (cache == null) {
-            cache =
-                HttpResponseCache.install(new File(context.getCacheDir(), PICASSO_CACHE), MAX_SIZE);
+            File cacheDir = new File(context.getCacheDir(), PICASSO_CACHE);
+            cache = HttpResponseCache.install(cacheDir, MAX_SIZE);
           }
         }
       } catch (IOException ignored) {

@@ -368,7 +368,7 @@ public class Picasso {
 
     public Picasso build() {
       if (loader == null) {
-        loader = new DefaultHttpLoader(context);
+        loader = new DefaultLoader(context);
       }
       if (memoryCache == null) {
         memoryCache = new LruCache(context);
