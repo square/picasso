@@ -83,29 +83,30 @@ public class Picasso {
   }
 
   public Request.Builder load(String path) {
-    if (path != null) {
-      if (path.startsWith(FILE_SCHEME)) {
-        return new Request.Builder(this, Uri.parse(path).getPath(), 0, Type.FILE);
-      }
-      if (path.startsWith(CONTENT_SCHEME)) {
-        return new Request.Builder(this, path, 0, Type.CONTENT);
-      }
+    if (path == null || path.trim().length() == 0) {
+      throw new IllegalArgumentException("Path may not be empty.");
     }
-    return new Request.Builder(this, path, 0, Type.STREAM);
+    if (path.startsWith(FILE_SCHEME)) {
+      return new Request.Builder(this, Uri.parse(path).getPath(), Type.FILE);
+    }
+    if (path.startsWith(CONTENT_SCHEME)) {
+      return new Request.Builder(this, path, Type.CONTENT);
+    }
+    return new Request.Builder(this, path, Type.STREAM);
   }
 
   public Request.Builder load(File file) {
     if (file == null) {
       throw new IllegalArgumentException("File may not be null.");
     }
-    return new Request.Builder(this, file.getPath(), 0, Type.FILE);
+    return new Request.Builder(this, file.getPath(), Type.FILE);
   }
 
   public Request.Builder load(int resourceId) {
     if (resourceId == 0) {
       throw new IllegalArgumentException("Resource ID must not be zero.");
     }
-    return new Request.Builder(this, null, resourceId, Type.RESOURCE);
+    return new Request.Builder(this, resourceId);
   }
 
   public boolean isDebugging() {
@@ -126,7 +127,7 @@ public class Picasso {
     request.future = service.submit(request);
   }
 
-  Bitmap run(Request request) {
+  Bitmap resolveRequest(Request request) {
     Bitmap bitmap = loadFromCache(request);
     if (bitmap == null) {
       bitmap = loadFromType(request);

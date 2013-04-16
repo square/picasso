@@ -112,6 +112,11 @@ public class PicassoTest {
     executor.runnables.clear();
   }
 
+  // TODO test load() doesn't accept empty string
+  // TODO test load() doesn't accept null string
+  // TODO test load() doesn't accept null file
+  // TODO test load() doesn't accept zero resource id
+
   @Test public void singleIsLazilyInitialized() throws Exception {
     assertThat(Picasso.singleton).isNull();
     Picasso.with(new Activity());
