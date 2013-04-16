@@ -24,50 +24,24 @@ final class Utils {
   }
 
   static String createKey(Request request) {
-    return createKey(request.path, request.resourceId, request.options, request.transformations,
-        request.metrics);
+    return createKey(request.path, request.transformations, request.metrics);
   }
 
-  static String createKey(String path, int resourceId, PicassoBitmapOptions options,
-      List<Transformation> transformations, RequestMetrics metrics) {
+  static String createKey(String path, List<Transformation> transformations,
+      RequestMetrics metrics) {
     long start = System.nanoTime();
     StringBuilder builder = new StringBuilder();
+    builder.append(path);
 
-    if (path != null) {
-      builder.append(path);
-    } else {
-      builder.append(resourceId);
-    }
-    builder.append('\n');
-
-    if (options != null) {
-      float targetRotation = options.targetRotation;
-      if (targetRotation != 0) {
-        builder.append("rotation:").append(targetRotation);
-        if (options.hasRotationPivot) {
-          builder.append('@').append(options.targetPivotX).append('x').append(options.targetPivotY);
+    if (transformations != null && !transformations.isEmpty()) {
+      if (transformations.size() == 1) {
+        builder.append('|');
+        builder.append(transformations.get(0).key());
+      } else {
+        for (Transformation transformation : transformations) {
+          builder.append('|');
+          builder.append(transformation.key());
         }
-        builder.append('\n');
-      }
-      int targetWidth = options.targetWidth;
-      int targetHeight = options.targetHeight;
-      if (targetWidth != 0) {
-        builder.append("resize").append(targetWidth).append('x').append(targetHeight);
-        builder.append('\n');
-      }
-      float targetScaleX = options.targetScaleX;
-      float targetScaleY = options.targetScaleY;
-      if (targetScaleX != 0) {
-        builder.append("scale:").append(targetScaleX).append('x').append(targetScaleY);
-        builder.append('\n');
-      }
-    }
-
-    if (transformations != null) {
-      //noinspection ForLoopReplaceableByForEach
-      for (int i = 0, count = transformations.size(); i < count; i++) {
-        builder.append(transformations.get(i).key());
-        builder.append('\n');
       }
     }
 

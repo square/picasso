@@ -5,12 +5,10 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.widget.ImageView;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -223,16 +221,16 @@ public class Picasso {
       switch (request.type) {
         case CONTENT:
           Uri path = Uri.parse(request.path);
-          result = decodeContentStream(path, request.options);
+          result = decodeContentStream(path, request.bitmapOptions);
           fromDisk = true;
           break;
         case RESOURCE:
           Resources resources = context.getResources();
-          result = decodeResource(resources, request.resourceId, request.options);
+          result = decodeResource(resources, request.resourceId, request.bitmapOptions);
           fromDisk = true;
           break;
         case FILE:
-          result = decodeFile(request.path, request.options);
+          result = decodeFile(request.path, request.bitmapOptions);
           fromDisk = true;
           break;
         case STREAM:
@@ -242,7 +240,7 @@ public class Picasso {
             if (response == null) {
               return null;
             }
-            result = decodeStream(response.stream, request.options);
+            result = decodeStream(response.stream, request.bitmapOptions);
           } finally {
             if (response != null && response.stream != null) {
               try {
@@ -287,67 +285,13 @@ public class Picasso {
     return result;
   }
 
-  static Bitmap transformResult(Request request, Bitmap result) {
-    PicassoBitmapOptions pbo = request.options;
-    if (pbo != null) {
-      Matrix matrix = new Matrix();
-      int inWidth = result.getWidth();
-      int inHeight = result.getHeight();
-      int targetWidth = 0;
-      int targetHeight = 0;
-
-      // If the caller wants deferred resize, try to load the target ImageView's measured size.
-      if (pbo.deferredResize) {
-        ImageView target = request.target.get();
-        if (target != null) {
-          targetWidth = target.getMeasuredWidth();
-          targetHeight = target.getMeasuredHeight();
-        }
-      }
-
-      // If there was no deferred resize or the target view has not yet been measured, and the
-      // caller specified and explicit resize, use those measurements.
-      if (targetWidth == 0 && targetHeight == 0) {
-        targetWidth = pbo.targetWidth;
-        targetHeight = pbo.targetHeight;
-      }
-
-      float targetRotation = pbo.targetRotation;
-      if (targetRotation != 0) {
-        if (pbo.hasRotationPivot) {
-          matrix.setRotate(targetRotation, pbo.targetPivotX, pbo.targetPivotY);
-        } else {
-          matrix.setRotate(targetRotation);
-        }
-      }
-
-      float targetScaleX = pbo.targetScaleX;
-      float targetScaleY = pbo.targetScaleY;
-      if (targetScaleX != 0 || targetScaleY != 0) {
-        matrix.setScale(targetScaleX, targetScaleY);
-      }
-
-      // If an explicit target size has been specified and they do not match the results bounds,
-      // pre-scale the existing matrix appropriately.
-      if (targetWidth != 0 && targetHeight != 0 //
-          && (targetWidth != inWidth || targetHeight != inHeight)) {
-        final float sx = targetWidth / (float) inWidth;
-        final float sy = targetHeight / (float) inHeight;
-        matrix.preScale(sx, sy);
-      }
-
-      Bitmap newResult = Bitmap.createBitmap(result, 0, 0, inWidth, inHeight, matrix, false);
-      result.recycle();
-      result = newResult;
-    }
-
-    // Apply any post-request transformations.
+  Bitmap transformResult(Request request, Bitmap result) {
     List<Transformation> transformations = request.transformations;
-    if (transformations != null) {
+    if (!transformations.isEmpty()) {
       for (int i = 0, count = transformations.size(); i < count; i++) {
         Transformation t = transformations.get(i);
-        Bitmap newResult = t.transform(result);
-        if (newResult == null) {
+        result = t.transform(result);
+        if (result == null) {
           throw new NullPointerException("Transformation "
               + t.key()
               + " returned null when transforming "
@@ -357,15 +301,8 @@ public class Picasso {
               + " previous transformations. Transformation list: "
               + request.transformationKeys());
         }
-        if (newResult != result && !result.isRecycled()) {
-          throw new IllegalStateException("Transformation "
-              + t.key()
-              + " mutated input Bitmap but failed to recycle the original.");
-        }
-        result = newResult;
       }
     }
-
     return result;
   }
 

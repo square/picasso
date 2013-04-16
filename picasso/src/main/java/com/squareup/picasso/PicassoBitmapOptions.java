@@ -3,15 +3,13 @@ package com.squareup.picasso;
 import android.graphics.BitmapFactory;
 
 class PicassoBitmapOptions extends BitmapFactory.Options {
-  int targetWidth;
-  int targetHeight;
-  boolean deferredResize;
+  final int targetWidth;
+  final int targetHeight;
+  final int targetScale;
 
-  float targetScaleX;
-  float targetScaleY;
-
-  float targetRotation;
-  float targetPivotX;
-  float targetPivotY;
-  boolean hasRotationPivot;
+  PicassoBitmapOptions(int targetWidth, int targetHeight, int targetScale) {
+    this.targetWidth = targetWidth;
+    this.targetHeight = targetHeight;
+    this.targetScale = targetScale;
+  }
 }
