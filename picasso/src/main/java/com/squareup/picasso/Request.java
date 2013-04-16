@@ -92,7 +92,7 @@ public class Request implements Runnable {
 
   @Override public void run() {
     try {
-      picasso.run(this);
+      picasso.resolveRequest(this);
     } catch (final Throwable e) {
       // If an unexpected exception happens, we should crash the app instead of letting the
       // executor swallow it.
@@ -168,18 +168,18 @@ public class Request implements Runnable {
     private int errorResId;
     private Drawable errorDrawable;
 
-    Builder(Picasso picasso, String path, int resourceId, Type type) {
-      if (picasso == null) {
-        throw new AssertionError();
-      }
-      boolean hasPath = path != null && path.trim().length() != 0;
-      boolean hasResource = resourceId != 0;
-      if (!(hasPath ^ hasResource)) {
-        throw new IllegalArgumentException("A valid path or valid resource must be provided.");
-      }
+    Builder(Picasso picasso, int resourceId) {
+      this.picasso = picasso;
+      this.path = null;
+      this.resourceId = resourceId;
+      this.type = Type.RESOURCE;
+      this.transformations = new ArrayList<Transformation>(4);
+    }
+
+    Builder(Picasso picasso, String path, Type type) {
       this.picasso = picasso;
       this.path = path;
-      this.resourceId = resourceId;
+      this.resourceId = 0;
       this.type = type;
       this.transformations = new ArrayList<Transformation>(4);
     }
@@ -289,7 +289,7 @@ public class Request implements Runnable {
       Request request =
           new Request(picasso, path, resourceId, null, bitmapOptions, transformations, null, type,
               errorResId, errorDrawable);
-      return picasso.run(request);
+      return picasso.resolveRequest(request);
     }
 
     public void into(Target target) {
