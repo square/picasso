@@ -24,13 +24,11 @@ final class Utils {
   }
 
   static String createKey(Request request) {
-    return createKey(request.path, request.resourceId, request.options, request.transformations,
-        request.metrics);
+    return createKey(request.path, request.resourceId, request.options, request.transformations);
   }
 
   static String createKey(String path, int resourceId, PicassoBitmapOptions options,
-      List<Transformation> transformations, RequestMetrics metrics) {
-    long start = System.nanoTime();
+      List<Transformation> transformations) {
     StringBuilder builder = new StringBuilder();
 
     if (path != null) {
@@ -71,10 +69,6 @@ final class Utils {
       }
     }
 
-    if (metrics != null) {
-      metrics.keyCreationTime = System.nanoTime() - start;
-    }
-
     // TODO Support bitmap options?
     return builder.toString();
   }
@@ -85,7 +79,7 @@ final class Utils {
     }
   };
 
-  static Bitmap applyDebugSourceIndicator(Bitmap source, RequestMetrics.LoadedFrom loadedFrom) {
+  static Bitmap applyDebugSourceIndicator(Bitmap source, Request.LoadedFrom loadedFrom) {
     Paint debugPaint = DEBUG_PAINT.get();
     Bitmap output = Bitmap.createBitmap(source.getWidth(), source.getHeight(), source.getConfig());
 
@@ -100,7 +94,7 @@ final class Utils {
     canvas.drawRect(0, -10 * pixelPerDp, 7.5f * pixelPerDp, 10 * pixelPerDp, debugPaint);
 
     // Draw a slightly smaller square for the indicator color.
-    debugPaint.setColor(RequestMetrics.getColorCodeForCacheHit(loadedFrom));
+    debugPaint.setColor(loadedFrom.debugColor);
     canvas.drawRect(0, -9 * pixelPerDp, 6.5f * pixelPerDp, 9 * pixelPerDp, debugPaint);
 
     // Do not recycle source bitmap here. This is the image that is stored inside the cache and can

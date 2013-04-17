@@ -22,7 +22,6 @@ import java.util.concurrent.Executors;
 
 import static com.squareup.picasso.Loader.Response;
 import static com.squareup.picasso.Request.Type;
-import static com.squareup.picasso.RequestMetrics.LoadedFrom;
 import static com.squareup.picasso.Utils.calculateInSampleSize;
 
 public class Picasso {
@@ -84,31 +83,31 @@ public class Picasso {
     this.targetsToRequests = new WeakHashMap<Object, Request>();
   }
 
-  public Request.Builder load(String path) {
+  public RequestBuilder load(String path) {
     if (path == null || path.trim().length() == 0) {
       throw new IllegalArgumentException("Path may not be empty.");
     }
     if (path.startsWith(FILE_SCHEME)) {
-      return new Request.Builder(this, Uri.parse(path).getPath(), Type.FILE);
+      return new RequestBuilder(this, Uri.parse(path).getPath(), Type.FILE);
     }
     if (path.startsWith(CONTENT_SCHEME)) {
-      return new Request.Builder(this, path, Type.CONTENT);
+      return new RequestBuilder(this, path, Type.CONTENT);
     }
-    return new Request.Builder(this, path, Type.STREAM);
+    return new RequestBuilder(this, path, Type.STREAM);
   }
 
-  public Request.Builder load(File file) {
+  public RequestBuilder load(File file) {
     if (file == null) {
       throw new IllegalArgumentException("File may not be null.");
     }
-    return new Request.Builder(this, file.getPath(), Type.FILE);
+    return new RequestBuilder(this, file.getPath(), Type.FILE);
   }
 
-  public Request.Builder load(int resourceId) {
+  public RequestBuilder load(int resourceId) {
     if (resourceId == 0) {
       throw new IllegalArgumentException("Resource ID must not be zero.");
     }
-    return new Request.Builder(this, resourceId);
+    return new RequestBuilder(this, resourceId);
   }
 
   public boolean isDebugging() {
@@ -140,7 +139,7 @@ public class Picasso {
   Bitmap quickMemoryCacheCheck(Object target, String path) {
     Bitmap cached = cache.get(path);
     if (debugging && cached != null) {
-      cached = Utils.applyDebugSourceIndicator(cached, LoadedFrom.MEM);
+      cached = Utils.applyDebugSourceIndicator(cached, Request.LoadedFrom.MEMORY);
     }
 
     cancelExistingRequest(target, path);
@@ -205,11 +204,9 @@ public class Picasso {
     Bitmap cached = cache.get(request.key);
     if (cached != null) {
       if (debugging) {
-        if (request.metrics != null) {
-          request.metrics.loadedFrom = LoadedFrom.MEM;
-        }
-        cached = Utils.applyDebugSourceIndicator(cached, LoadedFrom.MEM);
+        cached = Utils.applyDebugSourceIndicator(cached, Request.LoadedFrom.MEMORY);
       }
+      request.loadedFrom = Request.LoadedFrom.MEMORY;
       request.result = cached;
       handler.sendMessage(handler.obtainMessage(REQUEST_COMPLETE, request));
     }
@@ -218,22 +215,21 @@ public class Picasso {
 
   private Bitmap loadFromType(Request request) {
     Bitmap result = null;
-    boolean fromDisk;
     try {
       switch (request.type) {
         case CONTENT:
           Uri path = Uri.parse(request.path);
           result = decodeContentStream(path, request.options);
-          fromDisk = true;
+          request.loadedFrom = Request.LoadedFrom.DISK;
           break;
         case RESOURCE:
           Resources resources = context.getResources();
           result = decodeResource(resources, request.resourceId, request.options);
-          fromDisk = true;
+          request.loadedFrom = Request.LoadedFrom.DISK;
           break;
         case FILE:
           result = decodeFile(request.path, request.options);
-          fromDisk = true;
+          request.loadedFrom = Request.LoadedFrom.DISK;
           break;
         case STREAM:
           Response response = null;
@@ -251,7 +247,8 @@ public class Picasso {
               }
             }
           }
-          fromDisk = response.cached;
+          request.loadedFrom =
+              response.cached ? Request.LoadedFrom.DISK : Request.LoadedFrom.NETWORK;
           break;
         default:
           throw new AssertionError("Unknown request type. " + request.type);
@@ -266,15 +263,10 @@ public class Picasso {
 
       if (result != null) {
         cache.set(request.key, result);
-      }
 
-      if (debugging) {
-        if (request.metrics != null) {
-          request.metrics.loadedFrom = fromDisk ? LoadedFrom.DISK : LoadedFrom.NETWORK;
+        if (debugging) {
           // For color coded debugging, apply color filter after the bitmap is added to the cache.
-          if (result != null) {
-            result = Utils.applyDebugSourceIndicator(result, request.metrics.loadedFrom);
-          }
+          result = Utils.applyDebugSourceIndicator(result, request.loadedFrom);
         }
       }
 
