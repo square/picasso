@@ -1,20 +1,64 @@
 package com.squareup.picasso;
 
+import android.content.ContentResolver;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.media.ExifInterface;
+import android.net.Uri;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.util.DisplayMetrics;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static android.media.ExifInterface.ORIENTATION_NORMAL;
+import static android.media.ExifInterface.ORIENTATION_ROTATE_180;
+import static android.media.ExifInterface.ORIENTATION_ROTATE_270;
+import static android.media.ExifInterface.ORIENTATION_ROTATE_90;
+import static android.media.ExifInterface.TAG_ORIENTATION;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 
 final class Utils {
+  private static final String[] CONTENT_ORIENTATION = new String[] {
+      MediaStore.Images.ImageColumns.ORIENTATION
+  };
 
   private Utils() {
     // No instances.
+  }
+
+  static int getContentProviderExifRotation(Uri uri, ContentResolver contentResolver) {
+    Cursor cursor = null;
+    try {
+      cursor = contentResolver.query(uri, CONTENT_ORIENTATION, null, null, null);
+      if (cursor == null || !cursor.moveToFirst()) {
+        return 0;
+      }
+      return cursor.getInt(0);
+    } finally {
+      if (cursor != null) {
+        cursor.close();
+      }
+    }
+  }
+
+  static int getFileExifRotation(String path) throws IOException {
+    ExifInterface exifInterface = new ExifInterface(path);
+    int orientation = exifInterface.getAttributeInt(TAG_ORIENTATION, ORIENTATION_NORMAL);
+    switch (orientation) {
+      case ORIENTATION_ROTATE_90:
+        return 90;
+      case ORIENTATION_ROTATE_180:
+        return 180;
+      case ORIENTATION_ROTATE_270:
+        return 270;
+      default:
+        return 0;
+    }
   }
 
   static void checkNotMain() {

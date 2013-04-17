@@ -214,11 +214,13 @@ public class Picasso {
   }
 
   private Bitmap loadFromType(Request request) {
+    int exifRotation = 0;
     Bitmap result = null;
     try {
       switch (request.type) {
         case CONTENT:
           Uri path = Uri.parse(request.path);
+          exifRotation = Utils.getContentProviderExifRotation(path, context.getContentResolver());
           result = decodeContentStream(path, request.options);
           request.loadedFrom = Request.LoadedFrom.DISK;
           break;
@@ -228,6 +230,7 @@ public class Picasso {
           request.loadedFrom = Request.LoadedFrom.DISK;
           break;
         case FILE:
+          exifRotation = Utils.getFileExifRotation(request.path);
           result = decodeFile(request.path, request.options);
           request.loadedFrom = Request.LoadedFrom.DISK;
           break;
@@ -259,7 +262,7 @@ public class Picasso {
         return null;
       }
 
-      result = transformResult(request, result);
+      result = transformResult(request, result, exifRotation);
 
       if (result != null) {
         cache.set(request.key, result);
@@ -279,12 +282,15 @@ public class Picasso {
     return result;
   }
 
-  static Bitmap transformResult(Request request, Bitmap result) {
+  static Bitmap transformResult(Request request, Bitmap result, int exifRotation) {
+    int inWidth = result.getWidth();
+    int inHeight = result.getHeight();
+
+    Matrix matrix = null;
+
     PicassoBitmapOptions pbo = request.options;
     if (pbo != null) {
-      Matrix matrix = new Matrix();
-      int inWidth = result.getWidth();
-      int inHeight = result.getHeight();
+      matrix = new Matrix();
       int targetWidth = 0;
       int targetHeight = 0;
 
@@ -323,11 +329,19 @@ public class Picasso {
       // pre-scale the existing matrix appropriately.
       if (targetWidth != 0 && targetHeight != 0 //
           && (targetWidth != inWidth || targetHeight != inHeight)) {
-        final float sx = targetWidth / (float) inWidth;
-        final float sy = targetHeight / (float) inHeight;
+        float sx = targetWidth / (float) inWidth;
+        float sy = targetHeight / (float) inHeight;
         matrix.preScale(sx, sy);
       }
+    }
+    if (exifRotation != 0) {
+      if (matrix == null) {
+        matrix = new Matrix();
+      }
+      matrix.preRotate(exifRotation);
+    }
 
+    if (matrix != null) {
       Bitmap newResult = Bitmap.createBitmap(result, 0, 0, inWidth, inHeight, matrix, false);
       result.recycle();
       result = newResult;
