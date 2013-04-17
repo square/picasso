@@ -6,20 +6,17 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.ImageView;
-import com.squareup.picasso.transformations.DeferredResizeTransformation;
-import com.squareup.picasso.transformations.ResizeTransformation;
-import com.squareup.picasso.transformations.RotationTransformation;
-import com.squareup.picasso.transformations.ScaleTransformation;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import org.jetbrains.annotations.TestOnly;
 
 import static com.squareup.picasso.Utils.checkNotMain;
 import static com.squareup.picasso.Utils.createKey;
 
 public class Request implements Runnable {
-  private static final int DEFAULT_RETRY_COUNT = 2;
+  static final int DEFAULT_RETRY_COUNT = 2;
 
   enum Type {
     CONTENT,
@@ -35,7 +32,7 @@ public class Request implements Runnable {
   final Type type;
   final int errorResId;
   final WeakReference<ImageView> target;
-  final PicassoBitmapOptions bitmapOptions;
+  final PicassoBitmapOptions options;
   final List<Transformation> transformations;
   final RequestMetrics metrics;
   final Drawable errorDrawable;
@@ -46,8 +43,8 @@ public class Request implements Runnable {
   boolean retryCancelled;
 
   Request(Picasso picasso, String path, int resourceId, ImageView imageView,
-      PicassoBitmapOptions bitmapOptions, List<Transformation> transformations,
-      RequestMetrics metrics, Type type, int errorResId, Drawable errorDrawable) {
+      PicassoBitmapOptions options, List<Transformation> transformations, RequestMetrics metrics,
+      Type type, int errorResId, Drawable errorDrawable) {
     this.picasso = picasso;
     this.path = path;
     this.resourceId = resourceId;
@@ -55,7 +52,7 @@ public class Request implements Runnable {
     this.errorResId = errorResId;
     this.errorDrawable = errorDrawable;
     this.target = new WeakReference<ImageView>(imageView);
-    this.bitmapOptions = bitmapOptions;
+    this.options = options;
     this.transformations = transformations;
     this.metrics = metrics;
     this.retryCount = DEFAULT_RETRY_COUNT;
@@ -116,8 +113,8 @@ public class Request implements Runnable {
         + resourceId
         + ", target="
         + target
-        + ", bitmapOptions="
-        + bitmapOptions
+        + ", options="
+        + options
         + ", transformations="
         + transformationKeys()
         + ", metrics="
@@ -132,7 +129,7 @@ public class Request implements Runnable {
   }
 
   String transformationKeys() {
-    if (transformations.isEmpty()) {
+    if (transformations == null) {
       return "[]";
     }
 
@@ -159,10 +156,9 @@ public class Request implements Runnable {
     private final String path;
     private final int resourceId;
     private final Type type;
-    private final List<Transformation> transformations;
 
-    private boolean deferredResize;
-    private PicassoBitmapOptions bitmapOptions;
+    PicassoBitmapOptions options;
+    private List<Transformation> transformations;
     private int placeholderResId;
     private Drawable placeholderDrawable;
     private int errorResId;
@@ -181,7 +177,20 @@ public class Request implements Runnable {
       this.path = path;
       this.resourceId = 0;
       this.type = type;
-      this.transformations = new ArrayList<Transformation>(4);
+    }
+
+    @TestOnly Builder() {
+      this.picasso = null;
+      this.path = null;
+      this.resourceId = 0;
+      this.type = null;
+    }
+
+    private PicassoBitmapOptions getOptions() {
+      if (options == null) {
+        options = new PicassoBitmapOptions();
+      }
+      return options;
     }
 
     public Builder placeholder(int placeholderResId) {
@@ -221,7 +230,7 @@ public class Request implements Runnable {
       if (errorDrawable == null) {
         throw new IllegalArgumentException("Error image may not be null.");
       }
-      if (this.errorResId != 0) {
+      if (errorResId != 0) {
         throw new IllegalStateException("Error image already set.");
       }
       this.errorDrawable = errorDrawable;
@@ -229,7 +238,13 @@ public class Request implements Runnable {
     }
 
     public Builder fit() {
-      deferredResize = true;
+      PicassoBitmapOptions options = getOptions();
+
+      if (options.targetWidth != 0 || options.targetHeight != 0) {
+        throw new IllegalStateException("Fit cannot be used with resize.");
+      }
+
+      options.deferredResize = true;
       return this;
     }
 
@@ -248,46 +263,84 @@ public class Request implements Runnable {
         throw new IllegalArgumentException("Height must be positive number.");
       }
 
-      // When decoding files from local resources, prefer to use bitmap options for better memory
-      // management.
-      if (type != Type.STREAM) {
-        if (bitmapOptions == null) {
-          bitmapOptions = new PicassoBitmapOptions(targetWidth, targetHeight, 0);
-        }
-        bitmapOptions.inJustDecodeBounds = true;
-        return this;
+      PicassoBitmapOptions options = getOptions();
+
+      if (options.targetWidth != 0 || options.targetHeight != 0) {
+        throw new IllegalStateException("Resize may only be called once.");
+      }
+      if (options.deferredResize) {
+        throw new IllegalStateException("Resize cannot be used with fit.");
       }
 
-      return transform(new ResizeTransformation(targetWidth, targetHeight));
+      options.targetWidth = targetWidth;
+      options.targetHeight = targetHeight;
+
+      // Use bounds decoding optimization when reading local resources.
+      if (type != Type.STREAM) {
+        options.inJustDecodeBounds = true;
+      }
+
+      return this;
     }
 
     public Builder scale(float factor) {
-      if (factor <= 0) {
+      if (factor != 1) {
+        scale(factor, factor);
+      }
+      return this;
+    }
+
+    public Builder scale(float factorX, float factorY) {
+      if (factorX == 0 || factorY == 0) {
         throw new IllegalArgumentException("Scale factor must be positive number.");
       }
-      return transform(new ScaleTransformation(factor));
+      if (factorX != 1 && factorY != 1) {
+        PicassoBitmapOptions options = getOptions();
+
+        if (options.targetScaleX != 0 || options.targetScaleY != 0) {
+          throw new IllegalStateException("Scale may only be called once.");
+        }
+
+        options.targetScaleX = factorX;
+        options.targetScaleY = factorY;
+      }
+      return this;
     }
 
     public Builder rotate(float degrees) {
-      return transform(new RotationTransformation(degrees));
+      if (degrees != 0) {
+        PicassoBitmapOptions options = getOptions();
+        options.targetRotation = degrees;
+      }
+      return this;
     }
 
     public Builder rotate(float degrees, float pivotX, float pivotY) {
-      return transform(new RotationTransformation(degrees, pivotX, pivotY));
+      if (degrees != 0) {
+        PicassoBitmapOptions pbo = getOptions();
+        pbo.targetRotation = degrees;
+        pbo.targetPivotX = pivotX;
+        pbo.targetPivotY = pivotY;
+        pbo.hasRotationPivot = true;
+      }
+      return this;
     }
 
     public Builder transform(Transformation transformation) {
       if (transformation == null) {
         throw new IllegalArgumentException("Transformation may not be null.");
       }
-      this.transformations.add(transformation);
+      if (transformations == null) {
+        transformations = new ArrayList<Transformation>(2);
+      }
+      transformations.add(transformation);
       return this;
     }
 
     public Bitmap get() {
       checkNotMain();
       Request request =
-          new Request(picasso, path, resourceId, null, bitmapOptions, transformations, null, type,
+          new Request(picasso, path, resourceId, null, options, transformations, null, type,
               errorResId, errorDrawable);
       return picasso.resolveRequest(request);
     }
@@ -297,7 +350,8 @@ public class Request implements Runnable {
         throw new IllegalArgumentException("Target cannot be null.");
       }
 
-      Bitmap bitmap = picasso.quickMemoryCacheCheck(target, createKey(path, transformations, null));
+      Bitmap bitmap = picasso.quickMemoryCacheCheck(target,
+          createKey(path, resourceId, options, transformations, null));
       if (bitmap != null) {
         target.onSuccess(bitmap);
         return;
@@ -305,8 +359,8 @@ public class Request implements Runnable {
 
       RequestMetrics metrics = createRequestMetrics();
       Request request =
-          new TargetRequest(picasso, path, resourceId, target, bitmapOptions, transformations,
-              metrics, type, errorResId, errorDrawable);
+          new TargetRequest(picasso, path, resourceId, target, options, transformations, metrics,
+              type, errorResId, errorDrawable);
       picasso.submit(request);
     }
 
@@ -315,11 +369,8 @@ public class Request implements Runnable {
         throw new IllegalArgumentException("Target cannot be null.");
       }
 
-      if (deferredResize) {
-        transformations.add(new DeferredResizeTransformation(target));
-      }
-
-      Bitmap bitmap = picasso.quickMemoryCacheCheck(target, createKey(path, transformations, null));
+      Bitmap bitmap = picasso.quickMemoryCacheCheck(target,
+          createKey(path, resourceId, options, transformations, null));
       if (bitmap != null) {
         target.setImageBitmap(bitmap);
         return;
@@ -327,16 +378,14 @@ public class Request implements Runnable {
 
       if (placeholderDrawable != null) {
         target.setImageDrawable(placeholderDrawable);
-      }
-
-      if (placeholderResId != 0) {
+      } else if (placeholderResId != 0) {
         target.setImageResource(placeholderResId);
       }
 
       RequestMetrics metrics = new RequestMetrics();
       Request request =
-          new Request(picasso, path, resourceId, target, bitmapOptions, transformations, metrics,
-              type, errorResId, errorDrawable);
+          new Request(picasso, path, resourceId, target, options, transformations, metrics, type,
+              errorResId, errorDrawable);
       picasso.submit(request);
     }
 

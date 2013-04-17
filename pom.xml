@@ -65,6 +65,12 @@
       </dependency>
 
       <dependency>
+        <groupId>com.intellij</groupId>
+        <artifactId>annotations</artifactId>
+        <version>9.0.4</version>
+      </dependency>
+
+      <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>4.10</version>
@@ -72,12 +78,12 @@
       <dependency>
         <groupId>org.easytesting</groupId>
         <artifactId>fest-assert-core</artifactId>
-        <version>2.0M8</version>
+        <version>2.0M10</version>
       </dependency>
       <dependency>
         <groupId>com.squareup</groupId>
         <artifactId>fest-android</artifactId>
-        <version>1.0.1</version>
+        <version>1.0.4</version>
       </dependency>
       <dependency>
         <groupId>org.robolectric</groupId>
