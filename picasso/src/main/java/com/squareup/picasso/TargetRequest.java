@@ -4,15 +4,15 @@ import android.graphics.drawable.Drawable;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
-public class TargetRequest extends Request {
+final class TargetRequest extends Request {
 
-  private WeakReference<Target> target;
+  private final WeakReference<Target> target;
 
   TargetRequest(Picasso picasso, String path, int resourceId, Target target,
-      PicassoBitmapOptions bitmapOptions, List<Transformation> transformations,
-      RequestMetrics metrics, Type type, int errorResId, Drawable errorDrawable) {
-    super(picasso, path, resourceId, null, bitmapOptions, transformations, metrics, type,
-        errorResId, errorDrawable);
+      PicassoBitmapOptions bitmapOptions, List<Transformation> transformations, Type type,
+      int errorResId, Drawable errorDrawable) {
+    super(picasso, path, resourceId, null, bitmapOptions, transformations, type, errorResId,
+        errorDrawable);
     this.target = new WeakReference<Target>(target);
   }
 
