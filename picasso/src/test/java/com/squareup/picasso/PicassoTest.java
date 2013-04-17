@@ -736,7 +736,7 @@ public class PicassoTest {
             Type.CONTENT, 0, null);
 
     try {
-      Picasso.transformResult(request, Bitmap.createBitmap(10, 10, null));
+      Picasso.transformResult(request, Bitmap.createBitmap(10, 10, null), 0);
       fail("Should throw a NullPointerException when a transformation returns null.");
     } catch (NullPointerException e) {
       assertThat(e.getMessage()).contains("after 1 previous transformation");
@@ -759,7 +759,7 @@ public class PicassoTest {
 
     Request request =
         new Request(picasso, CONTENT_1_URL, 0, null, null, transformations, Type.CONTENT, 0, null);
-    Picasso.transformResult(request, input);
+    Picasso.transformResult(request, input, 0);
   }
 
   private void retryRequest(Picasso picasso, Request request) {
