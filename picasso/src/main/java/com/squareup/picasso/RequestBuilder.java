@@ -144,6 +144,17 @@ public class RequestBuilder {
     return this;
   }
 
+  public RequestBuilder centerCrop() {
+    PicassoBitmapOptions options = getOptions();
+
+    if (options.targetWidth == 0 || options.targetHeight == 0) {
+      throw new IllegalStateException("Center crop can only be used after calling resize.");
+    }
+
+    options.centerCrop = true;
+    return this;
+  }
+
   public RequestBuilder scale(float factor) {
     if (factor != 1) {
       scale(factor, factor);

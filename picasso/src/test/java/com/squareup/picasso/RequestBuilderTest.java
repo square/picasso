@@ -134,6 +134,14 @@ public class RequestBuilderTest {
     }
   }
 
+  @Test public void invalidCenterCrop() {
+    try {
+      new RequestBuilder().centerCrop();
+      fail("Center crop without resize should throw exception.");
+    } catch (IllegalStateException expected) {
+    }
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void nullTransformationsInvalid() {
     new RequestBuilder().transform(null);

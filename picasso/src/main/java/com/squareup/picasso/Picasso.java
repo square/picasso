@@ -286,6 +286,11 @@ public class Picasso {
     int inWidth = result.getWidth();
     int inHeight = result.getHeight();
 
+    int drawX = 0;
+    int drawY = 0;
+    int drawWidth = inWidth;
+    int drawHeight = inHeight;
+
     Matrix matrix = null;
 
     PicassoBitmapOptions pbo = request.options;
@@ -319,19 +324,35 @@ public class Picasso {
         }
       }
 
+      if (pbo.centerCrop) {
+        float widthRatio = targetWidth / (float) inWidth;
+        float heightRatio = targetHeight / (float) inHeight;
+        float scale;
+        if (widthRatio > heightRatio) {
+          scale = widthRatio;
+          int newSize = (int) Math.ceil(inHeight * (heightRatio / widthRatio));
+          drawY = (inHeight - newSize) / 2;
+          drawHeight = newSize;
+        } else {
+          scale = heightRatio;
+          int newSize = (int) Math.ceil(inWidth * (widthRatio / heightRatio));
+          drawX = (inWidth - newSize) / 2;
+          drawWidth = newSize;
+        }
+        matrix.preScale(scale, scale);
+      } else if (targetWidth != 0 && targetHeight != 0 //
+          && (targetWidth != inWidth || targetHeight != inHeight)) {
+        // If an explicit target size has been specified and they do not match the results bounds,
+        // pre-scale the existing matrix appropriately.
+        float sx = targetWidth / (float) inWidth;
+        float sy = targetHeight / (float) inHeight;
+        matrix.preScale(sx, sy);
+      }
+
       float targetScaleX = pbo.targetScaleX;
       float targetScaleY = pbo.targetScaleY;
       if (targetScaleX != 0 || targetScaleY != 0) {
         matrix.setScale(targetScaleX, targetScaleY);
-      }
-
-      // If an explicit target size has been specified and they do not match the results bounds,
-      // pre-scale the existing matrix appropriately.
-      if (targetWidth != 0 && targetHeight != 0 //
-          && (targetWidth != inWidth || targetHeight != inHeight)) {
-        float sx = targetWidth / (float) inWidth;
-        float sy = targetHeight / (float) inHeight;
-        matrix.preScale(sx, sy);
       }
     }
     if (exifRotation != 0) {
@@ -342,7 +363,8 @@ public class Picasso {
     }
 
     if (matrix != null) {
-      Bitmap newResult = Bitmap.createBitmap(result, 0, 0, inWidth, inHeight, matrix, false);
+      Bitmap newResult =
+          Bitmap.createBitmap(result, drawX, drawY, drawWidth, drawHeight, matrix, false);
       result.recycle();
       result = newResult;
     }
