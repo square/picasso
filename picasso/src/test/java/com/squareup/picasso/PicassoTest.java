@@ -60,7 +60,7 @@ public class PicassoTest {
   };
   private static final Answer LOADER_ANSWER = new Answer() {
     @Override public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-      return new Loader.Response(null, false, false);
+      return new Loader.Response(null, false);
     }
   };
   private static final Answer IO_EXCEPTION_ANSWER = new Answer() {
