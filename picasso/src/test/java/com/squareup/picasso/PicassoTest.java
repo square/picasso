@@ -13,8 +13,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.AbstractExecutorService;
-import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,7 +43,6 @@ import static org.robolectric.Robolectric.runUiThreadTasksIncludingDelayedTasks;
 
 @RunWith(PicassoTestRunner.class)
 public class PicassoTest {
-
   private static final String URI_1 = "URI1";
   private static final String URI_2 = "URI2";
   private static final File FILE_1 = new File("C:\\windows\\system32\\logo.exe");
@@ -109,7 +106,7 @@ public class PicassoTest {
   }
 
   @After public void tearDown() {
-    executor.runnables.clear();
+    executor.runnableList.clear();
   }
 
   @Test public void loadDoesNotAcceptInvalidInput() throws IOException {
@@ -475,7 +472,7 @@ public class PicassoTest {
 
     verify(picasso, never()).submit(any(Request.class));
     verify(target).setImageBitmap(bitmap1);
-    assertThat(executor.runnables).isEmpty();
+    assertThat(executor.runnableList).isEmpty();
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
@@ -789,46 +786,5 @@ public class PicassoTest {
     doAnswer(decoderAnswer).when(picasso)
         .decodeResource(any(Resources.class), anyInt(), any(PicassoBitmapOptions.class));
     return picasso;
-  }
-
-  @SuppressWarnings({ "NullableProblems", "SpellCheckingInspection" })
-  private static class SynchronousExecutorService extends AbstractExecutorService {
-
-    List<Runnable> runnables = new ArrayList<Runnable>();
-
-    @Override public void shutdown() {
-    }
-
-    @Override public List<Runnable> shutdownNow() {
-      return null;
-    }
-
-    @Override public boolean isShutdown() {
-      return false;
-    }
-
-    @Override public boolean isTerminated() {
-      return false;
-    }
-
-    @Override public boolean awaitTermination(long l, TimeUnit timeUnit)
-        throws InterruptedException {
-      return false;
-    }
-
-    @Override public void execute(Runnable runnable) {
-      runnables.add(runnable);
-    }
-
-    public void flush() {
-      for (Runnable runnable : runnables) {
-        runnable.run();
-      }
-      runnables.clear();
-    }
-
-    public void executeFirst() {
-      runnables.remove(0).run();
-    }
   }
 }
