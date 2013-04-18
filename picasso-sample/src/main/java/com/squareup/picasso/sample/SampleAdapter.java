@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static android.widget.ImageView.ScaleType.CENTER_CROP;
-
 public class SampleAdapter extends BaseAdapter {
   private final Context context;
   private final Transformation cropSquare = new CropSquareTransformation();
@@ -39,7 +37,6 @@ public class SampleAdapter extends BaseAdapter {
     SquaredImageView view = (SquaredImageView) convertView;
     if (view == null) {
       view = new SquaredImageView(context);
-      view.setScaleType(CENTER_CROP);
     }
 
     // Get the image URL for the current position.
