@@ -365,8 +365,10 @@ public class Picasso {
     if (matrix != null) {
       Bitmap newResult =
           Bitmap.createBitmap(result, drawX, drawY, drawWidth, drawHeight, matrix, false);
-      result.recycle();
-      result = newResult;
+      if (newResult != result) {
+        result.recycle();
+        result = newResult;
+      }
     }
 
     // Apply any post-request transformations.
