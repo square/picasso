@@ -34,7 +34,7 @@ public class Picasso {
   private static final String CONTENT_SCHEME = "content:";
 
   // TODO This should be static.
-  private final Handler handler = new Handler(Looper.getMainLooper()) {
+  final Handler handler = new Handler(Looper.getMainLooper()) {
     @Override public void handleMessage(Message msg) {
       Request request = (Request) msg.obj;
       if (request.future.isCancelled()) {

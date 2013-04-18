@@ -3,8 +3,6 @@ package com.squareup.picasso;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.os.Handler;
-import android.os.Looper;
 import android.widget.ImageView;
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -101,7 +99,7 @@ class Request implements Runnable {
     } catch (final Throwable e) {
       // If an unexpected exception happens, we should crash the app instead of letting the
       // executor swallow it.
-      new Handler(Looper.getMainLooper()).post(new Runnable() {
+      picasso.handler.post(new Runnable() {
         @Override public void run() {
           throw new RuntimeException("An unexpected exception occurred", e);
         }
