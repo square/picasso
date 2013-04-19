@@ -9,12 +9,10 @@ public interface Loader {
   class Response {
     final InputStream stream;
     final boolean cached;
-    final boolean expired;
 
-    public Response(InputStream stream, boolean cached, boolean expired) {
+    public Response(InputStream stream, boolean cached) {
       this.stream = stream;
       this.cached = cached;
-      this.expired = expired;
     }
   }
 }
