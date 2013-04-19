@@ -217,7 +217,22 @@ public class RequestBuilder {
     return picasso.resolveRequest(request);
   }
 
+  /**
+   * Fills the target with the result of the request.
+   */
+  public void fetch(Target target) {
+    makeTargetRequest(target, true);
+  }
+
+  /**
+   * Keeps a {@link java.lang.ref.WeakReference} to the target. Fills the target with the
+   * result of the request if it is still available.
+   */
   public void into(Target target) {
+    makeTargetRequest(target, false);
+  }
+
+  private void makeTargetRequest(Target target, boolean strong) {
     if (target == null) {
       throw new IllegalArgumentException("Target cannot be null.");
     }
@@ -230,11 +245,15 @@ public class RequestBuilder {
     }
 
     Request request =
-        new TargetRequest(picasso, path, resourceId, target, options, transformations, type,
+        new TargetRequest(picasso, path, resourceId, target, strong, options, transformations, type,
             errorResId, errorDrawable);
     picasso.submit(request);
   }
 
+  /**
+   * Keeps a {@link java.lang.ref.WeakReference} to the view. Fills the view with the
+   * result of the request if it is still available.
+   */
   public void into(ImageView target) {
     if (target == null) {
       throw new IllegalArgumentException("Target cannot be null.");
