@@ -28,6 +28,9 @@ final class TargetRequest extends Request {
     Target target = this.target.get();
     if (target != null) {
       target.onSuccess(result);
+      if (result.isRecycled()) {
+        throw new IllegalStateException("Target callback must not recycle bitmap!");
+      }
     }
   }
 
