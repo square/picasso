@@ -193,6 +193,18 @@ public class PicassoTest {
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
+  @Test public void fetchIntoStrongTarget() throws Exception {
+    Target target = mock(Target.class);
+
+    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
+    picasso.load(URI_1).fetch(target);
+
+    verifyZeroInteractions(target);
+    executor.flush();
+    verify(target).onSuccess(bitmap1);
+    assertThat(picasso.targetsToRequests).isEmpty();
+  }
+
   @Test public void loadFileIntoImageView() throws Exception {
     ImageView target = mock(ImageView.class);
 
@@ -492,7 +504,7 @@ public class PicassoTest {
     Target target = mock(Target.class);
 
     Request request =
-        new TargetRequest(picasso, URI_1, 0, target, null, null, Type.STREAM, 0, null);
+        new TargetRequest(picasso, URI_1, 0, target, false, null, null, Type.STREAM, 0, null);
 
     retryRequest(picasso, request);
     assertThat(picasso.targetsToRequests).isEmpty();
