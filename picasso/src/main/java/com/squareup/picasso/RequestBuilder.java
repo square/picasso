@@ -4,6 +4,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.jetbrains.annotations.TestOnly;
@@ -209,7 +210,7 @@ public class RequestBuilder {
     return this;
   }
 
-  public Bitmap get() {
+  public Bitmap get() throws IOException {
     checkNotMain();
     Request request =
         new Request(picasso, path, resourceId, null, options, transformations, type, errorResId,
@@ -217,9 +218,7 @@ public class RequestBuilder {
     return picasso.resolveRequest(request);
   }
 
-  /**
-   * Fills the target with the result of the request.
-   */
+  /** Fills the target with the result of the request. */
   public void fetch(Target target) {
     makeTargetRequest(target, true);
   }

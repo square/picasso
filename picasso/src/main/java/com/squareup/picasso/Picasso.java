@@ -128,7 +128,23 @@ public class Picasso {
     request.future = service.submit(request);
   }
 
-  Bitmap resolveRequest(Request request) {
+  void run(Request request) {
+    try {
+      Bitmap result = resolveRequest(request);
+
+      if (result == null) {
+        handler.sendMessage(handler.obtainMessage(REQUEST_DECODE_FAILED, request));
+        return;
+      }
+
+      request.result = result;
+      handler.sendMessage(handler.obtainMessage(REQUEST_COMPLETE, request));
+    } catch (IOException e) {
+      handler.sendMessageDelayed(handler.obtainMessage(REQUEST_RETRY, request), RETRY_DELAY);
+    }
+  }
+
+  Bitmap resolveRequest(Request request) throws IOException {
     Bitmap bitmap = loadFromCache(request);
     if (bitmap == null) {
       bitmap = loadFromType(request);
@@ -207,76 +223,65 @@ public class Picasso {
         cached = Utils.applyDebugSourceIndicator(cached, Request.LoadedFrom.MEMORY);
       }
       request.loadedFrom = Request.LoadedFrom.MEMORY;
-      request.result = cached;
-      handler.sendMessage(handler.obtainMessage(REQUEST_COMPLETE, request));
     }
     return cached;
   }
 
-  private Bitmap loadFromType(Request request) {
+  private Bitmap loadFromType(Request request) throws IOException {
     int exifRotation = 0;
     Bitmap result = null;
-    try {
-      switch (request.type) {
-        case CONTENT:
-          Uri path = Uri.parse(request.path);
-          exifRotation = Utils.getContentProviderExifRotation(path, context.getContentResolver());
-          result = decodeContentStream(path, request.options);
-          request.loadedFrom = Request.LoadedFrom.DISK;
-          break;
-        case RESOURCE:
-          Resources resources = context.getResources();
-          result = decodeResource(resources, request.resourceId, request.options);
-          request.loadedFrom = Request.LoadedFrom.DISK;
-          break;
-        case FILE:
-          exifRotation = Utils.getFileExifRotation(request.path);
-          result = decodeFile(request.path, request.options);
-          request.loadedFrom = Request.LoadedFrom.DISK;
-          break;
-        case STREAM:
-          Response response = null;
-          try {
-            response = loader.load(request.path, request.retryCount == 0);
-            if (response == null) {
-              return null;
-            }
-            result = decodeStream(response.stream, request.options);
-          } finally {
-            if (response != null && response.stream != null) {
-              try {
-                response.stream.close();
-              } catch (IOException ignored) {
-              }
+    switch (request.type) {
+      case CONTENT:
+        Uri path = Uri.parse(request.path);
+        exifRotation = Utils.getContentProviderExifRotation(path, context.getContentResolver());
+        result = decodeContentStream(path, request.options);
+        request.loadedFrom = Request.LoadedFrom.DISK;
+        break;
+      case RESOURCE:
+        Resources resources = context.getResources();
+        result = decodeResource(resources, request.resourceId, request.options);
+        request.loadedFrom = Request.LoadedFrom.DISK;
+        break;
+      case FILE:
+        exifRotation = Utils.getFileExifRotation(request.path);
+        result = decodeFile(request.path, request.options);
+        request.loadedFrom = Request.LoadedFrom.DISK;
+        break;
+      case STREAM:
+        Response response = null;
+        try {
+          response = loader.load(request.path, request.retryCount == 0);
+          if (response == null) {
+            return null;
+          }
+          result = decodeStream(response.stream, request.options);
+        } finally {
+          if (response != null && response.stream != null) {
+            try {
+              response.stream.close();
+            } catch (IOException ignored) {
             }
           }
-          request.loadedFrom =
-              response.cached ? Request.LoadedFrom.DISK : Request.LoadedFrom.NETWORK;
-          break;
-        default:
-          throw new AssertionError("Unknown request type. " + request.type);
-      }
-
-      if (result == null) {
-        handler.sendMessage(handler.obtainMessage(REQUEST_DECODE_FAILED, request));
-        return null;
-      }
-
-      result = transformResult(request, result, exifRotation);
-
-      if (result != null) {
-        cache.set(request.key, result);
-
-        if (debugging) {
-          // For color coded debugging, apply color filter after the bitmap is added to the cache.
-          result = Utils.applyDebugSourceIndicator(result, request.loadedFrom);
         }
-      }
+        request.loadedFrom = response.cached ? Request.LoadedFrom.DISK : Request.LoadedFrom.NETWORK;
+        break;
+      default:
+        throw new AssertionError("Unknown request type. " + request.type);
+    }
 
-      request.result = result;
-      handler.sendMessage(handler.obtainMessage(REQUEST_COMPLETE, request));
-    } catch (IOException e) {
-      handler.sendMessageDelayed(handler.obtainMessage(REQUEST_RETRY, request), RETRY_DELAY);
+    if (result == null) {
+      return null;
+    }
+
+    result = transformResult(request, result, exifRotation);
+
+    if (result != null) {
+      cache.set(request.key, result);
+
+      if (debugging) {
+        // For color coded debugging, apply color filter after the bitmap is added to the cache.
+        result = Utils.applyDebugSourceIndicator(result, request.loadedFrom);
+      }
     }
 
     return result;
