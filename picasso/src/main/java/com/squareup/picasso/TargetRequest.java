@@ -11,9 +11,9 @@ final class TargetRequest extends Request {
 
   TargetRequest(Picasso picasso, String path, int resourceId, Target target, boolean strong,
       PicassoBitmapOptions bitmapOptions, List<Transformation> transformations, Type type,
-      int errorResId, Drawable errorDrawable) {
+      int errorResId, boolean skipCache, Drawable errorDrawable) {
     super(picasso, path, resourceId, null, bitmapOptions, transformations, type, errorResId,
-        errorDrawable);
+        skipCache, errorDrawable);
     this.weakTarget = strong ? null : new WeakReference<Target>(target);
     this.strongTarget = strong ? target : null;
   }

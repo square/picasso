@@ -217,6 +217,8 @@ public class Picasso {
   }
 
   private Bitmap loadFromCache(Request request) {
+    if (request.skipCache) return null;
+
     Bitmap cached = cache.get(request.key);
     if (cached != null) {
       if (debugging) {
@@ -275,7 +277,7 @@ public class Picasso {
 
     result = transformResult(request, result, exifRotation);
 
-    if (result != null) {
+    if (result != null && !request.skipCache) {
       cache.set(request.key, result);
 
       if (debugging) {

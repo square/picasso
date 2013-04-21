@@ -22,8 +22,9 @@ public class RequestBuilder {
   PicassoBitmapOptions options;
   private List<Transformation> transformations;
   private int placeholderResId;
-  private Drawable placeholderDrawable;
   private int errorResId;
+  private boolean skipCache;
+  private Drawable placeholderDrawable;
   private Drawable errorDrawable;
 
   RequestBuilder(Picasso picasso, int resourceId) {
@@ -210,11 +211,16 @@ public class RequestBuilder {
     return this;
   }
 
+  public RequestBuilder skipCache() {
+    skipCache = true;
+    return this;
+  }
+
   public Bitmap get() throws IOException {
     checkNotMain();
     Request request =
         new Request(picasso, path, resourceId, null, options, transformations, type, errorResId,
-            errorDrawable);
+            skipCache, errorDrawable);
     return picasso.resolveRequest(request);
   }
 
@@ -245,7 +251,7 @@ public class RequestBuilder {
 
     Request request =
         new TargetRequest(picasso, path, resourceId, target, strong, options, transformations, type,
-            errorResId, errorDrawable);
+            errorResId, skipCache, errorDrawable);
     picasso.submit(request);
   }
 
@@ -273,7 +279,7 @@ public class RequestBuilder {
 
     Request request =
         new Request(picasso, path, resourceId, target, options, transformations, type, errorResId,
-            errorDrawable);
+            skipCache, errorDrawable);
     picasso.submit(request);
   }
 }

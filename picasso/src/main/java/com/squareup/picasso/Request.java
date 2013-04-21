@@ -36,8 +36,9 @@ class Request implements Runnable {
   final String path;
   final int resourceId;
   final String key;
-  final Type type;
   final int errorResId;
+  final boolean skipCache;
+  final Type type;
   final WeakReference<ImageView> target;
   final PicassoBitmapOptions options;
   final List<Transformation> transformations;
@@ -50,14 +51,15 @@ class Request implements Runnable {
   boolean retryCancelled;
 
   Request(Picasso picasso, String path, int resourceId, ImageView imageView,
-      PicassoBitmapOptions options, List<Transformation> transformations,
-      Type type, int errorResId, Drawable errorDrawable) {
+      PicassoBitmapOptions options, List<Transformation> transformations, Type type, int errorResId,
+      boolean skipCache, Drawable errorDrawable) {
     this.picasso = picasso;
     this.path = path;
     this.resourceId = resourceId;
     this.type = type;
     this.errorResId = errorResId;
     this.errorDrawable = errorDrawable;
+    this.skipCache = skipCache;
     this.target = new WeakReference<ImageView>(imageView);
     this.options = options;
     this.transformations = transformations;
