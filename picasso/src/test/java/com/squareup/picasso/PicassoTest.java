@@ -30,7 +30,6 @@ import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -92,9 +91,7 @@ public class PicassoTest {
   private Cache cache;
 
   @Before public void setUp() {
-    context = spy(new Activity());
-    doReturn(context).when(context).getApplicationContext();
-
+    context = new Activity();
     executor = new SynchronousExecutorService();
     loader = mock(Loader.class);
     cache = mock(Cache.class);
@@ -499,10 +496,8 @@ public class PicassoTest {
 
   @Test public void whenTargetRequestFailsCleansUpTargetMap() throws Exception {
     Picasso picasso = create(IO_EXCEPTION_ANSWER, BITMAP1_ANSWER);
-    Target target = mock(Target.class);
-
     Request request =
-        new TargetRequest(picasso, URI_1, 0, target, false, null, null, Type.STREAM, false, 0, null);
+        new TargetRequest(picasso, URI_1, 0, null, false, null, null, Type.STREAM, false, 0, null);
 
     retryRequest(picasso, request);
     assertThat(picasso.targetsToRequests).isEmpty();
@@ -752,8 +747,7 @@ public class PicassoTest {
     transformations.add(new TestTransformation("NULL", null));
 
     Request request =
-        new Request(picasso, CONTENT_1_URL, 0, mock(ImageView.class), null, transformations,
-            Type.CONTENT, false, 0, null);
+        new Request(picasso, null, 0, null, null, transformations, null, false, 0, null);
 
     try {
       Picasso.transformResult(request, Bitmap.createBitmap(10, 10, null), 0);
@@ -778,8 +772,7 @@ public class PicassoTest {
     transformations.add(badTransformation);
 
     Request request =
-        new Request(picasso, CONTENT_1_URL, 0, null, null, transformations, Type.CONTENT, false, 0,
-            null);
+        new Request(picasso, null, 0, null, null, transformations, null, false, 0, null);
     Picasso.transformResult(request, input, 0);
   }
 
