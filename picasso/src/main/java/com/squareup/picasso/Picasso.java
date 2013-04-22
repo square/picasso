@@ -58,7 +58,7 @@ public class Picasso {
           break;
 
         default:
-          throw new AssertionError(String.format("Unknown handler message received! %d", msg.what));
+          throw new AssertionError("Unknown handler message received: " + msg.what);
       }
     }
   };
