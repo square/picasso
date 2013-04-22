@@ -27,7 +27,7 @@ class Request implements Runnable {
 
     final int debugColor;
 
-    LoadedFrom(int debugColor) {
+    private LoadedFrom(int debugColor) {
       this.debugColor = debugColor;
     }
   }
