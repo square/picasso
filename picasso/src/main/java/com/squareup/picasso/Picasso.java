@@ -300,14 +300,14 @@ public class Picasso {
 
     Matrix matrix = null;
 
-    PicassoBitmapOptions pbo = request.options;
-    if (pbo != null) {
+    PicassoBitmapOptions options = request.options;
+    if (options != null) {
       matrix = new Matrix();
       int targetWidth = 0;
       int targetHeight = 0;
 
       // If the caller wants deferred resize, try to load the target ImageView's measured size.
-      if (pbo.deferredResize) {
+      if (options.deferredResize) {
         ImageView target = request.target.get();
         if (target != null) {
           targetWidth = target.getMeasuredWidth();
@@ -318,20 +318,20 @@ public class Picasso {
       // If there was no deferred resize or the target view has not yet been measured, and the
       // caller specified and explicit resize, use those measurements.
       if (targetWidth == 0 && targetHeight == 0) {
-        targetWidth = pbo.targetWidth;
-        targetHeight = pbo.targetHeight;
+        targetWidth = options.targetWidth;
+        targetHeight = options.targetHeight;
       }
 
-      float targetRotation = pbo.targetRotation;
+      float targetRotation = options.targetRotation;
       if (targetRotation != 0) {
-        if (pbo.hasRotationPivot) {
-          matrix.setRotate(targetRotation, pbo.targetPivotX, pbo.targetPivotY);
+        if (options.hasRotationPivot) {
+          matrix.setRotate(targetRotation, options.targetPivotX, options.targetPivotY);
         } else {
           matrix.setRotate(targetRotation);
         }
       }
 
-      if (pbo.centerCrop) {
+      if (options.centerCrop) {
         float widthRatio = targetWidth / (float) inWidth;
         float heightRatio = targetHeight / (float) inHeight;
         float scale;
@@ -356,8 +356,8 @@ public class Picasso {
         matrix.preScale(sx, sy);
       }
 
-      float targetScaleX = pbo.targetScaleX;
-      float targetScaleY = pbo.targetScaleY;
+      float targetScaleX = options.targetScaleX;
+      float targetScaleY = options.targetScaleY;
       if (targetScaleX != 0 || targetScaleY != 0) {
         matrix.setScale(targetScaleX, targetScaleY);
       }

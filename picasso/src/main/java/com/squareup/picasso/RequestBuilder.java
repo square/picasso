@@ -191,11 +191,11 @@ public class RequestBuilder {
 
   public RequestBuilder rotate(float degrees, float pivotX, float pivotY) {
     if (degrees != 0) {
-      PicassoBitmapOptions pbo = getOptions();
-      pbo.targetRotation = degrees;
-      pbo.targetPivotX = pivotX;
-      pbo.targetPivotY = pivotY;
-      pbo.hasRotationPivot = true;
+      PicassoBitmapOptions options = getOptions();
+      options.targetRotation = degrees;
+      options.targetPivotX = pivotX;
+      options.targetPivotY = pivotY;
+      options.hasRotationPivot = true;
     }
     return this;
   }
