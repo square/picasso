@@ -37,7 +37,7 @@ public class Picasso {
   final Handler handler = new Handler(Looper.getMainLooper()) {
     @Override public void handleMessage(Message msg) {
       Request request = (Request) msg.obj;
-      if (request.future.isCancelled()) {
+      if (request.future.isCancelled() || request.retryCancelled) {
         return;
       }
 
@@ -81,6 +81,14 @@ public class Picasso {
     this.cache = cache;
     this.debugging = debugging;
     this.targetsToRequests = new WeakHashMap<Object, Request>();
+  }
+
+  public void cancelRequest(ImageView view) {
+    cancelExistingRequest(view, null);
+  }
+
+  public void cancelRequest(Target target) {
+    cancelExistingRequest(target, null);
   }
 
   public RequestBuilder load(String path) {
@@ -210,7 +218,7 @@ public class Picasso {
     if (existing != null) {
       if (!existing.future.isDone()) {
         existing.future.cancel(true);
-      } else if (!path.equals(existing.path)) {
+      } else if (path == null || !path.equals(existing.path)) {
         existing.retryCancelled = true;
       }
     }
