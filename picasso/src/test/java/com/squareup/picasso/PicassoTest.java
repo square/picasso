@@ -50,11 +50,6 @@ public class PicassoTest {
   private static final String FILE_1_URL_NO_AUTHORITY = "file:/" + FILE_1.getParent();
   private static final String CONTENT_1_URL = "content://zip/zap/zoop.jpg";
 
-  private static final Answer NO_ANSWER = new Answer() {
-    @Override public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-      return null;
-    }
-  };
   private static final Answer LOADER_ANSWER = new Answer() {
     @Override public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
       return new Loader.Response(null, false);
@@ -331,7 +326,7 @@ public class PicassoTest {
 
   @Test public void loadIntoImageViewWithPlaceHolderResource() throws Exception {
     ImageView target = mock(ImageView.class);
-    doAnswer(NO_ANSWER).when(target).setImageResource(anyInt());
+    doAnswer(NULL_ANSWER).when(target).setImageResource(anyInt());
 
     int placeholderResId = 42;
 

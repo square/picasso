@@ -237,24 +237,6 @@ public class RequestBuilder {
     makeTargetRequest(target, false);
   }
 
-  private void makeTargetRequest(Target target, boolean strong) {
-    if (target == null) {
-      throw new IllegalArgumentException("Target cannot be null.");
-    }
-
-    Bitmap bitmap = picasso.quickMemoryCacheCheck(target,
-        createKey(path, resourceId, options, transformations));
-    if (bitmap != null) {
-      target.onSuccess(bitmap);
-      return;
-    }
-
-    Request request =
-        new TargetRequest(picasso, path, resourceId, target, strong, options, transformations, type,
-            skipCache, errorResId, errorDrawable);
-    picasso.submit(request);
-  }
-
   /**
    * Keeps a {@link java.lang.ref.WeakReference} to the view. Fills the view with the
    * result of the request if it is still available.
@@ -280,6 +262,24 @@ public class RequestBuilder {
     Request request =
         new Request(picasso, path, resourceId, target, options, transformations, type, skipCache,
             errorResId, errorDrawable);
+    picasso.submit(request);
+  }
+
+  private void makeTargetRequest(Target target, boolean strong) {
+    if (target == null) {
+      throw new IllegalArgumentException("Target cannot be null.");
+    }
+
+    Bitmap bitmap = picasso.quickMemoryCacheCheck(target,
+        createKey(path, resourceId, options, transformations));
+    if (bitmap != null) {
+      target.onSuccess(bitmap);
+      return;
+    }
+
+    Request request =
+        new TargetRequest(picasso, path, resourceId, target, strong, options, transformations, type,
+            skipCache, errorResId, errorDrawable);
     picasso.submit(request);
   }
 }
