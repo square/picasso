@@ -3,10 +3,10 @@ package com.squareup.picasso;
 import android.graphics.Bitmap;
 
 public interface Transformation {
-
   /**
-   * You may return the source bitmap or a new bitmap. If you return a new bitmap, you should call
-   * source.recycle()
+   * Transform the source bitmap into a new bitmap. If you create a new bitmap instance, you must
+   * call {@link android.graphics.Bitmap#recycle()} on {@code source}. You may return the original
+   * if no transformation is required.
    */
   Bitmap transform(Bitmap source);
 
