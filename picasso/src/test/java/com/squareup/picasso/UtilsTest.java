@@ -19,26 +19,26 @@ public class UtilsTest {
   private Picasso picasso = mock(Picasso.class);
 
   @Test public void matchingRequestsHaveSameKey() {
-    Request r1 = new Request(picasso, URL, 0, null, null, NONE, null, 0, null);
-    Request r2 = new Request(picasso, URL, 0, null, null, NONE, null, 0, null);
+    Request r1 = new Request(picasso, URL, 0, null, null, NONE, null, false, 0, null);
+    Request r2 = new Request(picasso, URL, 0, null, null, NONE, null, false, 0, null);
     assertThat(createKey(r1)).isEqualTo(createKey(r2));
 
     List<Transformation> t1 = new ArrayList<Transformation>();
     t1.add(new TestTransformation("foo", null));
-    Request single1 = new Request(picasso, URL, 0, null, null, t1, null, 0, null);
+    Request single1 = new Request(picasso, URL, 0, null, null, t1, null, false, 0, null);
     List<Transformation> t2 = new ArrayList<Transformation>();
     t2.add(new TestTransformation("foo", null));
-    Request single2 = new Request(picasso, URL, 0, null, null, t2, null, 0, null);
+    Request single2 = new Request(picasso, URL, 0, null, null, t2, null, false, 0, null);
     assertThat(createKey(single1)).isEqualTo(createKey(single2));
 
     List<Transformation> t3 = new ArrayList<Transformation>();
     t3.add(new TestTransformation("foo", null));
     t3.add(new TestTransformation("bar", null));
-    Request double1 = new Request(picasso, URL, 0, null, null, t3, null, 0, null);
+    Request double1 = new Request(picasso, URL, 0, null, null, t3, null, false, 0, null);
     List<Transformation> t4 = new ArrayList<Transformation>();
     t4.add(new TestTransformation("foo", null));
     t4.add(new TestTransformation("bar", null));
-    Request double2 = new Request(picasso, URL, 0, null, null, t4, null, 0, null);
+    Request double2 = new Request(picasso, URL, 0, null, null, t4, null, false, 0, null);
     assertThat(createKey(double1)).isEqualTo(createKey(double2));
 
     List<Transformation> t5 = new ArrayList<Transformation>();
@@ -48,8 +48,8 @@ public class UtilsTest {
     List<Transformation> t6 = new ArrayList<Transformation>();
     t6.add(new TestTransformation("bar", null));
     t6.add(new TestTransformation("foo", null));
-    Request order1 = new Request(picasso, URL, 0, null, null, t5, null, 0, null);
-    Request order2 = new Request(picasso, URL, 0, null, null, t6, null, 0, null);
+    Request order1 = new Request(picasso, URL, 0, null, null, t5, null, false, 0, null);
+    Request order2 = new Request(picasso, URL, 0, null, null, t6, null, false, 0, null);
     assertThat(createKey(order1)).isNotEqualTo(createKey(order2));
   }
 
