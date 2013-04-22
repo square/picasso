@@ -38,7 +38,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
+import static org.robolectric.Robolectric.pauseMainLooper;
 import static org.robolectric.Robolectric.runUiThreadTasksIncludingDelayedTasks;
+import static org.robolectric.Robolectric.unPauseMainLooper;
 
 @RunWith(PicassoTestRunner.class)
 public class PicassoTest {
@@ -774,6 +776,64 @@ public class PicassoTest {
     Request request =
         new Request(picasso, null, 0, null, null, transformations, null, false, 0, null);
     Picasso.transformResult(request, input, 0);
+  }
+
+  @Test public void cancelRequestBeforeExecution() throws Exception {
+    Picasso picasso = create(NULL_ANSWER, NULL_ANSWER);
+    ImageView target = mock(ImageView.class);
+    Request request = new Request(picasso, null, 0, target, null, null, null, false, 0, null);
+    picasso.submit(request);
+    assertThat(picasso.targetsToRequests).hasSize(1);
+    assertThat(request.future.isCancelled()).isFalse();
+    picasso.cancelRequest(target);
+    assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(request.future.isCancelled()).isTrue();
+    verifyZeroInteractions(target);
+  }
+
+  @Test public void cancelTargetRequestBeforeExecution() throws Exception {
+    Picasso picasso = create(NULL_ANSWER, NULL_ANSWER);
+    Target target = mock(Target.class);
+    Request request =
+        new TargetRequest(picasso, null, 0, target, true, null, null, null, false, 0, null);
+    picasso.submit(request);
+    assertThat(picasso.targetsToRequests).hasSize(1);
+    assertThat(request.future.isCancelled()).isFalse();
+    picasso.cancelRequest(target);
+    assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(request.future.isCancelled()).isTrue();
+    verifyZeroInteractions(target);
+  }
+
+  @Test public void cancelRequestBetweenRetries() throws Exception {
+    Picasso picasso = create(IO_EXCEPTION_ANSWER, NULL_ANSWER);
+    ImageView target = mock(ImageView.class);
+    Request request = new Request(picasso, null, 0, target, null, null, Type.STREAM, false, 0, null);
+    picasso.submit(request);
+    assertThat(picasso.targetsToRequests).hasSize(1);
+    assertThat(request.future.isCancelled()).isFalse();
+    executor.flush();
+    runUiThreadTasksIncludingDelayedTasks();
+    assertThat(picasso.targetsToRequests).hasSize(1);
+    assertThat(request.future.isCancelled()).isFalse();
+    picasso.cancelRequest(target);
+    assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(request.future.isCancelled()).isTrue();
+    verifyZeroInteractions(target);
+  }
+
+  @Test public void cancelRequestAfterResult() throws Exception {
+    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
+    ImageView target = mock(ImageView.class);
+    Request request = new Request(picasso, null, 0, target, null, null, Type.FILE, false, 0, null);
+    picasso.submit(request);
+    assertThat(picasso.targetsToRequests).hasSize(1);
+    pauseMainLooper();
+    executor.flush();
+    picasso.cancelRequest(target);
+    unPauseMainLooper();
+    verifyZeroInteractions(target);
+    assertThat(picasso.targetsToRequests).isEmpty();
   }
 
   private void retryRequest(Picasso picasso, Request request) throws Exception {
