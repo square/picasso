@@ -98,7 +98,7 @@ public class PicassoTest {
   }
 
   @After public void tearDown() {
-    executor.runnableList.clear();
+    executor.tasks.clear();
   }
 
   @Test public void loadDoesNotAcceptInvalidInput() throws IOException {
@@ -479,7 +479,7 @@ public class PicassoTest {
 
     verify(picasso, never()).submit(any(Request.class));
     verify(target).setImageBitmap(bitmap1);
-    assertThat(executor.runnableList).isEmpty();
+    assertThat(executor.tasks).isEmpty();
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
@@ -776,7 +776,7 @@ public class PicassoTest {
     Picasso.transformResult(request, input, 0);
   }
 
-  private void retryRequest(Picasso picasso, Request request) {
+  private void retryRequest(Picasso picasso, Request request) throws Exception {
     picasso.submit(request);
 
     for (int i = Request.DEFAULT_RETRY_COUNT; i >= 0; i--) {

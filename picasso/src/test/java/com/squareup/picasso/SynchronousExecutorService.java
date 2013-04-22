@@ -3,11 +3,12 @@ package com.squareup.picasso;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.AbstractExecutorService;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import org.jetbrains.annotations.NotNull;
 
 class SynchronousExecutorService extends AbstractExecutorService {
-  final List<Runnable> runnableList = new ArrayList<Runnable>();
+  final List<FutureTask<?>> tasks = new ArrayList<FutureTask<?>>();
 
   @Override public void shutdown() {
   }
@@ -30,17 +31,20 @@ class SynchronousExecutorService extends AbstractExecutorService {
   }
 
   @Override public void execute(@NotNull Runnable runnable) {
-    runnableList.add(runnable);
+    tasks.add((FutureTask<?>) runnable);
   }
 
-  public void flush() {
-    for (Runnable runnable : runnableList) {
-      runnable.run();
+  public void flush() throws Exception {
+    while (!tasks.isEmpty()) {
+      executeFirst();
     }
-    runnableList.clear();
   }
 
-  public void executeFirst() {
-    runnableList.remove(0).run();
+  public void executeFirst() throws Exception {
+    FutureTask<?> task = tasks.remove(0);
+    task.run();
+    if (!task.isCancelled()) {
+      task.get(); // Synchronously block to force exceptions to be thrown.
+    }
   }
 }
