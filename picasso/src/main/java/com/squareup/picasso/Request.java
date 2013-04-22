@@ -95,7 +95,7 @@ class Request implements Runnable {
 
   @Override public void run() {
     try {
-      picasso.resolveRequest(this);
+      picasso.run(this);
     } catch (final Throwable e) {
       // If an unexpected exception happens, we should crash the app instead of letting the
       // executor swallow it.
