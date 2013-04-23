@@ -2,14 +2,10 @@ package com.squareup.picasso;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Looper;
 import android.provider.MediaStore;
-import android.util.DisplayMetrics;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ThreadFactory;
@@ -115,36 +111,6 @@ final class Utils {
 
     // TODO Support bitmap options?
     return builder.toString();
-  }
-
-  private static final ThreadLocal<Paint> DEBUG_PAINT = new ThreadLocal<Paint>() {
-    @Override protected Paint initialValue() {
-      return new Paint();
-    }
-  };
-
-  static Bitmap applyDebugSourceIndicator(Bitmap source, Request.LoadedFrom loadedFrom) {
-    Paint debugPaint = DEBUG_PAINT.get();
-    Bitmap output = Bitmap.createBitmap(source.getWidth(), source.getHeight(), source.getConfig());
-
-    Canvas canvas = new Canvas(output);
-    canvas.drawBitmap(source, 0, 0, null);
-    canvas.rotate(45);
-
-    float pixelPerDp = source.getDensity() / ((float) DisplayMetrics.DENSITY_MEDIUM);
-
-    // Draw a white square for the indicator border.
-    debugPaint.setColor(0xFFFFFFFF);
-    canvas.drawRect(0, -10 * pixelPerDp, 7.5f * pixelPerDp, 10 * pixelPerDp, debugPaint);
-
-    // Draw a slightly smaller square for the indicator color.
-    debugPaint.setColor(loadedFrom.debugColor);
-    canvas.drawRect(0, -9 * pixelPerDp, 6.5f * pixelPerDp, 9 * pixelPerDp, debugPaint);
-
-    // Do not recycle source bitmap here. This is the image that is stored inside the cache and can
-    // be used again when debugging is off.
-
-    return output;
   }
 
   static void calculateInSampleSize(PicassoBitmapOptions options) {

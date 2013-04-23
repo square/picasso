@@ -1,5 +1,6 @@
 package com.squareup.picasso;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -77,9 +78,10 @@ class Request implements Runnable {
           String.format("Attempted to complete request with no result!\n%s", this));
     }
 
-    ImageView imageView = target.get();
-    if (imageView != null) {
-      imageView.setImageBitmap(result);
+    ImageView target = this.target.get();
+    if (target != null) {
+      Resources res = picasso.context.getResources();
+      target.setImageDrawable(new PicassoDrawable(res, result, picasso.debugging, loadedFrom));
     }
   }
 

@@ -162,12 +162,7 @@ public class Picasso {
 
   Bitmap quickMemoryCacheCheck(Object target, String path) {
     Bitmap cached = cache.get(path);
-    if (debugging && cached != null) {
-      cached = Utils.applyDebugSourceIndicator(cached, Request.LoadedFrom.MEMORY);
-    }
-
     cancelExistingRequest(target, path);
-
     return cached;
   }
 
@@ -229,9 +224,6 @@ public class Picasso {
 
     Bitmap cached = cache.get(request.key);
     if (cached != null) {
-      if (debugging) {
-        cached = Utils.applyDebugSourceIndicator(cached, Request.LoadedFrom.MEMORY);
-      }
       request.loadedFrom = Request.LoadedFrom.MEMORY;
     }
     return cached;
@@ -287,11 +279,6 @@ public class Picasso {
 
     if (result != null && !request.skipCache) {
       cache.set(request.key, result);
-
-      if (debugging) {
-        // For color coded debugging, apply color filter after the bitmap is added to the cache.
-        result = Utils.applyDebugSourceIndicator(result, request.loadedFrom);
-      }
     }
 
     return result;
