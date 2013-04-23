@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.jetbrains.annotations.TestOnly;
 
+import static com.squareup.picasso.Request.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Utils.checkNotMain;
 import static com.squareup.picasso.Utils.createKey;
 
@@ -249,7 +250,8 @@ public class RequestBuilder {
     Bitmap bitmap = picasso.quickMemoryCacheCheck(target,
         createKey(path, resourceId, options, transformations));
     if (bitmap != null) {
-      target.setImageBitmap(bitmap);
+      Resources res = picasso.context.getResources();
+      target.setImageDrawable(new PicassoDrawable(res, bitmap, picasso.debugging, MEMORY));
       return;
     }
 

@@ -17,6 +17,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -33,8 +34,10 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
@@ -87,13 +90,12 @@ public class PicassoTest {
   private static final BitmapDrawable placeholderDrawable =
       new BitmapDrawable(resources, placeHolder);
 
-  private Context context;
+  private final Context context = new Activity();
   private SynchronousExecutorService executor;
   private Loader loader;
   private Cache cache;
 
   @Before public void setUp() {
-    context = new Activity();
     executor = new SynchronousExecutorService();
     loader = mock(Loader.class);
     cache = mock(Cache.class);
@@ -134,7 +136,7 @@ public class PicassoTest {
 
   @Test public void singleIsLazilyInitialized() throws Exception {
     assertThat(Picasso.singleton).isNull();
-    Picasso.with(new Activity());
+    Picasso.with(context);
     assertThat(Picasso.singleton).isNotNull();
     Picasso.singleton = null;
   }
@@ -171,7 +173,11 @@ public class PicassoTest {
 
     verifyZeroInteractions(target);
     executor.flush();
-    verify(target).setImageBitmap(bitmap1);
+
+    ArgumentCaptor<PicassoDrawable> captor = ArgumentCaptor.forClass(PicassoDrawable.class);
+    verify(target).setImageDrawable(captor.capture());
+    PicassoDrawable actualDrawable = captor.getValue();
+    assertThat(actualDrawable.getBitmap()).isEqualTo(bitmap1);
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
@@ -208,7 +214,12 @@ public class PicassoTest {
     verifyZeroInteractions(target);
     executor.flush();
     verifyZeroInteractions(loader);
-    verify(target).setImageBitmap(bitmap1);
+
+    ArgumentCaptor<PicassoDrawable> captor = ArgumentCaptor.forClass(PicassoDrawable.class);
+    verify(target).setImageDrawable(captor.capture());
+    PicassoDrawable actualDrawable = captor.getValue();
+    assertThat(actualDrawable.getBitmap()).isEqualTo(bitmap1);
+
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
@@ -233,7 +244,12 @@ public class PicassoTest {
     verifyZeroInteractions(target);
     executor.flush();
     verifyZeroInteractions(loader);
-    verify(target).setImageBitmap(bitmap1);
+
+    ArgumentCaptor<PicassoDrawable> captor = ArgumentCaptor.forClass(PicassoDrawable.class);
+    verify(target).setImageDrawable(captor.capture());
+    PicassoDrawable actualDrawable = captor.getValue();
+    assertThat(actualDrawable.getBitmap()).isEqualTo(bitmap1);
+
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
@@ -246,7 +262,12 @@ public class PicassoTest {
     verifyZeroInteractions(target);
     executor.flush();
     verifyZeroInteractions(loader);
-    verify(target).setImageBitmap(bitmap1);
+
+    ArgumentCaptor<PicassoDrawable> captor = ArgumentCaptor.forClass(PicassoDrawable.class);
+    verify(target).setImageDrawable(captor.capture());
+    PicassoDrawable actualDrawable = captor.getValue();
+    assertThat(actualDrawable.getBitmap()).isEqualTo(bitmap1);
+
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
@@ -271,7 +292,12 @@ public class PicassoTest {
     verifyZeroInteractions(target);
     executor.flush();
     verifyZeroInteractions(loader);
-    verify(target).setImageBitmap(bitmap1);
+
+    ArgumentCaptor<PicassoDrawable> captor = ArgumentCaptor.forClass(PicassoDrawable.class);
+    verify(target).setImageDrawable(captor.capture());
+    PicassoDrawable actualDrawable = captor.getValue();
+    assertThat(actualDrawable.getBitmap()).isEqualTo(bitmap1);
+
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
@@ -296,7 +322,11 @@ public class PicassoTest {
     verifyZeroInteractions(target);
     executor.flush();
     verifyZeroInteractions(loader);
-    verify(target).setImageBitmap(bitmap1);
+
+    ArgumentCaptor<PicassoDrawable> captor = ArgumentCaptor.forClass(PicassoDrawable.class);
+    verify(target).setImageDrawable(captor.capture());
+    PicassoDrawable actualDrawable = captor.getValue();
+    assertThat(actualDrawable.getBitmap()).isEqualTo(bitmap1);
   }
 
   @Test public void loadResourceIntoTarget() throws Exception {
@@ -318,8 +348,14 @@ public class PicassoTest {
     picasso.load(URI_1).placeholder(placeholderDrawable).into(target);
 
     verify(target).setImageDrawable(placeholderDrawable);
+    reset(target);
     executor.flush();
-    verify(target).setImageBitmap(bitmap1);
+
+    ArgumentCaptor<PicassoDrawable> captor = ArgumentCaptor.forClass(PicassoDrawable.class);
+    verify(target).setImageDrawable(captor.capture());
+    PicassoDrawable actualDrawable = captor.getValue();
+    assertThat(actualDrawable.getBitmap()).isEqualTo(bitmap1);
+
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
@@ -334,7 +370,12 @@ public class PicassoTest {
 
     verify(target).setImageResource(placeholderResId);
     executor.flush();
-    verify(target).setImageBitmap(bitmap1);
+
+    ArgumentCaptor<PicassoDrawable> captor = ArgumentCaptor.forClass(PicassoDrawable.class);
+    verify(target).setImageDrawable(captor.capture());
+    PicassoDrawable actualDrawable = captor.getValue();
+    assertThat(actualDrawable.getBitmap()).isEqualTo(bitmap1);
+
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
@@ -454,8 +495,8 @@ public class PicassoTest {
             errorDrawable);
 
     retryRequest(picasso, request);
-    verify(target, never()).setImageBitmap(bitmap1);
     verify(target).setImageDrawable(errorDrawable);
+    verifyNoMoreInteractions(target);
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
@@ -480,7 +521,12 @@ public class PicassoTest {
     picasso.load(URI_1).into(target);
 
     verify(picasso, never()).submit(any(Request.class));
-    verify(target).setImageBitmap(bitmap1);
+
+    ArgumentCaptor<PicassoDrawable> captor = ArgumentCaptor.forClass(PicassoDrawable.class);
+    verify(target).setImageDrawable(captor.capture());
+    PicassoDrawable actualDrawable = captor.getValue();
+    assertThat(actualDrawable.getBitmap()).isEqualTo(bitmap1);
+
     assertThat(executor.tasks).isEmpty();
     assertThat(picasso.targetsToRequests).isEmpty();
   }
@@ -525,8 +571,12 @@ public class PicassoTest {
 
     assertThat(picasso.targetsToRequests.size()).isEqualTo(1);
     executor.flush();
-    verify(target, never()).setImageBitmap(bitmap1);
-    verify(target).setImageBitmap(bitmap2);
+
+    ArgumentCaptor<PicassoDrawable> captor = ArgumentCaptor.forClass(PicassoDrawable.class);
+    verify(target).setImageDrawable(captor.capture());
+    PicassoDrawable actualDrawable = captor.getValue();
+    assertThat(actualDrawable.getBitmap()).isEqualTo(bitmap2);
+
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
@@ -544,8 +594,16 @@ public class PicassoTest {
     when(cache.get(anyString())).thenReturn(bitmap1);
     executor.flush();
 
-    verify(target1).setImageBitmap(bitmap1);
-    verify(target2).setImageBitmap(bitmap1);
+    ArgumentCaptor<PicassoDrawable> captor1 = ArgumentCaptor.forClass(PicassoDrawable.class);
+    verify(target1).setImageDrawable(captor1.capture());
+    PicassoDrawable actualDrawable1 = captor1.getValue();
+    assertThat(actualDrawable1.getBitmap()).isEqualTo(bitmap1);
+
+    ArgumentCaptor<PicassoDrawable> captor2 = ArgumentCaptor.forClass(PicassoDrawable.class);
+    verify(target2).setImageDrawable(captor2.capture());
+    PicassoDrawable actualDrawable2 = captor2.getValue();
+    assertThat(actualDrawable2.getBitmap()).isEqualTo(bitmap1);
+
     verify(picasso.loader, times(1)).load(URI_1, false);
 
     assertThat(picasso.targetsToRequests).isEmpty();
@@ -575,8 +633,16 @@ public class PicassoTest {
     when(cache.get(key)).thenReturn(bitmap1);
     executor.flush();
 
-    verify(target1).setImageBitmap(bitmap1);
-    verify(target2).setImageBitmap(bitmap1);
+    ArgumentCaptor<PicassoDrawable> captor1 = ArgumentCaptor.forClass(PicassoDrawable.class);
+    verify(target1).setImageDrawable(captor1.capture());
+    PicassoDrawable actualDrawable1 = captor1.getValue();
+    assertThat(actualDrawable1.getBitmap()).isEqualTo(bitmap1);
+
+    ArgumentCaptor<PicassoDrawable> captor2 = ArgumentCaptor.forClass(PicassoDrawable.class);
+    verify(target2).setImageDrawable(captor2.capture());
+    PicassoDrawable actualDrawable2 = captor2.getValue();
+    assertThat(actualDrawable2.getBitmap()).isEqualTo(bitmap1);
+
     verify(picasso.loader, times(1)).load(URI_1, false);
 
     assertThat(picasso.targetsToRequests).isEmpty();
@@ -595,8 +661,13 @@ public class PicassoTest {
     picasso.load(URI_1).into(target);
     runUiThreadTasksIncludingDelayedTasks();
 
-    verify(target, times(2)).setImageBitmap(bitmap1);
-    verify(target, never()).setImageBitmap(bitmap2);
+    ArgumentCaptor<PicassoDrawable> captor = ArgumentCaptor.forClass(PicassoDrawable.class);
+    verify(target, times(2)).setImageDrawable(captor.capture());
+    List<PicassoDrawable> actualDrawable = captor.getAllValues();
+    assertThat(actualDrawable).hasSize(2);
+    assertThat(actualDrawable.get(0).getBitmap()).isEqualTo(bitmap1);
+    assertThat(actualDrawable.get(1).getBitmap()).isEqualTo(bitmap1);
+
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
@@ -733,7 +804,7 @@ public class PicassoTest {
   }
 
   @Test public void withNullTransformThrows() {
-    Picasso picasso = Picasso.with(new Activity());
+    Picasso picasso = Picasso.with(context);
 
     Transformation okTransformation = mock(Transformation.class);
     when(okTransformation.transform(any(Bitmap.class))).thenReturn(mock(Bitmap.class));
@@ -762,7 +833,7 @@ public class PicassoTest {
 
   @Test(expected = IllegalStateException.class)
   public void notRecyclingTransformThrows() {
-    Picasso picasso = Picasso.with(new Activity());
+    Picasso picasso = Picasso.with(context);
 
     Bitmap input = mock(Bitmap.class);
     Bitmap output = mock(Bitmap.class);
