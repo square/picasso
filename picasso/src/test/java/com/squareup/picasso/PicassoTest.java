@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,6 +63,11 @@ public class PicassoTest {
   private static final Answer IO_EXCEPTION_ANSWER = new Answer() {
     @Override public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
       throw new IOException();
+    }
+  };
+  private static final Answer NPE_ANSWER = new Answer() {
+    @Override public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+      throw new NullPointerException();
     }
   };
   private static final Answer NULL_ANSWER = new Answer() {
@@ -905,6 +911,24 @@ public class PicassoTest {
     unPauseMainLooper();
     verifyZeroInteractions(target);
     assertThat(picasso.targetsToRequests).isEmpty();
+  }
+
+  @Test public void loaderRuntimeExceptionsBubbleUp() throws Exception {
+    Picasso picasso = create(NPE_ANSWER, NULL_ANSWER);
+    ImageView target = mock(ImageView.class);
+    picasso.load(URI_1).into(target);
+    try {
+      executor.flush();
+      fail("Loader should have thrown exception back to the main thread.");
+    } catch (ExecutionException e) {
+      // Find the lowest underlying cause of the exception.
+      Throwable cause = e;
+      while (cause.getCause() != null && cause.getCause() != cause) {
+        cause = cause.getCause();
+      }
+
+      assertThat(cause).isInstanceOf(NullPointerException.class);
+    }
   }
 
   private void retryRequest(Picasso picasso, Request request) throws Exception {
