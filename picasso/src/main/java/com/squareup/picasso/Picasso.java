@@ -283,7 +283,7 @@ public class Picasso {
         request.loadedFrom = response.cached ? Request.LoadedFrom.DISK : Request.LoadedFrom.NETWORK;
         break;
       default:
-        throw new AssertionError("Unknown request type. " + request.type);
+        throw new AssertionError("Unknown request type: " + request.type);
     }
 
     if (result == null) {
