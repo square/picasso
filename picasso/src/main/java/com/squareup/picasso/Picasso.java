@@ -292,6 +292,11 @@ public class Picasso {
 
     result = transformResult(request, result, exifRotation);
 
+    List<Transformation> transformations = request.transformations;
+    if (transformations != null) {
+      result = applyCustomTransformations(transformations, result);
+    }
+
     if (result != null && !request.skipCache) {
       cache.set(request.key, result);
     }
@@ -390,31 +395,35 @@ public class Picasso {
       }
     }
 
-    // Apply any post-request transformations.
-    List<Transformation> transformations = request.transformations;
-    if (transformations != null) {
-      for (int i = 0, count = transformations.size(); i < count; i++) {
-        Transformation t = transformations.get(i);
-        Bitmap newResult = t.transform(result);
-        if (newResult == null) {
-          throw new NullPointerException("Transformation "
-              + t.key()
-              + " returned null when transforming "
-              + request.path
-              + " after "
-              + i
-              + " previous transformations. Transformation list: "
-              + request.transformationKeys());
-        }
-        if (newResult != result && !result.isRecycled()) {
-          throw new IllegalStateException("Transformation "
-              + t.key()
-              + " mutated input Bitmap but failed to recycle the original.");
-        }
-        result = newResult;
-      }
-    }
+    return result;
+  }
 
+  static Bitmap applyCustomTransformations(List<Transformation> transformations, Bitmap result) {
+    for (int i = 0, count = transformations.size(); i < count; i++) {
+      Transformation transformation = transformations.get(i);
+      Bitmap newResult = transformation.transform(result);
+
+      if (newResult == null) {
+        StringBuilder builder = new StringBuilder() //
+            .append("Transformation ")
+            .append(transformation.key())
+            .append(" returned null after ")
+            .append(i)
+            .append(" previous transformation(s).\n\nTransformation list:\n");
+        for (Transformation t : transformations) {
+          builder.append(t.key()).append('\n');
+        }
+        throw new NullPointerException(builder.toString());
+      }
+
+      // If the transformation returned a new bitmap ensure they recycled the original.
+      if (newResult != result && !result.isRecycled()) {
+        throw new IllegalStateException("Transformation "
+            + transformation.key()
+            + " mutated input Bitmap but failed to recycle the original.");
+      }
+      result = newResult;
+    }
     return result;
   }
 
