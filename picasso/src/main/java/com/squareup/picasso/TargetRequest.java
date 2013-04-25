@@ -19,7 +19,7 @@ final class TargetRequest extends Request {
   }
 
   @Override Target getTarget() {
-    return strongTarget != null ? strongTarget : this.weakTarget.get();
+    return strongTarget != null ? strongTarget : weakTarget.get();
   }
 
   @Override void complete() {
