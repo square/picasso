@@ -245,23 +245,26 @@ public class Picasso {
   }
 
   private Bitmap loadFromType(Request request) throws IOException {
+    PicassoBitmapOptions options = request.options;
+
     int exifRotation = 0;
     Bitmap result = null;
+
     switch (request.type) {
       case CONTENT:
         Uri path = Uri.parse(request.path);
         exifRotation = Utils.getContentProviderExifRotation(path, context.getContentResolver());
-        result = decodeContentStream(path, request.options);
+        result = decodeContentStream(path, options);
         request.loadedFrom = Request.LoadedFrom.DISK;
         break;
       case RESOURCE:
         Resources resources = context.getResources();
-        result = decodeResource(resources, request.resourceId, request.options);
+        result = decodeResource(resources, request.resourceId, options);
         request.loadedFrom = Request.LoadedFrom.DISK;
         break;
       case FILE:
         exifRotation = Utils.getFileExifRotation(request.path);
-        result = decodeFile(request.path, request.options);
+        result = decodeFile(request.path, options);
         request.loadedFrom = Request.LoadedFrom.DISK;
         break;
       case STREAM:
@@ -271,7 +274,7 @@ public class Picasso {
           if (response == null) {
             return null;
           }
-          result = decodeStream(response.stream, request.options);
+          result = decodeStream(response.stream, options);
         } finally {
           if (response != null && response.stream != null) {
             try {
@@ -290,7 +293,9 @@ public class Picasso {
       return null;
     }
 
-    result = transformResult(request, result, exifRotation);
+    if (options != null || exifRotation != 0) {
+      result = transformResult(request, result, exifRotation);
+    }
 
     List<Transformation> transformations = request.transformations;
     if (transformations != null) {
@@ -313,11 +318,10 @@ public class Picasso {
     int drawWidth = inWidth;
     int drawHeight = inHeight;
 
-    Matrix matrix = null;
+    Matrix matrix = new Matrix();
 
     PicassoBitmapOptions options = request.options;
     if (options != null) {
-      matrix = new Matrix();
       int targetWidth = 0;
       int targetHeight = 0;
 
@@ -377,21 +381,17 @@ public class Picasso {
         matrix.setScale(targetScaleX, targetScaleY);
       }
     }
+
     if (exifRotation != 0) {
-      if (matrix == null) {
-        matrix = new Matrix();
-      }
       matrix.preRotate(exifRotation);
     }
 
-    if (matrix != null) {
-      synchronized (DECODE_LOCK) {
-        Bitmap newResult =
-            Bitmap.createBitmap(result, drawX, drawY, drawWidth, drawHeight, matrix, false);
-        if (newResult != result) {
-          result.recycle();
-          result = newResult;
-        }
+    synchronized (DECODE_LOCK) {
+      Bitmap newResult =
+          Bitmap.createBitmap(result, drawX, drawY, drawWidth, drawHeight, matrix, false);
+      if (newResult != result) {
+        result.recycle();
+        result = newResult;
       }
     }
 
