@@ -32,6 +32,7 @@ public class Picasso {
 
   private static final String FILE_SCHEME = "file:";
   private static final String CONTENT_SCHEME = "content:";
+  private static final Object DECODE_LOCK = new Object();
 
   // TODO This should be static.
   final Handler handler = new Handler(Looper.getMainLooper()) {
@@ -180,7 +181,9 @@ public class Picasso {
 
   Bitmap decodeStream(InputStream stream, PicassoBitmapOptions bitmapOptions) {
     if (stream == null) return null;
-    return BitmapFactory.decodeStream(stream, null, bitmapOptions);
+    synchronized (DECODE_LOCK) {
+      return BitmapFactory.decodeStream(stream, null, bitmapOptions);
+    }
   }
 
   Bitmap decodeContentStream(Uri path, PicassoBitmapOptions bitmapOptions) throws IOException {
@@ -189,7 +192,9 @@ public class Picasso {
       BitmapFactory.decodeStream(contentResolver.openInputStream(path), null, bitmapOptions);
       calculateInSampleSize(bitmapOptions);
     }
-    return BitmapFactory.decodeStream(contentResolver.openInputStream(path), null, bitmapOptions);
+    synchronized (DECODE_LOCK) {
+      return BitmapFactory.decodeStream(contentResolver.openInputStream(path), null, bitmapOptions);
+    }
   }
 
   Bitmap decodeFile(String path, PicassoBitmapOptions bitmapOptions) {
@@ -197,7 +202,9 @@ public class Picasso {
       BitmapFactory.decodeFile(path, bitmapOptions);
       calculateInSampleSize(bitmapOptions);
     }
-    return BitmapFactory.decodeFile(path, bitmapOptions);
+    synchronized (DECODE_LOCK) {
+      return BitmapFactory.decodeFile(path, bitmapOptions);
+    }
   }
 
   Bitmap decodeResource(Resources resources, int resourceId, PicassoBitmapOptions bitmapOptions) {
@@ -205,7 +212,9 @@ public class Picasso {
       BitmapFactory.decodeResource(resources, resourceId, bitmapOptions);
       calculateInSampleSize(bitmapOptions);
     }
-    return BitmapFactory.decodeResource(resources, resourceId, bitmapOptions);
+    synchronized (DECODE_LOCK) {
+      return BitmapFactory.decodeResource(resources, resourceId, bitmapOptions);
+    }
   }
 
   private void cancelExistingRequest(Object target, String path) {
@@ -365,11 +374,13 @@ public class Picasso {
     }
 
     if (matrix != null) {
-      Bitmap newResult =
-          Bitmap.createBitmap(result, drawX, drawY, drawWidth, drawHeight, matrix, false);
-      if (newResult != result) {
-        result.recycle();
-        result = newResult;
+      synchronized (DECODE_LOCK) {
+        Bitmap newResult =
+            Bitmap.createBitmap(result, drawX, drawY, drawWidth, drawHeight, matrix, false);
+        if (newResult != result) {
+          result.recycle();
+          result = newResult;
+        }
       }
     }
 
