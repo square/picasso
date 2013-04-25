@@ -810,8 +810,6 @@ public class PicassoTest {
   }
 
   @Test public void withNullTransformThrows() {
-    Picasso picasso = Picasso.with(context);
-
     Transformation okTransformation = mock(Transformation.class);
     when(okTransformation.transform(any(Bitmap.class))).thenReturn(mock(Bitmap.class));
     when(okTransformation.key()).thenReturn("ok()");
@@ -825,11 +823,8 @@ public class PicassoTest {
     transformations.add(new TestTransformation("OK"));
     transformations.add(new TestTransformation("NULL", null));
 
-    Request request =
-        new Request(picasso, null, 0, null, null, transformations, null, false, 0, null);
-
     try {
-      Picasso.transformResult(request, Bitmap.createBitmap(10, 10, null), 0);
+      Picasso.applyCustomTransformations(transformations, Bitmap.createBitmap(10, 10, null));
       fail("Should throw a NullPointerException when a transformation returns null.");
     } catch (NullPointerException e) {
       assertThat(e.getMessage()).contains("after 1 previous transformation");
@@ -839,8 +834,6 @@ public class PicassoTest {
 
   @Test(expected = IllegalStateException.class)
   public void notRecyclingTransformThrows() {
-    Picasso picasso = Picasso.with(context);
-
     Bitmap input = mock(Bitmap.class);
     Bitmap output = mock(Bitmap.class);
     Transformation badTransformation = mock(Transformation.class);
@@ -850,9 +843,7 @@ public class PicassoTest {
     List<Transformation> transformations = new ArrayList<Transformation>();
     transformations.add(badTransformation);
 
-    Request request =
-        new Request(picasso, null, 0, null, null, transformations, null, false, 0, null);
-    Picasso.transformResult(request, input, 0);
+    Picasso.applyCustomTransformations(transformations, input);
   }
 
   @Test public void cancelRequestBeforeExecution() throws Exception {
