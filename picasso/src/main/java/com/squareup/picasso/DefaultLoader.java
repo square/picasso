@@ -28,12 +28,12 @@ public class DefaultLoader implements Loader {
     return (HttpURLConnection) new URL(path).openConnection();
   }
 
-  @Override public Response load(String path, boolean allowExpired) throws IOException {
+  @Override public Response load(String url, boolean localCacheOnly) throws IOException {
     installCacheIfNeeded(context);
 
-    HttpURLConnection connection = openConnection(path);
+    HttpURLConnection connection = openConnection(url);
     connection.setUseCaches(true);
-    if (allowExpired) {
+    if (localCacheOnly) {
       connection.setRequestProperty("Cache-Control", "only-if-cached");
     }
 
