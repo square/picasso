@@ -33,7 +33,6 @@ public class RequestBuilder {
     this.path = null;
     this.resourceId = resourceId;
     this.type = Request.Type.RESOURCE;
-    this.transformations = new ArrayList<Transformation>(4);
   }
 
   RequestBuilder(Picasso picasso, String path, Request.Type type) {
