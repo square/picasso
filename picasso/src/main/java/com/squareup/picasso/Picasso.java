@@ -32,6 +32,12 @@ public class Picasso {
 
   private static final String FILE_SCHEME = "file:";
   private static final String CONTENT_SCHEME = "content:";
+
+  /**
+   * Global lock for bitmap decoding to ensure that we are only are decoding one at a time. Since
+   * this will only ever happen in background threads we help avoid excessive memory thrashing as
+   * well as potential OOMs. Shamelessly stolen from Volley.
+   */
   private static final Object DECODE_LOCK = new Object();
 
   // TODO This should be static.
