@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="16dp">
+    android:layout_height="match_parent">
+  <ImageView
+      android:id="@+id/image"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:background="#ffc0c0c0"
+      />
   <Button
       android:id="@+id/go"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_marginBottom="8dp"
-      android:text="Select Picture"
+      android:layout_gravity="bottom"
+      android:layout_marginLeft="4dp"
+      android:layout_marginRight="4dp"
+      android:layout_marginBottom="4dp"
+      android:text="@string/select_picture"
       />
-  <ImageView
-      android:id="@+id/image"
-      android:layout_width="match_parent"
-      android:layout_height="0dp"
-      android:layout_weight="1"
-      android:background="#ff666666"
-      />
-</LinearLayout>
+</FrameLayout>

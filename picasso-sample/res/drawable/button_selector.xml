@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+  <item android:state_window_focused="false" android:state_enabled="true"
+      android:drawable="@drawable/button_normal"/>
+  <item android:state_window_focused="false" android:state_enabled="false"
+      android:drawable="@drawable/button_disabled"/>
+  <item android:state_pressed="true"
+      android:drawable="@drawable/button_pressed"/>
+  <item android:state_focused="true" android:state_enabled="true"
+      android:drawable="@drawable/button_focused"/>
+  <item android:state_enabled="true"
+      android:drawable="@drawable/button_normal"/>
+  <item android:state_focused="true"
+      android:drawable="@drawable/button_disabled_focused"/>
+  <item
+      android:drawable="@drawable/button_disabled"/>
+</selector>
