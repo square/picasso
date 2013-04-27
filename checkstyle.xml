@@ -16,7 +16,7 @@
 
   <!-- Space after 'for' and 'if' -->
   <module name="RegexpSingleline">
-    <property name="format" value="^\s*(for|if)[^ ]"/>
+    <property name="format" value="^\s*(for|if)[^ ]\("/>
     <property name="message" value="Space needed before opening parenthesis."/>
   </module>
 
@@ -85,7 +85,7 @@
 
     <!-- Modifier Checks                                    -->
     <!-- See http://checkstyle.sf.net/config_modifiers.html -->
-    <!--module name="ModifierOrder"/-->
+    <module name="ModifierOrder"/>
     <module name="RedundantModifier"/>
 
 

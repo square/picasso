@@ -126,32 +126,32 @@ public class LruCache implements Cache {
   }
 
   /** Returns the sum of the sizes of the entries in this cache. */
-  public synchronized final int size() {
+  public final synchronized int size() {
     return size;
   }
 
   /** Returns the maximum sum of the sizes of the entries in this cache. */
-  public synchronized final int maxSize() {
+  public final synchronized int maxSize() {
     return maxSize;
   }
 
   /** Returns the number of times {@link #get} returned a value. */
-  public synchronized final int hitCount() {
+  public final synchronized int hitCount() {
     return hitCount;
   }
 
   /** Returns the number of times {@link #get} returned {@code null}. */
-  public synchronized final int missCount() {
+  public final synchronized int missCount() {
     return missCount;
   }
 
   /** Returns the number of times {@link #set(String, android.graphics.Bitmap)} was called. */
-  public synchronized final int putCount() {
+  public final synchronized int putCount() {
     return putCount;
   }
 
   /** Returns the number of values that have been evicted. */
-  public synchronized final int evictionCount() {
+  public final synchronized int evictionCount() {
     return evictionCount;
   }
 
