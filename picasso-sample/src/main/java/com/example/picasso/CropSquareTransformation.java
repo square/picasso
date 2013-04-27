@@ -1,4 +1,4 @@
-package com.squareup.picasso.sample;
+package com.example.picasso;
 
 import android.graphics.Bitmap;
 import com.squareup.picasso.Transformation;
@@ -6,7 +6,7 @@ import com.squareup.picasso.Transformation;
 /**
  * Custom transformation class that crops an image to make it square.
  */
-public class CropSquareTransformation implements Transformation {
+final class CropSquareTransformation implements Transformation {
   @Override public Bitmap transform(Bitmap source) {
 
     int size = Math.min(source.getWidth(), source.getHeight());

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <style name="Widget.PicassoSample.Button" parent="android:Widget.Button">
+    <item name="android:background">@drawable/button_selector</item>
+    <item name="android:minHeight">48dip</item>
+    <item name="android:minWidth">64dip</item>
+    <item name="android:textColor">#000000</item>
+  </style>
+
+  <style name="Widget.PicassoSample.Overlay" parent="android:Widget">
+    <item name="android:background">#90000000</item>
+  </style>
+
+  <style name="Widget.PicassoSample.ActionBarTitle" parent="android:Widget.TextView">
+    <item name="android:paddingLeft">8dp</item>
+    <item name="android:paddingRight">8dp</item>
+    <!-- Use 'dp' so that the user's font preference doesn't affect the action bar. -->
+    <item name="android:textSize">19dp</item>
+    <item name="android:textColor">#ffffffff</item>
+    <item name="android:gravity">center_vertical</item>
+    <item name="android:singleLine">true</item>
+    <item name="android:ellipsize">end</item>
+    <item name="android:fontFamily">sans-serif-light</item>
+    <item name="android:textStyle">italic</item>
+  </style>
+
+  <style name="Widget.PicassoSample.ActionBarButton" parent="android:Widget.Button">
+    <item name="android:gravity">center_vertical</item>
+    <item name="android:paddingLeft">16dp</item>
+    <item name="android:paddingRight">16dp</item>
+    <item name="android:textColor">#ffffffff</item>
+    <!-- Use 'dp' so that the user's font preference doesn't affect the action bar. -->
+    <item name="android:textSize">13dp</item>
+    <item name="android:background">@drawable/overlay_selector</item>
+  </style>
+
+  <style name="Widget.PicassoSample.ListItem" parent="android:Widget.TextView">
+    <item name="android:minHeight">50dp</item>
+    <item name="android:padding">12dp</item>
+    <item name="android:gravity">left|center_vertical</item>
+    <item name="android:textSize">16sp</item>
+    <item name="android:textColor">#ffffffff</item>
+  </style>
+</resources>
