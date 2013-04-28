@@ -14,6 +14,12 @@ public interface Cache {
   /** Store an image in the cache for the specified {@code key}. */
   void set(String key, Bitmap bitmap);
 
+  /** Returns the current size of the cache in bytes. */
+  int size();
+
+  /** Returns the maximum size in bytes that the cache can hold. */
+  int maxSize();
+
   /** A cache which does not store any values. */
   Cache NONE = new Cache() {
     @Override public Bitmap get(String key) {
@@ -22,6 +28,14 @@ public interface Cache {
 
     @Override public void set(String key, Bitmap bitmap) {
       // Ignore.
+    }
+
+    @Override public int size() {
+      return 0;
+    }
+
+    @Override public int maxSize() {
+      return 0;
     }
   };
 }

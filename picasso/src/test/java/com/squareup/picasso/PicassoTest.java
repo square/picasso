@@ -100,11 +100,13 @@ public class PicassoTest {
   private SynchronousExecutorService executor;
   private Loader loader;
   private Cache cache;
+  private Stats stats;
 
   @Before public void setUp() {
     executor = new SynchronousExecutorService();
     loader = mock(Loader.class);
     cache = mock(Cache.class);
+    stats = mock(Stats.class);
   }
 
   @After public void tearDown() {
@@ -876,7 +878,8 @@ public class PicassoTest {
   @Test public void cancelRequestBetweenRetries() throws Exception {
     Picasso picasso = create(IO_EXCEPTION_ANSWER, NULL_ANSWER);
     ImageView target = mock(ImageView.class);
-    Request request = new Request(picasso, null, 0, target, null, null, Type.STREAM, false, 0, null);
+    Request request =
+        new Request(picasso, null, 0, target, null, null, Type.STREAM, false, 0, null);
     picasso.submit(request);
     assertThat(picasso.targetsToRequests).hasSize(1);
     assertThat(request.future.isCancelled()).isFalse();
@@ -922,6 +925,22 @@ public class PicassoTest {
     }
   }
 
+  @Test public void invokesCacheMissAndCacheHitProperly() throws Exception {
+    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
+    ImageView target = mock(ImageView.class);
+    picasso.load(URI_1).into(target);
+    executor.flush();
+
+    verify(stats).cacheMiss();
+
+    when(cache.get(anyString())).thenReturn(bitmap1);
+
+    picasso.load(URI_1).into(target);
+    executor.flush();
+
+    verify(stats).cacheHit();
+  }
+
   private void retryRequest(Picasso picasso, Request request) throws Exception {
     picasso.submit(request);
 
@@ -932,12 +951,7 @@ public class PicassoTest {
   }
 
   private Picasso create(Answer loaderAnswer, Answer decoderAnswer) throws IOException {
-    Picasso picasso = new Picasso.Builder(context) //
-        .loader(loader) //
-        .executor(executor) //
-        .memoryCache(cache) //
-        .build();
-
+    Picasso picasso = new Picasso(context, loader, executor, cache, stats);
     picasso = spy(picasso);
 
     doAnswer(loaderAnswer).when(loader).load(anyString(), anyBoolean());

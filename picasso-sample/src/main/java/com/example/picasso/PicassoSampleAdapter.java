@@ -18,6 +18,7 @@ final class PicassoSampleAdapter extends BaseAdapter {
     private final Class<?> activityClass;
 
     private final String name;
+
     Sample(String name, Class<?> activityClass) {
       this.activityClass = activityClass;
       this.name = name;

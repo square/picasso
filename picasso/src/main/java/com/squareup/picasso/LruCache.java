@@ -22,8 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static android.content.Context.ACTIVITY_SERVICE;
-import static android.os.Build.VERSION.SDK_INT;
-import static android.os.Build.VERSION_CODES.HONEYCOMB_MR1;
+import static android.content.pm.ApplicationInfo.FLAG_LARGE_HEAP;
 
 /** A memory cache which uses a least-recently used eviction policy. */
 public class LruCache implements Cache {
@@ -111,16 +110,7 @@ public class LruCache implements Cache {
   }
 
   private int safeSizeOf(Bitmap value) {
-    int result;
-    if (SDK_INT >= HONEYCOMB_MR1) {
-      result = BitmapHoneycombMR1.getByteCount(value);
-    } else {
-      result = value.getRowBytes() * value.getHeight();
-    }
-    if (result < 0) {
-      throw new IllegalStateException("Negative size: " + value);
-    }
-    return result;
+    return Utils.getBitmapBytes(value);
   }
 
   /** Clear the cache. */
@@ -160,12 +150,8 @@ public class LruCache implements Cache {
 
   private static int calculateMaxSize(Context context) {
     ActivityManager am = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
-    return 1024 * 1024 * am.getMemoryClass() / 6;
-  }
-
-  private static class BitmapHoneycombMR1 {
-    static int getByteCount(Bitmap bitmap) {
-      return bitmap.getByteCount();
-    }
+    boolean largeHeap = (context.getApplicationInfo().flags & FLAG_LARGE_HEAP) != 0;
+    int memoryClass = largeHeap ? am.getLargeMemoryClass() : am.getMemoryClass();
+    return 1024 * 1024 * memoryClass / 6;
   }
 }
