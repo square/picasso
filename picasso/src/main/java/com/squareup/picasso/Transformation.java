@@ -2,6 +2,7 @@ package com.squareup.picasso;
 
 import android.graphics.Bitmap;
 
+/** Image transformation. */
 public interface Transformation {
   /**
    * Transform the source bitmap into a new bitmap. If you create a new bitmap instance, you must

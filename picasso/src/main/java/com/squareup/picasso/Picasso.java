@@ -24,6 +24,12 @@ import static com.squareup.picasso.Loader.Response;
 import static com.squareup.picasso.Request.Type;
 import static com.squareup.picasso.Utils.calculateInSampleSize;
 
+/**
+ * Image downloading, transformation, and caching manager.
+ * <p/>
+ * Use {@link #with(android.content.Context)} for the global singleton instance or construct your
+ * own instance with {@link Builder}.
+ */
 public class Picasso {
   private static final int RETRY_DELAY = 500;
   private static final int REQUEST_COMPLETE = 1;
@@ -90,17 +96,23 @@ public class Picasso {
     this.targetsToRequests = new WeakHashMap<Object, Request>();
   }
 
+  /** Cancel any existing requests for the specified target {@link ImageView}. */
   public void cancelRequest(ImageView view) {
     cancelExistingRequest(view, null);
   }
 
+  /** Cancel and existing requests for the specified {@link Target} instance. */
   public void cancelRequest(Target target) {
     cancelExistingRequest(target, null);
   }
 
+  /**
+   * Start an image request using the specified path. This path may be a remote URL, file resource,
+   * or content provider resource.
+   */
   public RequestBuilder load(String path) {
     if (path == null || path.trim().length() == 0) {
-      throw new IllegalArgumentException("Path may not be empty.");
+      throw new IllegalArgumentException("Path must not be empty.");
     }
     if (path.startsWith(FILE_SCHEME)) {
       return new RequestBuilder(this, Uri.parse(path).getPath(), Type.FILE);
@@ -111,13 +123,15 @@ public class Picasso {
     return new RequestBuilder(this, path, Type.STREAM);
   }
 
+  /** Start an image request using the specified image file. */
   public RequestBuilder load(File file) {
     if (file == null) {
-      throw new IllegalArgumentException("File may not be null.");
+      throw new IllegalArgumentException("File must not be null.");
     }
     return new RequestBuilder(this, file.getPath(), Type.FILE);
   }
 
+  /** Start an image request using the specified drawable resource ID. */
   public RequestBuilder load(int resourceId) {
     if (resourceId == 0) {
       throw new IllegalArgumentException("Resource ID must not be zero.");
@@ -125,10 +139,12 @@ public class Picasso {
     return new RequestBuilder(this, resourceId);
   }
 
+  /** {@link true} if debug display, logging, and statistics are enabled. */
   public boolean isDebugging() {
     return debugging;
   }
 
+  /** Toggle whether debug display, logging, and statistics are enabled. */
   public void setDebugging(boolean enabled) {
     this.debugging = enabled;
   }
@@ -427,6 +443,7 @@ public class Picasso {
     return result;
   }
 
+  /** The global default {@link Picasso} instance. */
   public static Picasso with(Context context) {
     if (singleton == null) {
       singleton = new Builder(context).build();
@@ -434,6 +451,7 @@ public class Picasso {
     return singleton;
   }
 
+  /** Fluent API for creating {@link Picasso} instances. */
   @SuppressWarnings("UnusedDeclaration") // Public API.
   public static class Builder {
     private final Context context;
@@ -442,16 +460,18 @@ public class Picasso {
     private Cache memoryCache;
     private boolean debugging;
 
+    /** Start building a new {@link Picasso} instance. */
     public Builder(Context context) {
       if (context == null) {
-        throw new IllegalArgumentException("Context may not be null.");
+        throw new IllegalArgumentException("Context must not be null.");
       }
       this.context = context.getApplicationContext();
     }
 
+    /** Specify the {@link Loader} that will be used for downloading images. */
     public Builder loader(Loader loader) {
       if (loader == null) {
-        throw new IllegalArgumentException("Loader may not be null.");
+        throw new IllegalArgumentException("Loader must not be null.");
       }
       if (this.loader != null) {
         throw new IllegalStateException("Loader already set.");
@@ -460,9 +480,10 @@ public class Picasso {
       return this;
     }
 
+    /** Specify the executor service for loading images in the background. */
     public Builder executor(ExecutorService executorService) {
       if (executorService == null) {
-        throw new IllegalArgumentException("Executor service may not be null.");
+        throw new IllegalArgumentException("Executor service must not be null.");
       }
       if (this.service != null) {
         throw new IllegalStateException("Executor service already set.");
@@ -471,9 +492,10 @@ public class Picasso {
       return this;
     }
 
+    /** Specify the memory cache used for the most recent images. */
     public Builder memoryCache(Cache memoryCache) {
       if (memoryCache == null) {
-        throw new IllegalArgumentException("Memory cache may not be null.");
+        throw new IllegalArgumentException("Memory cache must not be null.");
       }
       if (this.memoryCache != null) {
         throw new IllegalStateException("Memory cache already set.");
@@ -482,11 +504,18 @@ public class Picasso {
       return this;
     }
 
+    /**
+     * Turn on debugging.
+     *
+     * @see Picasso#isDebugging()
+     * @see Picasso#setDebugging(boolean)
+     */
     public Builder debug() {
       debugging = true;
       return this;
     }
 
+    /** Create the {@link Picasso} instance. */
     public Picasso build() {
       if (loader == null) {
         loader = new DefaultLoader(context);

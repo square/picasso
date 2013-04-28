@@ -3,6 +3,7 @@ package com.squareup.picasso;
 import java.io.IOException;
 import java.io.InputStream;
 
+/** A mechanism to load images from external resources such as a disk cache and/or the internet. */
 public interface Loader {
   /**
    * Download the specified image {@code url} from the internet.
@@ -16,13 +17,20 @@ public interface Loader {
    */
   Response load(String url, boolean localCacheOnly) throws IOException;
 
+  /** Response stream and info. */
   class Response {
     final InputStream stream;
     final boolean cached;
 
-    public Response(InputStream stream, boolean cached) {
+    /**
+     * Response stream and info.
+     *
+     * @param stream Image data stream.
+     * @param loadedFromCache {@code true} if the source of the stream is from a local disk cache.
+     */
+    public Response(InputStream stream, boolean loadedFromCache) {
       this.stream = stream;
-      this.cached = cached;
+      this.cached = loadedFromCache;
     }
   }
 }
