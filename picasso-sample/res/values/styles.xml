@@ -34,11 +34,24 @@
     <item name="android:background">@drawable/overlay_selector</item>
   </style>
 
+  <style name="Widget.PicassoSample.ListView" parent="android:Widget.ListView">
+    <item name="android:listSelector">@drawable/list_selector</item>
+    <item name="android:divider">@color/list_divider</item>
+  </style>
+
   <style name="Widget.PicassoSample.ListItem" parent="android:Widget.TextView">
     <item name="android:minHeight">50dp</item>
     <item name="android:padding">12dp</item>
     <item name="android:gravity">left|center_vertical</item>
     <item name="android:textSize">16sp</item>
     <item name="android:textColor">#ffffffff</item>
+  </style>
+
+  <style name="Widget.PicassoSample.DescriptionUrl" parent="android:Widget.TextView">
+    <item name="android:textSize">15sp</item>
+  </style>
+
+  <style name="Widget.PicassoSample.DescriptionText" parent="android:Widget.TextView">
+    <item name="android:textSize">12sp</item>
   </style>
 </resources>

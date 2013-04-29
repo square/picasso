@@ -1,7 +1,7 @@
 package com.example.picasso;
 
-import android.app.Activity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -13,7 +13,7 @@ import android.widget.ToggleButton;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
-abstract class PicassoSampleActivity extends Activity {
+abstract class PicassoSampleActivity extends FragmentActivity {
   private FrameLayout sampleContent;
 
   @Override protected void onCreate(Bundle savedInstanceState) {

@@ -12,7 +12,8 @@ import android.widget.TextView;
 final class PicassoSampleAdapter extends BaseAdapter {
   enum Sample {
     GRID_VIEW("Image Grid View", SampleGridViewActivity.class),
-    GALLERY("Load from Gallery", SampleGalleryActivity.class);
+    GALLERY("Load from Gallery", SampleGalleryActivity.class),
+    LIST_DETAIL("List / Detail View", SampleListDetailActivity.class);
 
     private final Class<?> activityClass;
 

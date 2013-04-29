@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <dimen name="faux_action_bar_size">48dp</dimen>
+  <dimen name="list_detail_image_size">60dp</dimen>
 </resources>

@@ -21,6 +21,10 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>com.google.android</groupId>
+      <artifactId>support-v4</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.squareup.picasso</groupId>
       <artifactId>picasso</artifactId>
       <version>${project.version}</version>
