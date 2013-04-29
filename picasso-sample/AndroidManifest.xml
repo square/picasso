@@ -25,6 +25,7 @@
     </activity>
 
     <activity android:name=".SampleGalleryActivity"/>
+    <activity android:name=".SampleListDetailActivity"/>
 
   </application>
 </manifest>

@@ -2,6 +2,9 @@
 
 <resources>
   <style name="Theme.PicassoSample" parent="android:Theme.NoTitleBar">
+    <item name="android:windowBackground">@color/window_background</item>
     <item name="android:buttonStyle">@style/Widget.PicassoSample.Button</item>
+    <item name="android:listViewStyle">@style/Widget.PicassoSample.ListView</item>
+    <item name="android:textColor">#ffe0e0e0</item>
   </style>
 </resources>
