@@ -25,6 +25,7 @@ import static android.content.Context.ACTIVITY_SERVICE;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.HONEYCOMB_MR1;
 
+/** A memory cache which uses a least-recently used eviction policy. */
 public class LruCache implements Cache {
   final LinkedHashMap<String, Bitmap> map;
   private final int maxSize;
@@ -35,10 +36,12 @@ public class LruCache implements Cache {
   private int hitCount;
   private int missCount;
 
+  /** Create a cache using an appropriate portion of the available RAM as the maximum size. */
   public LruCache(Context context) {
     this(calculateMaxSize(context));
   }
 
+  /** Create a cache with a given maximum size in bytes. */
   public LruCache(int maxSize) {
     if (maxSize <= 0) {
       throw new IllegalArgumentException("Max size must be positive.");
