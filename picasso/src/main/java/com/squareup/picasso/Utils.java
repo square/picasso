@@ -19,6 +19,7 @@ import static android.media.ExifInterface.TAG_ORIENTATION;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 
 final class Utils {
+  static final String THREAD_PREFIX = "Picasso-";
   private static final String[] CONTENT_ORIENTATION = new String[] {
       MediaStore.Images.ImageColumns.ORIENTATION
   };
@@ -153,7 +154,7 @@ final class Utils {
 
     @SuppressWarnings("NullableProblems") public Thread newThread(Runnable r) {
       Thread t = new Thread(r);
-      t.setName("picasso-" + id.getAndIncrement());
+      t.setName(THREAD_PREFIX + id.getAndIncrement());
       t.setPriority(THREAD_PRIORITY_BACKGROUND);
       return t;
     }

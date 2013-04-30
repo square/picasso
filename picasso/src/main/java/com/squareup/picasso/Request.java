@@ -99,6 +99,9 @@ class Request implements Runnable {
 
   @Override public void run() {
     try {
+      // Change the thread name to contain the target URL for debugging purposes.
+      Thread.currentThread().setName(Utils.THREAD_PREFIX + path);
+
       picasso.run(this);
     } catch (final Throwable e) {
       // If an unexpected exception happens, we should crash the app instead of letting the
