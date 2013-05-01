@@ -83,16 +83,16 @@ public class Picasso {
   final ExecutorService service;
   final Cache cache;
   final Map<Object, Request> targetsToRequests;
+  final Stats stats;
 
   boolean debugging;
 
-  private Picasso(Context context, Loader loader, ExecutorService service, Cache cache,
-      boolean debugging) {
+  Picasso(Context context, Loader loader, ExecutorService service, Cache cache, Stats stats) {
     this.context = context;
     this.loader = loader;
     this.service = service;
     this.cache = cache;
-    this.debugging = debugging;
+    this.stats = stats;
     this.targetsToRequests = new WeakHashMap<Object, Request>();
   }
 
@@ -139,14 +139,19 @@ public class Picasso {
     return new RequestBuilder(this, resourceId);
   }
 
-  /** {@link true} if debug display, logging, and statistics are enabled. */
+  /** {@code true} if debug display, logging, and statistics are enabled. */
   public boolean isDebugging() {
     return debugging;
   }
 
   /** Toggle whether debug display, logging, and statistics are enabled. */
-  public void setDebugging(boolean enabled) {
-    this.debugging = enabled;
+  public void setDebugging(boolean debugging) {
+    this.debugging = debugging;
+  }
+
+  /** Creates a {@link Snapshot} of the current stats for this instance. */
+  public Snapshot getSnapshot() {
+    return stats.createSnapshot();
   }
 
   void submit(Request request) {
@@ -178,14 +183,26 @@ public class Picasso {
   Bitmap resolveRequest(Request request) throws IOException {
     Bitmap bitmap = loadFromCache(request);
     if (bitmap == null) {
+      stats.cacheMiss();
       bitmap = loadFromType(request);
+
+      if (bitmap != null && !request.skipCache) {
+        cache.set(request.key, bitmap);
+      }
+    } else {
+      stats.cacheHit();
     }
     return bitmap;
   }
 
-  Bitmap quickMemoryCacheCheck(Object target, String path) {
-    Bitmap cached = cache.get(path);
-    cancelExistingRequest(target, path);
+  Bitmap quickMemoryCacheCheck(Object target, String key) {
+    Bitmap cached = cache.get(key);
+    cancelExistingRequest(target, key);
+
+    if (cached != null) {
+      stats.cacheHit();
+    }
+
     return cached;
   }
 
@@ -309,6 +326,8 @@ public class Picasso {
       return null;
     }
 
+    stats.bitmapDecoded(result);
+
     if (options != null || exifRotation != 0) {
       result = transformResult(request, result, exifRotation);
     }
@@ -316,10 +335,7 @@ public class Picasso {
     List<Transformation> transformations = request.transformations;
     if (transformations != null) {
       result = applyCustomTransformations(transformations, result);
-    }
-
-    if (result != null && !request.skipCache) {
-      cache.set(request.key, result);
+      stats.bitmapTransformed(result);
     }
 
     return result;
@@ -458,7 +474,6 @@ public class Picasso {
     private Loader loader;
     private ExecutorService service;
     private Cache memoryCache;
-    private boolean debugging;
 
     /** Start building a new {@link Picasso} instance. */
     public Builder(Context context) {
@@ -504,17 +519,6 @@ public class Picasso {
       return this;
     }
 
-    /**
-     * Turn on debugging.
-     *
-     * @see Picasso#isDebugging()
-     * @see Picasso#setDebugging(boolean)
-     */
-    public Builder debug() {
-      debugging = true;
-      return this;
-    }
-
     /** Create the {@link Picasso} instance. */
     public Picasso build() {
       if (loader == null) {
@@ -526,7 +530,10 @@ public class Picasso {
       if (service == null) {
         service = Executors.newFixedThreadPool(3, new Utils.PicassoThreadFactory());
       }
-      return new Picasso(context, loader, service, memoryCache, debugging);
+
+      Stats stats = new Stats(memoryCache);
+
+      return new Picasso(context, loader, service, memoryCache, stats);
     }
   }
 }
