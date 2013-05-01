@@ -10,7 +10,6 @@ import android.provider.MediaStore;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static android.media.ExifInterface.ORIENTATION_NORMAL;
 import static android.media.ExifInterface.ORIENTATION_ROTATE_180;
@@ -23,6 +22,7 @@ import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 
 final class Utils {
   static final String THREAD_PREFIX = "Picasso-";
+  static final String THREAD_IDLE_NAME = THREAD_PREFIX + "Idle";
   private static final String[] CONTENT_ORIENTATION = new String[] {
       MediaStore.Images.ImageColumns.ORIENTATION
   };
@@ -166,11 +166,10 @@ final class Utils {
   }
 
   static class PicassoThreadFactory implements ThreadFactory {
-    private static final AtomicInteger id = new AtomicInteger();
-
-    @SuppressWarnings("NullableProblems") public Thread newThread(Runnable r) {
+    @SuppressWarnings("NullableProblems")
+    public Thread newThread(Runnable r) {
       Thread t = new Thread(r);
-      t.setName(THREAD_PREFIX + id.getAndIncrement());
+      t.setName(Utils.THREAD_IDLE_NAME);
       t.setPriority(THREAD_PRIORITY_BACKGROUND);
       return t;
     }
