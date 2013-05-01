@@ -111,6 +111,8 @@ class Request implements Runnable {
           throw new RuntimeException("An unexpected exception occurred", e);
         }
       });
+    } finally {
+      Thread.currentThread().setName(Utils.THREAD_IDLE_NAME);
     }
   }
 
