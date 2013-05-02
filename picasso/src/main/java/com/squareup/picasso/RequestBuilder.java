@@ -1,5 +1,6 @@
 package com.squareup.picasso;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -295,18 +296,24 @@ public class RequestBuilder {
       throw new IllegalArgumentException("Target must not be null.");
     }
 
+    Context context = picasso.context;
+
     Bitmap bitmap = picasso.quickMemoryCacheCheck(target,
         createKey(path, resourceId, options, transformations));
     if (bitmap != null) {
-      Resources res = picasso.context.getResources();
-      target.setImageDrawable(new PicassoDrawable(res, bitmap, picasso.debugging, MEMORY));
+      Drawable d = target.getDrawable();
+      if (d instanceof PicassoDrawable) {
+        ((PicassoDrawable) d).setBitmap(bitmap, false);
+      } else {
+        target.setImageDrawable(new PicassoDrawable(context, bitmap, picasso.debugging, MEMORY));
+      }
       return;
     }
 
     if (placeholderDrawable != null) {
-      target.setImageDrawable(placeholderDrawable);
+      target.setImageDrawable(new PicassoDrawable(context, placeholderDrawable, picasso.debugging));
     } else if (placeholderResId != 0) {
-      target.setImageResource(placeholderResId);
+      target.setImageDrawable(new PicassoDrawable(context, placeholderResId, picasso.debugging));
     }
 
     Request request =
