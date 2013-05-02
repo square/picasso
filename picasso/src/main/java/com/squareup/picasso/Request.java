@@ -1,6 +1,5 @@
 package com.squareup.picasso;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -80,14 +79,7 @@ class Request implements Runnable {
 
     ImageView target = this.target.get();
     if (target != null) {
-      Context context = picasso.context;
-      Drawable d = target.getDrawable();
-      if (d instanceof PicassoDrawable) {
-        ((PicassoDrawable) d).setBitmap(result, true);
-      } else {
-        target.setImageDrawable(
-            new PicassoDrawable(context, result, picasso.debugging, loadedFrom));
-      }
+      PicassoDrawable.setBitmap(target, picasso.context, result, loadedFrom, picasso.debugging);
     }
   }
 

@@ -10,56 +10,115 @@ import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
-import org.jetbrains.annotations.TestOnly;
+import android.widget.ImageView;
 
 import static android.graphics.Color.WHITE;
+import static com.squareup.picasso.Request.LoadedFrom;
 import static com.squareup.picasso.Request.LoadedFrom.MEMORY;
 
 final class PicassoDrawable extends Drawable {
   // Only accessed from main thread.
   private static final Paint DEBUG_PAINT = new Paint();
 
-  private static final int FADE_DURATION = 180;
+  private static final float FADE_DURATION = 200f; //ms
+
+  /**
+   * Create or update the drawable on the target {@link ImageView} to display the supplied bitmap
+   * image.
+   */
+  static void setBitmap(ImageView target, Context context, Bitmap bitmap, LoadedFrom loadedFrom,
+      boolean debugging) {
+    PicassoDrawable picassoDrawable = extractPicassoDrawable(target);
+    if (picassoDrawable != null) {
+      picassoDrawable.setBitmap(bitmap, loadedFrom);
+    } else {
+      target.setImageDrawable(new PicassoDrawable(context, bitmap, debugging, loadedFrom));
+    }
+  }
+
+  /**
+   * Create or update the drawable on the target {@link ImageView} to display the supplied
+   * placeholder image.
+   */
+  static void setPlaceholder(ImageView target, Context context, int placeholderResId,
+      Drawable placeholderDrawable, boolean debugging) {
+    PicassoDrawable picassoDrawable = extractPicassoDrawable(target);
+    if (picassoDrawable != null) {
+      picassoDrawable.setPlaceholder(placeholderResId, placeholderDrawable);
+    } else {
+      target.setImageDrawable(
+          new PicassoDrawable(context, placeholderResId, placeholderDrawable, debugging));
+    }
+  }
+
+  /**
+   * Check for an existing instance of picasso drawable to save allocations if we need to set a
+   * placeholder or were able to find the bitmap in the memory cache.
+   */
+  private static PicassoDrawable extractPicassoDrawable(ImageView target) {
+    Drawable targetDrawable = target.getDrawable();
+    if (targetDrawable instanceof PicassoDrawable) {
+      return (PicassoDrawable) targetDrawable;
+    }
+    return null;
+  }
 
   private final Context context;
   private final boolean debugging;
   private final float density;
-  private final Request.LoadedFrom loadedFrom;
 
-  private BitmapDrawable bitmapDrawable;
+  private int placeholderResId;
   private Drawable placeHolderDrawable;
+
+  BitmapDrawable bitmapDrawable;
+  private LoadedFrom loadedFrom;
+
   private int alpha;
   private long startTimeMillis;
   private boolean animating;
 
-  public PicassoDrawable(Context context, int placeholderResId, boolean debugging) {
-    this(context, context.getResources().getDrawable(placeholderResId), debugging);
-  }
-
-  public PicassoDrawable(Context context, Drawable placeholderDrawable, boolean debugging) {
-    this.context = context;
-    this.debugging = debugging;
-    this.density = context.getResources().getDisplayMetrics().density;
-    this.loadedFrom = MEMORY;
-    this.placeHolderDrawable = placeholderDrawable;
-
-    animating = false;
-    startTimeMillis = 0;
-  }
-
-  public PicassoDrawable(Context context, Bitmap bitmap, boolean debugging,
-      Request.LoadedFrom loadedFrom) {
-    if (loadedFrom == null) {
-      throw new IllegalArgumentException("Loaded from must not be null.");
-    }
-
+  /**
+   * Construct a drawable with the given placeholder (drawable or resource id). The actual bitmap
+   * will be set later via {@link #setBitmap(android.graphics.Bitmap, LoadedFrom)}).
+   * <p/>
+   * This drawable may be re-used with view recycling by a call to
+   * {@link #setBitmap(android.graphics.Bitmap, LoadedFrom)}} or
+   * {@link #setPlaceholder(int, android.graphics.drawable.Drawable)}.
+   */
+  PicassoDrawable(Context context, int placeholderResId, Drawable placeholderDrawable,
+      boolean debugging) {
     Resources resources = context.getResources();
 
     this.context = context.getApplicationContext();
+    this.density = resources.getDisplayMetrics().density;
+
+    this.placeholderResId = placeholderResId;
+    if (placeholderResId != 0) {
+      placeholderDrawable = resources.getDrawable(placeholderResId);
+    }
+    this.placeHolderDrawable = placeholderDrawable;
+
     this.debugging = debugging;
+  }
+
+  /**
+   * Construct a drawable with the actual bitmap for immediate display.
+   * <p/>
+   * This drawable may be re-used with view recycling by a call to
+   * {@link #setBitmap(android.graphics.Bitmap, LoadedFrom)}} or
+   * {@link #setPlaceholder(int, android.graphics.drawable.Drawable)}.
+   */
+  PicassoDrawable(Context context, Bitmap bitmap, boolean debugging, LoadedFrom loadedFrom) {
+    Resources resources = context.getResources();
+
+    this.context = context.getApplicationContext();
     this.loadedFrom = loadedFrom;
     this.density = resources.getDisplayMetrics().density;
+
+    // TODO remove. draw ourselves.
     this.bitmapDrawable = new BitmapDrawable(resources, bitmap);
+
+    this.debugging = debugging;
 
     if (loadedFrom != MEMORY) {
       startTimeMillis = 0;
@@ -68,6 +127,7 @@ final class PicassoDrawable extends Drawable {
   }
 
   @Override public void draw(Canvas canvas) {
+    // If no bitmap has been set, quickly draw the placeholder which must be present and return.
     if (bitmapDrawable == null) {
       placeHolderDrawable.draw(canvas);
       return;
@@ -81,7 +141,7 @@ final class PicassoDrawable extends Drawable {
         done = false;
         alpha = 0;
       } else {
-        float normalized = (float) (SystemClock.uptimeMillis() - startTimeMillis) / FADE_DURATION;
+        float normalized = (SystemClock.uptimeMillis() - startTimeMillis) / FADE_DURATION;
         done = normalized >= 1.0f;
         normalized = Math.min(normalized, 1.0f);
         alpha = (int) (0xFF * normalized);
@@ -99,27 +159,24 @@ final class PicassoDrawable extends Drawable {
         bitmapDrawable.draw(canvas);
         bitmapDrawable.setAlpha(0xFF);
       }
+      invalidateSelf();
     }
 
     if (debugging) {
       drawDebugIndicator(canvas);
     }
-
-    if (!done) {
-      invalidateSelf();
-    }
   }
 
   @Override public void setAlpha(int alpha) {
-    bitmapDrawable.setAlpha(alpha);
+    // No-op
   }
 
   @Override public void setColorFilter(ColorFilter cf) {
-    bitmapDrawable.setColorFilter(cf);
+    // No-op
   }
 
   @Override public int getOpacity() {
-    return bitmapDrawable.getOpacity();
+    return 0xFF;
   }
 
   @Override protected void onBoundsChange(Rect bounds) {
@@ -127,23 +184,46 @@ final class PicassoDrawable extends Drawable {
     if (bitmapDrawable != null) {
       bitmapDrawable.setBounds(bounds);
     }
-
     if (placeHolderDrawable != null) {
       placeHolderDrawable.setBounds(bounds);
     }
   }
 
-  @TestOnly Bitmap getBitmap() {
-    return bitmapDrawable.getBitmap();
+  /**
+   * Reset to displaying the specified placeholder (drawable or resource id). This will be called
+   * when a view is recycled to avoid creating a new drawable.
+   */
+  private void setPlaceholder(int placeholderResId, Drawable placeHolderDrawable) {
+    bitmapDrawable = null;
+    loadedFrom = null;
+
+    if (placeholderResId != 0) {
+      if (this.placeholderResId != placeholderResId) {
+        this.placeHolderDrawable = context.getResources().getDrawable(placeholderResId);
+        this.placeHolderDrawable.setBounds(getBounds());
+      }
+    } else if (this.placeHolderDrawable != placeHolderDrawable) {
+      this.placeHolderDrawable = placeHolderDrawable;
+      this.placeHolderDrawable.setBounds(getBounds());
+    }
+
+    invalidateSelf();
   }
 
-  public void setBitmap(Bitmap bitmap, boolean fade) {
-    if (bitmapDrawable != null) {
+  /**
+   * Set the actual bitmap that we should be displaying. If we already have an image and the source
+   * of the new image was not the memory cache then perform a cross-fade.
+   */
+  private void setBitmap(Bitmap bitmap, LoadedFrom loadedFrom) {
+    boolean fade = loadedFrom != MEMORY;
+    if (bitmapDrawable != null && fade) {
       placeHolderDrawable = bitmapDrawable;
-      fade = true;
     }
+
     bitmapDrawable = new BitmapDrawable(context.getResources(), bitmap);
     bitmapDrawable.setBounds(getBounds());
+
+    this.loadedFrom = loadedFrom;
 
     startTimeMillis = 0;
     animating = fade;

@@ -1,6 +1,5 @@
 package com.squareup.picasso;
 
-import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -24,10 +23,10 @@ public class RequestBuilder {
 
   PicassoBitmapOptions options;
   private List<Transformation> transformations;
-  private int placeholderResId;
-  private int errorResId;
   private boolean skipCache;
+  private int placeholderResId;
   private Drawable placeholderDrawable;
+  private int errorResId;
   private Drawable errorDrawable;
 
   RequestBuilder(Picasso picasso, int resourceId) {
@@ -261,8 +260,8 @@ public class RequestBuilder {
   public Bitmap get() throws IOException {
     checkNotMain();
     Request request =
-        new Request(picasso, path, resourceId, null, options, transformations, type, skipCache,
-            errorResId, errorDrawable);
+        new Request(picasso, path, resourceId, null, options, transformations, type, skipCache, 0,
+            null);
     return picasso.resolveRequest(request);
   }
 
@@ -296,24 +295,17 @@ public class RequestBuilder {
       throw new IllegalArgumentException("Target must not be null.");
     }
 
-    Context context = picasso.context;
-
-    Bitmap bitmap = picasso.quickMemoryCacheCheck(target,
-        createKey(path, resourceId, options, transformations));
+    // Look for the target bitmap in the memory cache without moving to a background thread.
+    String requestKey = createKey(path, resourceId, options, transformations);
+    Bitmap bitmap = picasso.quickMemoryCacheCheck(target, requestKey);
     if (bitmap != null) {
-      Drawable d = target.getDrawable();
-      if (d instanceof PicassoDrawable) {
-        ((PicassoDrawable) d).setBitmap(bitmap, false);
-      } else {
-        target.setImageDrawable(new PicassoDrawable(context, bitmap, picasso.debugging, MEMORY));
-      }
+      PicassoDrawable.setBitmap(target, picasso.context, bitmap, MEMORY, picasso.debugging);
       return;
     }
 
-    if (placeholderDrawable != null) {
-      target.setImageDrawable(new PicassoDrawable(context, placeholderDrawable, picasso.debugging));
-    } else if (placeholderResId != 0) {
-      target.setImageDrawable(new PicassoDrawable(context, placeholderResId, picasso.debugging));
+    if (placeholderResId != 0 || placeholderDrawable != null) {
+      PicassoDrawable.setPlaceholder(target, picasso.context, placeholderResId, placeholderDrawable,
+          picasso.debugging);
     }
 
     Request request =
@@ -327,8 +319,8 @@ public class RequestBuilder {
       throw new IllegalArgumentException("Target must not be null.");
     }
 
-    Bitmap bitmap = picasso.quickMemoryCacheCheck(target,
-        createKey(path, resourceId, options, transformations));
+    String requestKey = createKey(path, resourceId, options, transformations);
+    Bitmap bitmap = picasso.quickMemoryCacheCheck(target, requestKey);
     if (bitmap != null) {
       target.onSuccess(bitmap);
       return;
