@@ -75,10 +75,10 @@ public class LruCache implements Cache {
     Bitmap previous;
     synchronized (this) {
       putCount++;
-      size += safeSizeOf(bitmap);
+      size += Utils.getBitmapBytes(bitmap);
       previous = map.put(key, bitmap);
       if (previous != null) {
-        size -= safeSizeOf(previous);
+        size -= Utils.getBitmapBytes(previous);
       }
     }
 
@@ -103,14 +103,10 @@ public class LruCache implements Cache {
         key = toEvict.getKey();
         value = toEvict.getValue();
         map.remove(key);
-        size -= safeSizeOf(value);
+        size -= Utils.getBitmapBytes(value);
         evictionCount++;
       }
     }
-  }
-
-  private int safeSizeOf(Bitmap value) {
-    return Utils.getBitmapBytes(value);
   }
 
   /** Clear the cache. */
