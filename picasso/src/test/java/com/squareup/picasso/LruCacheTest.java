@@ -47,7 +47,7 @@ public class LruCacheTest {
     Bitmap bitmap = mock(Bitmap.class);
     doReturn(1).when(bitmap).getHeight();
     doReturn(1).when(bitmap).getWidth();
-    doReturn(1).when(bitmap).getRowBytes();
+    doReturn(1).when(bitmap).getByteCount();
     return bitmap;
   }
 

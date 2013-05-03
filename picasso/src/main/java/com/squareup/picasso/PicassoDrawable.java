@@ -68,7 +68,7 @@ final class PicassoDrawable extends Drawable {
   private final float density;
 
   private int placeholderResId;
-  private Drawable placeHolderDrawable;
+  Drawable placeHolderDrawable;
 
   BitmapDrawable bitmapDrawable;
   private LoadedFrom loadedFrom;

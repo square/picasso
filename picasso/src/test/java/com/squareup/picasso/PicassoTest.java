@@ -1,6 +1,5 @@
 package com.squareup.picasso;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -16,6 +15,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -96,7 +96,7 @@ public class PicassoTest {
   private static final BitmapDrawable placeholderDrawable =
       new BitmapDrawable(resources, placeHolder);
 
-  private final Context context = new Activity();
+  private final Context context = Robolectric.application;
   private SynchronousExecutorService executor;
   private Loader loader;
   private Cache cache;
@@ -355,28 +355,32 @@ public class PicassoTest {
     Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
     picasso.load(URI_1).placeholder(placeholderDrawable).into(target);
 
-    verify(target).setImageDrawable(placeholderDrawable);
+
+    ArgumentCaptor<PicassoDrawable> placeholder = ArgumentCaptor.forClass(PicassoDrawable.class);
+    verify(target).setImageDrawable(placeholder.capture());
+    PicassoDrawable capturedPlaceholder = placeholder.getValue();
+    assertThat(capturedPlaceholder.placeHolderDrawable).isSameAs(placeholderDrawable);
     reset(target);
+
     executor.flush();
 
-    ArgumentCaptor<PicassoDrawable> captor = ArgumentCaptor.forClass(PicassoDrawable.class);
-    verify(target).setImageDrawable(captor.capture());
-    PicassoDrawable actualDrawable = captor.getValue();
-    assertThat(actualDrawable.bitmapDrawable.getBitmap()).isEqualTo(bitmap1);
+    ArgumentCaptor<PicassoDrawable> actual = ArgumentCaptor.forClass(PicassoDrawable.class);
+    verify(target).setImageDrawable(actual.capture());
+    PicassoDrawable capturedActual = actual.getValue();
+    assertThat(capturedActual.bitmapDrawable.getBitmap()).isEqualTo(bitmap1);
 
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
+  @Ignore // Waiting on next Robolectric release
   @Test public void loadIntoImageViewWithPlaceHolderResource() throws Exception {
     ImageView target = mock(ImageView.class);
     doAnswer(NULL_ANSWER).when(target).setImageResource(anyInt());
 
-    int placeholderResId = 42;
-
     Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
-    picasso.load(URI_1).placeholder(placeholderResId).into(target);
+    picasso.load(URI_1).placeholder(android.R.drawable.ic_delete).into(target);
 
-    verify(target).setImageResource(placeholderResId);
+    verify(target).setImageResource(0);
     executor.flush();
 
     ArgumentCaptor<PicassoDrawable> captor = ArgumentCaptor.forClass(PicassoDrawable.class);

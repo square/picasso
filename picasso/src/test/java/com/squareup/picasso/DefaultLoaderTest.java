@@ -1,7 +1,6 @@
 package com.squareup.picasso;
 
 import android.app.Activity;
-import android.net.http.HttpResponseCache;
 import com.google.mockwebserver.MockResponse;
 import com.google.mockwebserver.MockWebServer;
 import com.google.mockwebserver.RecordedRequest;
@@ -12,7 +11,10 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
+import static android.os.Build.VERSION_CODES.GINGERBREAD;
+import static android.os.Build.VERSION_CODES.HONEYCOMB_MR2;
 import static com.squareup.picasso.DefaultLoader.RESPONSE_SOURCE;
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -36,7 +38,8 @@ public class DefaultLoaderTest {
     server.shutdown();
   }
 
-  @Ignore // Needs Robolectric 2.0 alpha 3 for proper SDK_INT support.
+  @Ignore // Needs next Robolectric release for proper HttpResponseCache support.
+  @Config(reportSdk = HONEYCOMB_MR2)
   @Test public void cacheOnlyInstalledOnce() throws Exception {
     DefaultLoader.cache = null;
 
@@ -50,8 +53,7 @@ public class DefaultLoaderTest {
     assertThat(DefaultLoader.cache).isSameAs(cache);
   }
 
-  @Ignore // Needs Robolectric 2.0 alpha 2 for proper SDK_INT support.
-  //@With(sdk = Build.VERSION_CODES.GINGERBREAD)
+  @Config(reportSdk = GINGERBREAD)
   @Test public void cacheOnlyInstalledOnApi13() throws Exception {
     DefaultLoader.cache = null;
 
@@ -61,6 +63,7 @@ public class DefaultLoaderTest {
     assertThat(cache).isNull();
   }
 
+  @Config(reportSdk = GINGERBREAD)
   @Test public void allowExpiredSetsCacheControl() throws Exception {
     server.enqueue(new MockResponse());
     loader.load("/", false);
@@ -73,6 +76,7 @@ public class DefaultLoaderTest {
     assertThat(request2.getHeader("Cache-Control")).isEqualTo("only-if-cached");
   }
 
+  @Config(reportSdk = GINGERBREAD)
   @Test public void responseSourceHeaderSetsResponseValue() throws Exception {
     server.enqueue(new MockResponse());
     Loader.Response response1 = loader.load("/", false);
