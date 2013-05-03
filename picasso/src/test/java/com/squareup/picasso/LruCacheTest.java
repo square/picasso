@@ -21,46 +21,29 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import static android.graphics.Bitmap.Config.ALPHA_8;
 import static junit.framework.Assert.fail;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class LruCacheTest {
+  // The use of ALPHA_8 simplifies the size math in tests since only one byte is used per-pixel.
+  private final Bitmap A = Bitmap.createBitmap(1, 1, ALPHA_8);
+  private final Bitmap B = Bitmap.createBitmap(1, 1, ALPHA_8);
+  private final Bitmap C = Bitmap.createBitmap(1, 1, ALPHA_8);
+  private final Bitmap D = Bitmap.createBitmap(1, 1, ALPHA_8);
+  private final Bitmap E = Bitmap.createBitmap(1, 1, ALPHA_8);
+
   private int expectedPutCount;
   private int expectedHitCount;
   private int expectedMissCount;
   private int expectedEvictionCount;
-
-  private Bitmap A;
-  private Bitmap B;
-  private Bitmap C;
-  private Bitmap D;
-  private Bitmap E;
-
-  private static Bitmap mockBitmap() {
-    Bitmap bitmap = mock(Bitmap.class);
-    doReturn(1).when(bitmap).getHeight();
-    doReturn(1).when(bitmap).getWidth();
-    doReturn(1).when(bitmap).getByteCount();
-    return bitmap;
-  }
-
-  @Before public void setUp() {
-    A = mockBitmap();
-    B = mockBitmap();
-    C = mockBitmap();
-    D = mockBitmap();
-    E = mockBitmap();
-  }
 
   @Test public void testStatistics() {
     LruCache cache = new LruCache(3);
