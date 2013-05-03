@@ -24,6 +24,7 @@ public class RequestBuilder {
   PicassoBitmapOptions options;
   private List<Transformation> transformations;
   private boolean skipCache;
+  private boolean noFade;
   private int placeholderResId;
   private Drawable placeholderDrawable;
   private int errorResId;
@@ -256,12 +257,18 @@ public class RequestBuilder {
     return this;
   }
 
+  /** Disable brief fade in of images loaded from the disk cache or network. */
+  public RequestBuilder noFade() {
+    noFade = true;
+    return this;
+  }
+
   /** Synchronously fulfill this request. Must not be called from the main thread. */
   public Bitmap get() throws IOException {
     checkNotMain();
     Request request =
-        new Request(picasso, path, resourceId, null, options, transformations, type, skipCache, 0,
-            null);
+        new Request(picasso, path, resourceId, null, options, transformations, type, skipCache,
+            false, 0, null);
     return picasso.resolveRequest(request);
   }
 
@@ -299,7 +306,7 @@ public class RequestBuilder {
     String requestKey = createKey(path, resourceId, options, transformations);
     Bitmap bitmap = picasso.quickMemoryCacheCheck(target, requestKey);
     if (bitmap != null) {
-      PicassoDrawable.setBitmap(target, picasso.context, bitmap, MEMORY, picasso.debugging);
+      PicassoDrawable.setBitmap(target, picasso.context, bitmap, MEMORY, noFade, picasso.debugging);
       return;
     }
 
@@ -310,7 +317,7 @@ public class RequestBuilder {
 
     Request request =
         new Request(picasso, path, resourceId, target, options, transformations, type, skipCache,
-            errorResId, errorDrawable);
+            noFade, errorResId, errorDrawable);
     picasso.submit(request);
   }
 
@@ -328,7 +335,7 @@ public class RequestBuilder {
 
     Request request =
         new TargetRequest(picasso, path, resourceId, target, strong, options, transformations, type,
-            skipCache, errorResId, errorDrawable);
+            skipCache);
     picasso.submit(request);
   }
 }

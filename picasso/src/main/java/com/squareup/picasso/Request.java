@@ -1,5 +1,6 @@
 package com.squareup.picasso;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -40,6 +41,7 @@ class Request implements Runnable {
   final List<Transformation> transformations;
   final Type type;
   final boolean skipCache;
+  final boolean noFade;
   final int errorResId;
   final Drawable errorDrawable;
   final String key;
@@ -52,7 +54,7 @@ class Request implements Runnable {
 
   Request(Picasso picasso, String path, int resourceId, ImageView imageView,
       PicassoBitmapOptions options, List<Transformation> transformations, Type type,
-      boolean skipCache, int errorResId, Drawable errorDrawable) {
+      boolean skipCache, boolean noFade, int errorResId, Drawable errorDrawable) {
     this.picasso = picasso;
     this.path = path;
     this.resourceId = resourceId;
@@ -61,6 +63,7 @@ class Request implements Runnable {
     this.transformations = transformations;
     this.type = type;
     this.skipCache = skipCache;
+    this.noFade = noFade;
     this.errorResId = errorResId;
     this.errorDrawable = errorDrawable;
     this.retryCount = DEFAULT_RETRY_COUNT;
@@ -79,7 +82,9 @@ class Request implements Runnable {
 
     ImageView target = this.target.get();
     if (target != null) {
-      PicassoDrawable.setBitmap(target, picasso.context, result, loadedFrom, picasso.debugging);
+      Context context = picasso.context;
+      boolean debugging = picasso.debugging;
+      PicassoDrawable.setBitmap(target, context, result, loadedFrom, noFade, debugging);
     }
   }
 

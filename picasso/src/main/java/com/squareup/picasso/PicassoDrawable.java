@@ -27,12 +27,12 @@ final class PicassoDrawable extends Drawable {
    * image.
    */
   static void setBitmap(ImageView target, Context context, Bitmap bitmap, LoadedFrom loadedFrom,
-      boolean debugging) {
+      boolean noFade, boolean debugging) {
     PicassoDrawable picassoDrawable = extractPicassoDrawable(target);
     if (picassoDrawable != null) {
-      picassoDrawable.setBitmap(bitmap, loadedFrom);
+      picassoDrawable.setBitmap(bitmap, loadedFrom, noFade);
     } else {
-      target.setImageDrawable(new PicassoDrawable(context, bitmap, debugging, loadedFrom));
+      target.setImageDrawable(new PicassoDrawable(context, bitmap, debugging, loadedFrom, noFade));
     }
   }
 
@@ -79,10 +79,10 @@ final class PicassoDrawable extends Drawable {
 
   /**
    * Construct a drawable with the given placeholder (drawable or resource id). The actual bitmap
-   * will be set later via {@link #setBitmap(android.graphics.Bitmap, LoadedFrom)}).
+   * will be set later via {@link #setBitmap(android.graphics.Bitmap, com.squareup.picasso.Request.LoadedFrom, boolean)}).
    * <p/>
    * This drawable may be re-used with view recycling by a call to
-   * {@link #setBitmap(android.graphics.Bitmap, LoadedFrom)}} or
+   * {@link #setBitmap(android.graphics.Bitmap, com.squareup.picasso.Request.LoadedFrom, boolean)}} or
    * {@link #setPlaceholder(int, android.graphics.drawable.Drawable)}.
    */
   PicassoDrawable(Context context, int placeholderResId, Drawable placeholderDrawable,
@@ -105,10 +105,11 @@ final class PicassoDrawable extends Drawable {
    * Construct a drawable with the actual bitmap for immediate display.
    * <p/>
    * This drawable may be re-used with view recycling by a call to
-   * {@link #setBitmap(android.graphics.Bitmap, LoadedFrom)}} or
+   * {@link #setBitmap(android.graphics.Bitmap, com.squareup.picasso.Request.LoadedFrom, boolean)}} or
    * {@link #setPlaceholder(int, android.graphics.drawable.Drawable)}.
    */
-  PicassoDrawable(Context context, Bitmap bitmap, boolean debugging, LoadedFrom loadedFrom) {
+  PicassoDrawable(Context context, Bitmap bitmap, boolean debugging, LoadedFrom loadedFrom,
+      boolean noFade) {
     Resources resources = context.getResources();
 
     this.context = context.getApplicationContext();
@@ -120,7 +121,7 @@ final class PicassoDrawable extends Drawable {
 
     this.debugging = debugging;
 
-    if (loadedFrom != MEMORY) {
+    if (loadedFrom != MEMORY && !noFade) {
       startTimeMillis = 0;
       animating = true;
     }
@@ -214,8 +215,8 @@ final class PicassoDrawable extends Drawable {
    * Set the actual bitmap that we should be displaying. If we already have an image and the source
    * of the new image was not the memory cache then perform a cross-fade.
    */
-  private void setBitmap(Bitmap bitmap, LoadedFrom loadedFrom) {
-    boolean fade = loadedFrom != MEMORY;
+  private void setBitmap(Bitmap bitmap, LoadedFrom loadedFrom, boolean noFade) {
+    boolean fade = loadedFrom != MEMORY && !noFade;
     if (bitmapDrawable != null && fade) {
       placeHolderDrawable = bitmapDrawable;
     }

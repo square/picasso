@@ -13,6 +13,10 @@ public class PicassoDrawableTest {
     // TODO given with a placeholder, call setBitmap from disk and ensure there's a cross fade
   }
 
+  @Test public void withPlaceholderToBitmapNoFade() {
+    // TODO given with a placeholder, call setBitmap from disk and ensure there's no fade
+  }
+
   @Test public void withBitmapRecycleToPlaceholder() {
     // TODO given with a bitmap, call setPlaceholder and verify behavior
   }
