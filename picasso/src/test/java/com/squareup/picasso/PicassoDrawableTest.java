@@ -1,31 +1,97 @@
 package com.squareup.picasso;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+
+import static android.graphics.Bitmap.Config.ARGB_8888;
+import static android.graphics.Color.RED;
+import static com.squareup.picasso.Request.LoadedFrom.DISK;
+import static com.squareup.picasso.Request.LoadedFrom.MEMORY;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(PicassoTestRunner.class)
 public class PicassoDrawableTest {
+  private final Context context = Robolectric.application;
+  private final Bitmap bitmap1 = Bitmap.createBitmap(10, 10, ARGB_8888);
+  private final Bitmap bitmap2 = Bitmap.createBitmap(10, 10, ARGB_8888);
+  private final Drawable placholder = new ColorDrawable(RED);
+
+  @Test public void createWithPlaceholderDoesNotAnimate() {
+    PicassoDrawable pd = new PicassoDrawable(context, 0, placholder, false);
+    assertThat(pd.bitmapDrawable).isNull();
+    assertThat(pd.placeHolderDrawable).isSameAs(placholder);
+    assertThat(pd.animating).isFalse();
+  }
+
   @Test public void createWithBitmapCacheHit() {
-    // TODO create with a bitmap
+    PicassoDrawable pd = new PicassoDrawable(context, bitmap1, MEMORY, false, false);
+    assertThat(pd.bitmapDrawable.getBitmap()).isSameAs(bitmap1);
+    assertThat(pd.placeHolderDrawable).isNull();
+    assertThat(pd.animating).isFalse();
   }
 
   @Test public void withPlaceholderToBitmap() {
-    // TODO given with a placeholder, call setBitmap from disk and ensure there's a cross fade
+    PicassoDrawable pd = new PicassoDrawable(context, 0, placholder, false);
+    assertThat(pd.placeHolderDrawable).isSameAs(placholder);
+    assertThat(pd.bitmapDrawable).isNull();
+    assertThat(pd.animating).isFalse();
+
+    pd.setBitmap(bitmap1, DISK, false);
+    assertThat(pd.bitmapDrawable.getBitmap()).isSameAs(bitmap1);
+    assertThat(pd.animating).isTrue();
   }
 
   @Test public void withPlaceholderToBitmapNoFade() {
-    // TODO given with a placeholder, call setBitmap from disk and ensure there's no fade
+    PicassoDrawable pd = new PicassoDrawable(context, 0, placholder, false);
+    assertThat(pd.placeHolderDrawable).isSameAs(placholder);
+    assertThat(pd.bitmapDrawable).isNull();
+    assertThat(pd.animating).isFalse();
+
+    pd.setBitmap(bitmap1, DISK, true);
+    assertThat(pd.bitmapDrawable.getBitmap()).isSameAs(bitmap1);
+    assertThat(pd.animating).isFalse();
   }
 
   @Test public void withBitmapRecycleToPlaceholder() {
-    // TODO given with a bitmap, call setPlaceholder and verify behavior
+    PicassoDrawable pd = new PicassoDrawable(context, bitmap1, MEMORY, false, false);
+    assertThat(pd.bitmapDrawable.getBitmap()).isSameAs(bitmap1);
+    assertThat(pd.placeHolderDrawable).isNull();
+    assertThat(pd.animating).isFalse();
+
+    pd.setPlaceholder(0, placholder);
+    assertThat(pd.bitmapDrawable).isNull();
+    assertThat(pd.placeHolderDrawable).isSameAs(placholder);
+    assertThat(pd.animating).isFalse();
   }
 
   @Test public void withBitmapRecycleToBitmapCacheHit() {
-    // TODO given with a bitmap, call setBitmap from mem and ensure there's no cross fade
+    PicassoDrawable pd = new PicassoDrawable(context, bitmap1, MEMORY, false, false);
+    assertThat(pd.bitmapDrawable.getBitmap()).isSameAs(bitmap1);
+    assertThat(pd.placeHolderDrawable).isNull();
+    assertThat(pd.animating).isFalse();
+
+    pd.setBitmap(bitmap2, MEMORY, false);
+    assertThat(pd.bitmapDrawable.getBitmap()).isSameAs(bitmap2);
+    assertThat(pd.placeHolderDrawable).isNull();
+    assertThat(pd.animating).isFalse();
   }
 
   @Test public void withBitmapRecycleToBitmap() {
-    // TODO given with a bitmap, call setBitmap from disk and ensure there's a cross fade
+    PicassoDrawable pd = new PicassoDrawable(context, bitmap1, MEMORY, false, false);
+    BitmapDrawable bitmapDrawable = pd.bitmapDrawable;
+    assertThat(bitmapDrawable.getBitmap()).isSameAs(bitmap1);
+    assertThat(pd.placeHolderDrawable).isNull();
+    assertThat(pd.animating).isFalse();
+
+    pd.setBitmap(bitmap2, DISK, false);
+    assertThat(pd.bitmapDrawable.getBitmap()).isSameAs(bitmap2);
+    assertThat(pd.placeHolderDrawable).isSameAs(bitmapDrawable);
+    assertThat(pd.animating).isTrue();
   }
 }
