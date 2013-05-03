@@ -1,17 +1,16 @@
 package com.squareup.picasso;
 
-import java.lang.reflect.Method;
+import java.io.File;
 import org.junit.runners.model.InitializationError;
-import org.robolectric.Robolectric;
+import org.robolectric.AndroidManifest;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.shadows.ShadowApplication;
 
 public class PicassoTestRunner extends RobolectricTestRunner {
   public PicassoTestRunner(Class<?> testClass) throws InitializationError {
     super(testClass);
   }
 
-  @Override public void setupApplicationState(Method testMethod) {
-    Robolectric.application = ShadowApplication.bind(createApplication(), null, null);
+  @Override protected AndroidManifest createAppManifest(File baseDir) {
+    return null;
   }
 }

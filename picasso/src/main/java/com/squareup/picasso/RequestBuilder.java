@@ -23,10 +23,11 @@ public class RequestBuilder {
 
   PicassoBitmapOptions options;
   private List<Transformation> transformations;
-  private int placeholderResId;
-  private int errorResId;
   private boolean skipCache;
+  private boolean noFade;
+  private int placeholderResId;
   private Drawable placeholderDrawable;
+  private int errorResId;
   private Drawable errorDrawable;
 
   RequestBuilder(Picasso picasso, int resourceId) {
@@ -256,12 +257,18 @@ public class RequestBuilder {
     return this;
   }
 
+  /** Disable brief fade in of images loaded from the disk cache or network. */
+  public RequestBuilder noFade() {
+    noFade = true;
+    return this;
+  }
+
   /** Synchronously fulfill this request. Must not be called from the main thread. */
   public Bitmap get() throws IOException {
     checkNotMain();
     Request request =
         new Request(picasso, path, resourceId, null, options, transformations, type, skipCache,
-            errorResId, errorDrawable);
+            false, 0, null);
     return picasso.resolveRequest(request);
   }
 
@@ -295,23 +302,22 @@ public class RequestBuilder {
       throw new IllegalArgumentException("Target must not be null.");
     }
 
-    Bitmap bitmap = picasso.quickMemoryCacheCheck(target,
-        createKey(path, resourceId, options, transformations));
+    // Look for the target bitmap in the memory cache without moving to a background thread.
+    String requestKey = createKey(path, resourceId, options, transformations);
+    Bitmap bitmap = picasso.quickMemoryCacheCheck(target, requestKey);
     if (bitmap != null) {
-      Resources res = picasso.context.getResources();
-      target.setImageDrawable(new PicassoDrawable(res, bitmap, picasso.debugging, MEMORY));
+      PicassoDrawable.setBitmap(target, picasso.context, bitmap, MEMORY, noFade, picasso.debugging);
       return;
     }
 
-    if (placeholderDrawable != null) {
-      target.setImageDrawable(placeholderDrawable);
-    } else if (placeholderResId != 0) {
-      target.setImageResource(placeholderResId);
+    if (placeholderResId != 0 || placeholderDrawable != null) {
+      PicassoDrawable.setPlaceholder(target, picasso.context, placeholderResId, placeholderDrawable,
+          picasso.debugging);
     }
 
     Request request =
         new Request(picasso, path, resourceId, target, options, transformations, type, skipCache,
-            errorResId, errorDrawable);
+            noFade, errorResId, errorDrawable);
     picasso.submit(request);
   }
 
@@ -320,8 +326,8 @@ public class RequestBuilder {
       throw new IllegalArgumentException("Target must not be null.");
     }
 
-    Bitmap bitmap = picasso.quickMemoryCacheCheck(target,
-        createKey(path, resourceId, options, transformations));
+    String requestKey = createKey(path, resourceId, options, transformations);
+    Bitmap bitmap = picasso.quickMemoryCacheCheck(target, requestKey);
     if (bitmap != null) {
       target.onSuccess(bitmap);
       return;
@@ -329,7 +335,7 @@ public class RequestBuilder {
 
     Request request =
         new TargetRequest(picasso, path, resourceId, target, strong, options, transformations, type,
-            skipCache, errorResId, errorDrawable);
+            skipCache);
     picasso.submit(request);
   }
 }

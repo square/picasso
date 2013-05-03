@@ -19,7 +19,7 @@ public class TargetRequestTest {
       }
     };
     TargetRequest tr =
-        new TargetRequest(null, null, 0, recycler, false, null, null, null, false, 0, null);
+        new TargetRequest(null, null, 0, recycler, false, null, null, null, false);
     tr.result = Bitmap.createBitmap(10, 10, null);
     try {
       tr.complete();
