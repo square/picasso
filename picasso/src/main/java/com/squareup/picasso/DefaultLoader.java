@@ -20,7 +20,7 @@ public class DefaultLoader implements Loader {
   private static final int MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
   private static final Object lock = new Object();
-  static volatile HttpResponseCache cache;
+  static volatile Object cache;
 
   private final Context context;
 
@@ -33,7 +33,9 @@ public class DefaultLoader implements Loader {
   }
 
   @Override public Response load(String url, boolean localCacheOnly) throws IOException {
-    installCacheIfNeeded(context);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+      installCacheIfNeeded(context);
+    }
 
     HttpURLConnection connection = openConnection(url);
     connection.setUseCaches(true);
@@ -47,20 +49,27 @@ public class DefaultLoader implements Loader {
   }
 
   private static void installCacheIfNeeded(Context context) {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB_MR2) {
-      return;
-    }
     // DCL + volatile should be safe after Java 5.
     if (cache == null) {
       try {
         synchronized (lock) {
           if (cache == null) {
-            File cacheDir = new File(context.getCacheDir(), PICASSO_CACHE);
-            cache = HttpResponseCache.install(cacheDir, MAX_SIZE);
+            cache = ResponseCacheHoneycombMR2.install(context);
           }
         }
       } catch (IOException ignored) {
       }
+    }
+  }
+
+  private static class ResponseCacheHoneycombMR2 {
+    static Object install(Context context) throws IOException {
+      File cacheDir = new File(context.getCacheDir(), PICASSO_CACHE);
+      HttpResponseCache cache = HttpResponseCache.getInstalled();
+      if (cache == null) {
+        cache = HttpResponseCache.install(cacheDir, MAX_SIZE);
+      }
+      return cache;
     }
   }
 }

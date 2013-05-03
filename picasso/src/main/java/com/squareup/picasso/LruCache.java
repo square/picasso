@@ -18,6 +18,7 @@ package com.squareup.picasso;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.Build;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -147,7 +148,16 @@ public class LruCache implements Cache {
   private static int calculateMaxSize(Context context) {
     ActivityManager am = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
     boolean largeHeap = (context.getApplicationInfo().flags & FLAG_LARGE_HEAP) != 0;
-    int memoryClass = largeHeap ? am.getLargeMemoryClass() : am.getMemoryClass();
+    int memoryClass = am.getMemoryClass();
+    if (largeHeap && Build.VERSION.SDK_INT <= Build.VERSION_CODES.HONEYCOMB) {
+      memoryClass = ActivityManagerHoneycomb.getLargeMemoryClass(am);
+    }
     return 1024 * 1024 * memoryClass / 6;
+  }
+
+  private static class ActivityManagerHoneycomb {
+    static int getLargeMemoryClass(ActivityManager activityManager) {
+      return activityManager.getLargeMemoryClass();
+    }
   }
 }
