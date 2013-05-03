@@ -42,7 +42,7 @@ public class DefaultLoaderTest {
 
     server.enqueue(new MockResponse());
     loader.load("/", false);
-    HttpResponseCache cache = DefaultLoader.cache;
+    Object cache = DefaultLoader.cache;
     assertThat(cache).isNotNull();
 
     server.enqueue(new MockResponse());
@@ -57,7 +57,7 @@ public class DefaultLoaderTest {
 
     server.enqueue(new MockResponse());
     loader.load("/", false);
-    HttpResponseCache cache = DefaultLoader.cache;
+    Object cache = DefaultLoader.cache;
     assertThat(cache).isNull();
   }
 
