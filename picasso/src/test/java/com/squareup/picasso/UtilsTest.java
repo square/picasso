@@ -5,13 +5,16 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import static com.squareup.picasso.Utils.createKey;
 import static com.squareup.picasso.Utils.parseResponseSourceHeader;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-@RunWith(PicassoTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class UtilsTest {
   private static final String URL = "http://example.com/a.png";
   private static final List<Transformation> NONE = Collections.emptyList();

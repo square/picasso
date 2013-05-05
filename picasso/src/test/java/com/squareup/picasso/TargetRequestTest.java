@@ -3,10 +3,13 @@ package com.squareup.picasso;
 import android.graphics.Bitmap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import static org.junit.Assert.fail;
 
-@RunWith(PicassoTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class TargetRequestTest {
   @Test public void recyclingInSuccessThrowsException() {
     Target recycler = new Target() {

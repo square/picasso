@@ -4,11 +4,14 @@ import android.graphics.drawable.ColorDrawable;
 import android.widget.ImageView;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.api.Assertions.fail;
 
-@RunWith(PicassoTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class RequestBuilderTest {
   @Test public void invalidPlaceholderImage() {
     try {

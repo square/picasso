@@ -23,6 +23,8 @@ import org.mockito.InOrder;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import static com.squareup.picasso.Request.Type;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -46,7 +48,8 @@ import static org.robolectric.Robolectric.pauseMainLooper;
 import static org.robolectric.Robolectric.runUiThreadTasksIncludingDelayedTasks;
 import static org.robolectric.Robolectric.unPauseMainLooper;
 
-@RunWith(PicassoTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class PicassoTest {
   private static final String URI_1 = "URI1";
   private static final String URI_2 = "URI2";

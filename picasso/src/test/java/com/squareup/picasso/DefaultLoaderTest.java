@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import static android.os.Build.VERSION_CODES.GINGERBREAD;
@@ -18,7 +19,8 @@ import static android.os.Build.VERSION_CODES.HONEYCOMB_MR2;
 import static com.squareup.picasso.DefaultLoader.RESPONSE_SOURCE;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-@RunWith(PicassoTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class DefaultLoaderTest {
   private MockWebServer server;
   private DefaultLoader loader;
