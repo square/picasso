@@ -24,6 +24,7 @@ import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 final class Utils {
   static final String THREAD_PREFIX = "Picasso-";
   static final String THREAD_IDLE_NAME = THREAD_PREFIX + "Idle";
+  private static final int KEY_PADDING = 50; // Determined by exact science.
   private static final String[] CONTENT_ORIENTATION = new String[] {
       MediaStore.Images.ImageColumns.ORIENTATION
   };
@@ -87,11 +88,13 @@ final class Utils {
 
   static String createKey(String path, int resourceId, PicassoBitmapOptions options,
       List<Transformation> transformations) {
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder;
 
     if (path != null) {
+      builder = new StringBuilder(path.length() + KEY_PADDING);
       builder.append(path);
     } else {
+      builder = new StringBuilder(KEY_PADDING);
       builder.append(resourceId);
     }
     builder.append('\n');
@@ -108,8 +111,11 @@ final class Utils {
       int targetWidth = options.targetWidth;
       int targetHeight = options.targetHeight;
       if (targetWidth != 0) {
-        builder.append("resize").append(targetWidth).append('x').append(targetHeight);
+        builder.append("resize:").append(targetWidth).append('x').append(targetHeight);
         builder.append('\n');
+      }
+      if (options.centerCrop) {
+        builder.append("centerCrop\n");
       }
       float targetScaleX = options.targetScaleX;
       float targetScaleY = options.targetScaleY;
@@ -127,7 +133,6 @@ final class Utils {
       }
     }
 
-    // TODO Support bitmap options?
     return builder.toString();
   }
 
