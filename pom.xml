@@ -17,7 +17,7 @@
   <packaging>pom</packaging>
 
   <name>Picasso (Parent)</name>
-  <description>TODO</description>
+  <description>A powerful image downloading and caching library for Android</description>
   <url>http://github.com/square/picasso</url>
   <inceptionYear>2013</inceptionYear>
 
@@ -109,7 +109,7 @@
       <dependency>
         <groupId>com.google.mockwebserver</groupId>
         <artifactId>mockwebserver</artifactId>
-        <version>20130403</version>
+        <version>20130505</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -120,7 +120,7 @@
         <plugin>
           <groupId>com.jayway.maven.plugins.android.generation2</groupId>
           <artifactId>android-maven-plugin</artifactId>
-          <version>3.4.1</version>
+          <version>3.5.3</version>
           <configuration>
             <sdk>
               <platform>16</platform>
@@ -144,7 +144,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>2.9.1</version>
+        <version>2.10</version>
         <configuration>
           <failsOnError>true</failsOnError>
           <configLocation>checkstyle.xml</configLocation>
