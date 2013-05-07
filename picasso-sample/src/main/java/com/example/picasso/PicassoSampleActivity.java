@@ -14,6 +14,7 @@ import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
 abstract class PicassoSampleActivity extends FragmentActivity {
+  private ToggleButton showHide;
   private FrameLayout sampleContent;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
@@ -31,12 +32,20 @@ abstract class PicassoSampleActivity extends FragmentActivity {
       }
     });
 
-    ToggleButton showHide = (ToggleButton) findViewById(R.id.faux_action_bar_control);
+    showHide = (ToggleButton) findViewById(R.id.faux_action_bar_control);
     showHide.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
       @Override public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
         activityList.setVisibility(checked ? VISIBLE : GONE);
       }
     });
+  }
+
+  @Override public void onBackPressed() {
+    if (showHide.isChecked()) {
+      showHide.setChecked(false);
+    } else {
+      super.onBackPressed();
+    }
   }
 
   @Override public void setContentView(int layoutResID) {
