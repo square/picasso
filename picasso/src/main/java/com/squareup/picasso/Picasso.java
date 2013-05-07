@@ -328,8 +328,21 @@ public class Picasso {
 
     stats.bitmapDecoded(result);
 
+    // If the caller wants deferred resize, try to load the target ImageView's measured size.
+    if (options != null && options.deferredResize) {
+      ImageView target = request.target.get();
+      if (target != null) {
+        int targetWidth = target.getMeasuredWidth();
+        int targetHeight = target.getMeasuredHeight();
+        if (targetWidth != 0 && targetHeight != 0) {
+          options.targetWidth = targetWidth;
+          options.targetHeight = targetHeight;
+        }
+      }
+    }
+
     if (options != null || exifRotation != 0) {
-      result = transformResult(request, result, exifRotation);
+      result = transformResult(options, result, exifRotation);
     }
 
     List<Transformation> transformations = request.transformations;
@@ -341,7 +354,7 @@ public class Picasso {
     return result;
   }
 
-  static Bitmap transformResult(Request request, Bitmap result, int exifRotation) {
+  static Bitmap transformResult(PicassoBitmapOptions options, Bitmap result, int exifRotation) {
     int inWidth = result.getWidth();
     int inHeight = result.getHeight();
 
@@ -352,26 +365,9 @@ public class Picasso {
 
     Matrix matrix = new Matrix();
 
-    PicassoBitmapOptions options = request.options;
     if (options != null) {
-      int targetWidth = 0;
-      int targetHeight = 0;
-
-      // If the caller wants deferred resize, try to load the target ImageView's measured size.
-      if (options.deferredResize) {
-        ImageView target = request.target.get();
-        if (target != null) {
-          targetWidth = target.getMeasuredWidth();
-          targetHeight = target.getMeasuredHeight();
-        }
-      }
-
-      // If there was no deferred resize or the target view has not yet been measured, and the
-      // caller specified and explicit resize, use those measurements.
-      if (targetWidth == 0 && targetHeight == 0) {
-        targetWidth = options.targetWidth;
-        targetHeight = options.targetHeight;
-      }
+      int targetWidth = options.targetWidth;
+      int targetHeight = options.targetHeight;
 
       float targetRotation = options.targetRotation;
       if (targetRotation != 0) {
