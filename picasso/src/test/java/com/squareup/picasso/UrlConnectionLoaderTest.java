@@ -16,20 +16,20 @@ import org.robolectric.annotation.Config;
 
 import static android.os.Build.VERSION_CODES.GINGERBREAD;
 import static android.os.Build.VERSION_CODES.HONEYCOMB_MR2;
-import static com.squareup.picasso.DefaultLoader.RESPONSE_SOURCE;
+import static com.squareup.picasso.UrlConnectionLoader.RESPONSE_SOURCE;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-public class DefaultLoaderTest {
+public class UrlConnectionLoaderTest {
   private MockWebServer server;
-  private DefaultLoader loader;
+  private UrlConnectionLoader loader;
 
   @Before public void setUp() throws Exception {
     server = new MockWebServer();
     server.play();
 
-    loader = new DefaultLoader(new Activity()) {
+    loader = new UrlConnectionLoader(new Activity()) {
       @Override protected HttpURLConnection openConnection(String path) throws IOException {
         return (HttpURLConnection) server.getUrl(path).openConnection();
       }
@@ -43,25 +43,25 @@ public class DefaultLoaderTest {
   @Ignore // Needs next Robolectric release for proper HttpResponseCache support.
   @Config(reportSdk = HONEYCOMB_MR2)
   @Test public void cacheOnlyInstalledOnce() throws Exception {
-    DefaultLoader.cache = null;
+    UrlConnectionLoader.cache = null;
 
     server.enqueue(new MockResponse());
     loader.load("/", false);
-    Object cache = DefaultLoader.cache;
+    Object cache = UrlConnectionLoader.cache;
     assertThat(cache).isNotNull();
 
     server.enqueue(new MockResponse());
     loader.load("/", false);
-    assertThat(DefaultLoader.cache).isSameAs(cache);
+    assertThat(UrlConnectionLoader.cache).isSameAs(cache);
   }
 
   @Config(reportSdk = GINGERBREAD)
   @Test public void cacheOnlyInstalledOnApi13() throws Exception {
-    DefaultLoader.cache = null;
+    UrlConnectionLoader.cache = null;
 
     server.enqueue(new MockResponse());
     loader.load("/", false);
-    Object cache = DefaultLoader.cache;
+    Object cache = UrlConnectionLoader.cache;
     assertThat(cache).isNull();
   }
 
