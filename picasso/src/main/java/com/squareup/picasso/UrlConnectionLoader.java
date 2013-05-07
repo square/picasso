@@ -14,7 +14,7 @@ import static com.squareup.picasso.Utils.parseResponseSourceHeader;
  * A {@link Loader} which uses {@link HttpURLConnection} to download images. A disk cache of 10MB
  * will automatically be installed in the application's cache directory, when available.
  */
-public class DefaultLoader implements Loader {
+public class UrlConnectionLoader implements Loader {
   static final String RESPONSE_SOURCE = "X-Android-Response-Source";
   private static final String PICASSO_CACHE = "picasso-cache";
   private static final int MAX_SIZE = 10 * 1024 * 1024; // 10MB
@@ -24,7 +24,7 @@ public class DefaultLoader implements Loader {
 
   private final Context context;
 
-  public DefaultLoader(Context context) {
+  public UrlConnectionLoader(Context context) {
     this.context = context.getApplicationContext();
   }
 

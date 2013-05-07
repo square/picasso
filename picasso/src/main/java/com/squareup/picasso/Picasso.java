@@ -522,7 +522,7 @@ public class Picasso {
     /** Create the {@link Picasso} instance. */
     public Picasso build() {
       if (loader == null) {
-        loader = new DefaultLoader(context);
+        loader = new UrlConnectionLoader(context);
       }
       if (memoryCache == null) {
         memoryCache = new LruCache(context);
