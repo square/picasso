@@ -1,6 +1,7 @@
 package com.squareup.picasso;
 
 import android.content.ContentResolver;
+import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.media.ExifInterface;
@@ -165,6 +166,15 @@ final class Utils {
     }
   }
 
+  static Loader createDefaultLoader(Context context) {
+    try {
+      Class.forName("com.squareup.okhttp.OkHttpClient");
+      return OkHttpLoaderCreator.create(context);
+    } catch (ClassNotFoundException e) {
+      return new UrlConnectionLoader(context);
+    }
+  }
+
   static class PicassoThreadFactory implements ThreadFactory {
     @SuppressWarnings("NullableProblems")
     public Thread newThread(Runnable r) {
@@ -178,6 +188,12 @@ final class Utils {
   private static class BitmapHoneycombMR1 {
     static int getByteCount(Bitmap bitmap) {
       return bitmap.getByteCount();
+    }
+  }
+
+  private static class OkHttpLoaderCreator {
+    static Loader create(Context context) {
+      return new OkHttpLoader(context);
     }
   }
 }

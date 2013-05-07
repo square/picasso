@@ -521,8 +521,10 @@ public class Picasso {
 
     /** Create the {@link Picasso} instance. */
     public Picasso build() {
+      Context context = this.context;
+
       if (loader == null) {
-        loader = new UrlConnectionLoader(context);
+        loader = Utils.createDefaultLoader(context);
       }
       if (memoryCache == null) {
         memoryCache = new LruCache(context);

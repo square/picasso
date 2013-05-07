@@ -29,6 +29,10 @@
       <artifactId>picasso</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.squareup.okhttp</groupId>
+      <artifactId>okhttp</artifactId>
+    </dependency>
   </dependencies>
 
   <build>

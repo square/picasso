@@ -70,6 +70,12 @@
       </dependency>
 
       <dependency>
+        <groupId>com.squareup.okhttp</groupId>
+        <artifactId>okhttp</artifactId>
+        <version>1.0.1</version>
+      </dependency>
+
+      <dependency>
         <groupId>com.intellij</groupId>
         <artifactId>annotations</artifactId>
         <version>9.0.4</version>
