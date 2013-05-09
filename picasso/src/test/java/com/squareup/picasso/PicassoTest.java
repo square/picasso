@@ -145,6 +145,7 @@ public class PicassoTest {
     }
   }
 
+  @Ignore // Needs next release of Robolectric
   @Test public void singleIsLazilyInitialized() throws Exception {
     assertThat(Picasso.singleton).isNull();
     Picasso.with(context);
@@ -814,6 +815,7 @@ public class PicassoTest {
     }
   }
 
+  @Ignore // Needs next release of Robolectric
   @Test public void builderCreatesDefaults() throws Exception {
     Picasso p = new Picasso.Builder(context).build();
     assertThat(p.loader).isNotNull();
