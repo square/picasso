@@ -25,7 +25,7 @@ public class PicassoTransformTest {
     ShadowBitmap shadowBitmap = shadowOf(result);
     assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
 
-    Matrix matrix = shadowBitmap.getCreateFromMatrix();
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
     assertThat(shadowMatrix.getPreOperations()).containsOnly("rotate 90.0");
   }
@@ -40,7 +40,7 @@ public class PicassoTransformTest {
     ShadowBitmap shadowBitmap = shadowOf(result);
     assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
 
-    Matrix matrix = shadowBitmap.getCreateFromMatrix();
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
     assertThat(shadowMatrix.getPreOperations()).containsOnly("rotate 90.0");
     assertThat(shadowMatrix.getSetOperations()).contains(entry("rotate", "-45.0"));
@@ -56,7 +56,7 @@ public class PicassoTransformTest {
     ShadowBitmap shadowBitmap = shadowOf(result);
     assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
 
-    Matrix matrix = shadowBitmap.getCreateFromMatrix();
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
     assertThat(shadowMatrix.getSetOperations()).contains(entry("rotate", "-45.0"));
   }
@@ -74,7 +74,7 @@ public class PicassoTransformTest {
     ShadowBitmap shadowBitmap = shadowOf(result);
     assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
 
-    Matrix matrix = shadowBitmap.getCreateFromMatrix();
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
     assertThat(shadowMatrix.getSetOperations()).contains(entry("rotate", "-45.0 10.0 10.0"));
   }
@@ -90,7 +90,7 @@ public class PicassoTransformTest {
     ShadowBitmap shadowBitmap = shadowOf(result);
     assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
 
-    Matrix matrix = shadowBitmap.getCreateFromMatrix();
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
     assertThat(shadowMatrix.getSetOperations()).contains(entry("scale", "-0.5 2.0"));
   }
@@ -106,7 +106,7 @@ public class PicassoTransformTest {
     ShadowBitmap shadowBitmap = shadowOf(result);
     assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
 
-    Matrix matrix = shadowBitmap.getCreateFromMatrix();
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 2.0 1.5");
   }
@@ -127,7 +127,7 @@ public class PicassoTransformTest {
     assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(10);
     assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(10);
 
-    Matrix matrix = shadowBitmap.getCreateFromMatrix();
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 4.0 4.0");
   }
@@ -148,7 +148,7 @@ public class PicassoTransformTest {
     assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(100);
     assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(100);
 
-    Matrix matrix = shadowBitmap.getCreateFromMatrix();
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
   }
@@ -169,7 +169,7 @@ public class PicassoTransformTest {
     assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(10);
     assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(10);
 
-    Matrix matrix = shadowBitmap.getCreateFromMatrix();
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 4.0 4.0");
   }
@@ -190,7 +190,7 @@ public class PicassoTransformTest {
     assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(100);
     assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(100);
 
-    Matrix matrix = shadowBitmap.getCreateFromMatrix();
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
   }
