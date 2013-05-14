@@ -17,8 +17,9 @@ class Stats {
 
   private static final String STATS_THREAD_NAME = Utils.THREAD_PREFIX + "Stats";
 
-  private Cache cache;
-  Handler handler;
+  final Cache cache;
+  final Handler handler;
+
   long cacheHits;
   long cacheMisses;
   long totalOriginalBitmapSize;
@@ -30,12 +31,9 @@ class Stats {
 
   Stats(Cache cache) {
     this.cache = cache;
-    HandlerThread statsThread = new HandlerThread(STATS_THREAD_NAME, THREAD_PRIORITY_BACKGROUND) {
-      @Override protected void onLooperPrepared() {
-        handler = new StatsHandler(getLooper());
-      }
-    };
+    HandlerThread statsThread = new HandlerThread(STATS_THREAD_NAME, THREAD_PRIORITY_BACKGROUND);
     statsThread.start();
+    handler = new Handler(statsThread.getLooper());
   }
 
   void bitmapDecoded(Bitmap bitmap) {
