@@ -1,7 +1,26 @@
 Picasso
 ========
 
-TODO
+A powerful image downloading and caching library for Android
+
+![](website/static/sample.png)
+
+For more information please see [the website][1]
+
+
+
+Download
+--------
+
+Download [the latest JAR][2] or grab via Maven:
+
+```xml
+<dependency>
+    <groupId>com.squareup.retrofit</groupId>
+    <artifactId>retrofit</artifactId>
+    <version>(insert latest version)</version>
+</dependency>
+```
 
 
 
@@ -21,3 +40,7 @@ License
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
+
+
+ [1]: http://square.github.io/picasso/
+ [2]: http://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.squareup.picasso&a=picasso&v=LATEST
