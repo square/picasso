@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Looper;
+import android.os.Process;
 import android.provider.MediaStore;
 import java.io.IOException;
 import java.util.List;
@@ -185,7 +186,7 @@ final class Utils {
     public Thread newThread(Runnable r) {
       Thread t = new Thread(r);
       t.setName(Utils.THREAD_IDLE_NAME);
-      t.setPriority(THREAD_PRIORITY_BACKGROUND);
+      Process.setThreadPriority(THREAD_PRIORITY_BACKGROUND);
       return t;
     }
   }
