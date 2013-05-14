@@ -43,10 +43,72 @@
         <div class="row">
           <div class="span9">
             <h3 id="introduction">Introduction</h3>
-            <p>Write me!</p>
+            <p>Images add much-needed context and visual flare to Android applications. Picasso allows for hassle-free image loading in your application&mdash;often in one line of code!</p>
+            <pre class="prettyprint">Picasso.with(context).load("http://i.imgur.com/DvpvklR.png").into(imageView);</pre>
+            <p>Many common pitfalls of image loading on Android are handled automatically by Picasso:</p>
+            <ul>
+              <li>Handling <code>ImageView</code> recycling and download cancelation in an adapter.</li>
+              <li>Complex image transformations with minimal memory use.</li>
+              <li>Automatic memory and disk caching.</li>
+            </ul>
+            <p class="screenshot"><img src="static/sample.png" alt="Sample application screenshot."></p>
 
-            <h3 id="examples">Examples</h3>
-            <p>Write me!</p>
+            <h3 id="features">Features</h3>
+
+            <h4>Adapter Downloads</h4>
+            <p>Adapter re-use is automatically detected and the the previous download canceled.</p>
+            <pre class="prettyprint">@Override public void getView(int position, View convertView, ViewGroup parent) {
+  SquaredImageView view = (SquaredImageView) convertView;
+  if (view == null) {
+    view = new SquaredImageView(context);
+  }
+  String url = getItem(position);
+
+  Picasso.with(context).load(url).into(view);
+}</pre>
+  
+            <h4>Image Transformations</h4>
+            <p>Transform images to better fit into layouts and to reduce memory size.</p>
+            <pre class="prettyprint">Picasso.with(context)
+  .load(url)
+  .resize(50, 50)
+  .centerCrop()
+  .into(imageView)</pre>
+            <p>You can also specify custom transformations for more advanced effects.</p>
+            <pre class="prettyprint">public class CropSquareTransformation implements Transformation {
+  @Override public Bitmap transform(Bitmap source) {
+    int size = Math.min(source.getWidth(), source.getHeight());
+    int x = (source.getWidth() - size) / 2;
+    int y = (source.getHeight() - size) / 2;
+    Bitmap result = Bitmap.createBitmap(source, x, y, size, size);
+    if (result != source) {
+      source.recycle();
+    }
+    return result;
+  }
+
+  @Override public String key() { return "square()"; }
+}</pre>
+            <p>Pass an instance of this class to the <code>transform</code> method.</p>
+
+            <h4>Place Holders</h4>
+            <p>Picasso supports both download and error placeholders as optional features.</p>
+            <pre class-"prettyprint">Picasso.with(context)
+    .load(url)
+    .placeholder(R.drawable.user_placeholder)
+    .error(R.drawable.user_placeholder_error)
+    .into(imageView);</pre>
+            <p>A request will be retried three times before the error placeholder is shown.</p>
+
+
+            <h4>Resource Loading</h4>
+            <p>Resources, assets, files, content providers are all supported as image sources.</p>
+            <pre class="prettyprint">Picasso.with(context).load(R.drawable.landing_screen).into(imageView1);
+Picasso.with(context).load(new File("/images/oprah_bees.gif")).into(imageView2);</pre>
+
+            <h4>Debug Indicators</h4>
+            <p>For development you can enable the display of a colored ribbon which indicates the image source. Call <code>setDebug(true)</code> on the Picasso instance.</p>
+            <p class="screenshot"><img src="static/debug.png" alt="Debug ribbon indicators"></p>
 
             <h3 id="download">Download</h3>
             <p><a href="http://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.squareup.picasso&a=picasso&v=LATEST" class="dl version-href">&darr; <span class="version-tag">Latest</span> JAR</a></p>
@@ -56,7 +118,7 @@
             <pre class="prettyprint">&lt;dependency>
   &lt;groupId>com.squareup.picasso&lt;/groupId>
   &lt;artifactId>picasso&lt;/artifactId>
-  &lt;version><em class="version">(insert latest version)</em>&lt;/version>
+  &lt;version><span class="version pln"><em>(insert latest version)</em></span>&lt;/version>
 &lt;/dependency></pre>
 
             <h3 id="contributing">Contributing</h3>
@@ -83,14 +145,14 @@ limitations under the License.</pre>
             <div class="content-nav" data-spy="affix" data-offset-top="80">
               <ul class="nav nav-tabs nav-stacked primary">
                 <li><a href="#introduction">Introduction</a></li>
-                <li><a href="#examples">Examples</a></li>
+                <li><a href="#features">Features</a></li>
                 <li><a href="#download">Download</a></li>
                 <li><a href="#contributing">Contributing</a></li>
                 <li><a href="#license">License</a></li>
               </ul>
               <ul class="nav nav-pills nav-stacked secondary">
-                <li><a href="#">Javadoc</a></li>
-                <li><a href="https://plus.google.com/communities/109244258569782858265">Google+</a></li>
+                <li><a href="javadoc/index.html">Javadoc</a></li>
+                <li><a href="https://plus.google.com/communities/109244258569782858265">Google+ Community</a></li>
               </ul>
             </div>
           </div>
