@@ -16,8 +16,8 @@ Download [the latest JAR][2] or grab via Maven:
 
 ```xml
 <dependency>
-    <groupId>com.squareup.retrofit</groupId>
-    <artifactId>retrofit</artifactId>
+    <groupId>com.squareup.picasso</groupId>
+    <artifactId>picasso</artifactId>
     <version>(insert latest version)</version>
 </dependency>
 ```
