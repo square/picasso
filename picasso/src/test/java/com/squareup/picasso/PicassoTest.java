@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -145,7 +144,6 @@ public class PicassoTest {
     }
   }
 
-  @Ignore // Needs next release of Robolectric
   @Test public void singleIsLazilyInitialized() throws Exception {
     assertThat(Picasso.singleton).isNull();
     Picasso.with(context);
@@ -375,22 +373,23 @@ public class PicassoTest {
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
-  @Ignore // Waiting on next Robolectric release
   @Test public void loadIntoImageViewWithPlaceHolderResource() throws Exception {
-    ImageView target = mock(ImageView.class);
+    ImageView target = spy(new ImageView(context));
     doAnswer(NULL_ANSWER).when(target).setImageResource(anyInt());
 
     Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
     picasso.load(URI_1).placeholder(android.R.drawable.ic_delete).into(target);
 
-    verify(target).setImageResource(0);
+
+    ArgumentCaptor<PicassoDrawable> actual = ArgumentCaptor.forClass(PicassoDrawable.class);
+    verify(target).setImageDrawable(actual.capture());
+    PicassoDrawable capturedActual = actual.getValue();
+    assertThat(capturedActual.placeholderResId).isEqualTo(android.R.drawable.ic_delete);
+    assertThat(capturedActual.bitmapDrawable).isNull();
+
     executor.flush();
 
-    ArgumentCaptor<PicassoDrawable> captor = ArgumentCaptor.forClass(PicassoDrawable.class);
-    verify(target).setImageDrawable(captor.capture());
-    PicassoDrawable actualDrawable = captor.getValue();
-    assertThat(actualDrawable.bitmapDrawable.getBitmap()).isEqualTo(bitmap1);
-
+    assertThat(capturedActual.bitmapDrawable.getBitmap()).isEqualTo(bitmap1);
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
@@ -815,7 +814,6 @@ public class PicassoTest {
     }
   }
 
-  @Ignore // Needs next release of Robolectric
   @Test public void builderCreatesDefaults() throws Exception {
     Picasso p = new Picasso.Builder(context).build();
     assertThat(p.loader).isNotNull();

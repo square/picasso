@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -40,7 +39,6 @@ public class UrlConnectionLoaderTest {
     server.shutdown();
   }
 
-  @Ignore // Needs next Robolectric release for proper HttpResponseCache support.
   @Config(reportSdk = HONEYCOMB_MR2)
   @Test public void cacheOnlyInstalledOnce() throws Exception {
     UrlConnectionLoader.cache = null;

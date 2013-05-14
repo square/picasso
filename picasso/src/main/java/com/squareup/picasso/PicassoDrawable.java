@@ -68,7 +68,7 @@ final class PicassoDrawable extends Drawable {
   private final boolean debugging;
   private final float density;
 
-  private int placeholderResId;
+  int placeholderResId;
   Drawable placeHolderDrawable;
 
   BitmapDrawable bitmapDrawable;
