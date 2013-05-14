@@ -10,6 +10,7 @@ import org.robolectric.shadows.ShadowBitmap;
 import org.robolectric.shadows.ShadowMatrix;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
+import static org.fest.assertions.api.ANDROID.assertThat;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.api.Assertions.entry;
 import static org.robolectric.Robolectric.shadowOf;
@@ -193,5 +194,11 @@ public class PicassoTransformTest {
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
+  }
+
+  @Test public void reusedBitmapIsNotRecycled() {
+    Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
+    Bitmap result = Picasso.transformResult(null, source, 0);
+    assertThat(result).isSameAs(source).isNotRecycled();
   }
 }
