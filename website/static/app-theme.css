@@ -37,9 +37,9 @@ a:hover {
 .pln { color: #000; }
 .str { color: #953a39; }
 .kwd { color: #666; }
-.com { color: #800; }
+.com { color: #953a39; }
 .typ { color: #222; }
-.lit { color: #666; }
+.lit { color: #953a39; }
 .pun { color: #888; }
 .opn { color: #888; }
 .clo { color: #888; }
