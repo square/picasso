@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Looper;
+import android.os.Process;
 import android.provider.MediaStore;
 import java.io.IOException;
 import java.util.List;
@@ -183,10 +184,18 @@ final class Utils {
   static class PicassoThreadFactory implements ThreadFactory {
     @SuppressWarnings("NullableProblems")
     public Thread newThread(Runnable r) {
-      Thread t = new Thread(r);
-      t.setName(Utils.THREAD_IDLE_NAME);
-      t.setPriority(THREAD_PRIORITY_BACKGROUND);
-      return t;
+      return new PicassoThread(r);
+    }
+  }
+
+  private static class PicassoThread extends Thread {
+    public PicassoThread(Runnable r) {
+      super(r);
+    }
+
+    @Override public void run() {
+      Process.setThreadPriority(THREAD_PRIORITY_BACKGROUND);
+      super.run();
     }
   }
 
