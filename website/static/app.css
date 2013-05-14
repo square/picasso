@@ -149,6 +149,10 @@ code {
   background-color: transparent;
 }
 
+.screenshot {
+  text-align: center;
+}
+
 /* Widescreen desktop. */
 @media (min-width: 1200px) {
   .content-nav {
