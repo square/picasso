@@ -149,8 +149,8 @@ public class Picasso {
     this.debugging = debugging;
   }
 
-  /** Creates a {@link Snapshot} of the current stats for this instance. */
-  public Snapshot getSnapshot() {
+  /** Creates a {@link StatsSnapshot} of the current stats for this instance. */
+  public StatsSnapshot getSnapshot() {
     return stats.createSnapshot();
   }
 

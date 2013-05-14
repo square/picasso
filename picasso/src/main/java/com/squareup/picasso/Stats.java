@@ -54,8 +54,8 @@ class Stats {
     handler.sendEmptyMessage(CACHE_MISS);
   }
 
-  synchronized Snapshot createSnapshot() {
-    return new Snapshot(cache.maxSize(), cache.size(), cacheHits, cacheMisses,
+  synchronized StatsSnapshot createSnapshot() {
+    return new StatsSnapshot(cache.maxSize(), cache.size(), cacheHits, cacheMisses,
         totalOriginalBitmapSize, totalTransformedBitmapSize, averageOriginalBitmapSize,
         averageTransformedBitmapSize, originalBitmapCount, transformedBitmapCount,
         System.currentTimeMillis());

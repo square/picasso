@@ -5,7 +5,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 /** Represents all stats for a {@link Picasso} instance at a single point in time. */
-public class Snapshot {
+public class StatsSnapshot {
   private static final String TAG = "Picasso";
 
   public final int maxSize;
@@ -21,7 +21,7 @@ public class Snapshot {
 
   public final long timeStamp;
 
-  public Snapshot(int maxSize, int size, long cacheHits, long cacheMisses,
+  public StatsSnapshot(int maxSize, int size, long cacheHits, long cacheMisses,
       long totalOriginalBitmapSize, long totalTransformedBitmapSize, long averageOriginalBitmapSize,
       long averageTransformedBitmapSize, int originalBitmapCount, int transformedBitmapCount,
       long timeStamp) {
@@ -38,14 +38,14 @@ public class Snapshot {
     this.timeStamp = timeStamp;
   }
 
-  /** Prints out this {@link Snapshot} into log. */
+  /** Prints out this {@link StatsSnapshot} into log. */
   public void dump() {
     StringWriter logWriter = new StringWriter();
     dump(new PrintWriter(logWriter));
     Log.i(TAG, logWriter.toString());
   }
 
-  /** Prints out this {@link Snapshot} with the the provided {@link PrintWriter}. */
+  /** Prints out this {@link StatsSnapshot} with the the provided {@link PrintWriter}. */
   public void dump(PrintWriter writer) {
     writer.println("===============BEGIN PICASSO STATS ===============");
     writer.println("Memory Cache Stats");
@@ -75,7 +75,7 @@ public class Snapshot {
   }
 
   @Override public String toString() {
-    return "Snapshot{"
+    return "StatsSnapshot{"
         + "maxSize="
         + maxSize
         + ", size="
