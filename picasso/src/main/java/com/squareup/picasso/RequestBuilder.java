@@ -29,6 +29,7 @@ public class RequestBuilder {
   private Drawable placeholderDrawable;
   private int errorResId;
   private Drawable errorDrawable;
+  private PicassoCallback completeCallback;
 
   RequestBuilder(Picasso picasso, int resourceId) {
     this.picasso = picasso;
@@ -208,6 +209,11 @@ public class RequestBuilder {
     }
     return this;
   }
+  
+  public RequestBuilder onComplete(PicassoCallback callback) {
+      completeCallback = callback;
+      return this;
+  }
 
   /** Rotate the image by the specified degrees. */
   public RequestBuilder rotate(float degrees) {
@@ -268,7 +274,7 @@ public class RequestBuilder {
     checkNotMain();
     Request request =
         new Request(picasso, path, resourceId, null, options, transformations, type, skipCache,
-            false, 0, null);
+            false, 0, null, completeCallback);
     return picasso.resolveRequest(request);
   }
 
@@ -317,7 +323,7 @@ public class RequestBuilder {
 
     Request request =
         new Request(picasso, path, resourceId, target, options, transformations, type, skipCache,
-            noFade, errorResId, errorDrawable);
+            noFade, errorResId, errorDrawable, completeCallback);
     picasso.submit(request);
   }
 
@@ -335,7 +341,7 @@ public class RequestBuilder {
 
     Request request =
         new TargetRequest(picasso, path, resourceId, target, strong, options, transformations, type,
-            skipCache);
+            skipCache, completeCallback);
     picasso.submit(request);
   }
 }
