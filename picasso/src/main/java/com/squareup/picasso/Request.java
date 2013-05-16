@@ -45,7 +45,7 @@ class Request implements Runnable {
   final int errorResId;
   final Drawable errorDrawable;
   final String key;
-  final PicassoCallback callback;
+  final WeakReference<PicassoCallback> callback;
 
   Future<?> future;
   Bitmap result;
@@ -55,7 +55,7 @@ class Request implements Runnable {
 
   Request(Picasso picasso, String path, int resourceId, ImageView imageView,
       PicassoBitmapOptions options, List<Transformation> transformations, Type type,
-      boolean skipCache, boolean noFade, int errorResId, Drawable errorDrawable, PicassoCallback callback) {
+      boolean skipCache, boolean noFade, int errorResId, Drawable errorDrawable, WeakReference<PicassoCallback> callback) {
     this.picasso = picasso;
     this.path = path;
     this.resourceId = resourceId;
@@ -87,8 +87,8 @@ class Request implements Runnable {
       Context context = picasso.context;
       boolean debugging = picasso.debugging;
       PicassoDrawable.setBitmap(target, context, result, loadedFrom, noFade, debugging);
-      if (callback != null) {
-          callback.onImageLoaded(target);
+      if (callback != null && callback.get() != null) {
+          callback.get().onImageLoaded(target);
       }
     }
   }

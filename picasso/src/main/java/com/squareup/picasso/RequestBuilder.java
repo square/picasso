@@ -1,17 +1,19 @@
 package com.squareup.picasso;
 
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
-import android.widget.ImageView;
+import static com.squareup.picasso.Request.LoadedFrom.MEMORY;
+import static com.squareup.picasso.Utils.checkNotMain;
+import static com.squareup.picasso.Utils.createKey;
+
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import org.jetbrains.annotations.TestOnly;
 
-import static com.squareup.picasso.Request.LoadedFrom.MEMORY;
-import static com.squareup.picasso.Utils.checkNotMain;
-import static com.squareup.picasso.Utils.createKey;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+import android.widget.ImageView;
 
 /** Fluent API for building an image download request. */
 @SuppressWarnings("UnusedDeclaration") // Public API.
@@ -29,7 +31,7 @@ public class RequestBuilder {
   private Drawable placeholderDrawable;
   private int errorResId;
   private Drawable errorDrawable;
-  private PicassoCallback completeCallback;
+  private WeakReference<PicassoCallback> completeCallback;
 
   RequestBuilder(Picasso picasso, int resourceId) {
     this.picasso = picasso;
@@ -211,7 +213,7 @@ public class RequestBuilder {
   }
   
   public RequestBuilder onComplete(PicassoCallback callback) {
-      completeCallback = callback;
+      completeCallback = new WeakReference<PicassoCallback>(callback);
       return this;
   }
 

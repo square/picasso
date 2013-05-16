@@ -10,7 +10,7 @@ final class TargetRequest extends Request {
 
   TargetRequest(Picasso picasso, String path, int resourceId, Target target, boolean strong,
       PicassoBitmapOptions bitmapOptions, List<Transformation> transformations, Type type,
-      boolean skipCache, PicassoCallback callback) {
+      boolean skipCache, WeakReference<PicassoCallback> callback) {
     super(picasso, path, resourceId, null, bitmapOptions, transformations, type, skipCache, false,
         0, null, callback);
     this.weakTarget = strong ? null : new WeakReference<Target>(target);
