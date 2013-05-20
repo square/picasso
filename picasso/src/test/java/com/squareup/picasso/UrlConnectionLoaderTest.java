@@ -14,7 +14,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import static android.os.Build.VERSION_CODES.GINGERBREAD;
-import static android.os.Build.VERSION_CODES.HONEYCOMB_MR2;
+import static android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH;
 import static com.squareup.picasso.UrlConnectionLoader.RESPONSE_SOURCE;
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -39,7 +39,7 @@ public class UrlConnectionLoaderTest {
     server.shutdown();
   }
 
-  @Config(reportSdk = HONEYCOMB_MR2)
+  @Config(reportSdk = ICE_CREAM_SANDWICH)
   @Test public void cacheOnlyInstalledOnce() throws Exception {
     UrlConnectionLoader.cache = null;
 
@@ -54,7 +54,7 @@ public class UrlConnectionLoaderTest {
   }
 
   @Config(reportSdk = GINGERBREAD)
-  @Test public void cacheOnlyInstalledOnApi13() throws Exception {
+  @Test public void cacheNotInstalledWhenUnavailable() throws Exception {
     UrlConnectionLoader.cache = null;
 
     server.enqueue(new MockResponse());
