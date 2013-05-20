@@ -33,7 +33,7 @@ public class UrlConnectionLoader implements Loader {
   }
 
   @Override public Response load(String url, boolean localCacheOnly) throws IOException {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
       installCacheIfNeeded(context);
     }
 
@@ -54,7 +54,7 @@ public class UrlConnectionLoader implements Loader {
       try {
         synchronized (lock) {
           if (cache == null) {
-            cache = ResponseCacheHoneycombMR2.install(context);
+            cache = ResponseCacheIcs.install(context);
           }
         }
       } catch (IOException ignored) {
@@ -62,7 +62,7 @@ public class UrlConnectionLoader implements Loader {
     }
   }
 
-  private static class ResponseCacheHoneycombMR2 {
+  private static class ResponseCacheIcs {
     static Object install(Context context) throws IOException {
       File cacheDir = new File(context.getCacheDir(), PICASSO_CACHE);
       HttpResponseCache cache = HttpResponseCache.getInstalled();
