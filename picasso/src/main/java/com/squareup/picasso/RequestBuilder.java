@@ -1,17 +1,19 @@
 package com.squareup.picasso;
 
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
-import android.widget.ImageView;
+import static com.squareup.picasso.Request.LoadedFrom.MEMORY;
+import static com.squareup.picasso.Utils.checkNotMain;
+import static com.squareup.picasso.Utils.createKey;
+
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import org.jetbrains.annotations.TestOnly;
 
-import static com.squareup.picasso.Request.LoadedFrom.MEMORY;
-import static com.squareup.picasso.Utils.checkNotMain;
-import static com.squareup.picasso.Utils.createKey;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+import android.widget.ImageView;
 
 /** Fluent API for building an image download request. */
 @SuppressWarnings("UnusedDeclaration") // Public API.
@@ -29,6 +31,7 @@ public class RequestBuilder {
   private Drawable placeholderDrawable;
   private int errorResId;
   private Drawable errorDrawable;
+  private WeakReference<PicassoCallback> completeCallback;
 
   RequestBuilder(Picasso picasso, int resourceId) {
     this.picasso = picasso;
@@ -208,6 +211,11 @@ public class RequestBuilder {
     }
     return this;
   }
+  
+  public RequestBuilder onComplete(PicassoCallback callback) {
+      completeCallback = new WeakReference<PicassoCallback>(callback);
+      return this;
+  }
 
   /** Rotate the image by the specified degrees. */
   public RequestBuilder rotate(float degrees) {
@@ -268,7 +276,7 @@ public class RequestBuilder {
     checkNotMain();
     Request request =
         new Request(picasso, path, resourceId, null, options, transformations, type, skipCache,
-            false, 0, null);
+            false, 0, null, completeCallback);
     return picasso.resolveRequest(request);
   }
 
@@ -317,7 +325,7 @@ public class RequestBuilder {
 
     Request request =
         new Request(picasso, path, resourceId, target, options, transformations, type, skipCache,
-            noFade, errorResId, errorDrawable);
+            noFade, errorResId, errorDrawable, completeCallback);
     picasso.submit(request);
   }
 
@@ -335,7 +343,7 @@ public class RequestBuilder {
 
     Request request =
         new TargetRequest(picasso, path, resourceId, target, strong, options, transformations, type,
-            skipCache);
+            skipCache, completeCallback);
     picasso.submit(request);
   }
 }
