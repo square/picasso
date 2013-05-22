@@ -46,6 +46,17 @@ public class Picasso {
    */
   private static final Object DECODE_LOCK = new Object();
 
+  /** Callbacks for Picasso events. */
+  public interface Listener {
+    /**
+     * Invoked when an image has failed to load after all retry attempts. This is useful for
+     * reporting image failures to a remote analytics service, for example.
+     * <p>
+     * <em>Note:</em> This will only be called for file, content provider, or URL paths.
+     */
+    void onImageLoadFailed(Picasso picasso, String path);
+  }
+
   // TODO This should be static.
   final Handler handler = new Handler(Looper.getMainLooper()) {
     @Override public void handleMessage(Message msg) {
@@ -66,8 +77,7 @@ public class Picasso {
           break;
 
         case REQUEST_DECODE_FAILED:
-          picasso.targetsToRequests.remove(request.getTarget());
-          request.error();
+          picasso.error(request);
           break;
 
         default:
@@ -82,16 +92,19 @@ public class Picasso {
   final Loader loader;
   final ExecutorService service;
   final Cache cache;
-  final Map<Object, Request> targetsToRequests;
+  final Listener listener;
   final Stats stats;
+  final Map<Object, Request> targetsToRequests;
 
   boolean debugging;
 
-  Picasso(Context context, Loader loader, ExecutorService service, Cache cache, Stats stats) {
+  Picasso(Context context, Loader loader, ExecutorService service, Cache cache, Listener listener,
+      Stats stats) {
     this.context = context;
     this.loader = loader;
     this.service = service;
     this.cache = cache;
+    this.listener = listener;
     this.stats = stats;
     this.targetsToRequests = new WeakHashMap<Object, Request>();
   }
@@ -230,6 +243,14 @@ public class Picasso {
     } else {
       targetsToRequests.remove(request.getTarget());
       request.error();
+    }
+  }
+
+  void error(Request request) {
+    targetsToRequests.remove(request.getTarget());
+    request.error();
+    if (listener != null && request.path != null) {
+      listener.onImageLoadFailed(this, request.path);
     }
   }
 
@@ -485,6 +506,7 @@ public class Picasso {
     private Loader loader;
     private ExecutorService service;
     private Cache memoryCache;
+    private Listener listener;
 
     /** Start building a new {@link Picasso} instance. */
     public Builder(Context context) {
@@ -530,6 +552,18 @@ public class Picasso {
       return this;
     }
 
+    /** Specify a listener for interesting events. */
+    public Builder listener(Listener listener) {
+      if (listener == null) {
+        throw new IllegalArgumentException("Listener must not be null.");
+      }
+      if (this.listener != null) {
+        throw new IllegalStateException("Listener already set.");
+      }
+      this.listener = listener;
+      return this;
+    }
+
     /** Create the {@link Picasso} instance. */
     public Picasso build() {
       Context context = this.context;
@@ -546,7 +580,7 @@ public class Picasso {
 
       Stats stats = new Stats(memoryCache);
 
-      return new Picasso(context, loader, service, memoryCache, stats);
+      return new Picasso(context, loader, service, memoryCache, listener, stats);
     }
   }
 }
