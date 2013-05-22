@@ -160,7 +160,7 @@ public class RequestBuilder {
     options.targetHeight = targetHeight;
 
     // Use bounds decoding optimization when reading local resources.
-    if (type != Request.Type.STREAM) {
+    if (type != Request.Type.NETWORK) {
       options.inJustDecodeBounds = true;
     }
 

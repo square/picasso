@@ -109,8 +109,8 @@ public class Picasso {
   /**
    * Start an image request using the specified path.
    * <p>
-   * This path may be a file resource (prefixed with {@code file:}) or a content resource
-   * (prefixed with {@code content:}).
+   * This path may be a file resource (prefixed with {@code file:}), a content resource
+   * (prefixed with {@code content:}), or a remote URL.
    *
    * @see #load(java.io.File)
    * @see #load(int)
@@ -125,7 +125,7 @@ public class Picasso {
     if (path.startsWith(CONTENT_SCHEME)) {
       return new RequestBuilder(this, path, Type.CONTENT);
     }
-    return new RequestBuilder(this, path, Type.STREAM);
+    return new RequestBuilder(this, path, Type.NETWORK);
   }
 
   /**
@@ -315,7 +315,7 @@ public class Picasso {
         result = decodeFile(request.path, options);
         request.loadedFrom = Request.LoadedFrom.DISK;
         break;
-      case STREAM:
+      case NETWORK:
         Response response = null;
         try {
           response = loader.load(request.path, request.retryCount == 0);

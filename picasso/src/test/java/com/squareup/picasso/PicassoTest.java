@@ -410,7 +410,7 @@ public class PicassoTest {
 
     Picasso picasso = create(LOADER_ANSWER, NULL_ANSWER);
     Request request =
-        new Request(picasso, URI_1, 0, target, null, null, Request.Type.STREAM, false, false, 0,
+        new Request(picasso, URI_1, 0, target, null, null, Request.Type.NETWORK, false, false, 0,
             errorDrawable);
     request = spy(request);
     picasso.submit(request);
@@ -461,7 +461,7 @@ public class PicassoTest {
     ImageView target = mock(ImageView.class);
 
     Request request =
-        new Request(picasso, URI_1, 0, target, null, null, Request.Type.STREAM, false, false, 0,
+        new Request(picasso, URI_1, 0, target, null, null, Request.Type.NETWORK, false, false, 0,
             null);
     request = spy(request);
 
@@ -508,7 +508,7 @@ public class PicassoTest {
     ImageView target = mock(ImageView.class);
 
     Request request =
-        new Request(picasso, URI_1, 0, target, null, null, Request.Type.STREAM, false, false, 0,
+        new Request(picasso, URI_1, 0, target, null, null, Request.Type.NETWORK, false, false, 0,
             errorDrawable);
 
     retryRequest(picasso, request);
@@ -522,7 +522,7 @@ public class PicassoTest {
     ImageView target = mock(ImageView.class);
 
     Request request =
-        new Request(picasso, URI_1, 0, target, null, null, Request.Type.STREAM, false, false, 0,
+        new Request(picasso, URI_1, 0, target, null, null, Request.Type.NETWORK, false, false, 0,
             null);
 
     retryRequest(picasso, request);
@@ -563,7 +563,7 @@ public class PicassoTest {
   @Test public void whenTargetRequestFailsCleansUpTargetMap() throws Exception {
     Picasso picasso = create(IO_EXCEPTION_ANSWER, BITMAP1_ANSWER);
     Request request =
-        new TargetRequest(picasso, URI_1, 0, null, false, null, null, Type.STREAM, false);
+        new TargetRequest(picasso, URI_1, 0, null, false, null, null, Type.NETWORK, false);
 
     retryRequest(picasso, request);
     assertThat(picasso.targetsToRequests).isEmpty();
@@ -698,7 +698,7 @@ public class PicassoTest {
     transformations.add(resize);
 
     Request request =
-        new Request(picasso, URI_1, 0, target, null, transformations, Request.Type.STREAM, false,
+        new Request(picasso, URI_1, 0, target, null, transformations, Request.Type.NETWORK, false,
             false, 0, null);
     picasso.submit(request);
 
@@ -750,7 +750,7 @@ public class PicassoTest {
     transformations.add(resize);
 
     Request request =
-        new Request(picasso, URI_1, 0, target, null, transformations, Request.Type.STREAM, false,
+        new Request(picasso, URI_1, 0, target, null, transformations, Request.Type.NETWORK, false,
             false, 0, null);
     picasso.submit(request);
 
@@ -889,7 +889,7 @@ public class PicassoTest {
     Picasso picasso = create(IO_EXCEPTION_ANSWER, NULL_ANSWER);
     ImageView target = mock(ImageView.class);
     Request request =
-        new Request(picasso, null, 0, target, null, null, Type.STREAM, false, false, 0, null);
+        new Request(picasso, null, 0, target, null, null, Type.NETWORK, false, false, 0, null);
     picasso.submit(request);
     assertThat(picasso.targetsToRequests).hasSize(1);
     assertThat(request.future.isCancelled()).isFalse();

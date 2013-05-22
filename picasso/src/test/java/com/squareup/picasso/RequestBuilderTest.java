@@ -92,7 +92,7 @@ public class RequestBuilderTest {
   @Test public void streamDoesNotUseBoundsDecoding() {
     for (Request.Type type : Request.Type.values()) {
       RequestBuilder b = new RequestBuilder(null, "", type).resize(10, 10);
-      assertThat(b.options.inJustDecodeBounds).isEqualTo(type != Request.Type.STREAM);
+      assertThat(b.options.inJustDecodeBounds).isEqualTo(type != Request.Type.NETWORK);
     }
   }
 
