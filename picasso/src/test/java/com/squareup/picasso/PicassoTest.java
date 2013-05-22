@@ -48,8 +48,7 @@ import static org.robolectric.Robolectric.pauseMainLooper;
 import static org.robolectric.Robolectric.runUiThreadTasksIncludingDelayedTasks;
 import static org.robolectric.Robolectric.unPauseMainLooper;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@RunWith(RobolectricTestRunner.class) @Config(manifest = Config.NONE)
 public class PicassoTest {
   private static final String URI_1 = "URI1";
   private static final String URI_2 = "URI2";
@@ -382,7 +381,6 @@ public class PicassoTest {
 
     Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
     picasso.load(URI_1).placeholder(android.R.drawable.ic_delete).into(target);
-
 
     ArgumentCaptor<PicassoDrawable> actual = ArgumentCaptor.forClass(PicassoDrawable.class);
     verify(target).setImageDrawable(actual.capture());
@@ -851,8 +849,11 @@ public class PicassoTest {
     transformations.add(new TestTransformation("OK"));
     transformations.add(new TestTransformation("NULL", null));
 
+    Request request =
+        new Request(null, null, 0, null, null, transformations, Type.STREAM, false, false, 0, null);
+
     try {
-      Picasso.applyCustomTransformations(transformations, Bitmap.createBitmap(10, 10, null));
+      Picasso.applyCustomTransformations(request, Bitmap.createBitmap(10, 10, null));
       fail("Should throw a NullPointerException when a transformation returns null.");
     } catch (NullPointerException e) {
       assertThat(e.getMessage()).contains("after 1 previous transformation");
@@ -871,7 +872,10 @@ public class PicassoTest {
     List<Transformation> transformations = new ArrayList<Transformation>();
     transformations.add(badTransformation);
 
-    Picasso.applyCustomTransformations(transformations, input);
+    Request request =
+        new Request(null, null, 0, null, null, transformations, Type.STREAM, false, false, 0, null);
+
+    Picasso.applyCustomTransformations(request, input);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -895,10 +899,10 @@ public class PicassoTest {
         new Request(picasso, null, 0, target, null, null, null, false, false, 0, null);
     picasso.submit(request);
     assertThat(picasso.targetsToRequests).hasSize(1);
-    assertThat(request.future.isCancelled()).isFalse();
+    assertThat(request.isCancelled()).isFalse();
     picasso.cancelRequest(target);
     assertThat(picasso.targetsToRequests).isEmpty();
-    assertThat(request.future.isCancelled()).isTrue();
+    assertThat(request.isCancelled()).isTrue();
     verifyZeroInteractions(target);
   }
 
@@ -908,10 +912,10 @@ public class PicassoTest {
     Request request = new TargetRequest(picasso, null, 0, target, true, null, null, null, false);
     picasso.submit(request);
     assertThat(picasso.targetsToRequests).hasSize(1);
-    assertThat(request.future.isCancelled()).isFalse();
+    assertThat(request.isCancelled()).isFalse();
     picasso.cancelRequest(target);
     assertThat(picasso.targetsToRequests).isEmpty();
-    assertThat(request.future.isCancelled()).isTrue();
+    assertThat(request.isCancelled()).isTrue();
     verifyZeroInteractions(target);
   }
 
@@ -922,14 +926,14 @@ public class PicassoTest {
         new Request(picasso, null, 0, target, null, null, Type.NETWORK, false, false, 0, null);
     picasso.submit(request);
     assertThat(picasso.targetsToRequests).hasSize(1);
-    assertThat(request.future.isCancelled()).isFalse();
+    assertThat(request.isCancelled()).isFalse();
     executor.flush();
     runUiThreadTasksIncludingDelayedTasks();
     assertThat(picasso.targetsToRequests).hasSize(1);
-    assertThat(request.future.isCancelled()).isFalse();
+    assertThat(request.isCancelled()).isFalse();
     picasso.cancelRequest(target);
     assertThat(picasso.targetsToRequests).isEmpty();
-    assertThat(request.future.isCancelled()).isTrue();
+    assertThat(request.isCancelled()).isTrue();
     verifyZeroInteractions(target);
   }
 
@@ -945,6 +949,27 @@ public class PicassoTest {
     picasso.cancelRequest(target);
     unPauseMainLooper();
     verifyZeroInteractions(target);
+    assertThat(picasso.targetsToRequests).isEmpty();
+  }
+
+  @Test public void cancelDecodingWhenOptionsPresent() throws Exception {
+    Picasso picasso = create(LOADER_ANSWER, BITMAP2_ANSWER);
+    ImageView target = mock(ImageView.class);
+    PicassoBitmapOptions options1 = mock(PicassoBitmapOptions.class);
+    Request request1 =
+        new Request(picasso, URI_1, 0, target, options1, null, Request.Type.STREAM, false, false, 0,
+            null);
+    PicassoBitmapOptions options2 = mock(PicassoBitmapOptions.class);
+    Request request2 =
+        new Request(picasso, URI_2, 0, target, options2, null, Request.Type.STREAM, false, false, 0,
+            null);
+    picasso.submit(request1);
+    picasso.submit(request2);
+    executor.flush();
+    verify(options1).requestCancelDecode();
+    verifyZeroInteractions(options2);
+    assertThat(request1.isCancelled()).isTrue();
+    assertThat(request2.isCancelled()).isFalse();
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 

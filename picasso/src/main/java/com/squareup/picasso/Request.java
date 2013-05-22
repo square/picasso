@@ -100,6 +100,11 @@ class Request implements Runnable {
     }
   }
 
+  boolean isCancelled() {
+    return (future != null && future.isCancelled()) || retryCancelled || (options != null
+        && options.mCancel);
+  }
+
   @Override public void run() {
     try {
       // Change the thread name to contain the target URL for debugging purposes.

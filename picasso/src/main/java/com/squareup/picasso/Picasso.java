@@ -61,7 +61,7 @@ public class Picasso {
   final Handler handler = new Handler(Looper.getMainLooper()) {
     @Override public void handleMessage(Message msg) {
       Request request = (Request) msg.obj;
-      if (request.future.isCancelled() || request.retryCancelled) {
+      if (request.isCancelled()) {
         return;
       }
 
@@ -235,7 +235,7 @@ public class Picasso {
   }
 
   void retry(Request request) {
-    if (request.retryCancelled) return;
+    if (request.isCancelled()) return;
 
     if (request.retryCount > 0) {
       request.retryCount--;
@@ -266,6 +266,9 @@ public class Picasso {
     if (bitmapOptions != null && bitmapOptions.inJustDecodeBounds) {
       BitmapFactory.decodeStream(contentResolver.openInputStream(path), null, bitmapOptions);
       calculateInSampleSize(bitmapOptions);
+      if (bitmapOptions.outHeight == -1 || bitmapOptions.outWidth == -1) {
+        return null;
+      }
     }
     synchronized (DECODE_LOCK) {
       return BitmapFactory.decodeStream(contentResolver.openInputStream(path), null, bitmapOptions);
@@ -276,6 +279,9 @@ public class Picasso {
     if (bitmapOptions != null && bitmapOptions.inJustDecodeBounds) {
       BitmapFactory.decodeFile(path, bitmapOptions);
       calculateInSampleSize(bitmapOptions);
+      if (bitmapOptions.outHeight == -1 || bitmapOptions.outWidth == -1) {
+        return null;
+      }
     }
     synchronized (DECODE_LOCK) {
       return BitmapFactory.decodeFile(path, bitmapOptions);
@@ -299,6 +305,9 @@ public class Picasso {
         existing.future.cancel(true);
       } else if (path == null || !path.equals(existing.path)) {
         existing.retryCancelled = true;
+      }
+      if (existing.options != null) {
+        existing.options.requestCancelDecode();
       }
     }
   }
@@ -358,7 +367,7 @@ public class Picasso {
         throw new AssertionError("Unknown request type: " + request.type);
     }
 
-    if (result == null) {
+    if (result == null || request.isCancelled()) {
       return null;
     }
 
@@ -379,12 +388,17 @@ public class Picasso {
 
     if (options != null || exifRotation != 0) {
       result = transformResult(options, result, exifRotation);
+      if (request.isCancelled()) {
+        return null;
+      }
     }
 
     List<Transformation> transformations = request.transformations;
     if (transformations != null) {
-      result = applyCustomTransformations(transformations, result);
-      stats.bitmapTransformed(result);
+      result = applyCustomTransformations(request, result);
+      if (result != null) {
+        stats.bitmapTransformed(result);
+      }
     }
 
     return result;
@@ -462,8 +476,12 @@ public class Picasso {
     return result;
   }
 
-  static Bitmap applyCustomTransformations(List<Transformation> transformations, Bitmap result) {
+  static Bitmap applyCustomTransformations(Request request, Bitmap result) {
+    List<Transformation> transformations = request.transformations;
     for (int i = 0, count = transformations.size(); i < count; i++) {
+      if (request.isCancelled()) {
+        return null;
+      }
       Transformation transformation = transformations.get(i);
       Bitmap newResult = transformation.transform(result);
 
