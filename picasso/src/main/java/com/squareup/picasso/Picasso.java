@@ -107,8 +107,13 @@ public class Picasso {
   }
 
   /**
-   * Start an image request using the specified path. This path may be a remote URL, file resource,
-   * or content provider resource.
+   * Start an image request using the specified path.
+   * <p>
+   * This path may be a file resource (prefixed with {@code file:}) or a content resource
+   * (prefixed with {@code content:}).
+   *
+   * @see #load(java.io.File)
+   * @see #load(int)
    */
   public RequestBuilder load(String path) {
     if (path == null || path.trim().length() == 0) {
@@ -123,7 +128,12 @@ public class Picasso {
     return new RequestBuilder(this, path, Type.STREAM);
   }
 
-  /** Start an image request using the specified image file. */
+  /**
+   * Start an image request using the specified image file.
+   *
+   * @see #load(String)
+   * @see #load(int)
+   */
   public RequestBuilder load(File file) {
     if (file == null) {
       throw new IllegalArgumentException("File must not be null.");
@@ -131,7 +141,12 @@ public class Picasso {
     return new RequestBuilder(this, file.getPath(), Type.FILE);
   }
 
-  /** Start an image request using the specified drawable resource ID. */
+  /**
+   * Start an image request using the specified drawable resource ID.
+   *
+   * @see #load(String)
+   * @see #load(java.io.File)
+   */
   public RequestBuilder load(int resourceId) {
     if (resourceId == 0) {
       throw new IllegalArgumentException("Resource ID must not be zero.");
