@@ -444,6 +444,11 @@ public class Picasso {
         throw new NullPointerException(builder.toString());
       }
 
+      if (newResult == result && result.isRecycled()) {
+        throw new IllegalStateException(
+            "Transformation " + transformation.key() + " returned input Bitmap but recycled it.");
+      }
+
       // If the transformation returned a new bitmap ensure they recycled the original.
       if (newResult != result && !result.isRecycled()) {
         throw new IllegalStateException("Transformation "

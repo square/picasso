@@ -858,6 +858,20 @@ public class PicassoTest {
     Picasso.applyCustomTransformations(transformations, input);
   }
 
+  @Test(expected = IllegalStateException.class)
+  public void recyclingTransformReturnsOriginalThrows() {
+    Bitmap input = mock(Bitmap.class);
+
+    Transformation badTransformation = mock(Transformation.class);
+    when(badTransformation.transform(input)).thenReturn(input);
+    when(input.isRecycled()).thenReturn(true);
+
+    List<Transformation> transformations = new ArrayList<Transformation>();
+    transformations.add(badTransformation);
+
+    Picasso.applyCustomTransformations(transformations, input);
+  }
+
   @Test public void cancelRequestBeforeExecution() throws Exception {
     Picasso picasso = create(NULL_ANSWER, NULL_ANSWER);
     ImageView target = mock(ImageView.class);
