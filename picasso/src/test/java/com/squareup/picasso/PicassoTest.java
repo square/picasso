@@ -25,6 +25,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import static com.squareup.picasso.Picasso.Listener;
 import static com.squareup.picasso.Request.Type;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.api.Assertions.fail;
@@ -103,12 +104,14 @@ public class PicassoTest {
   private Loader loader;
   private Cache cache;
   private Stats stats;
+  private Listener listener;
 
   @Before public void setUp() {
     executor = new SynchronousExecutorService();
     loader = mock(Loader.class);
     cache = mock(Cache.class);
     stats = mock(Stats.class);
+    listener = mock(Listener.class);
   }
 
   @After public void tearDown() {
@@ -814,6 +817,19 @@ public class PicassoTest {
     }
   }
 
+  @Test public void builderInvalidListener() throws Exception {
+    try {
+      new Picasso.Builder(context).listener(null);
+      fail("Null listener should throw exception.");
+    } catch (IllegalArgumentException expected) {
+    }
+    try {
+      new Picasso.Builder(context).listener(listener).listener(listener);
+      fail("Setting Listener twice should throw exception.");
+    } catch (IllegalStateException expected) {
+    }
+  }
+
   @Test public void builderCreatesDefaults() throws Exception {
     Picasso p = new Picasso.Builder(context).build();
     assertThat(p.loader).isNotNull();
@@ -952,6 +968,19 @@ public class PicassoTest {
     verify(stats).cacheHit();
   }
 
+  @Test public void listenerCalledAfterRetries() throws Exception {
+    Picasso picasso = create(NULL_ANSWER, IO_EXCEPTION_ANSWER);
+
+    ImageView target = mock(ImageView.class);
+    Request request =
+        new Request(picasso, URI_1, 0, target, null, null, Request.Type.NETWORK, false, false, 0,
+            null);
+
+    retryRequest(picasso, request);
+
+    verify(listener).onImageLoadFailed(picasso, URI_1);
+  }
+
   private void retryRequest(Picasso picasso, Request request) throws Exception {
     picasso.submit(request);
 
@@ -962,7 +991,7 @@ public class PicassoTest {
   }
 
   private Picasso create(Answer loaderAnswer, Answer decoderAnswer) throws IOException {
-    Picasso picasso = new Picasso(context, loader, executor, cache, stats);
+    Picasso picasso = new Picasso(context, loader, executor, cache, listener, stats);
     picasso = spy(picasso);
 
     doAnswer(loaderAnswer).when(loader).load(anyString(), anyBoolean());
