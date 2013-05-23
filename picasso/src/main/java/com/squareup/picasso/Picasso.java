@@ -487,9 +487,7 @@ public class Picasso {
 
       // If the transformation returned a new bitmap ensure they recycled the original.
       if (newResult != result && !result.isRecycled()) {
-        throw new IllegalStateException("Transformation "
-            + transformation.key()
-            + " mutated input Bitmap but failed to recycle the original.");
+          result.recycle();
       }
       result = newResult;
     }
