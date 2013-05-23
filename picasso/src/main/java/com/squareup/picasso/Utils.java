@@ -31,6 +31,8 @@ import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 final class Utils {
   static final String THREAD_PREFIX = "Picasso-";
   static final String THREAD_IDLE_NAME = THREAD_PREFIX + "Idle";
+  private static final String PICASSO_CACHE = "picasso-cache";
+
   private static final int KEY_PADDING = 50; // Determined by exact science.
   private static final int MIN_DISK_CACHE_SIZE = 5 * 1024 * 1024; // 5MB
   private static final int MAX_DISK_CACHE_SIZE = 50 * 1024 * 1024; // 50MB
@@ -188,6 +190,14 @@ final class Utils {
     } catch (ClassNotFoundException e) {
       return new UrlConnectionLoader(context);
     }
+  }
+
+  static File createDefaultCacheDir(Context context) {
+    File cache = new File(context.getApplicationContext().getCacheDir(), PICASSO_CACHE);
+    if (!cache.exists()) {
+      cache.mkdirs();
+    }
+    return cache;
   }
 
   static int calculateDiskCacheSize(File dir) {

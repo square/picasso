@@ -13,7 +13,6 @@ import static com.squareup.picasso.Utils.parseResponseSourceHeader;
 /** A {@link Loader} which uses OkHttp to download images. */
 public class OkHttpLoader implements Loader {
   static final String RESPONSE_SOURCE = "X-Android-Response-Source";
-  private static final String PICASSO_CACHE = "picasso-cache";
 
   private final OkHttpClient client;
 
@@ -24,7 +23,7 @@ public class OkHttpLoader implements Loader {
   public OkHttpLoader(Context context) {
     this(new OkHttpClient());
     try {
-      File cacheDir = new File(context.getApplicationContext().getCacheDir(), PICASSO_CACHE);
+      File cacheDir = Utils.createDefaultCacheDir(context);
       int maxSize = Utils.calculateDiskCacheSize(cacheDir);
       client.setResponseCache(new HttpResponseCache(cacheDir, maxSize));
     } catch (IOException ignored) {
