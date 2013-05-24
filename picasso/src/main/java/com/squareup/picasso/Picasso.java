@@ -122,8 +122,8 @@ public class Picasso {
   /**
    * Start an image request using the specified path.
    * <p>
-   * This path may be a file resource (prefixed with {@code file:}), a content resource
-   * (prefixed with {@code content:}), or a remote URL.
+   * This path may be a remote URL, file resource (prefixed with {@code file:}), or a content
+   * resource (prefixed with {@code content:})
    *
    * @see #load(java.io.File)
    * @see #load(int)
