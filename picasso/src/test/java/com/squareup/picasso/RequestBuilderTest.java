@@ -20,11 +20,6 @@ public class RequestBuilderTest {
     } catch (IllegalArgumentException expected) {
     }
     try {
-      new RequestBuilder().placeholder(null);
-      fail("Null drawable should throw exception.");
-    } catch (IllegalArgumentException expected) {
-    }
-    try {
       new RequestBuilder().placeholder(1).placeholder(new ColorDrawable(0));
       fail("Two placeholders should throw exception.");
     } catch (IllegalStateException expected) {

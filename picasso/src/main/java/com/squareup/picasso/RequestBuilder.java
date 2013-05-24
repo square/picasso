@@ -25,6 +25,7 @@ public class RequestBuilder {
   private List<Transformation> transformations;
   private boolean skipCache;
   private boolean noFade;
+  private boolean hasNullPlaceholder;
   private int placeholderResId;
   private Drawable placeholderDrawable;
   private int errorResId;
@@ -78,14 +79,15 @@ public class RequestBuilder {
    * A placeholder drawable to be used while the image is being loaded. If the requested image is
    * not immediately available in the memory cache then this resource will be set on the target
    * {@link ImageView}.
+   * <p>
+   * If you are not using a placeholder image but want to clear an existing image (such as when
+   * used in an {@link android.widget.Adapter adapter}), pass in {@code null}.
    */
   public RequestBuilder placeholder(Drawable placeholderDrawable) {
-    if (placeholderDrawable == null) {
-      throw new IllegalArgumentException("Placeholder image must not be null.");
-    }
     if (placeholderResId != 0) {
       throw new IllegalStateException("Placeholder image already set.");
     }
+    this.hasNullPlaceholder = placeholderDrawable == null;
     this.placeholderDrawable = placeholderDrawable;
     return this;
   }
@@ -313,6 +315,8 @@ public class RequestBuilder {
     if (placeholderResId != 0 || placeholderDrawable != null) {
       PicassoDrawable.setPlaceholder(target, picasso.context, placeholderResId, placeholderDrawable,
           picasso.debugging);
+    } else if (hasNullPlaceholder) {
+      target.setImageDrawable(null);
     }
 
     Request request =
