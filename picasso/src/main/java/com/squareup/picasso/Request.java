@@ -16,6 +16,7 @@ class Request implements Runnable {
 
   enum Type {
     CONTENT,
+    CONTACT,
     FILE,
     NETWORK,
     RESOURCE
