@@ -32,7 +32,6 @@ final class Utils {
   static final String THREAD_PREFIX = "Picasso-";
   static final String THREAD_IDLE_NAME = THREAD_PREFIX + "Idle";
   private static final String PICASSO_CACHE = "picasso-cache";
-
   private static final int KEY_PADDING = 50; // Determined by exact science.
   private static final int MIN_DISK_CACHE_SIZE = 5 * 1024 * 1024; // 5MB
   private static final int MAX_DISK_CACHE_SIZE = 50 * 1024 * 1024; // 50MB
