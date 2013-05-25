@@ -1,6 +1,7 @@
 package com.squareup.picasso;
 
 import android.app.Activity;
+import android.net.Uri;
 import com.google.mockwebserver.MockResponse;
 import com.google.mockwebserver.MockWebServer;
 import com.google.mockwebserver.RecordedRequest;
@@ -21,6 +22,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class UrlConnectionLoaderTest {
+  private static final Uri URL = Uri.parse("/bees.gif");
+
   private MockWebServer server;
   private UrlConnectionLoader loader;
 
@@ -44,12 +47,12 @@ public class UrlConnectionLoaderTest {
     UrlConnectionLoader.cache = null;
 
     server.enqueue(new MockResponse());
-    loader.load("/", false);
+    loader.load(URL, false);
     Object cache = UrlConnectionLoader.cache;
     assertThat(cache).isNotNull();
 
     server.enqueue(new MockResponse());
-    loader.load("/", false);
+    loader.load(URL, false);
     assertThat(UrlConnectionLoader.cache).isSameAs(cache);
   }
 
@@ -58,7 +61,7 @@ public class UrlConnectionLoaderTest {
     UrlConnectionLoader.cache = null;
 
     server.enqueue(new MockResponse());
-    loader.load("/", false);
+    loader.load(URL, false);
     Object cache = UrlConnectionLoader.cache;
     assertThat(cache).isNull();
   }
@@ -66,12 +69,12 @@ public class UrlConnectionLoaderTest {
   @Config(reportSdk = GINGERBREAD)
   @Test public void allowExpiredSetsCacheControl() throws Exception {
     server.enqueue(new MockResponse());
-    loader.load("/", false);
+    loader.load(URL, false);
     RecordedRequest request1 = server.takeRequest();
     assertThat(request1.getHeader("Cache-Control")).isNull();
 
     server.enqueue(new MockResponse());
-    loader.load("/", true);
+    loader.load(URL, true);
     RecordedRequest request2 = server.takeRequest();
     assertThat(request2.getHeader("Cache-Control")).isEqualTo("only-if-cached");
   }
@@ -79,11 +82,11 @@ public class UrlConnectionLoaderTest {
   @Config(reportSdk = GINGERBREAD)
   @Test public void responseSourceHeaderSetsResponseValue() throws Exception {
     server.enqueue(new MockResponse());
-    Loader.Response response1 = loader.load("/", false);
+    Loader.Response response1 = loader.load(URL, false);
     assertThat(response1.cached).isFalse();
 
     server.enqueue(new MockResponse().addHeader(RESPONSE_SOURCE, "CACHE 200"));
-    Loader.Response response2 = loader.load("/", true);
+    Loader.Response response2 = loader.load(URL, true);
     assertThat(response2.cached).isTrue();
   }
 }
