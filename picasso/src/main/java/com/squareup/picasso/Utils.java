@@ -128,6 +128,9 @@ final class Utils {
       if (options.centerCrop) {
         builder.append("centerCrop\n");
       }
+      if (options.centerInside) {
+        builder.append("centerInside\n");
+      }
       float targetScaleX = options.targetScaleX;
       float targetScaleY = options.targetScaleY;
       if (targetScaleX != 0) {

@@ -7,6 +7,7 @@ class PicassoBitmapOptions extends BitmapFactory.Options {
   int targetHeight;
   boolean deferredResize;
   boolean centerCrop;
+  boolean centerInside;
 
   float targetScaleX;
   float targetScaleY;
