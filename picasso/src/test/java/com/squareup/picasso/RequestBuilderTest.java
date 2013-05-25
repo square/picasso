@@ -138,6 +138,24 @@ public class RequestBuilderTest {
       fail("Center crop without resize should throw exception.");
     } catch (IllegalStateException expected) {
     }
+    try {
+      new RequestBuilder().resize(10, 10).centerInside().centerCrop();
+      fail("Calling center crop after center inside should throw exception.");
+    } catch (IllegalStateException expected) {
+    }
+  }
+
+  @Test public void invalidCenterInside() {
+    try {
+      new RequestBuilder().centerInside();
+      fail("Center inside without resize should throw exception.");
+    } catch (IllegalStateException expected) {
+    }
+    try {
+      new RequestBuilder().resize(10, 10).centerInside().centerCrop();
+      fail("Calling center inside after center crop should throw exception.");
+    } catch (IllegalStateException expected) {
+    }
   }
 
   @Test(expected = IllegalArgumentException.class)

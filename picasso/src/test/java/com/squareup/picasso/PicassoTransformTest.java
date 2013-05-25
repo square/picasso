@@ -196,6 +196,74 @@ public class PicassoTransformTest {
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
   }
 
+  @Test public void centerInsideTallTooSmall() {
+    Bitmap source = Bitmap.createBitmap(20, 10, ARGB_8888);
+    PicassoBitmapOptions options = new PicassoBitmapOptions();
+    options.targetWidth = 50;
+    options.targetHeight = 50;
+    options.centerInside = true;
+
+    Bitmap result = Picasso.transformResult(options, source, 0);
+
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 2.5 2.5");
+  }
+
+  @Test public void centerInsideTallTooLarge() {
+    Bitmap source = Bitmap.createBitmap(100, 50, ARGB_8888);
+    PicassoBitmapOptions options = new PicassoBitmapOptions();
+    options.targetWidth = 50;
+    options.targetHeight = 50;
+    options.centerInside = true;
+
+    Bitmap result = Picasso.transformResult(options, source, 0);
+
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
+  }
+
+  @Test public void centerInsideWideTooSmall() {
+    Bitmap source = Bitmap.createBitmap(10, 20, ARGB_8888);
+    PicassoBitmapOptions options = new PicassoBitmapOptions();
+    options.targetWidth = 50;
+    options.targetHeight = 50;
+    options.centerInside = true;
+
+    Bitmap result = Picasso.transformResult(options, source, 0);
+
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 2.5 2.5");
+  }
+
+  @Test public void centerInsideWideTooLarge() {
+    Bitmap source = Bitmap.createBitmap(50, 100, ARGB_8888);
+    PicassoBitmapOptions options = new PicassoBitmapOptions();
+    options.targetWidth = 50;
+    options.targetHeight = 50;
+    options.centerInside = true;
+
+    Bitmap result = Picasso.transformResult(options, source, 0);
+
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
+  }
+
   @Test public void reusedBitmapIsNotRecycled() {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = Picasso.transformResult(null, source, 0);
