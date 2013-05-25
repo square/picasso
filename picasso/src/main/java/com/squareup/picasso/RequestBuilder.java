@@ -180,8 +180,29 @@ public class RequestBuilder {
     if (options.targetWidth == 0 || options.targetHeight == 0) {
       throw new IllegalStateException("Center crop can only be used after calling resize.");
     }
+    if (options.centerInside) {
+      throw new IllegalStateException("Center crop can not be used after calling centerInside");
+    }
 
     options.centerCrop = true;
+    return this;
+  }
+
+  /**
+   * Centers an image inside of the bounds specified by {@link #resize(int, int)}. This scales
+   * the image so that both dimensions are equal to or less than the requested bounds.
+   */
+  public RequestBuilder centerInside() {
+    PicassoBitmapOptions options = getOptions();
+
+    if (options.targetWidth == 0 || options.targetHeight == 0) {
+      throw new IllegalStateException("Center inside can only be used after calling resize.");
+    }
+    if (options.centerCrop) {
+      throw new IllegalStateException("Center inside can not be used after calling centerCrop");
+    }
+
+    options.centerInside = true;
     return this;
   }
 
