@@ -33,7 +33,7 @@ class Stats {
     this.cache = cache;
     HandlerThread statsThread = new HandlerThread(STATS_THREAD_NAME, THREAD_PRIORITY_BACKGROUND);
     statsThread.start();
-    handler = new Handler(statsThread.getLooper());
+    handler = new StatsHandler(statsThread.getLooper());
   }
 
   void bitmapDecoded(Bitmap bitmap) {
