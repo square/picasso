@@ -1,5 +1,6 @@
 package com.squareup.picasso;
 
+import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
@@ -8,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -326,6 +328,17 @@ public class Picasso {
     return cached;
   }
 
+  private InputStream openContactPhotoInputStream_preICS(final Uri contactUri) {
+	return ContactsContract.Contacts.openContactPhotoInputStream(
+	  context.getContentResolver(), contactUri);
+  }
+
+  @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+  private InputStream openContactPhotoInputStream_postICS(final Uri contactUri) {
+	return ContactsContract.Contacts.openContactPhotoInputStream(
+	  context.getContentResolver(), contactUri, true);
+  }
+  
   private Bitmap loadFromType(Request request) throws IOException {
     PicassoBitmapOptions options = request.options;
 
@@ -339,6 +352,17 @@ public class Picasso {
         result = decodeContentStream(path, options);
         request.loadedFrom = Request.LoadedFrom.DISK;
         break;
+      case CONTACT:
+    	final Uri contactUri = Uri.parse(request.path);
+
+        final InputStream is =
+    	  Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH
+    	    ? openContactPhotoInputStream_postICS(contactUri)
+    	    : openContactPhotoInputStream_preICS(contactUri);
+
+    	    result = decodeStream(is, options);
+    	    request.loadedFrom = Request.LoadedFrom.DISK;
+    	    break;
       case RESOURCE:
         Resources resources = context.getResources();
         result = decodeResource(resources, request.resourceId, options);
