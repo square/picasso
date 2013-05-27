@@ -329,12 +329,16 @@ public class Picasso {
   }
 
   private InputStream openContactPhotoInputStream_preICS(final Uri contactUri) {
+	if (null == contactUri) return null;
+	  
 	return ContactsContract.Contacts.openContactPhotoInputStream(
 	  context.getContentResolver(), contactUri);
   }
 
   @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
   private InputStream openContactPhotoInputStream_postICS(final Uri contactUri) {
+	if (null == contactUri) return null;
+	
 	return ContactsContract.Contacts.openContactPhotoInputStream(
 	  context.getContentResolver(), contactUri, true);
   }
@@ -355,14 +359,18 @@ public class Picasso {
       case CONTACT:
     	final Uri contactUri = Uri.parse(request.path);
 
+    	if (null != contactUri) {
         final InputStream is =
     	  Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH
     	    ? openContactPhotoInputStream_postICS(contactUri)
     	    : openContactPhotoInputStream_preICS(contactUri);
 
-    	    result = decodeStream(is, options);
-    	    request.loadedFrom = Request.LoadedFrom.DISK;
-    	    break;
+    	  result = decodeStream(is, options);
+    	} else 
+    	  result = null;    	
+    	
+    	request.loadedFrom = Request.LoadedFrom.DISK;
+    	break;
       case RESOURCE:
         Resources resources = context.getResources();
         result = decodeResource(resources, request.resourceId, options);
