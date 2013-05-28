@@ -1,12 +1,15 @@
 package com.squareup.picasso;
 
+import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
+import android.provider.ContactsContract;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -36,8 +39,9 @@ public class Picasso {
   private static final int REQUEST_RETRY = 2;
   private static final int REQUEST_DECODE_FAILED = 3;
 
+  private static final String CONTENT = "content";
   private static final String FILE_SCHEME = "file:";
-  private static final String CONTENT_SCHEME = "content:";
+  private static final String CONTENT_SCHEME = CONTENT + ':';
 
   /**
    * Global lock for bitmap decoding to ensure that we are only are decoding one at a time. Since
@@ -165,6 +169,17 @@ public class Picasso {
       throw new IllegalArgumentException("Resource ID must not be zero.");
     }
     return new RequestBuilder(this, resourceId);
+  }
+  
+  public RequestBuilder load(final Uri uri) {
+   if (!CONTENT.equals(uri.getScheme()))
+    throw new IllegalArgumentException("Not a content Uri: " + uri);
+
+   final Type type = uri.getHost().equals(ContactsContract.Contacts.CONTENT_URI.getHost()) 
+    ? Type.CONTACT
+    : Type.CONTENT;
+
+    return new RequestBuilder(this, uri.toString(), type);
   }
 
   /** {@code true} if debug display, logging, and statistics are enabled. */
@@ -313,6 +328,21 @@ public class Picasso {
     return cached;
   }
 
+  private InputStream openContactPhotoInputStream_preICS(final Uri contactUri) {
+	if (null == contactUri) return null;
+	  
+	return ContactsContract.Contacts.openContactPhotoInputStream(
+	  context.getContentResolver(), contactUri);
+  }
+
+  @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+  private InputStream openContactPhotoInputStream_postICS(final Uri contactUri) {
+	if (null == contactUri) return null;
+	
+	return ContactsContract.Contacts.openContactPhotoInputStream(
+	  context.getContentResolver(), contactUri, true);
+  }
+  
   private Bitmap loadFromType(Request request) throws IOException {
     PicassoBitmapOptions options = request.options;
 
@@ -326,6 +356,21 @@ public class Picasso {
         result = decodeContentStream(path, options);
         request.loadedFrom = Request.LoadedFrom.DISK;
         break;
+      case CONTACT:
+    	final Uri contactUri = Uri.parse(request.path);
+
+    	if (null != contactUri) {
+        final InputStream is =
+    	  Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH
+    	    ? openContactPhotoInputStream_postICS(contactUri)
+    	    : openContactPhotoInputStream_preICS(contactUri);
+
+    	  result = decodeStream(is, options);
+    	} else 
+    	  result = null;    	
+    	
+    	request.loadedFrom = Request.LoadedFrom.DISK;
+    	break;
       case RESOURCE:
         Resources resources = context.getResources();
         result = decodeResource(resources, request.resourceId, options);
