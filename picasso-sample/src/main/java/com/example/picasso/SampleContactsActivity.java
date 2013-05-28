@@ -71,8 +71,8 @@ public class SampleContactsActivity extends PicassoSampleActivity
 
     Uri CONTENT_URI = Contacts.CONTENT_URI;
 
-    String SELECTION = (IS_HONEYCOMB ? Contacts.DISPLAY_NAME_PRIMARY : Contacts.DISPLAY_NAME) +
-        "<>''" + " AND " + Contacts.IN_VISIBLE_GROUP + "=1";
+    String SELECTION = (IS_HONEYCOMB ? Contacts.DISPLAY_NAME_PRIMARY : Contacts.DISPLAY_NAME)
+        + "<>''" + " AND " + Contacts.IN_VISIBLE_GROUP + "=1";
 
     String SORT_ORDER = IS_HONEYCOMB ? Contacts.SORT_KEY_PRIMARY : Contacts.DISPLAY_NAME;
 
