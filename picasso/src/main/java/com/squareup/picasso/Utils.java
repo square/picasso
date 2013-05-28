@@ -14,6 +14,7 @@ import android.os.StatFs;
 import android.provider.MediaStore;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.ThreadFactory;
 
@@ -27,6 +28,7 @@ import static android.media.ExifInterface.TAG_ORIENTATION;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.HONEYCOMB_MR1;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
+import static android.provider.ContactsContract.Contacts.openContactPhotoInputStream;
 
 final class Utils {
   static final String THREAD_PREFIX = "Picasso-";
@@ -44,7 +46,7 @@ final class Utils {
     // No instances.
   }
 
-  static int getContentProviderExifRotation(Uri uri, ContentResolver contentResolver) {
+  static int getContentProviderExifRotation(ContentResolver contentResolver, Uri uri) {
     Cursor cursor = null;
     try {
       cursor = contentResolver.query(uri, CONTENT_ORIENTATION, null, null, null);
@@ -52,6 +54,9 @@ final class Utils {
         return 0;
       }
       return cursor.getInt(0);
+    } catch (IllegalArgumentException ignored) {
+      // If the orientation column doesn't exist, assume no rotation.
+      return 0;
     } finally {
       if (cursor != null) {
         cursor.close();
@@ -225,6 +230,14 @@ final class Utils {
     return Math.min(size, MAX_MEM_CACHE_SIZE);
   }
 
+  public static InputStream getContactPhotoStream(ContentResolver contentResolver, Uri uri) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+      return openContactPhotoInputStream(contentResolver, uri);
+    } else {
+      return ContactPhotoStreamIcs.get(contentResolver, uri);
+    }
+  }
+
   private static class ActivityManagerHoneycomb {
     static int getLargeMemoryClass(ActivityManager activityManager) {
       return activityManager.getLargeMemoryClass();
@@ -252,6 +265,12 @@ final class Utils {
   private static class BitmapHoneycombMR1 {
     static int getByteCount(Bitmap bitmap) {
       return bitmap.getByteCount();
+    }
+  }
+
+  private static class ContactPhotoStreamIcs {
+    static InputStream get(ContentResolver contentResolver, Uri uri) {
+      return openContactPhotoInputStream(contentResolver, uri, true);
     }
   }
 

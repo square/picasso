@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.widget.ImageView;
 import java.io.File;
 import java.io.IOException;
@@ -24,6 +25,8 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import static android.provider.ContactsContract.Contacts.CONTENT_URI;
+import static android.provider.ContactsContract.Contacts.Photo.CONTENT_DIRECTORY;
 import static com.squareup.picasso.Picasso.Listener;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.api.Assertions.fail;
@@ -55,6 +58,9 @@ public class PicassoTest {
   private static final Uri FILE_1_URL = Uri.parse("file:///" + FILE_1.getPath());
   private static final Uri FILE_1_URL_NO_AUTHORITY = Uri.parse("file:/" + FILE_1.getParent());
   private static final Uri CONTENT_1_URL = Uri.parse("content://zip/zap/zoop.jpg");
+  private static final Uri CONTACT_URI = CONTENT_URI.buildUpon().path("1234").build();
+  private static final Uri CONTACT_PHOTO_URI =
+      CONTENT_URI.buildUpon().path("1234").path(CONTENT_DIRECTORY).build();
 
   private static final Answer LOADER_ANSWER = new Answer() {
     @Override public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
@@ -973,6 +979,28 @@ public class PicassoTest {
     retryRequest(picasso, request);
 
     verify(listener).onImageLoadFailed(picasso, URI_1);
+  }
+
+  // Report older SDK so we don't trigger the ICS code-path which surfaces a Robolectric bug.
+  @Config(reportSdk = Build.VERSION_CODES.GINGERBREAD)
+  @Test public void contactUriLoaded() throws Exception {
+    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
+    ImageView target = mock(ImageView.class);
+    picasso.load(CONTACT_URI).into(target);
+    executor.flush();
+
+    // Contacts use a special stream to retrieve photos rather than the content provider API.
+    verify(picasso).decodeStream(any(InputStream.class), any(PicassoBitmapOptions.class));
+  }
+
+  @Test public void contactPhotoUriLoaded() throws Exception {
+    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
+    ImageView target = mock(ImageView.class);
+    picasso.load(CONTACT_PHOTO_URI).into(target);
+    executor.flush();
+
+    // Explicit contact photos fall back to the normal content provider API.
+    verify(picasso).decodeContentStream(any(Uri.class), any(PicassoBitmapOptions.class));
   }
 
   private void retryRequest(Picasso picasso, Request request) throws Exception {
