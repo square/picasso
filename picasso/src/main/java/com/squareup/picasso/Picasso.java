@@ -23,6 +23,7 @@ import java.util.concurrent.Executors;
 import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentResolver.SCHEME_FILE;
+import static android.provider.ContactsContract.Contacts;
 import static com.squareup.picasso.Loader.Response;
 import static com.squareup.picasso.Utils.calculateInSampleSize;
 
@@ -324,8 +325,14 @@ public class Picasso {
     } else {
       String scheme = uri.getScheme();
       if (SCHEME_CONTENT.equals(scheme)) {
-        exifRotation = Utils.getContentProviderExifRotation(uri, context.getContentResolver());
-        result = decodeContentStream(uri, options);
+        ContentResolver contentResolver = context.getContentResolver();
+        if (Contacts.CONTENT_URI.getHost().equals(uri.getHost())) {
+          InputStream contactStream = Utils.getContactPhotoStream(contentResolver, uri);
+          result = decodeStream(contactStream, options);
+        } else {
+          exifRotation = Utils.getContentProviderExifRotation(contentResolver, uri);
+          result = decodeContentStream(uri, options);
+        }
         request.loadedFrom = Request.LoadedFrom.DISK;
       } else if (SCHEME_FILE.equals(scheme)) {
         exifRotation = Utils.getFileExifRotation(uri.getPath());
