@@ -268,9 +268,7 @@ public class Picasso {
       // Ensure we are not doing only a bounds decode.
       bitmapOptions.inJustDecodeBounds = false;
     }
-    synchronized (DECODE_LOCK) {
-      return BitmapFactory.decodeStream(stream, null, bitmapOptions);
-    }
+    return BitmapFactory.decodeStream(stream, null, bitmapOptions);
   }
 
   Bitmap decodeContentStream(Uri path, PicassoBitmapOptions bitmapOptions) throws IOException {
@@ -279,9 +277,7 @@ public class Picasso {
       BitmapFactory.decodeStream(contentResolver.openInputStream(path), null, bitmapOptions);
       calculateInSampleSize(bitmapOptions);
     }
-    synchronized (DECODE_LOCK) {
-      return BitmapFactory.decodeStream(contentResolver.openInputStream(path), null, bitmapOptions);
-    }
+    return BitmapFactory.decodeStream(contentResolver.openInputStream(path), null, bitmapOptions);
   }
 
   Bitmap decodeResource(Resources resources, int resourceId, PicassoBitmapOptions bitmapOptions) {
@@ -289,9 +285,7 @@ public class Picasso {
       BitmapFactory.decodeResource(resources, resourceId, bitmapOptions);
       calculateInSampleSize(bitmapOptions);
     }
-    synchronized (DECODE_LOCK) {
-      return BitmapFactory.decodeResource(resources, resourceId, bitmapOptions);
-    }
+    return BitmapFactory.decodeResource(resources, resourceId, bitmapOptions);
   }
 
   private void cancelExistingRequest(Object target, Uri uri) {
