@@ -326,7 +326,8 @@ public class Picasso {
       String scheme = uri.getScheme();
       if (SCHEME_CONTENT.equals(scheme)) {
         ContentResolver contentResolver = context.getContentResolver();
-        if (Contacts.CONTENT_URI.getHost().equals(uri.getHost())) {
+        if (Contacts.CONTENT_URI.getHost().equals(uri.getHost()) //
+            && !uri.getPathSegments().contains(Contacts.Photo.CONTENT_DIRECTORY)) {
           InputStream contactStream = Utils.getContactPhotoStream(contentResolver, uri);
           result = decodeStream(contactStream, options);
         } else {

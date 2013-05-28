@@ -54,6 +54,9 @@ final class Utils {
         return 0;
       }
       return cursor.getInt(0);
+    } catch (IllegalArgumentException ignored) {
+      // If the orientation column doesn't exist, assume no rotation.
+      return 0;
     } finally {
       if (cursor != null) {
         cursor.close();
