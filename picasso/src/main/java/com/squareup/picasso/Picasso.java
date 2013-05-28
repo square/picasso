@@ -170,12 +170,12 @@ public class Picasso {
     }
     return new RequestBuilder(this, resourceId);
   }
-  
+
   public RequestBuilder load(final Uri uri) {
    if (!CONTENT.equals(uri.getScheme()))
     throw new IllegalArgumentException("Not a content Uri: " + uri);
 
-   final Type type = uri.getHost().equals(ContactsContract.Contacts.CONTENT_URI.getHost()) 
+   final Type type = uri.getHost().equals(ContactsContract.Contacts.CONTENT_URI.getHost())
     ? Type.CONTACT
     : Type.CONTENT;
 
@@ -329,20 +329,20 @@ public class Picasso {
   }
 
   private InputStream openContactPhotoInputStream_preICS(final Uri contactUri) {
-	if (null == contactUri) return null;
-	  
-	return ContactsContract.Contacts.openContactPhotoInputStream(
-	  context.getContentResolver(), contactUri);
+    if (null == contactUri) return null;
+
+    return ContactsContract.Contacts.openContactPhotoInputStream(
+      context.getContentResolver(), contactUri);
   }
 
   @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
   private InputStream openContactPhotoInputStream_postICS(final Uri contactUri) {
-	if (null == contactUri) return null;
-	
-	return ContactsContract.Contacts.openContactPhotoInputStream(
-	  context.getContentResolver(), contactUri, true);
+    if (null == contactUri) return null;
+
+    return ContactsContract.Contacts.openContactPhotoInputStream(
+      context.getContentResolver(), contactUri, true);
   }
-  
+
   private Bitmap loadFromType(Request request) throws IOException {
     PicassoBitmapOptions options = request.options;
 
@@ -357,20 +357,20 @@ public class Picasso {
         request.loadedFrom = Request.LoadedFrom.DISK;
         break;
       case CONTACT:
-    	final Uri contactUri = Uri.parse(request.path);
+        final Uri contactUri = Uri.parse(request.path);
 
-    	if (null != contactUri) {
-        final InputStream is =
-    	  Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH
-    	    ? openContactPhotoInputStream_postICS(contactUri)
-    	    : openContactPhotoInputStream_preICS(contactUri);
+        if (null != contactUri) {
+          final InputStream is =
+          Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH
+            ? openContactPhotoInputStream_postICS(contactUri)
+            : openContactPhotoInputStream_preICS(contactUri);
 
-    	  result = decodeStream(is, options);
-    	} else 
-    	  result = null;    	
-    	
-    	request.loadedFrom = Request.LoadedFrom.DISK;
-    	break;
+        result = decodeStream(is, options);
+      } else
+        result = null;
+
+      request.loadedFrom = Request.LoadedFrom.DISK;
+      break;
       case RESOURCE:
         Resources resources = context.getResources();
         result = decodeResource(resources, request.resourceId, options);
