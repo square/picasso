@@ -29,7 +29,6 @@ class Request implements Runnable {
 
   final Picasso picasso;
   final Uri uri;
-  final int resourceId;
   final WeakReference<ImageView> target;
   final PicassoBitmapOptions options;
   final List<Transformation> transformations;
@@ -45,12 +44,11 @@ class Request implements Runnable {
   int retryCount;
   boolean retryCancelled;
 
-  Request(Picasso picasso, Uri uri, int resourceId, ImageView imageView,
-      PicassoBitmapOptions options, List<Transformation> transformations, boolean skipCache,
+  Request(Picasso picasso, Uri uri, ImageView imageView, PicassoBitmapOptions options,
+      List<Transformation> transformations, boolean skipCache,
       boolean noFade, int errorResId, Drawable errorDrawable) {
     this.picasso = picasso;
     this.uri = uri;
-    this.resourceId = resourceId;
     this.target = new WeakReference<ImageView>(imageView);
     this.options = options;
     this.transformations = transformations;
@@ -112,8 +110,7 @@ class Request implements Runnable {
   }
 
   private String getName() {
-    Uri uri = this.uri;
-    return uri != null ? uri.getPath() : Integer.toString(resourceId);
+    return uri.getPath();
   }
 
   @Override public String toString() {
@@ -124,8 +121,6 @@ class Request implements Runnable {
         + picasso
         + ", uri="
         + uri
-        + ", resourceId="
-        + resourceId
         + ", target="
         + target
         + ", options="

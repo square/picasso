@@ -9,10 +9,9 @@ final class TargetRequest extends Request {
   private final WeakReference<Target> weakTarget;
   private final Target strongTarget;
 
-  TargetRequest(Picasso picasso, Uri uri, int resourceId, Target target, boolean strong,
+  TargetRequest(Picasso picasso, Uri uri, Target target, boolean strong,
       PicassoBitmapOptions bitmapOptions, List<Transformation> transformations, boolean skipCache) {
-    super(picasso, uri, resourceId, null, bitmapOptions, transformations, skipCache, false, 0,
-        null);
+    super(picasso, uri, null, bitmapOptions, transformations, skipCache, false, 0, null);
     this.weakTarget = strong ? null : new WeakReference<Target>(target);
     this.strongTarget = strong ? target : null;
   }

@@ -19,7 +19,6 @@ import static com.squareup.picasso.Utils.createKey;
 public class RequestBuilder {
   private final Picasso picasso;
   private final Uri uri;
-  private final int resourceId;
 
   PicassoBitmapOptions options;
   private List<Transformation> transformations;
@@ -31,16 +30,14 @@ public class RequestBuilder {
   private int errorResId;
   private Drawable errorDrawable;
 
-  RequestBuilder(Picasso picasso, Uri uri, int resourceId) {
+  RequestBuilder(Picasso picasso, Uri uri) {
     this.picasso = picasso;
     this.uri = uri;
-    this.resourceId = resourceId;
   }
 
   @TestOnly RequestBuilder() {
     this.picasso = null;
     this.uri = null;
-    this.resourceId = 0;
   }
 
   private PicassoBitmapOptions getOptions() {
@@ -277,8 +274,7 @@ public class RequestBuilder {
   public Bitmap get() throws IOException {
     checkNotMain();
     Request request =
-        new Request(picasso, uri, resourceId, null, options, transformations, skipCache, false, 0,
-            null);
+        new Request(picasso, uri, null, options, transformations, skipCache, false, 0, null);
     return picasso.resolveRequest(request);
   }
 
@@ -313,7 +309,7 @@ public class RequestBuilder {
     }
 
     // Look for the target bitmap in the memory cache without moving to a background thread.
-    String requestKey = createKey(uri, resourceId, options, transformations);
+    String requestKey = createKey(uri, options, transformations);
     Bitmap bitmap = picasso.quickMemoryCacheCheck(target, uri, requestKey);
     if (bitmap != null) {
       PicassoDrawable.setBitmap(target, picasso.context, bitmap, MEMORY, noFade, picasso.debugging);
@@ -328,7 +324,7 @@ public class RequestBuilder {
     }
 
     Request request =
-        new Request(picasso, uri, resourceId, target, options, transformations, skipCache, noFade,
+        new Request(picasso, uri, target, options, transformations, skipCache, noFade,
             errorResId, errorDrawable);
     picasso.submit(request);
   }
@@ -338,7 +334,7 @@ public class RequestBuilder {
       throw new IllegalArgumentException("Target must not be null.");
     }
 
-    String requestKey = createKey(uri, resourceId, options, transformations);
+    String requestKey = createKey(uri, options, transformations);
     Bitmap bitmap = picasso.quickMemoryCacheCheck(target, uri, requestKey);
     if (bitmap != null) {
       target.onSuccess(bitmap);
@@ -346,8 +342,7 @@ public class RequestBuilder {
     }
 
     Request request =
-        new TargetRequest(picasso, uri, resourceId, target, strong, options, transformations,
-            skipCache);
+        new TargetRequest(picasso, uri, target, strong, options, transformations, skipCache);
     picasso.submit(request);
   }
 }
