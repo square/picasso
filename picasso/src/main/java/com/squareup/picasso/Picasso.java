@@ -49,10 +49,10 @@ public class Picasso {
   /** Callbacks for Picasso events. */
   public interface Listener {
     /**
-     * Invoked when an image has failed to load after all retry attempts. This is useful for
-     * reporting image failures to a remote analytics service, for example.
+     * Invoked when an image has failed to load. This is useful for reporting image failures to a
+     * remote analytics service, for example.
      */
-    void onImageLoadFailed(Picasso picasso, Uri uri);
+    void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception);
   }
 
   // TODO This should be static.
@@ -213,6 +213,9 @@ public class Picasso {
       request.result = result;
       handler.sendMessage(handler.obtainMessage(REQUEST_COMPLETE, request));
     } catch (IOException e) {
+      if (listener != null && request.uri != null) {
+        listener.onImageLoadFailed(this, request.uri, e);
+      }
       handler.sendMessageDelayed(handler.obtainMessage(REQUEST_RETRY, request), RETRY_DELAY);
     }
   }
@@ -221,7 +224,11 @@ public class Picasso {
     Bitmap bitmap = loadFromCache(request);
     if (bitmap == null) {
       stats.cacheMiss();
-      bitmap = loadFromType(request);
+      try {
+        bitmap = loadFromType(request);
+      } catch (OutOfMemoryError e) {
+        throw new IOException("Failed to decode request: " + request, e);
+      }
 
       if (bitmap != null && !request.skipCache) {
         cache.set(request.key, bitmap);
@@ -258,9 +265,6 @@ public class Picasso {
   void error(Request request) {
     targetsToRequests.remove(request.getTarget());
     request.error();
-    if (listener != null && request.uri != null) {
-      listener.onImageLoadFailed(this, request.uri);
-    }
   }
 
   Bitmap decodeStream(InputStream stream, PicassoBitmapOptions bitmapOptions) {
