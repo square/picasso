@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.widget.ImageView;
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -13,14 +14,6 @@ import static com.squareup.picasso.Utils.createKey;
 
 class Request implements Runnable {
   static final int DEFAULT_RETRY_COUNT = 2;
-
-  enum Type {
-    CONTENT,
-    CONTACT,
-    FILE,
-    NETWORK,
-    RESOURCE
-  }
 
   enum LoadedFrom {
     MEMORY(Color.GREEN),
@@ -35,12 +28,11 @@ class Request implements Runnable {
   }
 
   final Picasso picasso;
-  final String path;
+  final Uri uri;
   final int resourceId;
   final WeakReference<ImageView> target;
   final PicassoBitmapOptions options;
   final List<Transformation> transformations;
-  final Type type;
   final boolean skipCache;
   final boolean noFade;
   final int errorResId;
@@ -53,16 +45,15 @@ class Request implements Runnable {
   int retryCount;
   boolean retryCancelled;
 
-  Request(Picasso picasso, String path, int resourceId, ImageView imageView,
-      PicassoBitmapOptions options, List<Transformation> transformations, Type type,
-      boolean skipCache, boolean noFade, int errorResId, Drawable errorDrawable) {
+  Request(Picasso picasso, Uri uri, int resourceId, ImageView imageView,
+      PicassoBitmapOptions options, List<Transformation> transformations, boolean skipCache,
+      boolean noFade, int errorResId, Drawable errorDrawable) {
     this.picasso = picasso;
-    this.path = path;
+    this.uri = uri;
     this.resourceId = resourceId;
     this.target = new WeakReference<ImageView>(imageView);
     this.options = options;
     this.transformations = transformations;
-    this.type = type;
     this.skipCache = skipCache;
     this.noFade = noFade;
     this.errorResId = errorResId;
@@ -104,7 +95,7 @@ class Request implements Runnable {
   @Override public void run() {
     try {
       // Change the thread name to contain the target URL for debugging purposes.
-      Thread.currentThread().setName(Utils.THREAD_PREFIX + path);
+      Thread.currentThread().setName(Utils.THREAD_PREFIX + getName());
 
       picasso.run(this);
     } catch (final Throwable e) {
@@ -120,14 +111,19 @@ class Request implements Runnable {
     }
   }
 
+  private String getName() {
+    Uri uri = this.uri;
+    return uri != null ? uri.getPath() : Integer.toString(resourceId);
+  }
+
   @Override public String toString() {
     return "Request["
         + "hashCode="
         + hashCode()
         + ", picasso="
         + picasso
-        + ", path="
-        + path
+        + ", uri="
+        + uri
         + ", resourceId="
         + resourceId
         + ", target="

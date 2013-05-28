@@ -3,6 +3,7 @@ package com.squareup.picasso;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.widget.ImageView;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,38 +18,29 @@ import static com.squareup.picasso.Utils.createKey;
 @SuppressWarnings("UnusedDeclaration") // Public API.
 public class RequestBuilder {
   private final Picasso picasso;
-  private final String path;
+  private final Uri uri;
   private final int resourceId;
-  private final Request.Type type;
 
   PicassoBitmapOptions options;
   private List<Transformation> transformations;
   private boolean skipCache;
   private boolean noFade;
+  private boolean hasNullPlaceholder;
   private int placeholderResId;
   private Drawable placeholderDrawable;
   private int errorResId;
   private Drawable errorDrawable;
 
-  RequestBuilder(Picasso picasso, int resourceId) {
+  RequestBuilder(Picasso picasso, Uri uri, int resourceId) {
     this.picasso = picasso;
-    this.path = null;
+    this.uri = uri;
     this.resourceId = resourceId;
-    this.type = Request.Type.RESOURCE;
-  }
-
-  RequestBuilder(Picasso picasso, String path, Request.Type type) {
-    this.picasso = picasso;
-    this.path = path;
-    this.resourceId = 0;
-    this.type = type;
   }
 
   @TestOnly RequestBuilder() {
     this.picasso = null;
-    this.path = null;
+    this.uri = null;
     this.resourceId = 0;
-    this.type = null;
   }
 
   private PicassoBitmapOptions getOptions() {
@@ -78,14 +70,15 @@ public class RequestBuilder {
    * A placeholder drawable to be used while the image is being loaded. If the requested image is
    * not immediately available in the memory cache then this resource will be set on the target
    * {@link ImageView}.
+   * <p>
+   * If you are not using a placeholder image but want to clear an existing image (such as when
+   * used in an {@link android.widget.Adapter adapter}), pass in {@code null}.
    */
   public RequestBuilder placeholder(Drawable placeholderDrawable) {
-    if (placeholderDrawable == null) {
-      throw new IllegalArgumentException("Placeholder image must not be null.");
-    }
     if (placeholderResId != 0) {
       throw new IllegalStateException("Placeholder image already set.");
     }
+    this.hasNullPlaceholder = placeholderDrawable == null;
     this.placeholderDrawable = placeholderDrawable;
     return this;
   }
@@ -158,11 +151,7 @@ public class RequestBuilder {
 
     options.targetWidth = targetWidth;
     options.targetHeight = targetHeight;
-
-    // Use bounds decoding optimization when reading local resources.
-    if (type != Request.Type.NETWORK) {
-      options.inJustDecodeBounds = true;
-    }
+    options.inJustDecodeBounds = true;
 
     return this;
   }
@@ -178,8 +167,29 @@ public class RequestBuilder {
     if (options.targetWidth == 0 || options.targetHeight == 0) {
       throw new IllegalStateException("Center crop can only be used after calling resize.");
     }
+    if (options.centerInside) {
+      throw new IllegalStateException("Center crop can not be used after calling centerInside");
+    }
 
     options.centerCrop = true;
+    return this;
+  }
+
+  /**
+   * Centers an image inside of the bounds specified by {@link #resize(int, int)}. This scales
+   * the image so that both dimensions are equal to or less than the requested bounds.
+   */
+  public RequestBuilder centerInside() {
+    PicassoBitmapOptions options = getOptions();
+
+    if (options.targetWidth == 0 || options.targetHeight == 0) {
+      throw new IllegalStateException("Center inside can only be used after calling resize.");
+    }
+    if (options.centerCrop) {
+      throw new IllegalStateException("Center inside can not be used after calling centerCrop");
+    }
+
+    options.centerInside = true;
     return this;
   }
 
@@ -267,8 +277,8 @@ public class RequestBuilder {
   public Bitmap get() throws IOException {
     checkNotMain();
     Request request =
-        new Request(picasso, path, resourceId, null, options, transformations, type, skipCache,
-            false, 0, null);
+        new Request(picasso, uri, resourceId, null, options, transformations, skipCache, false, 0,
+            null);
     return picasso.resolveRequest(request);
   }
 
@@ -303,8 +313,8 @@ public class RequestBuilder {
     }
 
     // Look for the target bitmap in the memory cache without moving to a background thread.
-    String requestKey = createKey(path, resourceId, options, transformations);
-    Bitmap bitmap = picasso.quickMemoryCacheCheck(target, requestKey);
+    String requestKey = createKey(uri, resourceId, options, transformations);
+    Bitmap bitmap = picasso.quickMemoryCacheCheck(target, uri, requestKey);
     if (bitmap != null) {
       PicassoDrawable.setBitmap(target, picasso.context, bitmap, MEMORY, noFade, picasso.debugging);
       return;
@@ -313,11 +323,13 @@ public class RequestBuilder {
     if (placeholderResId != 0 || placeholderDrawable != null) {
       PicassoDrawable.setPlaceholder(target, picasso.context, placeholderResId, placeholderDrawable,
           picasso.debugging);
+    } else if (hasNullPlaceholder) {
+      target.setImageDrawable(null);
     }
 
     Request request =
-        new Request(picasso, path, resourceId, target, options, transformations, type, skipCache,
-            noFade, errorResId, errorDrawable);
+        new Request(picasso, uri, resourceId, target, options, transformations, skipCache, noFade,
+            errorResId, errorDrawable);
     picasso.submit(request);
   }
 
@@ -326,15 +338,15 @@ public class RequestBuilder {
       throw new IllegalArgumentException("Target must not be null.");
     }
 
-    String requestKey = createKey(path, resourceId, options, transformations);
-    Bitmap bitmap = picasso.quickMemoryCacheCheck(target, requestKey);
+    String requestKey = createKey(uri, resourceId, options, transformations);
+    Bitmap bitmap = picasso.quickMemoryCacheCheck(target, uri, requestKey);
     if (bitmap != null) {
       target.onSuccess(bitmap);
       return;
     }
 
     Request request =
-        new TargetRequest(picasso, path, resourceId, target, strong, options, transformations, type,
+        new TargetRequest(picasso, uri, resourceId, target, strong, options, transformations,
             skipCache);
     picasso.submit(request);
   }

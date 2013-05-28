@@ -199,10 +199,10 @@ final class PicassoDrawable extends Drawable {
   @Override protected void onBoundsChange(Rect bounds) {
     super.onBoundsChange(bounds);
     if (bitmapDrawable != null) {
-      bitmapDrawable.setBounds(bounds);
+      setBounds(this.bitmapDrawable);
     }
     if (placeHolderDrawable != null) {
-      placeHolderDrawable.setBounds(bounds);
+      this.placeHolderDrawable.setBounds(getBounds());
     }
   }
 
@@ -238,7 +238,7 @@ final class PicassoDrawable extends Drawable {
     }
 
     bitmapDrawable = new BitmapDrawable(context.getResources(), bitmap);
-    bitmapDrawable.setBounds(getBounds());
+    setBounds(bitmapDrawable);
 
     this.loadedFrom = loadedFrom;
 
@@ -246,6 +246,32 @@ final class PicassoDrawable extends Drawable {
     animating = fade;
 
     invalidateSelf();
+  }
+
+  private void setBounds(Drawable drawable) {
+    Rect bounds = getBounds();
+
+    final int width = bounds.width();
+    final int height = bounds.height();
+    final float ratio = (float) width / height;
+
+    final int drawableWidth = drawable.getIntrinsicWidth();
+    final int drawableHeight = drawable.getIntrinsicHeight();
+    final float drawableRatio = (float) drawableWidth / drawableHeight;
+
+    if (drawableRatio < ratio) {
+      final float scale = (float) height / drawableHeight;
+      final int scaledDrawableWidth = (int) (drawableWidth * scale);
+      final int drawableLeft = bounds.left - (scaledDrawableWidth - width) / 2;
+      final int drawableRight = drawableLeft + scaledDrawableWidth;
+      drawable.setBounds(drawableLeft, bounds.top, drawableRight, bounds.bottom);
+    } else {
+      final float scale = (float) width / drawableWidth;
+      final int scaledDrawableHeight = (int) (drawableHeight * scale);
+      final int drawableTop = bounds.top - (scaledDrawableHeight - height) / 2;
+      final int drawableBottom = drawableTop + scaledDrawableHeight;
+      drawable.setBounds(bounds.left, drawableTop, bounds.right, drawableBottom);
+    }
   }
 
   private void drawDebugIndicator(Canvas canvas) {

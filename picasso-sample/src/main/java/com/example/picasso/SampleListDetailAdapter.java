@@ -44,7 +44,7 @@ final class SampleListDetailAdapter extends BaseAdapter {
         .placeholder(R.drawable.placeholder)
         .error(R.drawable.error)
         .resizeDimen(R.dimen.list_detail_image_size, R.dimen.list_detail_image_size)
-        .centerCrop()
+        .centerInside()
         .into(holder.image);
 
     return view;

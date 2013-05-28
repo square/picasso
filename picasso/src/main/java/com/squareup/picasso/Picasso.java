@@ -1,15 +1,12 @@
 package com.squareup.picasso;
 
-import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
-import android.provider.ContactsContract;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -23,8 +20,11 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
+import static android.content.ContentResolver.SCHEME_CONTENT;
+import static android.content.ContentResolver.SCHEME_FILE;
+import static android.provider.ContactsContract.Contacts;
 import static com.squareup.picasso.Loader.Response;
-import static com.squareup.picasso.Request.Type;
 import static com.squareup.picasso.Utils.calculateInSampleSize;
 
 /**
@@ -39,10 +39,6 @@ public class Picasso {
   private static final int REQUEST_RETRY = 2;
   private static final int REQUEST_DECODE_FAILED = 3;
 
-  private static final String CONTENT = "content";
-  private static final String FILE_SCHEME = "file:";
-  private static final String CONTENT_SCHEME = CONTENT + ':';
-
   /**
    * Global lock for bitmap decoding to ensure that we are only are decoding one at a time. Since
    * this will only ever happen in background threads we help avoid excessive memory thrashing as
@@ -55,10 +51,8 @@ public class Picasso {
     /**
      * Invoked when an image has failed to load after all retry attempts. This is useful for
      * reporting image failures to a remote analytics service, for example.
-     * <p>
-     * <em>Note:</em> This will only be called for file, content provider, or URL paths.
      */
-    void onImageLoadFailed(Picasso picasso, String path);
+    void onImageLoadFailed(Picasso picasso, Uri uri);
   }
 
   // TODO This should be static.
@@ -124,30 +118,40 @@ public class Picasso {
   }
 
   /**
-   * Start an image request using the specified path.
-   * <p>
-   * This path may be a file resource (prefixed with {@code file:}), a content resource
-   * (prefixed with {@code content:}), or a remote URL.
+   * Start an image request using the specified URI.
    *
-   * @see #load(java.io.File)
+   * @see #load(File)
+   * @see #load(String)
+   * @see #load(int)
+   */
+  public RequestBuilder load(Uri uri) {
+    return new RequestBuilder(this, uri, 0);
+  }
+
+  /**
+   * Start an image request using the specified path. This is a convenience method for calling
+   * {@link #load(Uri)}.
+   * <p>
+   * This path may be a remote URL, file resource (prefixed with {@code file:}), content resource
+   * (prefixed with {@code content:}), or android resource (prefixed with {@code
+   * android.resource:}.
+   *
+   * @see #load(Uri)
+   * @see #load(File)
    * @see #load(int)
    */
   public RequestBuilder load(String path) {
     if (path == null || path.trim().length() == 0) {
       throw new IllegalArgumentException("Path must not be empty.");
     }
-    if (path.startsWith(FILE_SCHEME)) {
-      return new RequestBuilder(this, Uri.parse(path).getPath(), Type.FILE);
-    }
-    if (path.startsWith(CONTENT_SCHEME)) {
-      return new RequestBuilder(this, path, Type.CONTENT);
-    }
-    return new RequestBuilder(this, path, Type.NETWORK);
+    return load(Uri.parse(path));
   }
 
   /**
-   * Start an image request using the specified image file.
+   * Start an image request using the specified image file. This is a convenience method for
+   * calling {@link #load(Uri)}.
    *
+   * @see #load(Uri)
    * @see #load(String)
    * @see #load(int)
    */
@@ -155,31 +159,21 @@ public class Picasso {
     if (file == null) {
       throw new IllegalArgumentException("File must not be null.");
     }
-    return new RequestBuilder(this, file.getPath(), Type.FILE);
+    return load(Uri.fromFile(file));
   }
 
   /**
    * Start an image request using the specified drawable resource ID.
    *
+   * @see #load(Uri)
    * @see #load(String)
-   * @see #load(java.io.File)
+   * @see #load(File)
    */
   public RequestBuilder load(int resourceId) {
     if (resourceId == 0) {
       throw new IllegalArgumentException("Resource ID must not be zero.");
     }
-    return new RequestBuilder(this, resourceId);
-  }
-
-  public RequestBuilder load(final Uri uri) {
-   if (!CONTENT.equals(uri.getScheme()))
-    throw new IllegalArgumentException("Not a content Uri: " + uri);
-
-   final Type type = uri.getHost().equals(ContactsContract.Contacts.CONTENT_URI.getHost())
-    ? Type.CONTACT
-    : Type.CONTENT;
-
-    return new RequestBuilder(this, uri.toString(), type);
+    return new RequestBuilder(this, null, resourceId);
   }
 
   /** {@code true} if debug display, logging, and statistics are enabled. */
@@ -201,7 +195,7 @@ public class Picasso {
     Object target = request.getTarget();
     if (target == null) return;
 
-    cancelExistingRequest(target, request.path);
+    cancelExistingRequest(target, request.uri);
 
     targetsToRequests.put(target, request);
     request.future = service.submit(request);
@@ -238,9 +232,9 @@ public class Picasso {
     return bitmap;
   }
 
-  Bitmap quickMemoryCacheCheck(Object target, String key) {
+  Bitmap quickMemoryCacheCheck(Object target, Uri uri, String key) {
     Bitmap cached = cache.get(key);
-    cancelExistingRequest(target, key);
+    cancelExistingRequest(target, uri);
 
     if (cached != null) {
       stats.cacheHit();
@@ -264,16 +258,18 @@ public class Picasso {
   void error(Request request) {
     targetsToRequests.remove(request.getTarget());
     request.error();
-    if (listener != null && request.path != null) {
-      listener.onImageLoadFailed(this, request.path);
+    if (listener != null && request.uri != null) {
+      listener.onImageLoadFailed(this, request.uri);
     }
   }
 
   Bitmap decodeStream(InputStream stream, PicassoBitmapOptions bitmapOptions) {
     if (stream == null) return null;
-    synchronized (DECODE_LOCK) {
-      return BitmapFactory.decodeStream(stream, null, bitmapOptions);
+    if (bitmapOptions != null) {
+      // Ensure we are not doing only a bounds decode.
+      bitmapOptions.inJustDecodeBounds = false;
     }
+    return BitmapFactory.decodeStream(stream, null, bitmapOptions);
   }
 
   Bitmap decodeContentStream(Uri path, PicassoBitmapOptions bitmapOptions) throws IOException {
@@ -282,19 +278,7 @@ public class Picasso {
       BitmapFactory.decodeStream(contentResolver.openInputStream(path), null, bitmapOptions);
       calculateInSampleSize(bitmapOptions);
     }
-    synchronized (DECODE_LOCK) {
-      return BitmapFactory.decodeStream(contentResolver.openInputStream(path), null, bitmapOptions);
-    }
-  }
-
-  Bitmap decodeFile(String path, PicassoBitmapOptions bitmapOptions) {
-    if (bitmapOptions != null && bitmapOptions.inJustDecodeBounds) {
-      BitmapFactory.decodeFile(path, bitmapOptions);
-      calculateInSampleSize(bitmapOptions);
-    }
-    synchronized (DECODE_LOCK) {
-      return BitmapFactory.decodeFile(path, bitmapOptions);
-    }
+    return BitmapFactory.decodeStream(contentResolver.openInputStream(path), null, bitmapOptions);
   }
 
   Bitmap decodeResource(Resources resources, int resourceId, PicassoBitmapOptions bitmapOptions) {
@@ -302,17 +286,15 @@ public class Picasso {
       BitmapFactory.decodeResource(resources, resourceId, bitmapOptions);
       calculateInSampleSize(bitmapOptions);
     }
-    synchronized (DECODE_LOCK) {
-      return BitmapFactory.decodeResource(resources, resourceId, bitmapOptions);
-    }
+    return BitmapFactory.decodeResource(resources, resourceId, bitmapOptions);
   }
 
-  private void cancelExistingRequest(Object target, String path) {
+  private void cancelExistingRequest(Object target, Uri uri) {
     Request existing = targetsToRequests.remove(target);
     if (existing != null) {
       if (!existing.future.isDone()) {
         existing.future.cancel(true);
-      } else if (path == null || !path.equals(existing.path)) {
+      } else if (uri == null || !uri.equals(existing.uri)) {
         existing.retryCancelled = true;
       }
     }
@@ -328,63 +310,42 @@ public class Picasso {
     return cached;
   }
 
-  private InputStream openContactPhotoInputStream_preICS(final Uri contactUri) {
-    if (null == contactUri) return null;
-
-    return ContactsContract.Contacts.openContactPhotoInputStream(
-      context.getContentResolver(), contactUri);
-  }
-
-  @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-  private InputStream openContactPhotoInputStream_postICS(final Uri contactUri) {
-    if (null == contactUri) return null;
-
-    return ContactsContract.Contacts.openContactPhotoInputStream(
-      context.getContentResolver(), contactUri, true);
-  }
-
   private Bitmap loadFromType(Request request) throws IOException {
     PicassoBitmapOptions options = request.options;
 
     int exifRotation = 0;
     Bitmap result = null;
 
-    switch (request.type) {
-      case CONTENT:
-        Uri path = Uri.parse(request.path);
-        exifRotation = Utils.getContentProviderExifRotation(path, context.getContentResolver());
-        result = decodeContentStream(path, options);
-        request.loadedFrom = Request.LoadedFrom.DISK;
-        break;
-      case CONTACT:
-        final Uri contactUri = Uri.parse(request.path);
+    Uri uri = request.uri;
+    int resourceId = request.resourceId;
 
-        if (null != contactUri) {
-          final InputStream is =
-          Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH
-            ? openContactPhotoInputStream_postICS(contactUri)
-            : openContactPhotoInputStream_preICS(contactUri);
-
-        result = decodeStream(is, options);
-      } else
-        result = null;
-
+    if (resourceId != 0) {
+      result = decodeResource(context.getResources(), resourceId, options);
       request.loadedFrom = Request.LoadedFrom.DISK;
-      break;
-      case RESOURCE:
-        Resources resources = context.getResources();
-        result = decodeResource(resources, request.resourceId, options);
+    } else {
+      String scheme = uri.getScheme();
+      if (SCHEME_CONTENT.equals(scheme)) {
+        ContentResolver contentResolver = context.getContentResolver();
+        if (Contacts.CONTENT_URI.getHost().equals(uri.getHost()) //
+            && !uri.getPathSegments().contains(Contacts.Photo.CONTENT_DIRECTORY)) {
+          InputStream contactStream = Utils.getContactPhotoStream(contentResolver, uri);
+          result = decodeStream(contactStream, options);
+        } else {
+          exifRotation = Utils.getContentProviderExifRotation(contentResolver, uri);
+          result = decodeContentStream(uri, options);
+        }
         request.loadedFrom = Request.LoadedFrom.DISK;
-        break;
-      case FILE:
-        exifRotation = Utils.getFileExifRotation(request.path);
-        result = decodeFile(request.path, options);
+      } else if (SCHEME_FILE.equals(scheme)) {
+        exifRotation = Utils.getFileExifRotation(uri.getPath());
+        result = decodeContentStream(uri, options);
         request.loadedFrom = Request.LoadedFrom.DISK;
-        break;
-      case NETWORK:
+      } else if (SCHEME_ANDROID_RESOURCE.equals(scheme)) {
+        result = decodeContentStream(uri, options);
+        request.loadedFrom = Request.LoadedFrom.DISK;
+      } else {
         Response response = null;
         try {
-          response = loader.load(request.path, request.retryCount == 0);
+          response = loader.load(uri, request.retryCount == 0);
           if (response == null) {
             return null;
           }
@@ -398,9 +359,7 @@ public class Picasso {
           }
         }
         request.loadedFrom = response.cached ? Request.LoadedFrom.DISK : Request.LoadedFrom.NETWORK;
-        break;
-      default:
-        throw new AssertionError("Unknown request type: " + request.type);
+      }
     }
 
     if (result == null) {
@@ -474,6 +433,11 @@ public class Picasso {
           drawX = (inWidth - newSize) / 2;
           drawWidth = newSize;
         }
+        matrix.preScale(scale, scale);
+      } else if (options.centerInside) {
+        float widthRatio = targetWidth / (float) inWidth;
+        float heightRatio = targetHeight / (float) inHeight;
+        float scale = widthRatio < heightRatio ? widthRatio : heightRatio;
         matrix.preScale(scale, scale);
       } else if (targetWidth != 0 && targetHeight != 0 //
           && (targetWidth != inWidth || targetHeight != inHeight)) {

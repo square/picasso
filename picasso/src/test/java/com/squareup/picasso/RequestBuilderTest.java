@@ -20,11 +20,6 @@ public class RequestBuilderTest {
     } catch (IllegalArgumentException expected) {
     }
     try {
-      new RequestBuilder().placeholder(null);
-      fail("Null drawable should throw exception.");
-    } catch (IllegalArgumentException expected) {
-    }
-    try {
       new RequestBuilder().placeholder(1).placeholder(new ColorDrawable(0));
       fail("Two placeholders should throw exception.");
     } catch (IllegalStateException expected) {
@@ -89,13 +84,6 @@ public class RequestBuilderTest {
     assertThat(b.options).isNull();
   }
 
-  @Test public void streamDoesNotUseBoundsDecoding() {
-    for (Request.Type type : Request.Type.values()) {
-      RequestBuilder b = new RequestBuilder(null, "", type).resize(10, 10);
-      assertThat(b.options.inJustDecodeBounds).isEqualTo(type != Request.Type.NETWORK);
-    }
-  }
-
   @Test public void invalidResize() {
     try {
       new RequestBuilder().resize(-1, 10);
@@ -141,6 +129,24 @@ public class RequestBuilderTest {
     try {
       new RequestBuilder().centerCrop();
       fail("Center crop without resize should throw exception.");
+    } catch (IllegalStateException expected) {
+    }
+    try {
+      new RequestBuilder().resize(10, 10).centerInside().centerCrop();
+      fail("Calling center crop after center inside should throw exception.");
+    } catch (IllegalStateException expected) {
+    }
+  }
+
+  @Test public void invalidCenterInside() {
+    try {
+      new RequestBuilder().centerInside();
+      fail("Center inside without resize should throw exception.");
+    } catch (IllegalStateException expected) {
+    }
+    try {
+      new RequestBuilder().resize(10, 10).centerInside().centerCrop();
+      fail("Calling center inside after center crop should throw exception.");
     } catch (IllegalStateException expected) {
     }
   }

@@ -130,7 +130,7 @@ public class LruCache implements Cache {
     return missCount;
   }
 
-  /** Returns the number of times {@link #set(String, android.graphics.Bitmap)} was called. */
+  /** Returns the number of times {@link #set(String, Bitmap)} was called. */
   public final synchronized int putCount() {
     return putCount;
   }

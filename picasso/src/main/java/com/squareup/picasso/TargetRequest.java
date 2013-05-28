@@ -1,5 +1,6 @@
 package com.squareup.picasso;
 
+import android.net.Uri;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
@@ -8,11 +9,10 @@ final class TargetRequest extends Request {
   private final WeakReference<Target> weakTarget;
   private final Target strongTarget;
 
-  TargetRequest(Picasso picasso, String path, int resourceId, Target target, boolean strong,
-      PicassoBitmapOptions bitmapOptions, List<Transformation> transformations, Type type,
-      boolean skipCache) {
-    super(picasso, path, resourceId, null, bitmapOptions, transformations, type, skipCache, false,
-        0, null);
+  TargetRequest(Picasso picasso, Uri uri, int resourceId, Target target, boolean strong,
+      PicassoBitmapOptions bitmapOptions, List<Transformation> transformations, boolean skipCache) {
+    super(picasso, uri, resourceId, null, bitmapOptions, transformations, skipCache, false, 0,
+        null);
     this.weakTarget = strong ? null : new WeakReference<Target>(target);
     this.strongTarget = strong ? target : null;
   }
