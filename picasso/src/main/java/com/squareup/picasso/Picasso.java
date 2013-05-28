@@ -2,6 +2,7 @@ package com.squareup.picasso;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -40,6 +41,7 @@ public class Picasso {
   private static final int REQUEST_DECODE_FAILED = 3;
 
   public static final String SCHEME_RESOURCES = "picasso.resources";
+  public static final String SCHEME_ASSETS = "picasso.assets";
 
   /**
    * Global lock for bitmap decoding to ensure that we are only are decoding one at a time. Since
@@ -287,6 +289,16 @@ public class Picasso {
     return BitmapFactory.decodeStream(contentResolver.openInputStream(path), null, bitmapOptions);
   }
 
+  Bitmap decodeAsset(Uri uri, PicassoBitmapOptions bitmapOptions) throws IOException {
+    String path = uri.getPath().substring(1);
+    AssetManager assets = context.getAssets();
+    if (bitmapOptions != null && bitmapOptions.inJustDecodeBounds) {
+      BitmapFactory.decodeStream(assets.open(path), null, bitmapOptions);
+      calculateInSampleSize(bitmapOptions);
+    }
+    return decodeStream(assets.open(path), bitmapOptions);
+  }
+
   Bitmap decodeResource(Uri uri, PicassoBitmapOptions bitmapOptions) throws IOException {
     String path = uri.getPath().substring(1);
     try {
@@ -352,6 +364,9 @@ public class Picasso {
       request.loadedFrom = Request.LoadedFrom.DISK;
     } else if (SCHEME_ANDROID_RESOURCE.equals(scheme)) {
       result = decodeContentStream(uri, options);
+      request.loadedFrom = Request.LoadedFrom.DISK;
+    } else if (SCHEME_ASSETS.equals(scheme)) {
+      result = decodeAsset(uri, options);
       request.loadedFrom = Request.LoadedFrom.DISK;
     } else if (SCHEME_RESOURCES.equals(scheme)) {
       result = decodeResource(uri, options);
