@@ -1,6 +1,7 @@
 package com.squareup.picasso;
 
 import android.content.Context;
+import android.net.Uri;
 import android.net.http.HttpResponseCache;
 import android.os.Build;
 import java.io.File;
@@ -30,12 +31,12 @@ public class UrlConnectionLoader implements Loader {
     return (HttpURLConnection) new URL(path).openConnection();
   }
 
-  @Override public Response load(String url, boolean localCacheOnly) throws IOException {
+  @Override public Response load(Uri uri, boolean localCacheOnly) throws IOException {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
       installCacheIfNeeded(context);
     }
 
-    HttpURLConnection connection = openConnection(url);
+    HttpURLConnection connection = openConnection(uri.toString());
     connection.setUseCaches(true);
     if (localCacheOnly) {
       connection.setRequestProperty("Cache-Control", "only-if-cached");

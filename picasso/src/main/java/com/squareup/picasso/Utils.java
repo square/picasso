@@ -94,14 +94,15 @@ final class Utils {
   }
 
   static String createKey(Request request) {
-    return createKey(request.path, request.resourceId, request.options, request.transformations);
+    return createKey(request.uri, request.resourceId, request.options, request.transformations);
   }
 
-  static String createKey(String path, int resourceId, PicassoBitmapOptions options,
+  static String createKey(Uri uri, int resourceId, PicassoBitmapOptions options,
       List<Transformation> transformations) {
     StringBuilder builder;
 
-    if (path != null) {
+    if (uri != null) {
+      String path = uri.toString();
       builder = new StringBuilder(path.length() + KEY_PADDING);
       builder.append(path);
     } else {

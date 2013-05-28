@@ -1,6 +1,7 @@
 package com.squareup.picasso;
 
 import android.content.Context;
+import android.net.Uri;
 import com.squareup.okhttp.HttpResponseCache;
 import com.squareup.okhttp.OkHttpClient;
 import java.io.File;
@@ -38,8 +39,8 @@ public class OkHttpLoader implements Loader {
     this.client = client;
   }
 
-  @Override public Response load(String url, boolean localCacheOnly) throws IOException {
-    HttpURLConnection connection = client.open(new URL(url));
+  @Override public Response load(Uri uri, boolean localCacheOnly) throws IOException {
+    HttpURLConnection connection = client.open(new URL(uri.toString()));
     connection.setUseCaches(true);
     if (localCacheOnly) {
       connection.setRequestProperty("Cache-Control", "only-if-cached");
