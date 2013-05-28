@@ -71,8 +71,11 @@ public class SampleContactsActivity extends PicassoSampleActivity
 
     Uri CONTENT_URI = Contacts.CONTENT_URI;
 
-    String SELECTION = (IS_HONEYCOMB ? Contacts.DISPLAY_NAME_PRIMARY : Contacts.DISPLAY_NAME) +
-        "<>''" + " AND " + Contacts.IN_VISIBLE_GROUP + "=1";
+    String SELECTION = (IS_HONEYCOMB ? Contacts.DISPLAY_NAME_PRIMARY : Contacts.DISPLAY_NAME)
+        + "<>''"
+        + " AND "
+        + Contacts.IN_VISIBLE_GROUP
+        + "=1";
 
     String SORT_ORDER = IS_HONEYCOMB ? Contacts.SORT_KEY_PRIMARY : Contacts.DISPLAY_NAME;
 
@@ -87,6 +90,5 @@ public class SampleContactsActivity extends PicassoSampleActivity
     int ID = 0;
     int LOOKUP_KEY = 1;
     int DISPLAY_NAME = 2;
-    int PHOTO_THUMBNAIL_DATA = 3;
   }
 }
