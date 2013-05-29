@@ -34,6 +34,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -90,6 +91,11 @@ public class PicassoTest {
   private static final Answer BITMAP2_ANSWER = new Answer() {
     @Override public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
       return bitmap2;
+    }
+  };
+  private static final Answer OOME_ANSWER = new Answer() {
+    @Override public Object answer(InvocationOnMock invocation) throws Throwable {
+      throw new OutOfMemoryError("Boom");
     }
   };
 
@@ -970,15 +976,22 @@ public class PicassoTest {
     verify(stats).cacheHit();
   }
 
-  @Test public void listenerCalledAfterRetries() throws Exception {
-    Picasso picasso = create(NULL_ANSWER, IO_EXCEPTION_ANSWER);
-
+  @Test public void listenerCalledOnFailure() throws Exception {
+    Picasso picasso = create(LOADER_ANSWER, IO_EXCEPTION_ANSWER);
     ImageView target = mock(ImageView.class);
-    Request request = new Request(picasso, URI_1, 0, target, null, null, false, false, 0, null);
+    picasso.load(URI_1).into(target);
+    executor.flush();
 
-    retryRequest(picasso, request);
+    verify(listener).onImageLoadFailed(eq(picasso), eq(URI_1), any(Exception.class));
+  }
 
-    verify(listener).onImageLoadFailed(picasso, URI_1);
+  @Test public void listenerCalledOnOutOfMemory() throws Exception {
+    Picasso picasso = create(LOADER_ANSWER, OOME_ANSWER);
+    ImageView target = mock(ImageView.class);
+    picasso.load(URI_1).into(target);
+    executor.flush();
+
+    verify(listener).onImageLoadFailed(eq(picasso), eq(URI_1), any(Exception.class));
   }
 
   // Report older SDK so we don't trigger the ICS code-path which surfaces a Robolectric bug.
@@ -1001,6 +1014,16 @@ public class PicassoTest {
 
     // Explicit contact photos fall back to the normal content provider API.
     verify(picasso).decodeContentStream(any(Uri.class), any(PicassoBitmapOptions.class));
+  }
+
+  @Test public void outOfMemoryTriggersRetry() throws Exception {
+    Picasso picasso = create(LOADER_ANSWER, OOME_ANSWER);
+    ImageView target = mock(ImageView.class);
+    picasso.load(URI_1).into(target);
+    executor.flush();
+    runUiThreadTasksIncludingDelayedTasks();
+
+    verify(picasso).retry(any(Request.class));
   }
 
   private void retryRequest(Picasso picasso, Request request) throws Exception {
