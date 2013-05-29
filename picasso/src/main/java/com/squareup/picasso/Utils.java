@@ -1,5 +1,6 @@
 package com.squareup.picasso;
 
+import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -11,6 +12,7 @@ import android.os.Build;
 import android.os.Looper;
 import android.os.Process;
 import android.os.StatFs;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import java.io.File;
 import java.io.IOException;
@@ -232,12 +234,17 @@ final class Utils {
 
   public static InputStream getContactPhotoStream(ContentResolver contentResolver, Uri uri) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-      return openContactPhotoInputStream(contentResolver, uri);
+      final Uri contactUri = uri.toString().startsWith(
+          ContactsContract.Contacts.CONTENT_LOOKUP_URI.toString())
+        ? ContactsContract.Contacts.lookupContact(contentResolver, uri)
+        : uri;
+      return openContactPhotoInputStream(contentResolver, contactUri);
     } else {
       return ContactPhotoStreamIcs.get(contentResolver, uri);
     }
   }
 
+  @TargetApi(Build.VERSION_CODES.HONEYCOMB)
   private static class ActivityManagerHoneycomb {
     static int getLargeMemoryClass(ActivityManager activityManager) {
       return activityManager.getLargeMemoryClass();
@@ -262,12 +269,14 @@ final class Utils {
     }
   }
 
+  @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
   private static class BitmapHoneycombMR1 {
     static int getByteCount(Bitmap bitmap) {
       return bitmap.getByteCount();
     }
   }
 
+  @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
   private static class ContactPhotoStreamIcs {
     static InputStream get(ContentResolver contentResolver, Uri uri) {
       return openContactPhotoInputStream(contentResolver, uri, true);
