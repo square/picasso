@@ -234,11 +234,10 @@ final class Utils {
 
   public static InputStream getContactPhotoStream(ContentResolver contentResolver, Uri uri) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-      final Uri contactUri = uri.toString().startsWith(
-          ContactsContract.Contacts.CONTENT_LOOKUP_URI.toString())
-        ? ContactsContract.Contacts.lookupContact(contentResolver, uri)
-        : uri;
-      return openContactPhotoInputStream(contentResolver, contactUri);
+      if (uri.toString().startsWith(ContactsContract.Contacts.CONTENT_LOOKUP_URI.toString()))
+        uri = ContactsContract.Contacts.lookupContact(contentResolver, uri);
+
+      return openContactPhotoInputStream(contentResolver, uri);
     } else {
       return ContactPhotoStreamIcs.get(contentResolver, uri);
     }
