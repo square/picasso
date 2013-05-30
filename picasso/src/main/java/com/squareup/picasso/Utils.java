@@ -99,21 +99,14 @@ final class Utils {
   }
 
   static String createKey(Request request) {
-    return createKey(request.uri, request.resourceId, request.options, request.transformations);
+    return createKey(request.uri, request.options, request.transformations);
   }
 
-  static String createKey(Uri uri, int resourceId, PicassoBitmapOptions options,
+  static String createKey(Uri uri, PicassoBitmapOptions options,
       List<Transformation> transformations) {
-    StringBuilder builder;
-
-    if (uri != null) {
-      String path = uri.toString();
-      builder = new StringBuilder(path.length() + KEY_PADDING);
-      builder.append(path);
-    } else {
-      builder = new StringBuilder(KEY_PADDING);
-      builder.append(resourceId);
-    }
+    String path = uri.toString();
+    StringBuilder builder = new StringBuilder(path.length() + KEY_PADDING);
+    builder.append(path);
     builder.append('\n');
 
     if (options != null) {
@@ -236,6 +229,12 @@ final class Utils {
     } else {
       return ContactPhotoStreamIcs.get(contentResolver, uri);
     }
+  }
+
+  static Uri createResourceUri(Context context, int resourceId) {
+    return new Uri.Builder().scheme(Picasso.SCHEME_RESOURCES)
+        .appendPath(String.valueOf(resourceId))
+        .build();
   }
 
   private static class ActivityManagerHoneycomb {

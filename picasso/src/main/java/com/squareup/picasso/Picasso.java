@@ -2,6 +2,7 @@ package com.squareup.picasso;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -38,6 +39,9 @@ public class Picasso {
   private static final int REQUEST_COMPLETE = 1;
   private static final int REQUEST_RETRY = 2;
   private static final int REQUEST_DECODE_FAILED = 3;
+
+  public static final String SCHEME_RESOURCES = "picasso.resources";
+  public static final String SCHEME_ASSETS = "picasso.assets";
 
   /**
    * Global lock for bitmap decoding to ensure that we are only are decoding one at a time. Since
@@ -125,7 +129,7 @@ public class Picasso {
    * @see #load(int)
    */
   public RequestBuilder load(Uri uri) {
-    return new RequestBuilder(this, uri, 0);
+    return new RequestBuilder(this, uri);
   }
 
   /**
@@ -173,7 +177,7 @@ public class Picasso {
     if (resourceId == 0) {
       throw new IllegalArgumentException("Resource ID must not be zero.");
     }
-    return new RequestBuilder(this, null, resourceId);
+    return load(Utils.createResourceUri(context, resourceId));
   }
 
   /** {@code true} if debug display, logging, and statistics are enabled. */
@@ -285,7 +289,27 @@ public class Picasso {
     return BitmapFactory.decodeStream(contentResolver.openInputStream(path), null, bitmapOptions);
   }
 
-  Bitmap decodeResource(Resources resources, int resourceId, PicassoBitmapOptions bitmapOptions) {
+  Bitmap decodeAsset(Uri uri, PicassoBitmapOptions bitmapOptions) throws IOException {
+    String path = uri.getPath().substring(1);
+    AssetManager assets = context.getAssets();
+    if (bitmapOptions != null && bitmapOptions.inJustDecodeBounds) {
+      BitmapFactory.decodeStream(assets.open(path), null, bitmapOptions);
+      calculateInSampleSize(bitmapOptions);
+    }
+    return decodeStream(assets.open(path), bitmapOptions);
+  }
+
+  Bitmap decodeResource(Uri uri, PicassoBitmapOptions bitmapOptions) throws IOException {
+    String path = uri.getPath().substring(1);
+    try {
+      return decodeResource(Integer.parseInt(path), bitmapOptions);
+    } catch (NumberFormatException exception) {
+      throw new IOException("\"" + path + "\" isn't a valid resource id", exception);
+    }
+  }
+
+  Bitmap decodeResource(int resourceId, PicassoBitmapOptions bitmapOptions) {
+    Resources resources = context.getResources();
     if (bitmapOptions != null && bitmapOptions.inJustDecodeBounds) {
       BitmapFactory.decodeResource(resources, resourceId, bitmapOptions);
       calculateInSampleSize(bitmapOptions);
@@ -321,49 +345,49 @@ public class Picasso {
     Bitmap result = null;
 
     Uri uri = request.uri;
-    int resourceId = request.resourceId;
+    String scheme = uri.getScheme();
 
-    if (resourceId != 0) {
-      result = decodeResource(context.getResources(), resourceId, options);
+    if (SCHEME_CONTENT.equals(scheme)) {
+      ContentResolver contentResolver = context.getContentResolver();
+      if (Contacts.CONTENT_URI.getHost().equals(uri.getHost()) //
+          && !uri.getPathSegments().contains(Contacts.Photo.CONTENT_DIRECTORY)) {
+        InputStream contactStream = Utils.getContactPhotoStream(contentResolver, uri);
+        result = decodeStream(contactStream, options);
+      } else {
+        exifRotation = Utils.getContentProviderExifRotation(contentResolver, uri);
+        result = decodeContentStream(uri, options);
+      }
+      request.loadedFrom = Request.LoadedFrom.DISK;
+    } else if (SCHEME_FILE.equals(scheme)) {
+      exifRotation = Utils.getFileExifRotation(uri.getPath());
+      result = decodeContentStream(uri, options);
+      request.loadedFrom = Request.LoadedFrom.DISK;
+    } else if (SCHEME_ANDROID_RESOURCE.equals(scheme)) {
+      result = decodeContentStream(uri, options);
+      request.loadedFrom = Request.LoadedFrom.DISK;
+    } else if (SCHEME_ASSETS.equals(scheme)) {
+      result = decodeAsset(uri, options);
+      request.loadedFrom = Request.LoadedFrom.DISK;
+    } else if (SCHEME_RESOURCES.equals(scheme)) {
+      result = decodeResource(uri, options);
       request.loadedFrom = Request.LoadedFrom.DISK;
     } else {
-      String scheme = uri.getScheme();
-      if (SCHEME_CONTENT.equals(scheme)) {
-        ContentResolver contentResolver = context.getContentResolver();
-        if (Contacts.CONTENT_URI.getHost().equals(uri.getHost()) //
-            && !uri.getPathSegments().contains(Contacts.Photo.CONTENT_DIRECTORY)) {
-          InputStream contactStream = Utils.getContactPhotoStream(contentResolver, uri);
-          result = decodeStream(contactStream, options);
-        } else {
-          exifRotation = Utils.getContentProviderExifRotation(contentResolver, uri);
-          result = decodeContentStream(uri, options);
+      Response response = null;
+      try {
+        response = loader.load(uri, request.retryCount == 0);
+        if (response == null) {
+          return null;
         }
-        request.loadedFrom = Request.LoadedFrom.DISK;
-      } else if (SCHEME_FILE.equals(scheme)) {
-        exifRotation = Utils.getFileExifRotation(uri.getPath());
-        result = decodeContentStream(uri, options);
-        request.loadedFrom = Request.LoadedFrom.DISK;
-      } else if (SCHEME_ANDROID_RESOURCE.equals(scheme)) {
-        result = decodeContentStream(uri, options);
-        request.loadedFrom = Request.LoadedFrom.DISK;
-      } else {
-        Response response = null;
-        try {
-          response = loader.load(uri, request.retryCount == 0);
-          if (response == null) {
-            return null;
-          }
-          result = decodeStream(response.stream, options);
-        } finally {
-          if (response != null && response.stream != null) {
-            try {
-              response.stream.close();
-            } catch (IOException ignored) {
-            }
+        result = decodeStream(response.stream, options);
+      } finally {
+        if (response != null && response.stream != null) {
+          try {
+            response.stream.close();
+          } catch (IOException ignored) {
           }
         }
-        request.loadedFrom = response.cached ? Request.LoadedFrom.DISK : Request.LoadedFrom.NETWORK;
       }
+      request.loadedFrom = response.cached ? Request.LoadedFrom.DISK : Request.LoadedFrom.NETWORK;
     }
 
     if (result == null) {

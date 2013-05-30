@@ -24,7 +24,7 @@ public class TargetRequestTest {
         throw new AssertionError();
       }
     };
-    TargetRequest tr = new TargetRequest(null, URL, 0, recycler, false, null, null, false);
+    TargetRequest tr = new TargetRequest(null, URL, recycler, false, null, null, false);
     tr.result = Bitmap.createBitmap(10, 10, null);
     try {
       tr.complete();
