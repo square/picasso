@@ -8,7 +8,6 @@ import android.widget.ImageView;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.jetbrains.annotations.TestOnly;
 
 import static com.squareup.picasso.Request.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Utils.checkNotMain;
@@ -35,12 +34,6 @@ public class RequestBuilder {
     this.picasso = picasso;
     this.uri = uri;
     this.resourceId = resourceId;
-  }
-
-  @TestOnly RequestBuilder() {
-    this.picasso = null;
-    this.uri = null;
-    this.resourceId = 0;
   }
 
   private PicassoBitmapOptions getOptions() {
