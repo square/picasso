@@ -48,6 +48,13 @@ final class Utils {
     // No instances.
   }
 
+  static void closeQuietly(InputStream stream) {
+    try {
+      stream.close();
+    } catch (IOException ignored) {
+    }
+  }
+
   static int getContentProviderExifRotation(ContentResolver contentResolver, Uri uri) {
     Cursor cursor = null;
     try {
