@@ -14,6 +14,9 @@ public interface Cache {
   /** Store an image in the cache for the specified {@code key}. */
   void set(String key, Bitmap bitmap);
 
+  /** Clear the cache */
+  void clear();
+
   /** Returns the current size of the cache in bytes. */
   int size();
 
@@ -28,6 +31,11 @@ public interface Cache {
 
     @Override public void set(String key, Bitmap bitmap) {
       // Ignore.
+    }
+
+    @Override
+    public void clear() {
+      // Nothing to clear.
     }
 
     @Override public int size() {
