@@ -268,12 +268,30 @@ public class Picasso {
   }
 
   Bitmap decodeStream(InputStream stream, PicassoBitmapOptions bitmapOptions) {
-    if (stream == null) return null;
-    if (bitmapOptions != null) {
-      // Ensure we are not doing only a bounds decode.
-      bitmapOptions.inJustDecodeBounds = false;
+    if (stream == null) {
+      return null;
     }
-    return BitmapFactory.decodeStream(stream, null, bitmapOptions);
+    try {
+      if (bitmapOptions != null && bitmapOptions.inJustDecodeBounds) {
+        // If the supplied stream is not mark-supported then fake it with a custom rewind stream.
+        boolean needsRewindStream = !stream.markSupported();
+        if (needsRewindStream) {
+          stream = new RewindInputStream(stream);
+        }
+        BitmapFactory.decodeStream(stream, null, bitmapOptions);
+
+        // Mark the stream to be replayed if we used a custom rewind stream. This allows us to
+        // buffer the bytes required to decode bounds and then replay during the real decode.
+        if (needsRewindStream) {
+          ((RewindInputStream) stream).rewind();
+        }
+
+        calculateInSampleSize(bitmapOptions);
+      }
+      return BitmapFactory.decodeStream(stream, null, bitmapOptions);
+    } finally {
+      Utils.closeQuietly(stream);
+    }
   }
 
   Bitmap decodeContentStream(Uri path, PicassoBitmapOptions bitmapOptions) throws IOException {
