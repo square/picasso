@@ -191,6 +191,10 @@ public class Picasso {
     return stats.createSnapshot();
   }
 
+  public void clearCache() {
+    cache.clear();
+  }
+
   void submit(Request request) {
     Object target = request.getTarget();
     if (target == null) return;
