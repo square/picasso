@@ -30,6 +30,7 @@ import static android.provider.ContactsContract.Contacts.Photo.CONTENT_DIRECTORY
 import static com.squareup.picasso.Picasso.Listener;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.api.Assertions.fail;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
@@ -1026,6 +1027,11 @@ public class PicassoTest {
     verify(picasso).retry(any(Request.class));
   }
 
+  @Test public void shouldReturnCacheObject() throws IOException {
+    Picasso picasso = create(LOADER_ANSWER, OOME_ANSWER);
+    assertEquals( cache, picasso.getCache());
+  }
+  
   private void retryRequest(Picasso picasso, Request request) throws Exception {
     picasso.submit(request);
 
