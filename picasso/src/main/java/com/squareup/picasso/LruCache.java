@@ -106,7 +106,7 @@ public class LruCache implements Cache {
   }
 
   /** Clear the cache. */
-  public final void evictAll() {
+  @Override public final void evictAll() {
     trimToSize(-1); // -1 will evict 0-sized elements
   }
 

@@ -20,6 +20,9 @@ public interface Cache {
   /** Returns the maximum size in bytes that the cache can hold. */
   int maxSize();
 
+  /** Evicts all the items from the cache. */
+  void evictAll();
+
   /** A cache which does not store any values. */
   Cache NONE = new Cache() {
     @Override public Bitmap get(String key) {
@@ -36,6 +39,9 @@ public interface Cache {
 
     @Override public int maxSize() {
       return 0;
+    }
+
+    @Override public void evictAll() {
     }
   };
 }

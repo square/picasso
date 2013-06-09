@@ -117,6 +117,10 @@ public class Picasso {
     cancelExistingRequest(target, null);
   }
 
+  public Cache getCache( ) {
+    return cache;
+  }
+
   /**
    * Start an image request using the specified URI.
    *
