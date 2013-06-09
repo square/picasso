@@ -1029,9 +1029,9 @@ public class PicassoTest {
 
   @Test public void shouldReturnCacheObject() throws IOException {
     Picasso picasso = create(LOADER_ANSWER, OOME_ANSWER);
-    assertEquals( cache, picasso.getCache());
+    assertEquals(cache, picasso.getCache());
   }
-  
+
   private void retryRequest(Picasso picasso, Request request) throws Exception {
     picasso.submit(request);
 

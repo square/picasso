@@ -120,7 +120,7 @@ public class Picasso {
   public Cache getCache( ) {
     return cache;
   }
-  
+
   /**
    * Start an image request using the specified URI.
    *
@@ -535,7 +535,6 @@ public class Picasso {
     }
     return singleton;
   }
-  
 
   /** Fluent API for creating {@link Picasso} instances. */
   @SuppressWarnings("UnusedDeclaration") // Public API.

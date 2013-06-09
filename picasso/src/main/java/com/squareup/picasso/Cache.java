@@ -19,7 +19,7 @@ public interface Cache {
 
   /** Returns the maximum size in bytes that the cache can hold. */
   int maxSize();
-  
+
   /** Evicts all the items from the cache. */
   void evictAll();
 
@@ -43,6 +43,5 @@ public interface Cache {
 
     @Override public void evictAll() {
     }
-    
   };
 }
