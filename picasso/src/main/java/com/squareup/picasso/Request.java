@@ -34,6 +34,7 @@ class Request implements Runnable {
   final PicassoBitmapOptions options;
   final List<Transformation> transformations;
   final boolean skipCache;
+  final boolean localCacheOnly;
   final boolean noFade;
   final int errorResId;
   final Drawable errorDrawable;
@@ -46,8 +47,8 @@ class Request implements Runnable {
   boolean retryCancelled;
 
   Request(Picasso picasso, Uri uri, int resourceId, ImageView imageView,
-      PicassoBitmapOptions options, List<Transformation> transformations, boolean skipCache,
-      boolean noFade, int errorResId, Drawable errorDrawable) {
+          PicassoBitmapOptions options, List<Transformation> transformations, boolean skipCache,
+          boolean localCacheOnly, boolean noFade, int errorResId, Drawable errorDrawable) {
     this.picasso = picasso;
     this.uri = uri;
     this.resourceId = resourceId;
@@ -55,6 +56,7 @@ class Request implements Runnable {
     this.options = options;
     this.transformations = transformations;
     this.skipCache = skipCache;
+    this.localCacheOnly = localCacheOnly;
     this.noFade = noFade;
     this.errorResId = errorResId;
     this.errorDrawable = errorDrawable;

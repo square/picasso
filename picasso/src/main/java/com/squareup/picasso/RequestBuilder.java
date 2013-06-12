@@ -24,6 +24,7 @@ public class RequestBuilder {
   PicassoBitmapOptions options;
   private List<Transformation> transformations;
   private boolean skipCache;
+  private boolean localCacheOnly;
   private boolean noFade;
   private boolean hasNullPlaceholder;
   private int placeholderResId;
@@ -263,7 +264,24 @@ public class RequestBuilder {
    * an image from the filesystem and uploading to a remote server).
    */
   public RequestBuilder skipCache() {
+    if (localCacheOnly) {
+      throw new IllegalStateException("Cannot skip the cache for requests against the local cache only.");
+    }
+
     skipCache = true;
+    return this;
+  }
+
+  /**
+   * For network loads indicates that this request should only try to load from the local memory
+   * and disk caches and not initiate any network requests.
+   */
+  public RequestBuilder localCacheOnly() {
+    if (skipCache) {
+      throw new IllegalStateException("Cannot specify local cache only for requests specified to skip cache.");
+    }
+
+    localCacheOnly = true;
     return this;
   }
 
@@ -277,8 +295,8 @@ public class RequestBuilder {
   public Bitmap get() throws IOException {
     checkNotMain();
     Request request =
-        new Request(picasso, uri, resourceId, null, options, transformations, skipCache, false, 0,
-            null);
+        new Request(picasso, uri, resourceId, null, options, transformations, skipCache, localCacheOnly,
+          false, 0, null);
     return picasso.resolveRequest(request);
   }
 
@@ -328,8 +346,8 @@ public class RequestBuilder {
     }
 
     Request request =
-        new Request(picasso, uri, resourceId, target, options, transformations, skipCache, noFade,
-            errorResId, errorDrawable);
+        new Request(picasso, uri, resourceId, target, options, transformations, skipCache, localCacheOnly,
+          noFade, errorResId, errorDrawable);
     picasso.submit(request);
   }
 

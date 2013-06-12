@@ -349,7 +349,7 @@ public class Picasso {
       } else {
         Response response = null;
         try {
-          response = loader.load(uri, request.retryCount == 0);
+          response = loader.load(uri, request.retryCount == 0 || request.localCacheOnly);
           if (response == null) {
             return null;
           }

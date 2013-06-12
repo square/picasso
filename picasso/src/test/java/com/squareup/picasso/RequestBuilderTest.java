@@ -168,4 +168,20 @@ public class RequestBuilderTest {
     } catch (IllegalArgumentException expected) {
     }
   }
+
+  @Test public void invalidCacheCombination() {
+    try {
+      new RequestBuilder().localCacheOnly().skipCache();
+      fail("Skip cache after local cache only should throw exception.");
+    }
+    catch (IllegalStateException expected) {
+    }
+
+    try {
+      new RequestBuilder().skipCache().localCacheOnly();
+      fail("Local cache only after skip cache should throw exception.");
+    }
+    catch (IllegalStateException expected) {
+    }
+  }
 }
