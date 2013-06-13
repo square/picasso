@@ -422,7 +422,7 @@ public class PicassoTest {
 
     Picasso picasso = create(LOADER_ANSWER, NULL_ANSWER);
     Request request =
-        new Request(picasso, URI_1, 0, target, null, null, false, false, 0, errorDrawable);
+        new Request(picasso, URI_1, 0, target, null, null, false, false, false, 0, errorDrawable);
     request = spy(request);
     picasso.submit(request);
     executor.flush();
@@ -438,7 +438,7 @@ public class PicassoTest {
 
     Picasso picasso = create(NULL_ANSWER, NULL_ANSWER);
     Request request =
-        new Request(picasso, FILE_1_URL, 0, target, null, null, false, false, 0, errorDrawable);
+        new Request(picasso, FILE_1_URL, 0, target, null, null, false, false, false, 0, errorDrawable);
     request = spy(request);
     picasso.submit(request);
     executor.flush();
@@ -454,7 +454,7 @@ public class PicassoTest {
 
     Picasso picasso = create(NULL_ANSWER, NULL_ANSWER);
     Request request =
-        new Request(picasso, CONTENT_1_URL, 0, target, null, null, false, false, 0, errorDrawable);
+        new Request(picasso, CONTENT_1_URL, 0, target, null, null, false, false, false, 0, errorDrawable);
     request = spy(request);
     picasso.submit(request);
     executor.flush();
@@ -469,7 +469,7 @@ public class PicassoTest {
     Picasso picasso = create(IO_EXCEPTION_ANSWER, BITMAP1_ANSWER);
     ImageView target = mock(ImageView.class);
 
-    Request request = new Request(picasso, URI_1, 0, target, null, null, false, false, 0, null);
+    Request request = new Request(picasso, URI_1, 0, target, null, null, false, false, false, 0, null);
     request = spy(request);
 
     retryRequest(picasso, request);
@@ -483,7 +483,7 @@ public class PicassoTest {
     ImageView target = mock(ImageView.class);
 
     Request request =
-        new Request(picasso, Uri.fromFile(FILE_1), 0, target, null, null, false, false, 0, null);
+        new Request(picasso, Uri.fromFile(FILE_1), 0, target, null, null, false, false, false, 0, null);
     request = spy(request);
 
     retryRequest(picasso, request);
@@ -499,7 +499,7 @@ public class PicassoTest {
     ImageView target = mock(ImageView.class);
 
     Request request =
-        new Request(picasso, CONTENT_1_URL, 0, target, null, null, false, false, 0, null);
+        new Request(picasso, CONTENT_1_URL, 0, target, null, null, false, false, false, 0, null);
     request = spy(request);
 
     retryRequest(picasso, request);
@@ -514,7 +514,7 @@ public class PicassoTest {
     ImageView target = mock(ImageView.class);
 
     Request request =
-        new Request(picasso, URI_1, 0, target, null, null, false, false, 0, errorDrawable);
+        new Request(picasso, URI_1, 0, target, null, null, false, false, false, 0, errorDrawable);
 
     retryRequest(picasso, request);
     verify(target).setImageDrawable(errorDrawable);
@@ -526,7 +526,7 @@ public class PicassoTest {
     Picasso picasso = create(IO_EXCEPTION_ANSWER, BITMAP1_ANSWER);
     ImageView target = mock(ImageView.class);
 
-    Request request = new Request(picasso, URI_1, 0, target, null, null, false, false, 0, null);
+    Request request = new Request(picasso, URI_1, 0, target, null, null, false, false, false, 0, null);
 
     retryRequest(picasso, request);
     assertThat(picasso.targetsToRequests).isEmpty();
@@ -700,7 +700,7 @@ public class PicassoTest {
     transformations.add(resize);
 
     Request request =
-        new Request(picasso, URI_1, 0, target, null, transformations, false, false, 0, null);
+        new Request(picasso, URI_1, 0, target, null, transformations, false, false, false, 0, null);
     picasso.submit(request);
 
     executor.flush();
@@ -751,7 +751,7 @@ public class PicassoTest {
     transformations.add(resize);
 
     Request request =
-        new Request(picasso, URI_1, 0, target, null, transformations, false, false, 0, null);
+        new Request(picasso, URI_1, 0, target, null, transformations, false, false, false, 0, null);
     picasso.submit(request);
 
     executor.flush();
@@ -762,6 +762,17 @@ public class PicassoTest {
     inOrder.verify(resize).transform(any(Bitmap.class));
 
     assertThat(picasso.targetsToRequests).isEmpty();
+  }
+
+  @Test public void verifyLocalCacheOnlyCorrectLoaderCall() throws Exception {
+    ImageView target = mock(ImageView.class);
+
+    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
+    picasso.load(URI_1).localCacheOnly().into(target);
+    executor.flush();
+
+    verify(loader).load(URI_1, true);
+    verifyNoMoreInteractions(loader);
   }
 
   @Test public void whenRequestSkipsCacheDoesNotCache() throws Exception {
@@ -888,7 +899,7 @@ public class PicassoTest {
   @Test public void cancelRequestBeforeExecution() throws Exception {
     Picasso picasso = create(NULL_ANSWER, NULL_ANSWER);
     ImageView target = mock(ImageView.class);
-    Request request = new Request(picasso, URI_1, 0, target, null, null, false, false, 0, null);
+    Request request = new Request(picasso, URI_1, 0, target, null, null, false, false, false, 0, null);
     picasso.submit(request);
     assertThat(picasso.targetsToRequests).hasSize(1);
     assertThat(request.future.isCancelled()).isFalse();
@@ -914,7 +925,7 @@ public class PicassoTest {
   @Test public void cancelRequestBetweenRetries() throws Exception {
     Picasso picasso = create(IO_EXCEPTION_ANSWER, NULL_ANSWER);
     ImageView target = mock(ImageView.class);
-    Request request = new Request(picasso, URI_1, 0, target, null, null, false, false, 0, null);
+    Request request = new Request(picasso, URI_1, 0, target, null, null, false, false, false, 0, null);
     picasso.submit(request);
     assertThat(picasso.targetsToRequests).hasSize(1);
     assertThat(request.future.isCancelled()).isFalse();
@@ -931,7 +942,7 @@ public class PicassoTest {
   @Test public void cancelRequestAfterResult() throws Exception {
     Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
     ImageView target = mock(ImageView.class);
-    Request request = new Request(picasso, URI_1, 0, target, null, null, false, false, 0, null);
+    Request request = new Request(picasso, URI_1, 0, target, null, null, false, false, false, 0, null);
     picasso.submit(request);
     assertThat(picasso.targetsToRequests).hasSize(1);
     pauseMainLooper();
