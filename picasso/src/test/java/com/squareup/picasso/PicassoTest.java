@@ -131,11 +131,6 @@ public class PicassoTest {
   @Test public void loadDoesNotAcceptInvalidInput() throws IOException {
     Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
     try {
-      picasso.load((String) null);
-      fail("Null URL should throw exception.");
-    } catch (IllegalArgumentException expected) {
-    }
-    try {
       picasso.load("");
       fail("Empty URL should throw exception.");
     } catch (IllegalArgumentException expected) {
@@ -143,11 +138,6 @@ public class PicassoTest {
     try {
       picasso.load("      ");
       fail("Empty URL should throw exception.");
-    } catch (IllegalArgumentException expected) {
-    }
-    try {
-      picasso.load((File) null);
-      fail("Null File should throw exception.");
     } catch (IllegalArgumentException expected) {
     }
     try {
@@ -162,22 +152,6 @@ public class PicassoTest {
     Picasso.with(context);
     assertThat(Picasso.singleton).isNotNull();
     Picasso.singleton = null;
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void loadNullStringIsGuarded() throws Exception {
-    ImageView target = mock(ImageView.class);
-
-    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
-    picasso.load((String) null).into(target);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void loadNullFileIsGuarded() throws Exception {
-    ImageView target = mock(ImageView.class);
-
-    Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
-    picasso.load((File) null).into(target);
   }
 
   @Test(expected = IllegalArgumentException.class)
