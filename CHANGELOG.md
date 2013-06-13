@@ -1,7 +1,16 @@
 Change Log
 ==========
 
-Version 1.0.2 *(2012-05-23)*
+Version 1.1.0 *(2013-06-13)*
+----------------------------
+
+ * `load` method can now take a `Uri`.
+ * Support loading contact photos given a contact `Uri`.
+ * Add `centerInside()` image transformation.
+ * Fix: Prevent network stream decodes from blocking each other.
+
+
+Version 1.0.2 *(2013-05-23)*
 ----------------------------
 
  * Auto-scale disk cache based on file system size.
