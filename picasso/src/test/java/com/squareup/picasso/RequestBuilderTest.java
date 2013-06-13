@@ -1,14 +1,21 @@
 package com.squareup.picasso;
 
+import android.R;
 import android.graphics.drawable.ColorDrawable;
 import android.widget.ImageView;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.api.Assertions.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -167,5 +174,35 @@ public class RequestBuilderTest {
       fail("Null Target should throw exception.");
     } catch (IllegalArgumentException expected) {
     }
+  }
+
+  @Test public void nullResourceDoesNotSubmitRequest() {
+    Picasso picasso = mock(Picasso.class);
+    ImageView target = mock(ImageView.class);
+
+    new RequestBuilder(picasso, null, 0).into(target);
+
+    verifyZeroInteractions(picasso);
+    verifyZeroInteractions(target);
+  }
+
+  @Test public void nullResourceWithPlaceholderDoesNotSubmitAndSetsPlaceholder() {
+    Picasso picasso = spy(new Picasso(Robolectric.application, null, null, null, null, null));
+    ImageView target = mock(ImageView.class);
+
+    new RequestBuilder(picasso, null, 0).placeholder(R.drawable.ic_dialog_map).into(target);
+
+    verifyZeroInteractions(picasso);
+    verify(target).setImageDrawable(any(PicassoDrawable.class));
+  }
+
+  @Test public void nullResourceWithNullPlaceholderDoesNotSubmitAndClears() {
+    Picasso picasso = mock(Picasso.class);
+    ImageView target = mock(ImageView.class);
+
+    new RequestBuilder(picasso, null, 0).placeholder(null).into(target);
+
+    verifyZeroInteractions(picasso);
+    verify(target).setImageDrawable(null);
   }
 }

@@ -119,6 +119,9 @@ public class Picasso {
 
   /**
    * Start an image request using the specified URI.
+   * <p>
+   * Passing {@code null} as a {@code uri} will not trigger any request but will set a placeholder,
+   * if one is specified.
    *
    * @see #load(File)
    * @see #load(String)
@@ -135,13 +138,19 @@ public class Picasso {
    * This path may be a remote URL, file resource (prefixed with {@code file:}), content resource
    * (prefixed with {@code content:}), or android resource (prefixed with {@code
    * android.resource:}.
+   * <p>
+   * Passing {@code null} as a {@code path} will not trigger any request but will set a placeholder,
+   * if one is specified.
    *
    * @see #load(Uri)
    * @see #load(File)
    * @see #load(int)
    */
   public RequestBuilder load(String path) {
-    if (path == null || path.trim().length() == 0) {
+    if (path == null) {
+      return new RequestBuilder(this, null, 0);
+    }
+    if (path.trim().length() == 0) {
       throw new IllegalArgumentException("Path must not be empty.");
     }
     return load(Uri.parse(path));
@@ -150,6 +159,9 @@ public class Picasso {
   /**
    * Start an image request using the specified image file. This is a convenience method for
    * calling {@link #load(Uri)}.
+   * <p>
+   * Passing {@code null} as a {@code file} will not trigger any request but will set a placeholder,
+   * if one is specified.
    *
    * @see #load(Uri)
    * @see #load(String)
@@ -157,7 +169,7 @@ public class Picasso {
    */
   public RequestBuilder load(File file) {
     if (file == null) {
-      throw new IllegalArgumentException("File must not be null.");
+      return new RequestBuilder(this, null, 0);
     }
     return load(Uri.fromFile(file));
   }

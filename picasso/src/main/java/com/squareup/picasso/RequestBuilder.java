@@ -312,12 +312,17 @@ public class RequestBuilder {
       throw new IllegalArgumentException("Target must not be null.");
     }
 
-    // Look for the target bitmap in the memory cache without moving to a background thread.
-    String requestKey = createKey(uri, resourceId, options, transformations);
-    Bitmap bitmap = picasso.quickMemoryCacheCheck(target, uri, requestKey);
-    if (bitmap != null) {
-      PicassoDrawable.setBitmap(target, picasso.context, bitmap, MEMORY, noFade, picasso.debugging);
-      return;
+    boolean hasItemToLoad = uri != null || resourceId != 0;
+
+    if (hasItemToLoad) {
+      // Look for the target bitmap in the memory cache without moving to a background thread.
+      String requestKey = createKey(uri, resourceId, options, transformations);
+      Bitmap bitmap = picasso.quickMemoryCacheCheck(target, uri, requestKey);
+      if (bitmap != null) {
+        PicassoDrawable.setBitmap(target, picasso.context, bitmap, MEMORY, noFade,
+            picasso.debugging);
+        return;
+      }
     }
 
     if (placeholderResId != 0 || placeholderDrawable != null) {
@@ -327,10 +332,12 @@ public class RequestBuilder {
       target.setImageDrawable(null);
     }
 
-    Request request =
-        new Request(picasso, uri, resourceId, target, options, transformations, skipCache, noFade,
-            errorResId, errorDrawable);
-    picasso.submit(request);
+    if (hasItemToLoad) {
+      Request request =
+          new Request(picasso, uri, resourceId, target, options, transformations, skipCache, noFade,
+              errorResId, errorDrawable);
+      picasso.submit(request);
+    }
   }
 
   private void makeTargetRequest(Target target, boolean strong) {
