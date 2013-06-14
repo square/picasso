@@ -210,7 +210,7 @@ public class RequestBuilderTest {
 
     new RequestBuilder(picasso, null, 0).fetch(target);
 
-    verifyZeroInteractions(picasso);
+    verify(picasso).cancelRequest(target);
     verifyZeroInteractions(target);
   }
 
@@ -220,7 +220,7 @@ public class RequestBuilderTest {
 
     new RequestBuilder(picasso, null, 0).into(target);
 
-    verifyZeroInteractions(picasso);
+    verify(picasso).cancelRequest(target);
     verifyZeroInteractions(target);
   }
 
@@ -230,7 +230,7 @@ public class RequestBuilderTest {
 
     new RequestBuilder(picasso, null, 0).into(target);
 
-    verifyZeroInteractions(picasso);
+    verify(picasso).cancelRequest(target);
     verifyZeroInteractions(target);
   }
 
@@ -240,7 +240,7 @@ public class RequestBuilderTest {
 
     new RequestBuilder(picasso, null, 0).placeholder(R.drawable.ic_dialog_map).into(target);
 
-    verifyZeroInteractions(picasso);
+    verify(picasso).cancelRequest(target);
     verify(target).setImageDrawable(any(PicassoDrawable.class));
   }
 
@@ -250,7 +250,7 @@ public class RequestBuilderTest {
 
     new RequestBuilder(picasso, null, 0).placeholder(null).into(target);
 
-    verifyZeroInteractions(picasso);
+    verify(picasso).cancelRequest(target);
     verify(target).setImageDrawable(null);
   }
 }
