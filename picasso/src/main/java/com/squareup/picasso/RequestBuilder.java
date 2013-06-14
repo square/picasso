@@ -276,6 +276,11 @@ public class RequestBuilder {
   /** Synchronously fulfill this request. Must not be called from the main thread. */
   public Bitmap get() throws IOException {
     checkNotMain();
+
+    if (uri == null && resourceId == 0) {
+      return null;
+    }
+
     Request request =
         new Request(picasso, uri, resourceId, null, options, transformations, skipCache, false, 0,
             null);
@@ -343,6 +348,9 @@ public class RequestBuilder {
   private void makeTargetRequest(Target target, boolean strong) {
     if (target == null) {
       throw new IllegalArgumentException("Target must not be null.");
+    }
+    if (uri == null && resourceId == 0) {
+      return;
     }
 
     String requestKey = createKey(uri, resourceId, options, transformations);
