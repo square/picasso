@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+Version 1.1.1 *(2013-06-14)*
+----------------------------
+
+ * Fix: Ensure old requests for targets are cancelled when using a `null` image.
+
+
 Version 1.1.0 *(2013-06-13)*
 ----------------------------
 
