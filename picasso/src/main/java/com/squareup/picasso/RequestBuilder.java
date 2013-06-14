@@ -342,6 +342,8 @@ public class RequestBuilder {
           new Request(picasso, uri, resourceId, target, options, transformations, skipCache, noFade,
               errorResId, errorDrawable);
       picasso.submit(request);
+    } else {
+      picasso.cancelRequest(target);
     }
   }
 
@@ -350,6 +352,7 @@ public class RequestBuilder {
       throw new IllegalArgumentException("Target must not be null.");
     }
     if (uri == null && resourceId == 0) {
+      picasso.cancelRequest(target);
       return;
     }
 
