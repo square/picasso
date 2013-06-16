@@ -233,9 +233,15 @@ final class Utils {
   }
 
   public static InputStream getContactPhotoStream(ContentResolver contentResolver, Uri uri) {
+    if (null == uri) {
+      return null;
+    }
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
       if (uri.toString().startsWith(ContactsContract.Contacts.CONTENT_LOOKUP_URI.toString())) {
         uri = ContactsContract.Contacts.lookupContact(contentResolver, uri);
+      }
+      if (null == uri) {
+        return null;
       }
       return openContactPhotoInputStream(contentResolver, uri);
     } else {
@@ -278,6 +284,9 @@ final class Utils {
   @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
   private static class ContactPhotoStreamIcs {
     static InputStream get(ContentResolver contentResolver, Uri uri) {
+      if (null == uri) {
+        return null;
+      }
       return openContactPhotoInputStream(contentResolver, uri, true);
     }
   }
