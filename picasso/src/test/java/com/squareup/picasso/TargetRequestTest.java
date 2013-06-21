@@ -8,6 +8,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -24,7 +25,8 @@ public class TargetRequestTest {
         throw new AssertionError();
       }
     };
-    TargetRequest tr = new TargetRequest(null, URL, 0, recycler, false, null, null, false);
+    Picasso picasso = mock(Picasso.class);
+    TargetRequest tr = new TargetRequest(picasso, URL, 0, recycler, false, null, null, false);
     tr.result = Bitmap.createBitmap(10, 10, null);
     try {
       tr.complete();

@@ -10,10 +10,14 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.Process;
+import android.util.SparseArray;
 import android.widget.ImageView;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -23,6 +27,7 @@ import java.util.concurrent.Executors;
 import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentResolver.SCHEME_FILE;
+import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static android.provider.ContactsContract.Contacts;
 import static com.squareup.picasso.Loader.Response;
 import static com.squareup.picasso.Utils.calculateInSampleSize;
@@ -38,6 +43,7 @@ public class Picasso {
   private static final int REQUEST_COMPLETE = 1;
   private static final int REQUEST_RETRY = 2;
   private static final int REQUEST_DECODE_FAILED = 3;
+  private static final int REQUEST_CANCEL_GC = 4;
 
   /**
    * Global lock for bitmap decoding to ensure that we are only are decoding one at a time. Since
@@ -58,8 +64,14 @@ public class Picasso {
   // TODO This should be static.
   final Handler handler = new Handler(Looper.getMainLooper()) {
     @Override public void handleMessage(Message msg) {
-      Request request = (Request) msg.obj;
-      if (request.future.isCancelled() || request.retryCancelled) {
+      Request request;
+      if (msg.arg1 > 0) {
+        request = requestSparseArray.get(msg.arg1);
+      } else {
+        request = (Request) msg.obj;
+      }
+
+      if (request == null || request.future.isCancelled() || request.retryCancelled) {
         return;
       }
 
@@ -67,6 +79,7 @@ public class Picasso {
       switch (msg.what) {
         case REQUEST_COMPLETE:
           picasso.targetsToRequests.remove(request.getTarget());
+          picasso.requestSparseArray.remove(request.getTargetRef().hashCode());
           request.complete();
           break;
 
@@ -76,6 +89,10 @@ public class Picasso {
 
         case REQUEST_DECODE_FAILED:
           picasso.error(request);
+          break;
+
+        case REQUEST_CANCEL_GC:
+          cancelExistingRequest(request, null);
           break;
 
         default:
@@ -93,6 +110,9 @@ public class Picasso {
   final Listener listener;
   final Stats stats;
   final Map<Object, Request> targetsToRequests;
+  final SparseArray<Request> requestSparseArray;
+  final ReferenceQueue<? super ImageView> imageReferenceQueue;
+  final ReferenceQueue<? super Target> targetReferenceQueue;
 
   boolean debugging;
 
@@ -105,6 +125,12 @@ public class Picasso {
     this.listener = listener;
     this.stats = stats;
     this.targetsToRequests = new WeakHashMap<Object, Request>();
+    this.requestSparseArray = new SparseArray<Request>();
+    this.imageReferenceQueue = new ReferenceQueue<ImageView>();
+    this.targetReferenceQueue = new ReferenceQueue<Target>();
+
+    new CleanupThread(imageReferenceQueue, handler).start();
+    new CleanupThread(targetReferenceQueue, handler).start();
   }
 
   /** Cancel any existing requests for the specified target {@link ImageView}. */
@@ -139,8 +165,8 @@ public class Picasso {
    * (prefixed with {@code content:}), or android resource (prefixed with {@code
    * android.resource:}.
    * <p>
-   * Passing {@code null} as a {@code path} will not trigger any request but will set a placeholder,
-   * if one is specified.
+   * Passing {@code null} as a {@code path} will not trigger any request but will set a
+   * placeholder, if one is specified.
    *
    * @see #load(Uri)
    * @see #load(File)
@@ -160,8 +186,8 @@ public class Picasso {
    * Start an image request using the specified image file. This is a convenience method for
    * calling {@link #load(Uri)}.
    * <p>
-   * Passing {@code null} as a {@code file} will not trigger any request but will set a placeholder,
-   * if one is specified.
+   * Passing {@code null} as a {@code file} will not trigger any request but will set a
+   * placeholder, if one is specified.
    *
    * @see #load(Uri)
    * @see #load(String)
@@ -210,6 +236,8 @@ public class Picasso {
     cancelExistingRequest(target, request.uri);
 
     targetsToRequests.put(target, request);
+    requestSparseArray.put(request.getTargetRef().hashCode(), request);
+
     request.future = service.submit(request);
   }
 
@@ -270,12 +298,14 @@ public class Picasso {
       submit(request);
     } else {
       targetsToRequests.remove(request.getTarget());
+      requestSparseArray.remove(request.getTargetRef().hashCode());
       request.error();
     }
   }
 
   void error(Request request) {
     targetsToRequests.remove(request.getTarget());
+    requestSparseArray.remove(request.getTargetRef().hashCode());
     request.error();
   }
 
@@ -307,11 +337,16 @@ public class Picasso {
 
   private void cancelExistingRequest(Object target, Uri uri) {
     Request existing = targetsToRequests.remove(target);
-    if (existing != null) {
-      if (!existing.future.isDone()) {
-        existing.future.cancel(true);
-      } else if (uri == null || !uri.equals(existing.uri)) {
-        existing.retryCancelled = true;
+    cancelExistingRequest(existing, uri);
+  }
+
+  private void cancelExistingRequest(Request request, Uri uri) {
+    if (request != null) {
+      requestSparseArray.remove(request.getTargetRef().hashCode());
+      if (!request.future.isDone()) {
+        request.future.cancel(true);
+      } else if (uri == null || !uri.equals(request.uri)) {
+        request.retryCancelled = true;
       }
     }
   }
@@ -408,6 +443,30 @@ public class Picasso {
     }
 
     return result;
+  }
+
+  static class CleanupThread extends Thread {
+
+    private final ReferenceQueue<?> referenceQueue;
+    private final Handler handler;
+
+    CleanupThread(ReferenceQueue<?> referenceQueue, Handler handler) {
+      this.referenceQueue = referenceQueue;
+      this.handler = handler;
+      setDaemon(true);
+    }
+
+    public void run() {
+      Process.setThreadPriority(THREAD_PRIORITY_BACKGROUND);
+      while (true) {
+        try {
+          Reference<?> remove = referenceQueue.remove();
+          handler.sendMessage(handler.obtainMessage(REQUEST_CANCEL_GC, remove.hashCode(), 0));
+        } catch (InterruptedException e) {
+          break;
+        }
+      }
+    }
   }
 
   static Bitmap transformResult(PicassoBitmapOptions options, Bitmap result, int exifRotation) {

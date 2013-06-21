@@ -176,6 +176,7 @@ public class PicassoTest {
     PicassoDrawable actualDrawable = captor.getValue();
     assertThat(actualDrawable.bitmapDrawable.getBitmap()).isEqualTo(bitmap1);
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void loadIntoTarget() throws Exception {
@@ -188,6 +189,7 @@ public class PicassoTest {
     executor.flush();
     verify(target).onSuccess(bitmap1);
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void fetchIntoStrongTarget() throws Exception {
@@ -200,6 +202,7 @@ public class PicassoTest {
     executor.flush();
     verify(target).onSuccess(bitmap1);
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void loadFileIntoImageView() throws Exception {
@@ -218,6 +221,7 @@ public class PicassoTest {
     assertThat(actualDrawable.bitmapDrawable.getBitmap()).isEqualTo(bitmap1);
 
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void loadFileIntoTarget() throws Exception {
@@ -230,6 +234,7 @@ public class PicassoTest {
     executor.flush();
     verify(target).onSuccess(bitmap1);
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void loadFileUrlIntoImageView() throws Exception {
@@ -248,6 +253,7 @@ public class PicassoTest {
     assertThat(actualDrawable.bitmapDrawable.getBitmap()).isEqualTo(bitmap1);
 
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void loadFileUrlWithoutAuthorityIntoImageView() throws Exception {
@@ -266,6 +272,7 @@ public class PicassoTest {
     assertThat(actualDrawable.bitmapDrawable.getBitmap()).isEqualTo(bitmap1);
 
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void loadFileUrlIntoTarget() throws Exception {
@@ -278,6 +285,7 @@ public class PicassoTest {
     executor.flush();
     verify(target).onSuccess(bitmap1);
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void loadContentUrlIntoImageView() throws Exception {
@@ -296,6 +304,7 @@ public class PicassoTest {
     assertThat(actualDrawable.bitmapDrawable.getBitmap()).isEqualTo(bitmap1);
 
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void loadContentUrlIntoTarget() throws Exception {
@@ -308,6 +317,7 @@ public class PicassoTest {
     executor.flush();
     verify(target).onSuccess(bitmap1);
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void loadResourceIntoImageView() throws Exception {
@@ -336,6 +346,7 @@ public class PicassoTest {
     executor.flush();
     verify(target).onSuccess(bitmap1);
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void loadIntoImageViewWithPlaceHolderDrawable() throws Exception {
@@ -358,6 +369,7 @@ public class PicassoTest {
     assertThat(capturedActual.bitmapDrawable.getBitmap()).isEqualTo(bitmap1);
 
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void loadIntoImageViewWithPlaceHolderResource() throws Exception {
@@ -377,6 +389,7 @@ public class PicassoTest {
 
     assertThat(capturedActual.bitmapDrawable.getBitmap()).isEqualTo(bitmap1);
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void loadIntoImageViewCachesResult() throws Exception {
@@ -389,6 +402,7 @@ public class PicassoTest {
     executor.flush();
     verify(cache).set(key, bitmap1);
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void whenDecoderReturnsNullDoesNotCallComplete() throws Exception {
@@ -405,6 +419,7 @@ public class PicassoTest {
     verify(request).error();
     verify(target).setImageDrawable(errorDrawable);
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void whenFileDecoderReturnsNullDoesNotCallComplete() throws Exception {
@@ -421,6 +436,7 @@ public class PicassoTest {
     verify(request).error();
     verify(target).setImageDrawable(errorDrawable);
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void whenContentResolverReturnsNullDoesNotCallComplete() throws Exception {
@@ -437,6 +453,7 @@ public class PicassoTest {
     verify(request).error();
     verify(target).setImageDrawable(errorDrawable);
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void loadIntoImageViewRetriesThreeTimesBeforeInvokingError() throws Exception {
@@ -450,6 +467,7 @@ public class PicassoTest {
     verify(picasso, times(3)).retry(request);
     verify(request).error();
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void loadFileIntoImageViewRetriesThreeTimesBeforeInvokingError() throws Exception {
@@ -465,6 +483,7 @@ public class PicassoTest {
     verify(request).error();
     verifyZeroInteractions(loader);
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void loadContentIntoImageViewRetriesThreeTimesBeforeInvokingError()
@@ -481,6 +500,7 @@ public class PicassoTest {
     verify(request).error();
     verifyZeroInteractions(loader);
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void withErrorDrawableAndFailsRequestSetsErrorDrawable() throws Exception {
@@ -494,6 +514,7 @@ public class PicassoTest {
     verify(target).setImageDrawable(errorDrawable);
     verifyNoMoreInteractions(target);
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void whenImageViewRequestFailsCleansUpTargetMap() throws Exception {
@@ -504,6 +525,7 @@ public class PicassoTest {
 
     retryRequest(picasso, request);
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void loadIntoImageViewQuickCacheHit() throws Exception {
@@ -524,6 +546,7 @@ public class PicassoTest {
 
     assertThat(executor.tasks).isEmpty();
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void whenImageViewRequestCompletesCleansUpTargetMap() throws Exception {
@@ -535,6 +558,7 @@ public class PicassoTest {
     assertThat(picasso.targetsToRequests.size()).isEqualTo(1);
     executor.flush();
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void whenTargetRequestFailsCleansUpTargetMap() throws Exception {
@@ -543,6 +567,7 @@ public class PicassoTest {
 
     retryRequest(picasso, request);
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void whenTargetRequestCompletesCleansUpTargetMap() throws Exception {
@@ -554,6 +579,7 @@ public class PicassoTest {
     assertThat(picasso.targetsToRequests.size()).isEqualTo(1);
     executor.flush();
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void loadIntoImageViewWithDifferentUriRecyclesCorrectly() throws Exception {
@@ -572,6 +598,7 @@ public class PicassoTest {
     assertThat(actualDrawable.bitmapDrawable.getBitmap()).isEqualTo(bitmap2);
 
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void doesNotDecodeAgainIfBitmapAlreadyInCache() throws Exception {
@@ -601,6 +628,7 @@ public class PicassoTest {
     verify(picasso.loader, times(1)).load(URI_1, false);
 
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void doesNotDecodeAgainIfBitmapWithTransformationsAlreadyInCache() throws Exception {
@@ -640,6 +668,7 @@ public class PicassoTest {
     verify(picasso.loader, times(1)).load(URI_1, false);
 
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void withRecycledRetryRequestStopsRetrying() throws Exception {
@@ -663,6 +692,7 @@ public class PicassoTest {
     assertThat(actualDrawable.get(1).bitmapDrawable.getBitmap()).isEqualTo(bitmap1);
 
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void loadIntoImageViewWithTransformations() throws Exception {
@@ -682,6 +712,7 @@ public class PicassoTest {
     verify(resize).transform(bitmap1);
 
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void reloadsTransformedBitmapFromCache() throws Exception {
@@ -703,6 +734,7 @@ public class PicassoTest {
 
     verify(loader, never()).load(URI_1, false);
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void loadIntoImageViewWithMultipleTransformations() throws Exception {
@@ -736,6 +768,7 @@ public class PicassoTest {
     inOrder.verify(resize).transform(any(Bitmap.class));
 
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void whenRequestSkipsCacheDoesNotCache() throws Exception {
@@ -747,6 +780,7 @@ public class PicassoTest {
 
     verify(cache, never()).set(anyString(), any(Bitmap.class));
     assertThat(picasso.targetsToRequests).isEmpty();
+    assertThat(picasso.requestSparseArray.size()).isEqualTo(0);
   }
 
   @Test public void builderInvalidLoader() throws Exception {

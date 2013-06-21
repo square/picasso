@@ -51,7 +51,7 @@ class Request implements Runnable {
     this.picasso = picasso;
     this.uri = uri;
     this.resourceId = resourceId;
-    this.target = new WeakReference<ImageView>(imageView);
+    this.target = new WeakReference<ImageView>(imageView, picasso.imageReferenceQueue);
     this.options = options;
     this.transformations = transformations;
     this.skipCache = skipCache;
@@ -64,6 +64,10 @@ class Request implements Runnable {
 
   Object getTarget() {
     return target.get();
+  }
+
+  WeakReference<ImageView> getTargetRef() {
+    return target;
   }
 
   void complete() {
