@@ -37,8 +37,9 @@ final class MarkableInputStream extends InputStream {
    * {@code readLimit} bytes from this stream.
    */
   public long savePosition(int readLimit) {
-    if (limit < offset + readLimit) {
-      setLimit(offset + readLimit);
+    long offsetLimit = offset + readLimit;
+    if (limit < offsetLimit) {
+      setLimit(offsetLimit);
     }
     return offset;
   }
