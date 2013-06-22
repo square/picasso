@@ -16,7 +16,6 @@ import android.widget.ImageView;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +29,7 @@ import static android.content.ContentResolver.SCHEME_FILE;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static android.provider.ContactsContract.Contacts;
 import static com.squareup.picasso.Loader.Response;
+import static com.squareup.picasso.Request.IdWeakReference;
 import static com.squareup.picasso.Utils.calculateInSampleSize;
 
 /**
@@ -79,7 +79,7 @@ public class Picasso {
       switch (msg.what) {
         case REQUEST_COMPLETE:
           picasso.targetsToRequests.remove(request.getTarget());
-          picasso.requestSparseArray.remove(request.getTargetRef().hashCode());
+          picasso.requestSparseArray.remove(request.id);
           request.complete();
           break;
 
@@ -236,7 +236,7 @@ public class Picasso {
     cancelExistingRequest(target, request.uri);
 
     targetsToRequests.put(target, request);
-    requestSparseArray.put(request.getTargetRef().hashCode(), request);
+    requestSparseArray.put(request.id, request);
 
     request.future = service.submit(request);
   }
@@ -298,14 +298,14 @@ public class Picasso {
       submit(request);
     } else {
       targetsToRequests.remove(request.getTarget());
-      requestSparseArray.remove(request.getTargetRef().hashCode());
+      requestSparseArray.remove(request.id);
       request.error();
     }
   }
 
   void error(Request request) {
     targetsToRequests.remove(request.getTarget());
-    requestSparseArray.remove(request.getTargetRef().hashCode());
+    requestSparseArray.remove(request.id);
     request.error();
   }
 
@@ -342,7 +342,7 @@ public class Picasso {
 
   private void cancelExistingRequest(Request request, Uri uri) {
     if (request != null) {
-      requestSparseArray.remove(request.getTargetRef().hashCode());
+      requestSparseArray.remove(request.id);
       if (!request.future.isDone()) {
         request.future.cancel(true);
       } else if (uri == null || !uri.equals(request.uri)) {
@@ -446,7 +446,6 @@ public class Picasso {
   }
 
   static class CleanupThread extends Thread {
-
     private final ReferenceQueue<?> referenceQueue;
     private final Handler handler;
 
@@ -460,10 +459,16 @@ public class Picasso {
       Process.setThreadPriority(THREAD_PRIORITY_BACKGROUND);
       while (true) {
         try {
-          Reference<?> remove = referenceQueue.remove();
-          handler.sendMessage(handler.obtainMessage(REQUEST_CANCEL_GC, remove.hashCode(), 0));
+          IdWeakReference<?> remove = (IdWeakReference<?>) referenceQueue.remove();
+          handler.sendMessage(handler.obtainMessage(REQUEST_CANCEL_GC, remove.requestId, 0));
         } catch (InterruptedException e) {
           break;
+        } catch (final Exception e) {
+          handler.post(new Runnable() {
+            @Override public void run() {
+              new RuntimeException(e);
+            }
+          });
         }
       }
     }

@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.widget.ImageView;
+import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -14,6 +15,9 @@ import static com.squareup.picasso.Utils.createKey;
 
 class Request implements Runnable {
   static final int DEFAULT_RETRY_COUNT = 2;
+
+  // Unique request ID. Always incremented on the main thread.
+  private static int nextId = 0;
 
   enum LoadedFrom {
     MEMORY(Color.GREEN),
@@ -27,6 +31,16 @@ class Request implements Runnable {
     }
   }
 
+  static class IdWeakReference<T> extends WeakReference<T> {
+    final int requestId;
+
+    public IdWeakReference(int requestId, T referent, ReferenceQueue<? super T> q) {
+      super(referent, q);
+      this.requestId = requestId;
+    }
+  }
+
+  final int id;
   final Picasso picasso;
   final Uri uri;
   final int resourceId;
@@ -48,10 +62,11 @@ class Request implements Runnable {
   Request(Picasso picasso, Uri uri, int resourceId, ImageView imageView,
       PicassoBitmapOptions options, List<Transformation> transformations, boolean skipCache,
       boolean noFade, int errorResId, Drawable errorDrawable) {
+    this.id = nextId++;
     this.picasso = picasso;
     this.uri = uri;
     this.resourceId = resourceId;
-    this.target = new WeakReference<ImageView>(imageView, picasso.imageReferenceQueue);
+    this.target = new IdWeakReference<ImageView>(id, imageView, picasso.imageReferenceQueue);
     this.options = options;
     this.transformations = transformations;
     this.skipCache = skipCache;
@@ -64,10 +79,6 @@ class Request implements Runnable {
 
   Object getTarget() {
     return target.get();
-  }
-
-  WeakReference<ImageView> getTargetRef() {
-    return target;
   }
 
   void complete() {
