@@ -1,5 +1,6 @@
 package com.squareup.picasso;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -8,7 +9,7 @@ import java.io.InputStream;
  * marking and resetting. Each cursor is a token, and it's the caller's
  * responsibility to keep track of these.
  */
-public final class MarkableInputStream extends InputStream {
+final class MarkableInputStream extends InputStream {
   private final InputStream in;
 
   private long offset;
@@ -18,6 +19,9 @@ public final class MarkableInputStream extends InputStream {
   private long defaultMark = -1;
 
   public MarkableInputStream(InputStream in) {
+    if (!in.markSupported()) {
+      in = new BufferedInputStream(in);
+    }
     this.in = in;
   }
 
@@ -81,7 +85,7 @@ public final class MarkableInputStream extends InputStream {
   /** Skips {@code target - current} bytes and returns. */
   private void skip(long current, long target) throws IOException {
     while (current < target) {
-      long skipped = in.skip((target - current));
+      long skipped = in.skip(target - current);
       current += skipped;
     }
   }
