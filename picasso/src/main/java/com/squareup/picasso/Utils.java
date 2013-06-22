@@ -174,6 +174,13 @@ final class Utils {
     options.inJustDecodeBounds = false;
   }
 
+  static void closeQuietly(InputStream is) {
+    try {
+      is.close();
+    } catch (IOException ignored) {
+    }
+  }
+
   /** Returns {@code true} if header indicates the response body was loaded from the disk cache. */
   static boolean parseResponseSourceHeader(String header) {
     if (header == null) {

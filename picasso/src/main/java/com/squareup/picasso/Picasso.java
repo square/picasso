@@ -279,13 +279,25 @@ public class Picasso {
     request.error();
   }
 
-  Bitmap decodeStream(InputStream stream, PicassoBitmapOptions bitmapOptions) {
-    if (stream == null) return null;
-    if (bitmapOptions != null) {
-      // Ensure we are not doing only a bounds decode.
-      bitmapOptions.inJustDecodeBounds = false;
+  Bitmap decodeStream(InputStream stream, PicassoBitmapOptions bitmapOptions) throws IOException {
+    if (stream == null) {
+      return null;
     }
-    return BitmapFactory.decodeStream(stream, null, bitmapOptions);
+    try {
+      if (bitmapOptions != null && bitmapOptions.inJustDecodeBounds) {
+        MarkableInputStream markStream = new MarkableInputStream(stream);
+        stream = markStream;
+
+        long mark = markStream.savePosition(1024); // Mirrors BitmapFactory.cpp value.
+        BitmapFactory.decodeStream(stream, null, bitmapOptions);
+        calculateInSampleSize(bitmapOptions);
+
+        markStream.reset(mark);
+      }
+      return BitmapFactory.decodeStream(stream, null, bitmapOptions);
+    } finally {
+      Utils.closeQuietly(stream);
+    }
   }
 
   Bitmap decodeContentStream(Uri path, PicassoBitmapOptions bitmapOptions) throws IOException {
