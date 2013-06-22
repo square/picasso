@@ -38,6 +38,7 @@ public class Picasso {
   private static final int REQUEST_COMPLETE = 1;
   private static final int REQUEST_RETRY = 2;
   private static final int REQUEST_DECODE_FAILED = 3;
+  private static final int DECODE_MINIMAL_SIZE = 256;
 
   /**
    * Global lock for bitmap decoding to ensure that we are only are decoding one at a time. Since
@@ -239,7 +240,20 @@ public class Picasso {
       try {
         bitmap = loadFromType(request);
       } catch (OutOfMemoryError e) {
-        throw new IOException("Failed to decode request: " + request, e);
+        PicassoBitmapOptions options = request.options;
+        if (options != null) {
+          int targetHeight = options.targetHeight;
+          int targetWidth = options.targetWidth;
+          if (targetHeight > DECODE_MINIMAL_SIZE && targetWidth > DECODE_MINIMAL_SIZE) {
+            options.targetHeight = targetHeight / 2;
+            options.targetWidth = targetWidth / 2;
+            options.inJustDecodeBounds = true;
+
+            return resolveRequest(request);
+          }
+         } else {
+          throw new IOException("Failed to decode request: " + request, e);
+        }
       }
 
       if (bitmap != null && !request.skipCache) {
