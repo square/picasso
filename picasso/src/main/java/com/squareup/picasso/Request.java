@@ -66,7 +66,7 @@ class Request implements Runnable {
     this.picasso = picasso;
     this.uri = uri;
     this.resourceId = resourceId;
-    this.target = new IdWeakReference<ImageView>(id, imageView, picasso.imageReferenceQueue);
+    this.target = new IdWeakReference<ImageView>(id, imageView, picasso.referenceQueue);
     this.options = options;
     this.transformations = transformations;
     this.skipCache = skipCache;

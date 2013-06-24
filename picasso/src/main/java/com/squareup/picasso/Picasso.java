@@ -111,8 +111,7 @@ public class Picasso {
   final Stats stats;
   final Map<Object, Request> targetsToRequests;
   final SparseArray<Request> requestSparseArray;
-  final ReferenceQueue<? super ImageView> imageReferenceQueue;
-  final ReferenceQueue<? super Target> targetReferenceQueue;
+  final ReferenceQueue<Object> referenceQueue;
 
   boolean debugging;
 
@@ -126,11 +125,9 @@ public class Picasso {
     this.stats = stats;
     this.targetsToRequests = new WeakHashMap<Object, Request>();
     this.requestSparseArray = new SparseArray<Request>();
-    this.imageReferenceQueue = new ReferenceQueue<ImageView>();
-    this.targetReferenceQueue = new ReferenceQueue<Target>();
+    this.referenceQueue = new ReferenceQueue<Object>();
 
-    new CleanupThread(imageReferenceQueue, handler).start();
-    new CleanupThread(targetReferenceQueue, handler).start();
+    new CleanupThread(referenceQueue, handler).start();
   }
 
   /** Cancel any existing requests for the specified target {@link ImageView}. */
@@ -453,6 +450,7 @@ public class Picasso {
       this.referenceQueue = referenceQueue;
       this.handler = handler;
       setDaemon(true);
+      setName(Utils.THREAD_PREFIX + "refQueue");
     }
 
     public void run() {
@@ -461,14 +459,13 @@ public class Picasso {
         try {
           IdWeakReference<?> remove = (IdWeakReference<?>) referenceQueue.remove();
           handler.sendMessage(handler.obtainMessage(REQUEST_CANCEL_GC, remove.requestId, 0));
-        } catch (InterruptedException e) {
-          break;
         } catch (final Exception e) {
           handler.post(new Runnable() {
             @Override public void run() {
-              new RuntimeException(e);
+              throw new RuntimeException(e);
             }
           });
+          break;
         }
       }
     }

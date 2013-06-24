@@ -14,7 +14,7 @@ final class TargetRequest extends Request {
     super(picasso, uri, resourceId, null, bitmapOptions, transformations, skipCache, false, 0,
         null);
     this.weakTarget =
-        strong ? null : new WeakReference<Target>(target, picasso.targetReferenceQueue);
+        strong ? null : new WeakReference<Target>(target, picasso.referenceQueue);
     this.strongTarget = strong ? target : null;
   }
 
