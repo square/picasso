@@ -16,9 +16,6 @@ import static com.squareup.picasso.Utils.createKey;
 class Request implements Runnable {
   static final int DEFAULT_RETRY_COUNT = 2;
 
-  // Unique request ID. Always incremented on the main thread.
-  private static int nextId = 0;
-
   enum LoadedFrom {
     MEMORY(Color.GREEN),
     DISK(Color.YELLOW),
@@ -31,16 +28,15 @@ class Request implements Runnable {
     }
   }
 
-  static class IdWeakReference<T> extends WeakReference<T> {
-    final int requestId;
+  static class RequestWeakReference<T> extends WeakReference<T> {
+    final Request request;
 
-    public IdWeakReference(int requestId, T referent, ReferenceQueue<? super T> q) {
+    public RequestWeakReference(Request request, T referent, ReferenceQueue<? super T> q) {
       super(referent, q);
-      this.requestId = requestId;
+      this.request = request;
     }
   }
 
-  final int id;
   final Picasso picasso;
   final Uri uri;
   final int resourceId;
@@ -62,11 +58,10 @@ class Request implements Runnable {
   Request(Picasso picasso, Uri uri, int resourceId, ImageView imageView,
       PicassoBitmapOptions options, List<Transformation> transformations, boolean skipCache,
       boolean noFade, int errorResId, Drawable errorDrawable) {
-    this.id = nextId++;
     this.picasso = picasso;
     this.uri = uri;
     this.resourceId = resourceId;
-    this.target = new IdWeakReference<ImageView>(id, imageView, picasso.referenceQueue);
+    this.target = new RequestWeakReference<ImageView>(this, imageView, picasso.referenceQueue);
     this.options = options;
     this.transformations = transformations;
     this.skipCache = skipCache;

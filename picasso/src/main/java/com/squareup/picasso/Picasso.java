@@ -11,7 +11,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
-import android.util.SparseArray;
 import android.widget.ImageView;
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +28,7 @@ import static android.content.ContentResolver.SCHEME_FILE;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static android.provider.ContactsContract.Contacts;
 import static com.squareup.picasso.Loader.Response;
-import static com.squareup.picasso.Request.IdWeakReference;
+import static com.squareup.picasso.Request.RequestWeakReference;
 import static com.squareup.picasso.Utils.calculateInSampleSize;
 
 /**
@@ -64,14 +63,8 @@ public class Picasso {
   // TODO This should be static.
   final Handler handler = new Handler(Looper.getMainLooper()) {
     @Override public void handleMessage(Message msg) {
-      Request request;
-      if (msg.arg1 > 0) {
-        request = requestSparseArray.get(msg.arg1);
-      } else {
-        request = (Request) msg.obj;
-      }
-
-      if (request == null || request.future.isCancelled() || request.retryCancelled) {
+      Request request = (Request) msg.obj;
+      if (request.future.isCancelled() || request.retryCancelled) {
         return;
       }
 
@@ -79,7 +72,6 @@ public class Picasso {
       switch (msg.what) {
         case REQUEST_COMPLETE:
           picasso.targetsToRequests.remove(request.getTarget());
-          picasso.requestSparseArray.remove(request.id);
           request.complete();
           break;
 
@@ -110,7 +102,6 @@ public class Picasso {
   final Listener listener;
   final Stats stats;
   final Map<Object, Request> targetsToRequests;
-  final SparseArray<Request> requestSparseArray;
   final ReferenceQueue<Object> referenceQueue;
 
   boolean debugging;
@@ -124,7 +115,6 @@ public class Picasso {
     this.listener = listener;
     this.stats = stats;
     this.targetsToRequests = new WeakHashMap<Object, Request>();
-    this.requestSparseArray = new SparseArray<Request>();
     this.referenceQueue = new ReferenceQueue<Object>();
 
     new CleanupThread(referenceQueue, handler).start();
@@ -233,7 +223,6 @@ public class Picasso {
     cancelExistingRequest(target, request.uri);
 
     targetsToRequests.put(target, request);
-    requestSparseArray.put(request.id, request);
 
     request.future = service.submit(request);
   }
@@ -295,14 +284,12 @@ public class Picasso {
       submit(request);
     } else {
       targetsToRequests.remove(request.getTarget());
-      requestSparseArray.remove(request.id);
       request.error();
     }
   }
 
   void error(Request request) {
     targetsToRequests.remove(request.getTarget());
-    requestSparseArray.remove(request.id);
     request.error();
   }
 
@@ -339,7 +326,6 @@ public class Picasso {
 
   private void cancelExistingRequest(Request request, Uri uri) {
     if (request != null) {
-      requestSparseArray.remove(request.id);
       if (!request.future.isDone()) {
         request.future.cancel(true);
       } else if (uri == null || !uri.equals(request.uri)) {
@@ -457,8 +443,8 @@ public class Picasso {
       Process.setThreadPriority(THREAD_PRIORITY_BACKGROUND);
       while (true) {
         try {
-          IdWeakReference<?> remove = (IdWeakReference<?>) referenceQueue.remove();
-          handler.sendMessage(handler.obtainMessage(REQUEST_CANCEL_GC, remove.requestId, 0));
+          RequestWeakReference<?> remove = (RequestWeakReference<?>) referenceQueue.remove();
+          handler.sendMessage(handler.obtainMessage(REQUEST_CANCEL_GC, remove.request));
         } catch (final Exception e) {
           handler.post(new Runnable() {
             @Override public void run() {
