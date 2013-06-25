@@ -28,7 +28,8 @@ final class TargetRequest extends Request {
       PicassoBitmapOptions bitmapOptions, List<Transformation> transformations, boolean skipCache) {
     super(picasso, uri, resourceId, null, bitmapOptions, transformations, skipCache, false, 0,
         null);
-    this.weakTarget = strong ? null : new WeakReference<Target>(target);
+    this.weakTarget =
+        strong ? null : new WeakReference<Target>(target, picasso.referenceQueue);
     this.strongTarget = strong ? target : null;
   }
 

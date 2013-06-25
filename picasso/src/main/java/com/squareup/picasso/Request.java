@@ -21,6 +21,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.widget.ImageView;
+import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -39,6 +40,15 @@ class Request implements Runnable {
 
     private LoadedFrom(int debugColor) {
       this.debugColor = debugColor;
+    }
+  }
+
+  static class RequestWeakReference<T> extends WeakReference<T> {
+    final Request request;
+
+    public RequestWeakReference(Request request, T referent, ReferenceQueue<? super T> q) {
+      super(referent, q);
+      this.request = request;
     }
   }
 
@@ -66,7 +76,7 @@ class Request implements Runnable {
     this.picasso = picasso;
     this.uri = uri;
     this.resourceId = resourceId;
-    this.target = new WeakReference<ImageView>(imageView);
+    this.target = new RequestWeakReference<ImageView>(this, imageView, picasso.referenceQueue);
     this.options = options;
     this.transformations = transformations;
     this.skipCache = skipCache;
