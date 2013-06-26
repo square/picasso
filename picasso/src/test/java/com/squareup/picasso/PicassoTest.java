@@ -984,7 +984,7 @@ public class PicassoTest {
   }
 
   // Report older SDK so we don't trigger the ICS code-path which surfaces a Robolectric bug.
-  @Config(reportSdk = Build.VERSION_CODES.GINGERBREAD)
+  @Config(reportSdk = Build.VERSION_CODES.GINGERBREAD) //
   @Test public void contactUriLoaded() throws Exception {
     Picasso picasso = create(LOADER_ANSWER, BITMAP1_ANSWER);
     ImageView target = mock(ImageView.class);
