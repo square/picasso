@@ -42,7 +42,7 @@ import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentResolver.SCHEME_FILE;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static android.provider.ContactsContract.Contacts;
-import static com.squareup.picasso.Loader.Response;
+import static com.squareup.picasso.Downloader.Response;
 import static com.squareup.picasso.Request.RequestWeakReference;
 import static com.squareup.picasso.Utils.calculateInSampleSize;
 
@@ -111,7 +111,7 @@ public class Picasso {
   static Picasso singleton = null;
 
   final Context context;
-  final Loader loader;
+  final Downloader downloader;
   final ExecutorService service;
   final Cache cache;
   final Listener listener;
@@ -121,10 +121,10 @@ public class Picasso {
 
   boolean debugging;
 
-  Picasso(Context context, Loader loader, ExecutorService service, Cache cache, Listener listener,
-      Stats stats) {
+  Picasso(Context context, Downloader downloader, ExecutorService service, Cache cache,
+      Listener listener, Stats stats) {
     this.context = context;
-    this.loader = loader;
+    this.downloader = downloader;
     this.service = service;
     this.cache = cache;
     this.listener = listener;
@@ -406,7 +406,7 @@ public class Picasso {
       } else {
         Response response = null;
         try {
-          response = loader.load(uri, request.retryCount == 0);
+          response = downloader.load(uri, request.retryCount == 0);
           if (response == null) {
             return null;
           }
@@ -622,7 +622,7 @@ public class Picasso {
   @SuppressWarnings("UnusedDeclaration") // Public API.
   public static class Builder {
     private final Context context;
-    private Loader loader;
+    private Downloader downloader;
     private ExecutorService service;
     private Cache memoryCache;
     private Listener listener;
@@ -635,15 +635,15 @@ public class Picasso {
       this.context = context.getApplicationContext();
     }
 
-    /** Specify the {@link Loader} that will be used for downloading images. */
-    public Builder loader(Loader loader) {
-      if (loader == null) {
-        throw new IllegalArgumentException("Loader must not be null.");
+    /** Specify the {@link Downloader} that will be used for downloading images. */
+    public Builder loader(Downloader downloader) {
+      if (downloader == null) {
+        throw new IllegalArgumentException("Downloader must not be null.");
       }
-      if (this.loader != null) {
-        throw new IllegalStateException("Loader already set.");
+      if (this.downloader != null) {
+        throw new IllegalStateException("Downloader already set.");
       }
-      this.loader = loader;
+      this.downloader = downloader;
       return this;
     }
 
@@ -687,8 +687,8 @@ public class Picasso {
     public Picasso build() {
       Context context = this.context;
 
-      if (loader == null) {
-        loader = Utils.createDefaultLoader(context);
+      if (downloader == null) {
+        downloader = Utils.createDefaultDownloader(context);
       }
       if (memoryCache == null) {
         memoryCache = new LruCache(context);
@@ -699,7 +699,7 @@ public class Picasso {
 
       Stats stats = new Stats(memoryCache);
 
-      return new Picasso(context, loader, service, memoryCache, listener, stats);
+      return new Picasso(context, downloader, service, memoryCache, listener, stats);
     }
   }
 }

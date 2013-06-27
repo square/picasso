@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /** A mechanism to load images from external resources such as a disk cache and/or the internet. */
-public interface Loader {
+public interface Downloader {
   /**
    * Download the specified image {@code url} from the internet.
    *
