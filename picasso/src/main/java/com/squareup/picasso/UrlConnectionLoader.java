@@ -43,7 +43,10 @@ public class UrlConnectionLoader implements Loader {
   }
 
   protected HttpURLConnection openConnection(String path) throws IOException {
-    return (HttpURLConnection) new URL(path).openConnection();
+    HttpURLConnection connection = (HttpURLConnection) new URL(path).openConnection();
+    connection.setConnectTimeout(Utils.DEFAULT_CONNECT_TIMEOUT);
+    connection.setReadTimeout(Utils.DEFAULT_READ_TIMEOUT);
+    return connection;
   }
 
   @Override public Response load(Uri uri, boolean localCacheOnly) throws IOException {
