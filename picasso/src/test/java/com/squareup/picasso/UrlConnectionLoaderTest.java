@@ -31,7 +31,7 @@ import org.robolectric.annotation.Config;
 
 import static android.os.Build.VERSION_CODES.GINGERBREAD;
 import static android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH;
-import static com.squareup.picasso.UrlConnectionLoader.RESPONSE_SOURCE;
+import static com.squareup.picasso.UrlConnectionDownloader.RESPONSE_SOURCE;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(RobolectricTestRunner.class)
@@ -40,15 +40,15 @@ public class UrlConnectionLoaderTest {
   private static final Uri URL = Uri.parse("/bees.gif");
 
   private MockWebServer server;
-  private UrlConnectionLoader loader;
+  private UrlConnectionDownloader loader;
 
   @Before public void setUp() throws Exception {
     server = new MockWebServer();
     server.play();
 
-    loader = new UrlConnectionLoader(new Activity()) {
-      @Override protected HttpURLConnection openConnection(String path) throws IOException {
-        return (HttpURLConnection) server.getUrl(path).openConnection();
+    loader = new UrlConnectionDownloader(new Activity()) {
+      @Override protected HttpURLConnection openConnection(Uri path) throws IOException {
+        return (HttpURLConnection) server.getUrl(path.toString()).openConnection();
       }
     };
   }
@@ -59,25 +59,25 @@ public class UrlConnectionLoaderTest {
 
   @Config(reportSdk = ICE_CREAM_SANDWICH)
   @Test public void cacheOnlyInstalledOnce() throws Exception {
-    UrlConnectionLoader.cache = null;
+    UrlConnectionDownloader.cache = null;
 
     server.enqueue(new MockResponse());
     loader.load(URL, false);
-    Object cache = UrlConnectionLoader.cache;
+    Object cache = UrlConnectionDownloader.cache;
     assertThat(cache).isNotNull();
 
     server.enqueue(new MockResponse());
     loader.load(URL, false);
-    assertThat(UrlConnectionLoader.cache).isSameAs(cache);
+    assertThat(UrlConnectionDownloader.cache).isSameAs(cache);
   }
 
   @Config(reportSdk = GINGERBREAD)
   @Test public void cacheNotInstalledWhenUnavailable() throws Exception {
-    UrlConnectionLoader.cache = null;
+    UrlConnectionDownloader.cache = null;
 
     server.enqueue(new MockResponse());
     loader.load(URL, false);
-    Object cache = UrlConnectionLoader.cache;
+    Object cache = UrlConnectionDownloader.cache;
     assertThat(cache).isNull();
   }
 
@@ -97,11 +97,11 @@ public class UrlConnectionLoaderTest {
   @Config(reportSdk = GINGERBREAD)
   @Test public void responseSourceHeaderSetsResponseValue() throws Exception {
     server.enqueue(new MockResponse());
-    Loader.Response response1 = loader.load(URL, false);
+    Downloader.Response response1 = loader.load(URL, false);
     assertThat(response1.cached).isFalse();
 
     server.enqueue(new MockResponse().addHeader(RESPONSE_SOURCE, "CACHE 200"));
-    Loader.Response response2 = loader.load(URL, true);
+    Downloader.Response response2 = loader.load(URL, true);
     assertThat(response2.cached).isTrue();
   }
 }

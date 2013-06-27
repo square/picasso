@@ -27,10 +27,10 @@ import java.net.URL;
 import static com.squareup.picasso.Utils.parseResponseSourceHeader;
 
 /**
- * A {@link Loader} which uses {@link HttpURLConnection} to download images. A disk cache of 10MB
- * will automatically be installed in the application's cache directory, when available.
+ * A {@link Downloader} which uses {@link HttpURLConnection} to download images. A disk cache of
+ * 10MB will automatically be installed in the application's cache directory, when available.
  */
-public class UrlConnectionLoader implements Loader {
+public class UrlConnectionDownloader implements Downloader {
   static final String RESPONSE_SOURCE = "X-Android-Response-Source";
 
   private static final Object lock = new Object();
@@ -38,12 +38,12 @@ public class UrlConnectionLoader implements Loader {
 
   private final Context context;
 
-  public UrlConnectionLoader(Context context) {
+  public UrlConnectionDownloader(Context context) {
     this.context = context.getApplicationContext();
   }
 
-  protected HttpURLConnection openConnection(String path) throws IOException {
-    HttpURLConnection connection = (HttpURLConnection) new URL(path).openConnection();
+  protected HttpURLConnection openConnection(Uri path) throws IOException {
+    HttpURLConnection connection = (HttpURLConnection) new URL(path.toString()).openConnection();
     connection.setConnectTimeout(Utils.DEFAULT_CONNECT_TIMEOUT);
     connection.setReadTimeout(Utils.DEFAULT_READ_TIMEOUT);
     return connection;
@@ -54,7 +54,7 @@ public class UrlConnectionLoader implements Loader {
       installCacheIfNeeded(context);
     }
 
-    HttpURLConnection connection = openConnection(uri.toString());
+    HttpURLConnection connection = openConnection(uri);
     connection.setUseCaches(true);
     if (localCacheOnly) {
       connection.setRequestProperty("Cache-Control", "only-if-cached");

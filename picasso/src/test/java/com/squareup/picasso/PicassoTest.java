@@ -80,7 +80,7 @@ public class PicassoTest {
 
   private static final Answer LOADER_ANSWER = new Answer() {
     @Override public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-      return new Loader.Response(null, false);
+      return new Downloader.Response(null, false);
     }
   };
   private static final Answer IO_EXCEPTION_ANSWER = new Answer() {
@@ -126,14 +126,14 @@ public class PicassoTest {
 
   private final Context context = Robolectric.application;
   private SynchronousExecutorService executor;
-  private Loader loader;
+  private Downloader downloader;
   private Cache cache;
   private Stats stats;
   private Listener listener;
 
   @Before public void setUp() {
     executor = new SynchronousExecutorService();
-    loader = mock(Loader.class);
+    downloader = mock(Downloader.class);
     cache = mock(Cache.class);
     stats = mock(Stats.class);
     listener = mock(Listener.class);
@@ -225,7 +225,7 @@ public class PicassoTest {
 
     verifyZeroInteractions(target);
     executor.flush();
-    verifyZeroInteractions(loader);
+    verifyZeroInteractions(downloader);
 
     ArgumentCaptor<PicassoDrawable> captor = ArgumentCaptor.forClass(PicassoDrawable.class);
     verify(target).setImageDrawable(captor.capture());
@@ -255,7 +255,7 @@ public class PicassoTest {
 
     verifyZeroInteractions(target);
     executor.flush();
-    verifyZeroInteractions(loader);
+    verifyZeroInteractions(downloader);
 
     ArgumentCaptor<PicassoDrawable> captor = ArgumentCaptor.forClass(PicassoDrawable.class);
     verify(target).setImageDrawable(captor.capture());
@@ -273,7 +273,7 @@ public class PicassoTest {
 
     verifyZeroInteractions(target);
     executor.flush();
-    verifyZeroInteractions(loader);
+    verifyZeroInteractions(downloader);
 
     ArgumentCaptor<PicassoDrawable> captor = ArgumentCaptor.forClass(PicassoDrawable.class);
     verify(target).setImageDrawable(captor.capture());
@@ -303,7 +303,7 @@ public class PicassoTest {
 
     verifyZeroInteractions(target);
     executor.flush();
-    verifyZeroInteractions(loader);
+    verifyZeroInteractions(downloader);
 
     ArgumentCaptor<PicassoDrawable> captor = ArgumentCaptor.forClass(PicassoDrawable.class);
     verify(target).setImageDrawable(captor.capture());
@@ -333,7 +333,7 @@ public class PicassoTest {
 
     verifyZeroInteractions(target);
     executor.flush();
-    verifyZeroInteractions(loader);
+    verifyZeroInteractions(downloader);
 
     ArgumentCaptor<PicassoDrawable> captor = ArgumentCaptor.forClass(PicassoDrawable.class);
     verify(target).setImageDrawable(captor.capture());
@@ -478,7 +478,7 @@ public class PicassoTest {
     retryRequest(picasso, request);
     verify(picasso, times(3)).retry(request);
     verify(request).error();
-    verifyZeroInteractions(loader);
+    verifyZeroInteractions(downloader);
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
@@ -494,7 +494,7 @@ public class PicassoTest {
     retryRequest(picasso, request);
     verify(picasso, times(3)).retry(request);
     verify(request).error();
-    verifyZeroInteractions(loader);
+    verifyZeroInteractions(downloader);
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
@@ -613,7 +613,7 @@ public class PicassoTest {
     PicassoDrawable actualDrawable2 = captor2.getValue();
     assertThat(actualDrawable2.bitmapDrawable.getBitmap()).isEqualTo(bitmap1);
 
-    verify(picasso.loader, times(1)).load(URI_1, false);
+    verify(picasso.downloader, times(1)).load(URI_1, false);
 
     assertThat(picasso.targetsToRequests).isEmpty();
   }
@@ -652,7 +652,7 @@ public class PicassoTest {
     PicassoDrawable actualDrawable2 = captor2.getValue();
     assertThat(actualDrawable2.bitmapDrawable.getBitmap()).isEqualTo(bitmap1);
 
-    verify(picasso.loader, times(1)).load(URI_1, false);
+    verify(picasso.downloader, times(1)).load(URI_1, false);
 
     assertThat(picasso.targetsToRequests).isEmpty();
   }
@@ -716,7 +716,7 @@ public class PicassoTest {
     picasso.load(URI_1).transform(transformation).into(target);
     executor.flush();
 
-    verify(loader, never()).load(URI_1, false);
+    verify(downloader, never()).load(URI_1, false);
     assertThat(picasso.targetsToRequests).isEmpty();
   }
 
@@ -767,12 +767,12 @@ public class PicassoTest {
   @Test public void builderInvalidLoader() throws Exception {
     try {
       new Picasso.Builder(context).loader(null);
-      fail("Null Loader should throw exception.");
+      fail("Null Downloader should throw exception.");
     } catch (IllegalArgumentException expected) {
     }
     try {
-      new Picasso.Builder(context).loader(loader).loader(loader);
-      fail("Setting Loader twice should throw exception.");
+      new Picasso.Builder(context).loader(downloader).loader(downloader);
+      fail("Setting Downloader twice should throw exception.");
     } catch (IllegalStateException expected) {
     }
   }
@@ -818,7 +818,7 @@ public class PicassoTest {
 
   @Test public void builderCreatesDefaults() throws Exception {
     Picasso p = new Picasso.Builder(context).build();
-    assertThat(p.loader).isNotNull();
+    assertThat(p.downloader).isNotNull();
     assertThat(p.cache).isNotNull();
     assertThat(p.service).isNotNull();
   }
@@ -937,7 +937,7 @@ public class PicassoTest {
     picasso.load(URI_1).into(target);
     try {
       executor.flush();
-      fail("Loader should have thrown exception back to the main thread.");
+      fail("Downloader should have thrown exception back to the main thread.");
     } catch (ExecutionException e) {
       // Find the lowest underlying cause of the exception.
       Throwable cause = e;
@@ -1025,10 +1025,10 @@ public class PicassoTest {
   }
 
   private Picasso create(Answer loaderAnswer, Answer decoderAnswer) throws IOException {
-    Picasso picasso = new Picasso(context, loader, executor, cache, listener, stats);
+    Picasso picasso = new Picasso(context, downloader, executor, cache, listener, stats);
     picasso = spy(picasso);
 
-    doAnswer(loaderAnswer).when(loader).load(any(Uri.class), anyBoolean());
+    doAnswer(loaderAnswer).when(downloader).load(any(Uri.class), anyBoolean());
     doAnswer(decoderAnswer).when(picasso)
         .decodeContentStream(any(Uri.class), any(PicassoBitmapOptions.class));
     doAnswer(decoderAnswer).when(picasso)
