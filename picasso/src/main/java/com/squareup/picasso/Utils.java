@@ -217,12 +217,12 @@ final class Utils {
     }
   }
 
-  static Loader createDefaultLoader(Context context) {
+  static Downloader createDefaultDownloader(Context context) {
     try {
       Class.forName("com.squareup.okhttp.OkHttpClient");
       return OkHttpLoaderCreator.create(context);
     } catch (ClassNotFoundException e) {
-      return new UrlConnectionLoader(context);
+      return new UrlConnectionDownloader(context);
     }
   }
 
@@ -310,8 +310,8 @@ final class Utils {
   }
 
   private static class OkHttpLoaderCreator {
-    static Loader create(Context context) {
-      return new OkHttpLoader(context);
+    static Downloader create(Context context) {
+      return new OkHttpDownloader(context);
     }
   }
 }
