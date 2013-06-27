@@ -85,6 +85,8 @@ public class OkHttpLoader implements Loader {
 
   @Override public Response load(Uri uri, boolean localCacheOnly) throws IOException {
     HttpURLConnection connection = client.open(new URL(uri.toString()));
+    connection.setConnectTimeout(Utils.DEFAULT_CONNECT_TIMEOUT);
+    connection.setReadTimeout(Utils.DEFAULT_READ_TIMEOUT);
     connection.setUseCaches(true);
     if (localCacheOnly) {
       connection.setRequestProperty("Cache-Control", "only-if-cached");
