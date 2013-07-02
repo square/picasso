@@ -766,12 +766,12 @@ public class PicassoTest {
 
   @Test public void builderInvalidLoader() throws Exception {
     try {
-      new Picasso.Builder(context).loader(null);
+      new Picasso.Builder(context).downloader(null);
       fail("Null Downloader should throw exception.");
     } catch (IllegalArgumentException expected) {
     }
     try {
-      new Picasso.Builder(context).loader(downloader).loader(downloader);
+      new Picasso.Builder(context).downloader(downloader).downloader(downloader);
       fail("Setting Downloader twice should throw exception.");
     } catch (IllegalStateException expected) {
     }
