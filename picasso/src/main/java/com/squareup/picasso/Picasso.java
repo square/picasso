@@ -122,13 +122,15 @@ public class Picasso {
   boolean debugging;
 
   Picasso(Context context, Downloader downloader, ExecutorService service, Cache cache,
-      Listener listener, Stats stats) {
+      Listener listener, Stats stats, boolean debugging) {
     this.context = context;
     this.downloader = downloader;
     this.service = service;
     this.cache = cache;
     this.listener = listener;
     this.stats = stats;
+    this.debugging = debugging;
+
     this.targetsToRequests = new WeakHashMap<Object, Request>();
     this.referenceQueue = new ReferenceQueue<Object>();
 
@@ -626,6 +628,7 @@ public class Picasso {
     private ExecutorService service;
     private Cache memoryCache;
     private Listener listener;
+    private boolean debugging;
 
     /** Start building a new {@link Picasso} instance. */
     public Builder(Context context) {
@@ -683,6 +686,12 @@ public class Picasso {
       return this;
     }
 
+    /** Whether debugging is enabled or not. */
+    public Builder debugging(boolean debugging) {
+      this.debugging = debugging;
+      return this;
+    }
+
     /** Create the {@link Picasso} instance. */
     public Picasso build() {
       Context context = this.context;
@@ -699,7 +708,7 @@ public class Picasso {
 
       Stats stats = new Stats(memoryCache);
 
-      return new Picasso(context, downloader, service, memoryCache, listener, stats);
+      return new Picasso(context, downloader, service, memoryCache, listener, stats, debugging);
     }
   }
 }
