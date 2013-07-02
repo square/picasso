@@ -1025,7 +1025,7 @@ public class PicassoTest {
   }
 
   private Picasso create(Answer loaderAnswer, Answer decoderAnswer) throws IOException {
-    Picasso picasso = new Picasso(context, downloader, executor, cache, listener, stats);
+    Picasso picasso = new Picasso(context, downloader, executor, cache, listener, stats, false);
     picasso = spy(picasso);
 
     doAnswer(loaderAnswer).when(downloader).load(any(Uri.class), anyBoolean());
