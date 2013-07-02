@@ -16,6 +16,7 @@
 package com.squareup.picasso;
 
 import android.R;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.widget.ImageView;
@@ -250,7 +251,8 @@ public class RequestBuilderTest {
   }
 
   @Test public void noImageWithPlaceholderDoesNotSubmitAndSetsPlaceholder() {
-    Picasso picasso = spy(new Picasso(Robolectric.application, null, null, null, null, null));
+    Context context = Robolectric.application;
+    Picasso picasso = spy(new Picasso(context, null, null, null, null, null, false));
     ImageView target = mock(ImageView.class);
 
     new RequestBuilder(picasso, null, 0).placeholder(R.drawable.ic_dialog_map).into(target);
