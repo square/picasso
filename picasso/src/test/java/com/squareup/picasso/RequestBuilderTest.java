@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.squareup.picasso;
 
 import android.R;
@@ -37,8 +38,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@RunWith(RobolectricTestRunner.class) @Config(manifest = Config.NONE)
 public class RequestBuilderTest {
   @Test public void invalidPlaceholderImage() {
     try {
@@ -218,16 +218,6 @@ public class RequestBuilderTest {
 
     assertThat(result.get()).isNull();
     verifyZeroInteractions(picasso);
-  }
-
-  @Test public void noImageFetchTargetDoesNothing() {
-    Picasso picasso = mock(Picasso.class);
-    Target target = mock(Target.class);
-
-    new RequestBuilder(picasso, null, 0).fetch(target);
-
-    verify(picasso).cancelRequest(target);
-    verifyZeroInteractions(target);
   }
 
   @Test public void noImageIntoTargetDoesNothing() {

@@ -15,7 +15,6 @@
  */
 package com.squareup.picasso;
 
-import android.net.Uri;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
@@ -23,40 +22,36 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.Utils.createKey;
 import static com.squareup.picasso.Utils.parseResponseSourceHeader;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@RunWith(RobolectricTestRunner.class) @Config(manifest = Config.NONE)
 public class UtilsTest {
-  private static final Uri URL = Uri.parse("http://example.com/a.png");
-
-  private Picasso picasso = mock(Picasso.class);
 
   @Test public void matchingRequestsHaveSameKey() {
-    Request r1 = new Request(picasso, URL, 0, null, null, null, false, false, 0, null);
-    Request r2 = new Request(picasso, URL, 0, null, null, null, false, false, 0, null);
-    assertThat(createKey(r1)).isEqualTo(createKey(r2));
+    String key1 = createKey(URI_1, 0, null, null);
+    String key2 = createKey(URI_1, 0, null, null);
+    assertThat(key1).isEqualTo(key2);
 
     List<Transformation> t1 = new ArrayList<Transformation>();
     t1.add(new TestTransformation("foo", null));
-    Request single1 = new Request(picasso, URL, 0, null, null, t1, false, false, 0, null);
+    String single1 = createKey(URI_1, 0, null, t1);
     List<Transformation> t2 = new ArrayList<Transformation>();
     t2.add(new TestTransformation("foo", null));
-    Request single2 = new Request(picasso, URL, 0, null, null, t2, false, false, 0, null);
-    assertThat(createKey(single1)).isEqualTo(createKey(single2));
+    String single2 = createKey(URI_1, 0, null, t2);
+    assertThat(single1).isEqualTo(single2);
 
     List<Transformation> t3 = new ArrayList<Transformation>();
     t3.add(new TestTransformation("foo", null));
     t3.add(new TestTransformation("bar", null));
-    Request double1 = new Request(picasso, URL, 0, null, null, t3, false, false, 0, null);
+    String double1 = createKey(URI_1, 0, null, t3);
     List<Transformation> t4 = new ArrayList<Transformation>();
     t4.add(new TestTransformation("foo", null));
     t4.add(new TestTransformation("bar", null));
-    Request double2 = new Request(picasso, URL, 0, null, null, t4, false, false, 0, null);
-    assertThat(createKey(double1)).isEqualTo(createKey(double2));
+    String double2 = createKey(URI_1, 0, null, t4);
+    assertThat(double1).isEqualTo(double2);
 
     List<Transformation> t5 = new ArrayList<Transformation>();
     t5.add(new TestTransformation("foo", null));
@@ -65,9 +60,9 @@ public class UtilsTest {
     List<Transformation> t6 = new ArrayList<Transformation>();
     t6.add(new TestTransformation("bar", null));
     t6.add(new TestTransformation("foo", null));
-    Request order1 = new Request(picasso, URL, 0, null, null, t5, false, false, 0, null);
-    Request order2 = new Request(picasso, URL, 0, null, null, t6, false, false, 0, null);
-    assertThat(createKey(order1)).isNotEqualTo(createKey(order2));
+    String order1 = createKey(URI_1, 0, null, t5);
+    String order2 = createKey(URI_1, 0, null, t6);
+    assertThat(order1).isNotEqualTo(order2);
   }
 
   @Test public void loadedFromCache() {

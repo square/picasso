@@ -30,8 +30,7 @@ import static android.graphics.Bitmap.Config.ALPHA_8;
 import static junit.framework.Assert.fail;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@RunWith(RobolectricTestRunner.class) @Config(manifest = Config.NONE)
 public class LruCacheTest {
   // The use of ALPHA_8 simplifies the size math in tests since only one byte is used per-pixel.
   private final Bitmap A = Bitmap.createBitmap(1, 1, ALPHA_8);
@@ -127,7 +126,8 @@ public class LruCacheTest {
   }
 
   /**
-   * Replacing the value for a key doesn't cause an eviction but it does bring the replaced entry to
+   * Replacing the value for a key doesn't cause an eviction but it does bring the replaced entry
+   * to
    * the front of the queue.
    */
   @Test public void putCauseEviction() {

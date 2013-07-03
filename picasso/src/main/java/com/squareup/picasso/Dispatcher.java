@@ -1,0 +1,189 @@
+/*
+ * Copyright (C) 2013 Square, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.squareup.picasso;
+
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
+import android.os.Message;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+
+import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
+import static com.squareup.picasso.Request.LoadedFrom.MEMORY;
+
+class Dispatcher {
+  private static final int RETRY_DELAY = 500;
+  static final int REQUEST_SUBMIT = 1;
+  static final int REQUEST_CANCEL = 2;
+  static final int REQUEST_GCED = 3;
+  static final int HUNTER_COMPLETE = 4;
+  static final int HUNTER_RETRY = 5;
+  static final int HUNTER_FAILED = 6;
+  static final int HUNTER_DECODE_FAILED = 7;
+
+  private static final String DISPATCHER_THREAD_NAME = "Dispatcher";
+
+  final Context context;
+  final ExecutorService service;
+  final Downloader downloader;
+  final Map<String, BitmapHunter> hunterMap;
+  final Handler handler;
+  final Handler mainThreadHandler;
+  final Cache cache;
+
+  Dispatcher(Context context, ExecutorService service, Handler mainThreadHandler,
+      Downloader downloader, Cache cache) {
+    DispatcherThread thread = new DispatcherThread();
+    thread.start();
+    this.context = context;
+    this.service = service;
+    this.hunterMap = new LinkedHashMap<String, BitmapHunter>();
+    this.handler = new DispatcherHandler(thread.getLooper());
+    this.downloader = downloader;
+    this.mainThreadHandler = mainThreadHandler;
+    this.cache = cache;
+  }
+
+  void dispatchSubmit(Request request) {
+    handler.sendMessage(handler.obtainMessage(REQUEST_SUBMIT, request));
+  }
+
+  void dispatchCancel(Request request) {
+    handler.sendMessage(handler.obtainMessage(REQUEST_CANCEL, request));
+  }
+
+  void dispatchComplete(BitmapHunter hunter) {
+    handler.sendMessage(handler.obtainMessage(HUNTER_COMPLETE, hunter));
+  }
+
+  void dispatchRetry(BitmapHunter hunter) {
+    handler.sendMessageDelayed(handler.obtainMessage(HUNTER_RETRY, hunter), RETRY_DELAY);
+  }
+
+  void dispatchFailed(BitmapHunter hunter) {
+    handler.sendMessage(handler.obtainMessage(HUNTER_DECODE_FAILED, hunter));
+  }
+
+  void performSubmit(Request request) {
+    BitmapHunter hunter = hunterMap.get(request.getKey());
+    if (hunter == null) {
+      hunter = BitmapHunter.forRequest(context, request.getPicasso(), this, request, downloader);
+      hunter.attach(request);
+
+      Bitmap cache = loadFromCache(request);
+      if (cache != null) {
+        hunter.loadedFrom = MEMORY;
+        performComplete(hunter);
+        return;
+      }
+
+      hunterMap.put(request.getKey(), hunter);
+      hunter.future = service.submit(hunter);
+    } else {
+      hunter.attach(request);
+    }
+  }
+
+  void performCancel(Request request) {
+    String key = request.getKey();
+    BitmapHunter hunter = hunterMap.get(key);
+    if (hunter != null) {
+      hunter.detach(request);
+      if (hunter.cancel()) {
+        hunterMap.remove(key);
+      }
+    }
+  }
+
+  void performRetry(BitmapHunter hunter) {
+    if (hunter.isCancelled()) return;
+
+    if (hunter.retryCount > 0) {
+      hunter.retryCount--;
+      hunter.future = service.submit(hunter);
+    } else {
+      performError(hunter);
+    }
+  }
+
+  void performComplete(BitmapHunter hunter) {
+    if (!hunter.shouldSkipCache()) {
+      cache.set(hunter.getKey(), hunter.getResult());
+    }
+    hunterMap.remove(hunter.getKey());
+    mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(HUNTER_COMPLETE, hunter));
+  }
+
+  void performError(BitmapHunter hunter) {
+    hunterMap.remove(hunter.getKey());
+    mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(HUNTER_FAILED, hunter));
+  }
+
+  private Bitmap loadFromCache(Request request) {
+    if (request.skipCache) return null;
+    return cache.get(request.getKey());
+  }
+
+  private class DispatcherHandler extends Handler {
+
+    public DispatcherHandler(Looper looper) {
+      super(looper);
+    }
+
+    @Override public void handleMessage(Message msg) {
+      switch (msg.what) {
+        case REQUEST_SUBMIT: {
+          Request request = (Request) msg.obj;
+          performSubmit(request);
+          break;
+        }
+        case REQUEST_CANCEL: {
+          Request request = (Request) msg.obj;
+          performCancel(request);
+          break;
+        }
+        case HUNTER_COMPLETE: {
+          BitmapHunter hunter = (BitmapHunter) msg.obj;
+          performComplete(hunter);
+          break;
+        }
+        case HUNTER_RETRY: {
+          BitmapHunter hunter = (BitmapHunter) msg.obj;
+          performRetry(hunter);
+          break;
+        }
+        case HUNTER_DECODE_FAILED: {
+          BitmapHunter hunter = (BitmapHunter) msg.obj;
+          performError(hunter);
+          break;
+        }
+        default:
+          throw new AssertionError("Unknown handler message received: " + msg.what);
+      }
+    }
+  }
+
+  static class DispatcherThread extends HandlerThread {
+
+    DispatcherThread() {
+      super(Utils.THREAD_PREFIX + DISPATCHER_THREAD_NAME, THREAD_PRIORITY_BACKGROUND);
+    }
+  }
+}

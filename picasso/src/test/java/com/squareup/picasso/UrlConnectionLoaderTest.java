@@ -34,8 +34,7 @@ import static android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH;
 import static com.squareup.picasso.UrlConnectionDownloader.RESPONSE_SOURCE;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@RunWith(RobolectricTestRunner.class) @Config(manifest = Config.NONE)
 public class UrlConnectionLoaderTest {
   private static final Uri URL = Uri.parse("/bees.gif");
 
@@ -57,8 +56,8 @@ public class UrlConnectionLoaderTest {
     server.shutdown();
   }
 
-  @Config(reportSdk = ICE_CREAM_SANDWICH)
-  @Test public void cacheOnlyInstalledOnce() throws Exception {
+  @Config(reportSdk = ICE_CREAM_SANDWICH) @Test public void cacheOnlyInstalledOnce()
+      throws Exception {
     UrlConnectionDownloader.cache = null;
 
     server.enqueue(new MockResponse());
@@ -71,8 +70,8 @@ public class UrlConnectionLoaderTest {
     assertThat(UrlConnectionDownloader.cache).isSameAs(cache);
   }
 
-  @Config(reportSdk = GINGERBREAD)
-  @Test public void cacheNotInstalledWhenUnavailable() throws Exception {
+  @Config(reportSdk = GINGERBREAD) @Test public void cacheNotInstalledWhenUnavailable()
+      throws Exception {
     UrlConnectionDownloader.cache = null;
 
     server.enqueue(new MockResponse());
@@ -81,8 +80,8 @@ public class UrlConnectionLoaderTest {
     assertThat(cache).isNull();
   }
 
-  @Config(reportSdk = GINGERBREAD)
-  @Test public void allowExpiredSetsCacheControl() throws Exception {
+  @Config(reportSdk = GINGERBREAD) @Test public void allowExpiredSetsCacheControl()
+      throws Exception {
     server.enqueue(new MockResponse());
     loader.load(URL, false);
     RecordedRequest request1 = server.takeRequest();
@@ -94,8 +93,8 @@ public class UrlConnectionLoaderTest {
     assertThat(request2.getHeader("Cache-Control")).isEqualTo("only-if-cached");
   }
 
-  @Config(reportSdk = GINGERBREAD)
-  @Test public void responseSourceHeaderSetsResponseValue() throws Exception {
+  @Config(reportSdk = GINGERBREAD) @Test public void responseSourceHeaderSetsResponseValue()
+      throws Exception {
     server.enqueue(new MockResponse());
     Downloader.Response response1 = loader.load(URL, false);
     assertThat(response1.cached).isFalse();

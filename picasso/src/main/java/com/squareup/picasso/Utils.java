@@ -57,9 +57,8 @@ final class Utils {
   private static final int MIN_DISK_CACHE_SIZE = 5 * 1024 * 1024; // 5MB
   private static final int MAX_DISK_CACHE_SIZE = 50 * 1024 * 1024; // 50MB
   private static final int MAX_MEM_CACHE_SIZE = 20 * 1024 * 1024; // 20MB
-  private static final String[] CONTENT_ORIENTATION = new String[] {
-      MediaStore.Images.ImageColumns.ORIENTATION
-  };
+  private static final String[] CONTENT_ORIENTATION =
+      new String[] {MediaStore.Images.ImageColumns.ORIENTATION};
 
   private Utils() {
     // No instances.
@@ -115,10 +114,6 @@ final class Utils {
     if (Looper.getMainLooper().getThread() == Thread.currentThread()) {
       throw new IllegalStateException("Method call should not happen from the main thread.");
     }
-  }
-
-  static String createKey(Request request) {
-    return createKey(request.uri, request.resourceId, request.options, request.transformations);
   }
 
   static String createKey(Uri uri, int resourceId, PicassoBitmapOptions options,
