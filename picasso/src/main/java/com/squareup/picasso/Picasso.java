@@ -270,7 +270,7 @@ public class Picasso {
       try {
         bitmap = loadFromType(request);
       } catch (OutOfMemoryError e) {
-        throw new IOException("Failed to decode request: " + request, e);
+        throw new IOException("Failed to decode request: " + request).initCause(e);
       }
 
       if (bitmap != null && !request.skipCache) {
