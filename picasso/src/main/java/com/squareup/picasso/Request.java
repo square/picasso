@@ -63,6 +63,7 @@ class Request implements Runnable {
   final int errorResId;
   final Drawable errorDrawable;
   final String key;
+  final boolean preferHighRes;
 
   Future<?> future;
   Bitmap result;
@@ -72,7 +73,7 @@ class Request implements Runnable {
 
   Request(Picasso picasso, Uri uri, int resourceId, ImageView imageView,
       PicassoBitmapOptions options, List<Transformation> transformations, boolean skipCache,
-      boolean noFade, int errorResId, Drawable errorDrawable) {
+      boolean noFade, int errorResId, Drawable errorDrawable, boolean preferHighRes) {
     this.picasso = picasso;
     this.uri = uri;
     this.resourceId = resourceId;
@@ -85,6 +86,7 @@ class Request implements Runnable {
     this.errorDrawable = errorDrawable;
     this.retryCount = DEFAULT_RETRY_COUNT;
     this.key = createKey(this);
+    this.preferHighRes = preferHighRes;
   }
 
   Object getTarget() {

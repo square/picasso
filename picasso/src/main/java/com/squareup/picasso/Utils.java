@@ -256,7 +256,8 @@ final class Utils {
     return Math.min(size, MAX_MEM_CACHE_SIZE);
   }
 
-  public static InputStream getContactPhotoStream(ContentResolver contentResolver, Uri uri) {
+  public static InputStream getContactPhotoStream(ContentResolver contentResolver, Uri uri,
+      boolean preferHighRes) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
       if (uri.toString().startsWith(ContactsContract.Contacts.CONTENT_LOOKUP_URI.toString())) {
         uri = ContactsContract.Contacts.lookupContact(contentResolver, uri);
@@ -266,7 +267,7 @@ final class Utils {
       }
       return openContactPhotoInputStream(contentResolver, uri);
     } else {
-      return ContactPhotoStreamIcs.get(contentResolver, uri);
+      return ContactPhotoStreamIcs.get(contentResolver, uri, preferHighRes);
     }
   }
 
@@ -304,8 +305,8 @@ final class Utils {
 
   @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
   private static class ContactPhotoStreamIcs {
-    static InputStream get(ContentResolver contentResolver, Uri uri) {
-      return openContactPhotoInputStream(contentResolver, uri, true);
+    static InputStream get(ContentResolver contentResolver, Uri uri, boolean preferHighRes) {
+      return openContactPhotoInputStream(contentResolver, uri, preferHighRes);
     }
   }
 
