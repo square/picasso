@@ -393,7 +393,8 @@ public class Picasso {
         ContentResolver contentResolver = context.getContentResolver();
         if (Contacts.CONTENT_URI.getHost().equals(uri.getHost()) //
             && !uri.getPathSegments().contains(Contacts.Photo.CONTENT_DIRECTORY)) {
-          InputStream contactStream = Utils.getContactPhotoStream(contentResolver, uri);
+          InputStream contactStream = Utils.getContactPhotoStream(contentResolver, uri,
+              request.preferHighRes);
           result = decodeStream(contactStream, options);
         } else {
           exifRotation = Utils.getContentProviderExifRotation(contentResolver, uri);

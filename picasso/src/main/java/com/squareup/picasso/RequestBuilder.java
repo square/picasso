@@ -45,17 +45,20 @@ public class RequestBuilder {
   private Drawable placeholderDrawable;
   private int errorResId;
   private Drawable errorDrawable;
+  private boolean preferHighRes;
 
   RequestBuilder(Picasso picasso, Uri uri, int resourceId) {
     this.picasso = picasso;
     this.uri = uri;
     this.resourceId = resourceId;
+    this.preferHighRes = true;
   }
 
   @TestOnly RequestBuilder() {
     this.picasso = null;
     this.uri = null;
     this.resourceId = 0;
+    this.preferHighRes = true;
   }
 
   private PicassoBitmapOptions getOptions() {
@@ -288,6 +291,15 @@ public class RequestBuilder {
     return this;
   }
 
+  /**
+   * This request should fetch a contact thumbnail instead of a high resolution picture whenever
+   * possible.
+   */
+  public RequestBuilder preferThumbnail() {
+    preferHighRes = false;
+    return this;
+  }
+
   /** Synchronously fulfill this request. Must not be called from the main thread. */
   public Bitmap get() throws IOException {
     checkNotMain();
@@ -298,7 +310,7 @@ public class RequestBuilder {
 
     Request request =
         new Request(picasso, uri, resourceId, null, options, transformations, skipCache, false, 0,
-            null);
+            null, preferHighRes);
     return picasso.resolveRequest(request);
   }
 
@@ -355,7 +367,7 @@ public class RequestBuilder {
     if (hasItemToLoad) {
       Request request =
           new Request(picasso, uri, resourceId, target, options, transformations, skipCache, noFade,
-              errorResId, errorDrawable);
+              errorResId, errorDrawable, preferHighRes);
       picasso.submit(request);
     } else {
       picasso.cancelRequest(target);
@@ -380,7 +392,7 @@ public class RequestBuilder {
 
     Request request =
         new TargetRequest(picasso, uri, resourceId, target, strong, options, transformations,
-            skipCache);
+            skipCache, preferHighRes);
     picasso.submit(request);
   }
 }
