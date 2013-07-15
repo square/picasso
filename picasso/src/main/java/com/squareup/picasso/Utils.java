@@ -236,17 +236,18 @@ final class Utils {
 
   static int calculateDiskCacheSize(File dir) {
   int size = 0;
-	
-	try{
-		StatFs statFs = new StatFs(dir.getAbsolutePath());
-		int available = statFs.getBlockCount() * statFs.getBlockSize();
-		// Target 2% of the total space.
-		size = available / 50;
-	}catch(IllegalArgumentException e){
-		// If can't access dir, assume min size.  
-		size = MIN_DISK_CACHE_SIZE;
-	}
-	// Bound inside min/max size for disk cache.
+
+    try {
+      StatFs statFs = new StatFs(dir.getAbsolutePath());
+      int available = statFs.getBlockCount() * statFs.getBlockSize();
+      // Target 2% of the total space.
+      size = available / 50;
+    } catch(IllegalArgumentException e) {
+      // If can't access dir, assume min size.  
+      size = MIN_DISK_CACHE_SIZE;
+    }
+    
+    // Bound inside min/max size for disk cache.
     return Math.max(Math.min(size, MAX_DISK_CACHE_SIZE), MIN_DISK_CACHE_SIZE);
   }
 
