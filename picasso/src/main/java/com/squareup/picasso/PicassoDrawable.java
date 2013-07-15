@@ -230,10 +230,8 @@ final class PicassoDrawable extends Drawable {
     loadedFrom = null;
 
     if (placeholderResId != 0) {
-      if (this.placeholderResId != placeholderResId) {
-        this.placeHolderDrawable = context.getResources().getDrawable(placeholderResId);
-        this.placeHolderDrawable.setBounds(getBounds());
-      }
+      this.placeHolderDrawable = context.getResources().getDrawable(placeholderResId);
+      this.placeHolderDrawable.setBounds(getBounds());
     } else if (this.placeHolderDrawable != placeHolderDrawable) {
       this.placeHolderDrawable = placeHolderDrawable;
       this.placeHolderDrawable.setBounds(getBounds());
