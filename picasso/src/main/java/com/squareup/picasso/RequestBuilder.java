@@ -296,15 +296,19 @@ public class RequestBuilder {
       return null;
     }
 
-    Request request =
-        new Request(picasso, uri, resourceId, null, options, transformations, skipCache, false, 0,
-            null, null);
+    Request request = new GetRequest(picasso, uri, resourceId, options, transformations, skipCache);
     return picasso.execute(request);
   }
 
-  /** Asynchronously fulfills the request into the specified {@link Target}. */
-  public void fetch(Target target) {
-    // TODO This will be done in a another pull request.
+  /**
+   * Asynchronously fulfills the request without a {@link Target}. This is useful when you want to
+   * warm up the cache with an image.
+   */
+  public void fetch() {
+    String requestKey = createKey(uri, resourceId, options, transformations);
+    Request request =
+        new FetchRequest(picasso, uri, resourceId, options, transformations, skipCache);
+    picasso.submit(request);
   }
 
   /**
@@ -328,7 +332,7 @@ public class RequestBuilder {
     Bitmap bitmap = picasso.quickMemoryCacheCheck(requestKey);
     if (bitmap != null) {
       picasso.cancelRequest(target);
-      target.onSuccess(bitmap);
+      target.onSuccess(bitmap, MEMORY);
       return;
     }
 
@@ -369,8 +373,8 @@ public class RequestBuilder {
     setPlaceHolder(target);
 
     Request request =
-        new Request(picasso, uri, resourceId, target, options, transformations, skipCache, noFade,
-            errorResId, errorDrawable, requestKey);
+        new ImageViewRequest(picasso, uri, resourceId, target, options, transformations, skipCache,
+            noFade, errorResId, errorDrawable, requestKey, null);
 
     picasso.submit(request);
   }

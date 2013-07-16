@@ -20,7 +20,7 @@ import android.net.Uri;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
-final class TargetRequest extends Request {
+final class TargetRequest extends Request<Target> {
 
   private final WeakReference<Target> weakTarget;
 
@@ -43,7 +43,7 @@ final class TargetRequest extends Request {
     }
     Target target = getTarget();
     if (target != null) {
-      target.onSuccess(result);
+      target.onSuccess(result, from);
       if (result.isRecycled()) {
         throw new IllegalStateException("Target callback must not recycle bitmap!");
       }
