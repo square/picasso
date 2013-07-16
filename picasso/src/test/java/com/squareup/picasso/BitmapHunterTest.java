@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2013 Square, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.squareup.picasso;
 
 import android.content.Context;
@@ -77,7 +92,6 @@ public class BitmapHunterTest {
     Request request1 = mockRequest(URI_KEY_1, URI_1, mockImageViewTarget());
     Request request2 = mockRequest(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, request1);
-    hunter.attach(request1);
     assertThat(hunter.requests).hasSize(1);
     hunter.attach(request2);
     assertThat(hunter.requests).hasSize(2);
@@ -86,7 +100,6 @@ public class BitmapHunterTest {
   @Test public void detachRequest() throws Exception {
     Request request = mockRequest(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, request);
-    hunter.attach(request);
     assertThat(hunter.requests).hasSize(1);
     hunter.detach(request);
     assertThat(hunter.requests).isEmpty();
@@ -97,7 +110,6 @@ public class BitmapHunterTest {
     Request request2 = mockRequest(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, request1);
     hunter.future = new FutureTask<Object>(mock(Runnable.class), mock(Object.class));
-    hunter.attach(request1);
     hunter.attach(request2);
     assertThat(hunter.cancel()).isFalse();
     hunter.detach(request1);

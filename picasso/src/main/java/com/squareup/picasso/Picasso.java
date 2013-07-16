@@ -203,7 +203,7 @@ public class Picasso {
     return stats.createSnapshot();
   }
 
-  // used by into() and fetch() requests.
+  // Used by into() and fetch() requests.
   void submit(Request request) {
     Object target = request.getTarget();
     if (target == null) return;
@@ -214,8 +214,7 @@ public class Picasso {
 
   // Used by get() requests.
   Bitmap execute(Request request) throws IOException {
-    BitmapHunter hunter = BitmapHunter.forRequest(context, this, dispatcher, request, downloader);
-    return hunter.hunt();
+    return BitmapHunter.forRequest(context, this, dispatcher, request, downloader).hunt();
   }
 
   Bitmap quickMemoryCacheCheck(String key) {
@@ -391,7 +390,7 @@ public class Picasso {
         downloader = Utils.createDefaultDownloader(context);
       }
       if (cache == null) {
-        cache = Cache.NONE;
+        cache = new LruCache(context);
       }
       if (service == null) {
         service = Executors.newFixedThreadPool(3, new Utils.PicassoThreadFactory());

@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2013 Square, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.squareup.picasso;
 
 import android.content.Context;
@@ -32,13 +47,13 @@ abstract class BitmapHunter implements Runnable {
   final String key;
   final Uri uri;
   final List<Transformation> transformations;
+  final List<Request> requests;
   final PicassoBitmapOptions options;
   final boolean skipCache;
 
   Bitmap result;
   Future<?> future;
   LoadedFrom loadedFrom;
-  List<Request> requests;
   Exception exception;
 
   int retryCount = DEFAULT_RETRY_COUNT;
@@ -52,6 +67,7 @@ abstract class BitmapHunter implements Runnable {
     this.options = request.options;
     this.skipCache = request.skipCache;
     this.requests = new ArrayList<Request>(4);
+    attach(request);
   }
 
   @Override public void run() {
@@ -139,6 +155,22 @@ abstract class BitmapHunter implements Runnable {
     } else {
       return new NetworkBitmapHunter(picasso, dispatcher, request, downloader);
     }
+  }
+
+  static void calculateInSampleSize(PicassoBitmapOptions options) {
+    final int height = options.outHeight;
+    final int width = options.outWidth;
+    final int reqHeight = options.targetHeight;
+    final int reqWidth = options.targetWidth;
+    int sampleSize = 1;
+    if (height > reqHeight || width > reqWidth) {
+      final int heightRatio = Math.round((float) height / (float) reqHeight);
+      final int widthRatio = Math.round((float) width / (float) reqWidth);
+      sampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+    }
+
+    options.inSampleSize = sampleSize;
+    options.inJustDecodeBounds = false;
   }
 
   static Bitmap applyCustomTransformations(List<Transformation> transformations, Bitmap result) {
