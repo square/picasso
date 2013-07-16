@@ -17,18 +17,13 @@ package com.squareup.picasso;
 
 import android.annotation.TargetApi;
 import android.app.ActivityManager;
-import android.content.ContentResolver;
 import android.content.Context;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Looper;
 import android.os.Process;
 import android.os.StatFs;
-import android.provider.ContactsContract;
-import android.provider.MediaStore;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,15 +32,9 @@ import java.util.concurrent.ThreadFactory;
 
 import static android.content.Context.ACTIVITY_SERVICE;
 import static android.content.pm.ApplicationInfo.FLAG_LARGE_HEAP;
-import static android.media.ExifInterface.ORIENTATION_NORMAL;
-import static android.media.ExifInterface.ORIENTATION_ROTATE_180;
-import static android.media.ExifInterface.ORIENTATION_ROTATE_270;
-import static android.media.ExifInterface.ORIENTATION_ROTATE_90;
-import static android.media.ExifInterface.TAG_ORIENTATION;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.HONEYCOMB_MR1;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
-import static android.provider.ContactsContract.Contacts.openContactPhotoInputStream;
 
 final class Utils {
   static final String THREAD_PREFIX = "Picasso-";
@@ -57,30 +46,9 @@ final class Utils {
   private static final int MIN_DISK_CACHE_SIZE = 5 * 1024 * 1024; // 5MB
   private static final int MAX_DISK_CACHE_SIZE = 50 * 1024 * 1024; // 50MB
   private static final int MAX_MEM_CACHE_SIZE = 20 * 1024 * 1024; // 20MB
-  private static final String[] CONTENT_ORIENTATION = new String[] {
-      MediaStore.Images.ImageColumns.ORIENTATION
-  };
 
   private Utils() {
     // No instances.
-  }
-
-  static int getContentProviderExifRotation(ContentResolver contentResolver, Uri uri) {
-    Cursor cursor = null;
-    try {
-      cursor = contentResolver.query(uri, CONTENT_ORIENTATION, null, null, null);
-      if (cursor == null || !cursor.moveToFirst()) {
-        return 0;
-      }
-      return cursor.getInt(0);
-    } catch (RuntimeException ignored) {
-      // If the orientation column doesn't exist, assume no rotation.
-      return 0;
-    } finally {
-      if (cursor != null) {
-        cursor.close();
-      }
-    }
   }
 
   static int getBitmapBytes(Bitmap bitmap) {
@@ -96,29 +64,10 @@ final class Utils {
     return result;
   }
 
-  static int getFileExifRotation(String path) throws IOException {
-    ExifInterface exifInterface = new ExifInterface(path);
-    int orientation = exifInterface.getAttributeInt(TAG_ORIENTATION, ORIENTATION_NORMAL);
-    switch (orientation) {
-      case ORIENTATION_ROTATE_90:
-        return 90;
-      case ORIENTATION_ROTATE_180:
-        return 180;
-      case ORIENTATION_ROTATE_270:
-        return 270;
-      default:
-        return 0;
-    }
-  }
-
   static void checkNotMain() {
     if (Looper.getMainLooper().getThread() == Thread.currentThread()) {
       throw new IllegalStateException("Method call should not happen from the main thread.");
     }
-  }
-
-  static String createKey(Request request) {
-    return createKey(request.uri, request.resourceId, request.options, request.transformations);
   }
 
   static String createKey(Uri uri, int resourceId, PicassoBitmapOptions options,
@@ -173,22 +122,6 @@ final class Utils {
     }
 
     return builder.toString();
-  }
-
-  static void calculateInSampleSize(PicassoBitmapOptions options) {
-    final int height = options.outHeight;
-    final int width = options.outWidth;
-    final int reqHeight = options.targetHeight;
-    final int reqWidth = options.targetWidth;
-    int sampleSize = 1;
-    if (height > reqHeight || width > reqWidth) {
-      final int heightRatio = Math.round((float) height / (float) reqHeight);
-      final int widthRatio = Math.round((float) width / (float) reqWidth);
-      sampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
-    }
-
-    options.inSampleSize = sampleSize;
-    options.inJustDecodeBounds = false;
   }
 
   static void closeQuietly(InputStream is) {
@@ -262,20 +195,6 @@ final class Utils {
     return Math.min(size, MAX_MEM_CACHE_SIZE);
   }
 
-  public static InputStream getContactPhotoStream(ContentResolver contentResolver, Uri uri) {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-      if (uri.toString().startsWith(ContactsContract.Contacts.CONTENT_LOOKUP_URI.toString())) {
-        uri = ContactsContract.Contacts.lookupContact(contentResolver, uri);
-        if (uri == null) {
-          return null;
-        }
-      }
-      return openContactPhotoInputStream(contentResolver, uri);
-    } else {
-      return ContactPhotoStreamIcs.get(contentResolver, uri);
-    }
-  }
-
   @TargetApi(Build.VERSION_CODES.HONEYCOMB)
   private static class ActivityManagerHoneycomb {
     static int getLargeMemoryClass(ActivityManager activityManager) {
@@ -305,13 +224,6 @@ final class Utils {
   private static class BitmapHoneycombMR1 {
     static int getByteCount(Bitmap bitmap) {
       return bitmap.getByteCount();
-    }
-  }
-
-  @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-  private static class ContactPhotoStreamIcs {
-    static InputStream get(ContentResolver contentResolver, Uri uri) {
-      return openContactPhotoInputStream(contentResolver, uri, true);
     }
   }
 

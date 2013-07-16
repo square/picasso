@@ -16,22 +16,24 @@
 package com.squareup.picasso;
 
 import android.graphics.Bitmap;
-import android.net.Uri;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import static com.squareup.picasso.Request.LoadedFrom;
+import static com.squareup.picasso.TestUtils.BITMAP_1;
+import static com.squareup.picasso.TestUtils.URI_1;
+import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@RunWith(RobolectricTestRunner.class) @Config(manifest = Config.NONE)
 public class TargetRequestTest {
-  private static final Uri URL = Uri.parse("http://example.com/1.png");
 
   @Test public void recyclingInSuccessThrowsException() {
-    Target recycler = new Target() {
+    Target bad = new Target() {
       @Override public void onSuccess(Bitmap bitmap) {
         bitmap.recycle();
       }
@@ -41,10 +43,10 @@ public class TargetRequestTest {
       }
     };
     Picasso picasso = mock(Picasso.class);
-    TargetRequest tr = new TargetRequest(picasso, URL, 0, recycler, false, null, null, false);
-    tr.result = Bitmap.createBitmap(10, 10, null);
+    TargetRequest tr =
+        new TargetRequest(picasso, URI_1, 0, bad, null, null, false, URI_KEY_1);
     try {
-      tr.complete();
+      tr.complete(BITMAP_1, any(LoadedFrom.class));
       fail();
     } catch (IllegalStateException expected) {
     }

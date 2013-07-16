@@ -31,4 +31,6 @@ class PicassoBitmapOptions extends BitmapFactory.Options {
   float targetPivotX;
   float targetPivotY;
   boolean hasRotationPivot;
+
+  int exifRotation;
 }

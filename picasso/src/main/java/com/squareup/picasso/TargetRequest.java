@@ -15,6 +15,7 @@
  */
 package com.squareup.picasso;
 
+import android.graphics.Bitmap;
 import android.net.Uri;
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -22,22 +23,20 @@ import java.util.List;
 final class TargetRequest extends Request {
 
   private final WeakReference<Target> weakTarget;
-  private final Target strongTarget;
 
-  TargetRequest(Picasso picasso, Uri uri, int resourceId, Target target, boolean strong,
-      PicassoBitmapOptions bitmapOptions, List<Transformation> transformations, boolean skipCache) {
-    super(picasso, uri, resourceId, null, bitmapOptions, transformations, skipCache, false, 0,
-        null);
-    this.weakTarget =
-        strong ? null : new WeakReference<Target>(target, picasso.referenceQueue);
-    this.strongTarget = strong ? target : null;
+  TargetRequest(Picasso picasso, Uri uri, int resourceId, Target target,
+      PicassoBitmapOptions bitmapOptions, List<Transformation> transformations, boolean skipCache,
+      String key) {
+    super(picasso, uri, resourceId, null, bitmapOptions, transformations, skipCache, false, 0, null,
+        key);
+    this.weakTarget = new WeakReference<Target>(target, picasso.referenceQueue);
   }
 
   @Override Target getTarget() {
-    return strongTarget != null ? strongTarget : weakTarget.get();
+    return weakTarget.get();
   }
 
-  @Override void complete() {
+  @Override void complete(Bitmap result, LoadedFrom from) {
     if (result == null) {
       throw new AssertionError(
           String.format("Attempted to complete request with no result!\n%s", this));
