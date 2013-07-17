@@ -29,12 +29,13 @@ import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 
-@RunWith(RobolectricTestRunner.class) @Config(manifest = Config.NONE)
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class TargetRequestTest {
 
   @Test public void recyclingInSuccessThrowsException() {
     Target bad = new Target() {
-      @Override public void onSuccess(Bitmap bitmap) {
+      @Override public void onSuccess(Bitmap bitmap, LoadedFrom from) {
         bitmap.recycle();
       }
 

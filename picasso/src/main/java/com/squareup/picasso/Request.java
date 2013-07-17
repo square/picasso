@@ -15,18 +15,15 @@
  */
 package com.squareup.picasso;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.widget.ImageView;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
-class Request {
-
+abstract class Request<T> {
   enum LoadedFrom {
     MEMORY(Color.GREEN),
     DISK(Color.YELLOW),
@@ -51,7 +48,7 @@ class Request {
   final Picasso picasso;
   final Uri uri;
   final int resourceId;
-  final WeakReference<ImageView> target;
+  final WeakReference<T> target;
   final PicassoBitmapOptions options;
   final List<Transformation> transformations;
   final boolean skipCache;
@@ -62,13 +59,13 @@ class Request {
 
   boolean cancelled;
 
-  Request(Picasso picasso, Uri uri, int resourceId, ImageView imageView,
+  Request(Picasso picasso, Uri uri, int resourceId, T target,
       PicassoBitmapOptions options, List<Transformation> transformations, boolean skipCache,
       boolean noFade, int errorResId, Drawable errorDrawable, String key) {
     this.picasso = picasso;
     this.uri = uri;
     this.resourceId = resourceId;
-    this.target = new RequestWeakReference<ImageView>(this, imageView, picasso.referenceQueue);
+    this.target = new RequestWeakReference<T>(this, target, picasso.referenceQueue);
     this.options = options;
     this.transformations = transformations;
     this.skipCache = skipCache;
@@ -78,34 +75,12 @@ class Request {
     this.key = key;
   }
 
-  Object getTarget() {
+  abstract void complete(Bitmap result, LoadedFrom from);
+
+  abstract void error();
+
+  T getTarget() {
     return target.get();
-  }
-
-  void complete(Bitmap result, LoadedFrom from) {
-    if (result == null) {
-      throw new AssertionError(
-          String.format("Attempted to complete request with no result!\n%s", this));
-    }
-
-    ImageView target = this.target.get();
-    if (target != null) {
-      Context context = picasso.context;
-      boolean debugging = picasso.debugging;
-      PicassoDrawable.setBitmap(target, context, result, from, noFade, debugging);
-    }
-  }
-
-  void error() {
-    ImageView target = this.target.get();
-    if (target == null) {
-      return;
-    }
-    if (errorResId != 0) {
-      target.setImageResource(errorResId);
-    } else if (errorDrawable != null) {
-      target.setImageDrawable(errorDrawable);
-    }
   }
 
   Uri getUri() {
