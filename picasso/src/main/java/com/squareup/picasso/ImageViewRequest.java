@@ -54,4 +54,9 @@ class ImageViewRequest extends Request<ImageView> {
       callback.onError();
     }
   }
+
+  @Override void cancel() {
+    super.cancel();
+    callback = null;
+  }
 }

@@ -314,10 +314,12 @@ public class RequestBuilder {
   }
 
   /**
-   * Asynchronously fulfills the request into the specified {@link Target}.
+   * Asynchronously fulfills the request into the specified {@link Target}. In most cases, you
+   * should use this when you are dealing with a custom {@link android.view.View} which should
+   * implement the {@link Target} interface.
    * <p/>
-   * <em>Note:</em> This method keeps a weak reference to the {@link Target} instance and will
-   * automatically support object recycling.
+   * <em>Note:</em> This method keeps a weak reference to the {@link Target} instance and will be
+   * garbage collected if you do not keep a strong reference to it.
    */
   public void into(Target target) {
     if (target == null) {
@@ -348,10 +350,23 @@ public class RequestBuilder {
   /**
    * Asynchronously fulfills the request into the specified {@link ImageView}.
    * <p/>
-   * This method keeps a weak reference to the view and will automatically support object
-   * recycling.
+   * <em>Note:</em> This method keeps a weak reference to the {@link ImageView} instance and will
+   * automatically support object recycling.
    */
   public void into(ImageView target) {
+    into(target, null);
+  }
+
+  /**
+   * Asynchronously fulfills the request into the specified {@link ImageView} and invokes the
+   * target {@link Callback} if it's not {@code null}.
+   * <p/>
+   * <em>Note:</em> The {@link Callback} param is a strong reference and will prevent your
+   * {@link android.app.Activity} or {@link android.app.Fragment} from being garbage collected. If
+   * you use this method, it is <b>strongly</b> recommended you invoke an adjacent
+   * {@link Picasso#cancelRequest(android.widget.ImageView)} call to prevent temporary leaking.
+   */
+  public void into(ImageView target, Callback callback) {
     if (target == null) {
       throw new IllegalArgumentException("Target must not be null.");
     }
@@ -376,7 +391,7 @@ public class RequestBuilder {
 
     Request request =
         new ImageViewRequest(picasso, uri, resourceId, target, options, transformations, skipCache,
-            noFade, errorResId, errorDrawable, requestKey, null);
+            noFade, errorResId, errorDrawable, requestKey, callback);
 
     picasso.submit(request);
   }
