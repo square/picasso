@@ -29,7 +29,7 @@ final class TargetRequest extends Request<Target> {
       String key) {
     super(picasso, uri, resourceId, null, bitmapOptions, transformations, skipCache, false, 0, null,
         key);
-    this.weakTarget = new WeakReference<Target>(target, picasso.referenceQueue);
+    this.weakTarget = new RequestWeakReference<Target>(this, target, picasso.referenceQueue);
   }
 
   @Override Target getTarget() {
