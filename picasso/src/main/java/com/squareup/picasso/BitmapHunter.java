@@ -27,8 +27,7 @@ import java.util.concurrent.Future;
 import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentResolver.SCHEME_FILE;
-import static android.provider.ContactsContract.Contacts.CONTENT_URI;
-import static android.provider.ContactsContract.Contacts.Photo.CONTENT_DIRECTORY;
+import static android.provider.ContactsContract.Contacts;
 import static com.squareup.picasso.Request.LoadedFrom;
 
 abstract class BitmapHunter implements Runnable {
@@ -142,8 +141,8 @@ abstract class BitmapHunter implements Runnable {
     Uri uri = request.getUri();
     String scheme = uri.getScheme();
     if (SCHEME_CONTENT.equals(scheme)) {
-      if (CONTENT_URI.getHost().equals(uri.getHost()) //
-          && !uri.getPathSegments().contains(CONTENT_DIRECTORY)) {
+      if (Contacts.CONTENT_URI.getHost().equals(uri.getHost()) //
+          && !uri.getPathSegments().contains(Contacts.Photo.CONTENT_DIRECTORY)) {
         return new ContactsPhotoBitmapHunter(context, picasso, dispatcher, request);
       } else {
         return new ContentProviderBitmapHunter(context, picasso, dispatcher, request);
