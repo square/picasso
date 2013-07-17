@@ -248,7 +248,7 @@ public class Picasso {
 
   private void cancelExistingRequest(Request existing) {
     if (existing != null) {
-      existing.cancelled = true;
+      existing.cancel();
       dispatcher.dispatchCancel(existing);
     }
   }
