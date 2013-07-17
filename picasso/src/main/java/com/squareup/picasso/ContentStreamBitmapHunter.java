@@ -29,9 +29,9 @@ class ContentStreamBitmapHunter extends BitmapHunter {
 
   final Context context;
 
-  ContentStreamBitmapHunter(Context context, Picasso picasso, Dispatcher dispatcher,
+  ContentStreamBitmapHunter(Context context, Picasso picasso, Dispatcher dispatcher, Cache cache,
       Request request) {
-    super(picasso, dispatcher, request);
+    super(picasso, dispatcher, cache, request);
     this.context = context;
   }
 

@@ -24,7 +24,6 @@ import android.os.Message;
 import android.os.Process;
 import android.widget.ImageView;
 import java.io.File;
-import java.io.IOException;
 import java.lang.ref.ReferenceQueue;
 import java.util.List;
 import java.util.Map;
@@ -211,11 +210,6 @@ public class Picasso {
       targetToRequest.put(target, request);
     }
     dispatcher.dispatchSubmit(request);
-  }
-
-  // Used by get() requests.
-  Bitmap execute(Request request) throws IOException {
-    return BitmapHunter.forRequest(context, this, dispatcher, request, downloader).hunt();
   }
 
   Bitmap quickMemoryCacheCheck(String key) {
