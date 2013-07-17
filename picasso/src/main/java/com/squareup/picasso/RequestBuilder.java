@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.jetbrains.annotations.TestOnly;
 
+import static com.squareup.picasso.BitmapHunter.forRequest;
 import static com.squareup.picasso.Request.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Utils.checkNotMain;
 import static com.squareup.picasso.Utils.createKey;
@@ -297,7 +298,8 @@ public class RequestBuilder {
     }
 
     Request request = new GetRequest(picasso, uri, resourceId, options, transformations, skipCache);
-    return picasso.execute(request);
+    return forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache, request,
+        picasso.downloader).hunt();
   }
 
   /**
