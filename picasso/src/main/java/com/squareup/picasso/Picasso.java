@@ -206,9 +206,10 @@ public class Picasso {
   // Used by into() and fetch() requests.
   void submit(Request request) {
     Object target = request.getTarget();
-    if (target == null) return;
-    cancelExistingRequest(target);
-    targetToRequest.put(target, request);
+    if (target != null) {
+      cancelExistingRequest(target);
+      targetToRequest.put(target, request);
+    }
     dispatcher.dispatchSubmit(request);
   }
 
