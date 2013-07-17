@@ -65,15 +65,16 @@ public class PicassoTest {
     picasso = new Picasso(context, downloader, dispatcher, cache, listener, stats, false);
   }
 
-  @Test public void submitWithNullTargetSkips() throws Exception {
+  @Test public void submitWithNullTargetInvokesDispatcher() throws Exception {
     Request request = mockRequest(URI_KEY_1, URI_1, null);
     picasso.submit(request);
     assertThat(picasso.targetToRequest).isEmpty();
-    verifyZeroInteractions(dispatcher);
+    verify(dispatcher).dispatchSubmit(request);
   }
 
   @Test public void submitWithTargetInvokesDispatcher() throws Exception {
     Request request = mockRequest(URI_KEY_1, URI_1, mockImageViewTarget());
+    assertThat(picasso.targetToRequest).isEmpty();
     picasso.submit(request);
     assertThat(picasso.targetToRequest).hasSize(1);
     verify(dispatcher).dispatchSubmit(request);
