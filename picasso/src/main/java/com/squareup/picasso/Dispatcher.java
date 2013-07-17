@@ -16,7 +16,6 @@
 package com.squareup.picasso;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -26,7 +25,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
-import static com.squareup.picasso.Request.LoadedFrom.MEMORY;
+import static com.squareup.picasso.BitmapHunter.forRequest;
 
 class Dispatcher {
   private static final int RETRY_DELAY = 500;
@@ -87,16 +86,9 @@ class Dispatcher {
       hunter.attach(request);
       return;
     }
-    hunter = BitmapHunter.forRequest(context, request.getPicasso(), this, request, downloader);
-    Bitmap cached = loadFromCache(request);
-    if (cached != null) {
-      hunter.loadedFrom = MEMORY;
-      hunter.result = cached;
-      performComplete(hunter);
-      return;
-    }
-    hunterMap.put(request.getKey(), hunter);
+    hunter = forRequest(context, request.getPicasso(), this, cache, request, downloader);
     hunter.future = service.submit(hunter);
+    hunterMap.put(request.getKey(), hunter);
   }
 
   void performCancel(Request request) {
@@ -132,11 +124,6 @@ class Dispatcher {
   void performError(BitmapHunter hunter) {
     hunterMap.remove(hunter.getKey());
     mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(HUNTER_FAILED, hunter));
-  }
-
-  private Bitmap loadFromCache(Request request) {
-    if (request.skipCache) return null;
-    return cache.get(request.getKey());
   }
 
   private class DispatcherHandler extends Handler {

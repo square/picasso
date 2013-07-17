@@ -28,9 +28,9 @@ class ContentProviderBitmapHunter extends ContentStreamBitmapHunter {
   private static final String[] CONTENT_ORIENTATION =
       new String[] {MediaStore.Images.ImageColumns.ORIENTATION};
 
-  ContentProviderBitmapHunter(Context context, Picasso picasso, Dispatcher dispatcher,
+  ContentProviderBitmapHunter(Context context, Picasso picasso, Dispatcher dispatcher, Cache cache,
       Request request) {
-    super(context, picasso, dispatcher, request);
+    super(context, picasso, dispatcher, cache, request);
   }
 
   @Override Bitmap decode(Uri uri, PicassoBitmapOptions options) throws IOException {

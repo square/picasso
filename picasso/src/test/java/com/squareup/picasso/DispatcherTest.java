@@ -68,15 +68,6 @@ public class DispatcherTest {
     verify(service).submit(any(BitmapHunter.class));
   }
 
-  @Test public void performSubmitWithCachedPerformsComplete() throws Exception {
-    Request request = mockRequest(URI_KEY_1, URI_1);
-    when(cache.get(request.getKey())).thenReturn(BITMAP_1);
-    dispatcher.performSubmit(request);
-    assertThat(dispatcher.hunterMap).isEmpty();
-    verifyZeroInteractions(service);
-    verify(mainThreadHandler).sendMessage(any(Message.class));
-  }
-
   @Test public void performCancelDetachesRequestAndCleansMap() throws Exception {
     Request request = mockRequest(URI_KEY_1, URI_1);
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
