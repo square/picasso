@@ -15,11 +15,8 @@
  */
 package com.squareup.picasso;
 
-import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.util.DisplayMetrics;
 import android.widget.ImageView;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,7 +34,6 @@ import static com.squareup.picasso.TestUtils.mockImageViewTarget;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(RobolectricTestRunner.class) @Config(manifest = Config.NONE)
 public class ImageViewRequestTest {
