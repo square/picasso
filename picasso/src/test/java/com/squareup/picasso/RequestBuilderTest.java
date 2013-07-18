@@ -242,7 +242,7 @@ public class RequestBuilderTest {
 
   @Test public void noImageWithPlaceholderDoesNotSubmitAndSetsPlaceholder() {
     Context context = Robolectric.application;
-    Picasso picasso = spy(new Picasso(context, null, null, null, null, null, false));
+    Picasso picasso = spy(new Picasso(context, null, null, null, null, false));
     ImageView target = mock(ImageView.class);
 
     new RequestBuilder(picasso, null, 0).placeholder(R.drawable.ic_dialog_map).into(target);
