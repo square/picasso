@@ -19,18 +19,6 @@ public class SampleGalleryActivity extends PicassoSampleActivity {
   private ViewAnimator animator;
   private String image;
 
-  private void loadImage() {
-    // Index 1 is the progress bar. Show it while we're loading the image.
-    animator.setDisplayedChild(1);
-
-    Picasso.with(this).load(image).into(imageView, new EmptyCallback() {
-      @Override public void onSuccess() {
-        // Index 0 is the image view.
-        animator.setDisplayedChild(0);
-      }
-    });
-  }
-
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
@@ -77,5 +65,17 @@ public class SampleGalleryActivity extends PicassoSampleActivity {
     } else {
       super.onActivityResult(requestCode, resultCode, data);
     }
+  }
+
+  private void loadImage() {
+    // Index 1 is the progress bar. Show it while we're loading the image.
+    animator.setDisplayedChild(1);
+
+    Picasso.with(this).load(image).into(imageView, new EmptyCallback() {
+      @Override public void onSuccess() {
+        // Index 0 is the image view.
+        animator.setDisplayedChild(0);
+      }
+    });
   }
 }
