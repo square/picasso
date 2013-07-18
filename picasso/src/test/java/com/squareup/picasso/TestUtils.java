@@ -2,6 +2,7 @@ package com.squareup.picasso;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.widget.ImageView;
 import java.io.File;
@@ -69,6 +70,10 @@ public class TestUtils {
 
   static Callback mockCallback() {
     return mock(Callback.class);
+  }
+
+  static NetworkInfo mockNetworkInfo() {
+    return mock(NetworkInfo.class);
   }
 
   static BitmapHunter mockHunter(String key, Bitmap result, boolean skipCache) {
