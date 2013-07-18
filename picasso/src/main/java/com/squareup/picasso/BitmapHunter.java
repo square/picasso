@@ -87,7 +87,7 @@ abstract class BitmapHunter implements Runnable {
     }
   }
 
-  abstract Bitmap decode(Uri uri, PicassoBitmapOptions options) throws IOException;
+  abstract Bitmap decode(Uri uri, PicassoBitmapOptions options, int retryCount) throws IOException;
 
   abstract LoadedFrom getLoadedFrom();
 
@@ -102,7 +102,7 @@ abstract class BitmapHunter implements Runnable {
       }
     }
 
-    bitmap = decode(uri, options);
+    bitmap = decode(uri, options, retryCount);
 
     if (bitmap != null && (options != null || transformations != null)) {
       synchronized (DECODE_LOCK) {

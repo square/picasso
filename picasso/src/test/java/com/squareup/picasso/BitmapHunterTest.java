@@ -100,7 +100,7 @@ public class BitmapHunterTest {
         spy(new TestableBitmapHunter(picasso, dispatcher, cache, request, BITMAP_1));
     Bitmap result = hunter.hunt();
     verify(cache).get(URI_KEY_1);
-    verify(hunter).decode(URI_1, request.options);
+    verify(hunter).decode(URI_1, request.options, hunter.retryCount);
     assertThat(result).isEqualTo(BITMAP_1);
   }
 
@@ -110,7 +110,7 @@ public class BitmapHunterTest {
     BitmapHunter hunter = spy(new TestableBitmapHunter(picasso, dispatcher, cache, request, BITMAP_1));
     Bitmap result = hunter.hunt();
     verify(cache).get(URI_KEY_1);
-    verify(hunter, never()).decode(URI_1, request.options);
+    verify(hunter, never()).decode(URI_1, request.options, hunter.retryCount);
     assertThat(result).isEqualTo(BITMAP_1);
   }
 
@@ -448,7 +448,7 @@ public class BitmapHunterTest {
       this.throwException = throwException;
     }
 
-    @Override Bitmap decode(Uri uri, PicassoBitmapOptions options) throws IOException {
+    @Override Bitmap decode(Uri uri, PicassoBitmapOptions options, int retryCount) throws IOException {
       if (throwException) {
         throw new IOException("Failed.");
       }

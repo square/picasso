@@ -34,11 +34,12 @@ class FileBitmapHunter extends ContentStreamBitmapHunter {
     super(context, picasso, dispatcher, cache, request);
   }
 
-  @Override Bitmap decode(Uri uri, PicassoBitmapOptions options) throws IOException {
+  @Override Bitmap decode(Uri uri, PicassoBitmapOptions options, int retryCount)
+      throws IOException {
     if (options != null) {
       options.exifRotation = getFileExifRotation(uri.getPath());
     }
-    return super.decode(uri, options);
+    return super.decode(uri, options, retryCount);
   }
 
   static int getFileExifRotation(String path) throws IOException {
