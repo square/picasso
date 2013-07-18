@@ -59,9 +59,9 @@ abstract class Request<T> {
 
   boolean cancelled;
 
-  Request(Picasso picasso, Uri uri, int resourceId, T target,
-      PicassoBitmapOptions options, List<Transformation> transformations, boolean skipCache,
-      boolean noFade, int errorResId, Drawable errorDrawable, String key) {
+  Request(Picasso picasso, Uri uri, int resourceId, T target, PicassoBitmapOptions options,
+      List<Transformation> transformations, boolean skipCache, boolean noFade, int errorResId,
+      Drawable errorDrawable, String key) {
     this.picasso = picasso;
     this.uri = uri;
     this.resourceId = resourceId;
