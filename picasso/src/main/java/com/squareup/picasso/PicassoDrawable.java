@@ -188,6 +188,8 @@ final class PicassoDrawable extends Drawable {
   @Override public int getIntrinsicWidth() {
     if (bitmapDrawable != null) {
       return bitmapDrawable.getIntrinsicWidth();
+    } else if (placeHolderDrawable != null) {
+      return placeHolderDrawable.getIntrinsicWidth();
     }
     return -1;
   }
@@ -195,6 +197,8 @@ final class PicassoDrawable extends Drawable {
   @Override public int getIntrinsicHeight() {
     if (bitmapDrawable != null) {
       return bitmapDrawable.getIntrinsicHeight();
+    } else if (placeHolderDrawable != null) {
+      return placeHolderDrawable.getIntrinsicHeight();
     }
     return -1;
   }
