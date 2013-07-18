@@ -36,15 +36,14 @@ class NetworkBitmapHunter extends BitmapHunter {
     this.downloader = downloader;
   }
 
-  @Override Bitmap decode(Uri uri, PicassoBitmapOptions options) throws IOException {
+  @Override Bitmap decode(Uri uri, PicassoBitmapOptions options, int retryCount)
+      throws IOException {
     InputStream is = null;
     try {
-      is = getInputStream();
+      is = getInputStream(retryCount == 0);
       return decodeStream(is, options);
     } finally {
-      if (is != null) {
-        Utils.closeQuietly(is);
-      }
+      Utils.closeQuietly(is);
     }
   }
 
@@ -52,8 +51,8 @@ class NetworkBitmapHunter extends BitmapHunter {
     return loadedFrom;
   }
 
-  private InputStream getInputStream() throws IOException {
-    Response response = downloader.load(uri, false);
+  private InputStream getInputStream(boolean localCacheOnly) throws IOException {
+    Response response = downloader.load(uri, localCacheOnly);
     loadedFrom = response.cached ? DISK : NETWORK;
     return response.stream;
   }

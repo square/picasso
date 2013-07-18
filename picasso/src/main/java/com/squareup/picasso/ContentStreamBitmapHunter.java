@@ -35,7 +35,8 @@ class ContentStreamBitmapHunter extends BitmapHunter {
     this.context = context;
   }
 
-  @Override Bitmap decode(Uri uri, PicassoBitmapOptions options) throws IOException {
+  @Override Bitmap decode(Uri uri, PicassoBitmapOptions options, int retryCount)
+      throws IOException {
     return decodeContentStream(uri, options);
   }
 
