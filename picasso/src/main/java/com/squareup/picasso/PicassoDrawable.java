@@ -48,8 +48,9 @@ final class PicassoDrawable extends Drawable {
     if (picassoDrawable != null) {
       picassoDrawable.setBitmap(bitmap, loadedFrom, noFade);
     } else {
-      target.setImageDrawable(new PicassoDrawable(context, bitmap, loadedFrom, noFade, debugging));
+      picassoDrawable = new PicassoDrawable(context, bitmap, loadedFrom, noFade, debugging);
     }
+    target.setImageDrawable(picassoDrawable);
   }
 
   /**
@@ -62,9 +63,9 @@ final class PicassoDrawable extends Drawable {
     if (picassoDrawable != null) {
       picassoDrawable.setPlaceholder(placeholderResId, placeholderDrawable);
     } else {
-      target.setImageDrawable(
-          new PicassoDrawable(context, placeholderResId, placeholderDrawable, debugging));
+      picassoDrawable = new PicassoDrawable(context, placeholderResId, placeholderDrawable, debugging);
     }
+    target.setImageDrawable(picassoDrawable);
   }
 
   /**
