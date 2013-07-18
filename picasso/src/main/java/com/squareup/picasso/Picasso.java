@@ -82,7 +82,6 @@ public class Picasso {
   static Picasso singleton = null;
 
   final Context context;
-  final Downloader downloader;
   final Dispatcher dispatcher;
   final Cache cache;
   final Listener listener;
@@ -92,10 +91,9 @@ public class Picasso {
 
   boolean debugging;
 
-  Picasso(Context context, Downloader downloader, Dispatcher dispatcher, Cache cache,
-      Listener listener, Stats stats, boolean debugging) {
+  Picasso(Context context, Dispatcher dispatcher, Cache cache, Listener listener, Stats stats,
+      boolean debugging) {
     this.context = context;
-    this.downloader = downloader;
     this.dispatcher = dispatcher;
     this.cache = cache;
     this.listener = listener;
@@ -395,7 +393,7 @@ public class Picasso {
 
       Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, downloader, cache);
 
-      return new Picasso(context, downloader, dispatcher, cache, listener, stats, debugging);
+      return new Picasso(context, dispatcher, cache, listener, stats, debugging);
     }
   }
 }
