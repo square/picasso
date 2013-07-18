@@ -299,7 +299,7 @@ public class RequestBuilder {
 
     Request request = new GetRequest(picasso, uri, resourceId, options, transformations, skipCache);
     return forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache, request,
-        picasso.dispatcher.downloader).hunt();
+        picasso.dispatcher.downloader, Utils.isAirplaneModeOn(picasso.context)).hunt();
   }
 
   /**

@@ -147,7 +147,7 @@ abstract class BitmapHunter implements Runnable {
   }
 
   static BitmapHunter forRequest(Context context, Picasso picasso, Dispatcher dispatcher,
-      Cache cache, Request request, Downloader downloader) {
+      Cache cache, Request request, Downloader downloader, boolean airplaneMode) {
     if (request.getResourceId() != 0) {
       return new ResourceBitmapHunter(context, picasso, dispatcher, cache, request);
     }
@@ -165,7 +165,7 @@ abstract class BitmapHunter implements Runnable {
     } else if (SCHEME_ANDROID_RESOURCE.equals(scheme)) {
       return new ResourceBitmapHunter(context, picasso, dispatcher, cache, request);
     } else {
-      return new NetworkBitmapHunter(picasso, dispatcher, cache, request, downloader);
+      return new NetworkBitmapHunter(picasso, dispatcher, cache, request, downloader, airplaneMode);
     }
   }
 
