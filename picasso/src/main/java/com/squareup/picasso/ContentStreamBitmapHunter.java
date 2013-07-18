@@ -55,10 +55,9 @@ class ContentStreamBitmapHunter extends BitmapHunter {
       }
       calculateInSampleSize(options);
     }
-    InputStream is = null;
+    InputStream is = contentResolver.openInputStream(path);
     try {
-      is = contentResolver.openInputStream(path);
-      return BitmapFactory.decodeStream(contentResolver.openInputStream(path), null, options);
+      return BitmapFactory.decodeStream(is, null, options);
     } finally {
       Utils.closeQuietly(is);
     }
