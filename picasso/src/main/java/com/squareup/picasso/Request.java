@@ -79,6 +79,10 @@ abstract class Request<T> {
 
   abstract void error();
 
+  void cancel() {
+    cancelled = true;
+  }
+
   T getTarget() {
     return target.get();
   }

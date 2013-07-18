@@ -1,9 +1,11 @@
 package com.squareup.picasso;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.widget.ImageView;
 import java.io.File;
+import org.robolectric.Robolectric;
 
 import static android.provider.ContactsContract.Contacts.CONTENT_URI;
 import static android.provider.ContactsContract.Contacts.Photo.CONTENT_DIRECTORY;
@@ -63,6 +65,10 @@ public class TestUtils {
 
   static Target mockTarget() {
     return mock(Target.class);
+  }
+
+  static Callback mockCallback() {
+    return mock(Callback.class);
   }
 
   static BitmapHunter mockHunter(String key, Bitmap result, boolean skipCache) {

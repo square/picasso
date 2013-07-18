@@ -134,8 +134,8 @@ public class PicassoTest {
     picasso.submit(request);
     assertThat(picasso.targetToRequest).hasSize(1);
     picasso.cancelRequest(target);
-    assertThat(request.cancelled).isTrue();
     assertThat(picasso.targetToRequest).isEmpty();
+    verify(request).cancel();
     verify(dispatcher).dispatchCancel(request);
   }
 
@@ -145,8 +145,8 @@ public class PicassoTest {
     picasso.submit(request);
     assertThat(picasso.targetToRequest).hasSize(1);
     picasso.cancelRequest(target);
-    assertThat(request.cancelled).isTrue();
     assertThat(picasso.targetToRequest).isEmpty();
+    verify(request).cancel();
     verify(dispatcher).dispatchCancel(request);
   }
 
