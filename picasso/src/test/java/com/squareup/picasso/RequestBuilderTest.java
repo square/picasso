@@ -16,31 +16,188 @@
 package com.squareup.picasso;
 
 import android.R;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import static com.squareup.picasso.Request.LoadedFrom.MEMORY;
+import static com.squareup.picasso.TestUtils.BITMAP_1;
+import static com.squareup.picasso.TestUtils.URI_1;
+import static com.squareup.picasso.TestUtils.URI_KEY_1;
+import static com.squareup.picasso.TestUtils.mockImageViewTarget;
+import static com.squareup.picasso.TestUtils.mockTarget;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.api.Assertions.fail;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class RequestBuilderTest {
-  @Test public void invalidPlaceholderImage() {
+
+  @Mock Picasso picasso;
+  @Captor ArgumentCaptor<Request> requestCaptor;
+
+  @Before public void shutUp() throws Exception {
+    initMocks(this);
+  }
+
+  @Test
+  public void getOnMainCrashes() throws Exception {
+    try {
+      new RequestBuilder(picasso, URI_1, 0).get();
+      fail("Calling get() on main thread should throw exception");
+    } catch (IllegalStateException expected) {
+    }
+  }
+
+  @Test public void getReturnsNullIfNullUriAndResourceId() throws Exception {
+    final CountDownLatch latch = new CountDownLatch(1);
+    final Bitmap[] result = new Bitmap[1];
+
+    new Thread(new Runnable() {
+      @Override public void run() {
+        try {
+          result[0] = new RequestBuilder(picasso, null, 0).get();
+        } catch (IOException e) {
+          fail(e.getMessage());
+        } finally {
+          latch.countDown();
+        }
+      }
+    }).start();
+    latch.await();
+
+    assertThat(result[0]).isNull();
+    verifyZeroInteractions(picasso);
+  }
+
+  @Test public void fetchSubmitsFetchRequest() throws Exception {
+    new RequestBuilder(picasso, URI_1, 0).fetch();
+    verify(picasso).submit(requestCaptor.capture());
+    assertThat(requestCaptor.getValue()).isInstanceOf(FetchRequest.class);
+  }
+
+  @Test
+  public void intoTargetWithNullThrows() throws Exception {
+    try {
+      new RequestBuilder(picasso, URI_1, 0).into((Target) null);
+      fail("Calling into() with null Target should throw exception");
+    } catch (IllegalArgumentException expected) {
+    }
+  }
+
+  @Test
+  public void intoTargetWithNullUriAndResourceIdSkipsAndCancels() throws Exception {
+    Target target = mockTarget();
+    new RequestBuilder(picasso, null, 0).into(target);
+    verify(picasso).cancelRequest(target);
+    verifyNoMoreInteractions(picasso);
+  }
+
+  @Test
+  public void intTargetWithQuickMemoryCacheCheckDoesNotSubmit() throws Exception {
+    when(picasso.quickMemoryCacheCheck(URI_KEY_1)).thenReturn(BITMAP_1);
+    Target target = mockTarget();
+    new RequestBuilder(picasso, URI_1, 0).into(target);
+    verify(target).onSuccess(BITMAP_1, MEMORY);
+    verify(picasso).cancelRequest(target);
+    verify(picasso, never()).submit(any(Request.class));
+  }
+
+  @Test
+  public void intoTargetAndNotInCacheSubmitsTargetRequest() throws Exception {
+    Target target = mockTarget();
+    new RequestBuilder(picasso, URI_1, 0).into(target);
+    verify(picasso).submit(requestCaptor.capture());
+    assertThat(requestCaptor.getValue()).isInstanceOf(TargetRequest.class);
+  }
+
+  @Test
+  public void intoImageViewWithNullThrows() throws Exception {
+    try {
+      new RequestBuilder(picasso, URI_1, 0).into((ImageView) null);
+      fail("Calling into() with null ImageView should throw exception");
+    } catch (IllegalArgumentException expected) {
+    }
+  }
+
+  @Test
+  public void intoImageViewWithNullUriAndResourceIdSkipsAndCancels() throws Exception {
+    ImageView target = mockImageViewTarget();
+    new RequestBuilder(picasso, null, 0).into(target);
+    verify(picasso).cancelRequest(target);
+    verify(picasso, never()).quickMemoryCacheCheck(anyString());
+    verify(picasso, never()).submit(any(Request.class));
+  }
+
+  @Test
+  public void intoImageViewWithQuickMemoryCacheCheckDoesNotSubmit() throws Exception {
+    Picasso picasso =
+        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null,
+            mock(Stats.class), true));
+    when(picasso.quickMemoryCacheCheck(URI_KEY_1)).thenReturn(BITMAP_1);
+    ImageView target = mockImageViewTarget();
+    new RequestBuilder(picasso, URI_1, 0).into(target);
+    verify(picasso).cancelRequest(target);
+    verify(target).setImageDrawable(any(PicassoDrawable.class));
+    verify(picasso, never()).submit(any(Request.class));
+  }
+
+  @Test
+  public void intoImageViewSetsPlaceholderDrawable() throws Exception {
+    Picasso picasso =
+        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null,
+            mock(Stats.class), true));
+    ImageView target = mockImageViewTarget();
+    Drawable placeHolderDrawable = mock(Drawable.class);
+    new RequestBuilder(picasso, URI_1, 0).placeholder(placeHolderDrawable).into(target);
+    verify(target).setImageDrawable(any(PicassoDrawable.class));
+    verify(picasso).submit(requestCaptor.capture());
+    assertThat(requestCaptor.getValue()).isInstanceOf(ImageViewRequest.class);
+  }
+
+  @Test
+  public void intoImageViewSetsPlaceholderWithResourceId() throws Exception {
+    Picasso picasso =
+        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null,
+            mock(Stats.class), true));
+    ImageView target = mockImageViewTarget();
+    new RequestBuilder(picasso, URI_1, 0).placeholder(R.drawable.picture_frame).into(target);
+    verify(target).setImageDrawable(any(PicassoDrawable.class));
+    verify(picasso).submit(requestCaptor.capture());
+    assertThat(requestCaptor.getValue()).isInstanceOf(ImageViewRequest.class);
+  }
+
+  @Test
+  public void intoImageViewAndNotInCacheSubmitsImageViewRequest() throws Exception {
+    ImageView target = mockImageViewTarget();
+    new RequestBuilder(picasso, URI_1, 0).into(target);
+    verify(picasso).submit(requestCaptor.capture());
+    assertThat(requestCaptor.getValue()).isInstanceOf(ImageViewRequest.class);
+  }
+
+  @Test public void invalidPlaceholderImage() throws Exception {
     try {
       new RequestBuilder().placeholder(0);
       fail("Resource ID of zero should throw exception.");
@@ -58,7 +215,7 @@ public class RequestBuilderTest {
     }
   }
 
-  @Test public void invalidErrorImage() {
+  @Test public void invalidErrorImage() throws Exception {
     try {
       new RequestBuilder().error(0);
       fail("Resource ID of zero should throw exception.");
@@ -81,7 +238,7 @@ public class RequestBuilderTest {
     }
   }
 
-  public void fitAndResizeMutualExclusivity() {
+  public void fitAndResizeMutualExclusivity() throws Exception {
     try {
       new RequestBuilder().resize(10, 10).fit();
       fail("Fit cannot be called after resize.");
@@ -95,11 +252,11 @@ public class RequestBuilderTest {
   }
 
   @Test(expected = IllegalStateException.class)
-  public void resizeCanOnlyBeCalledOnce() {
+  public void resizeCanOnlyBeCalledOnce() throws Exception {
     new RequestBuilder().resize(10, 10).resize(5, 5);
   }
 
-  @Test public void defaultValuesIgnored() {
+  @Test public void defaultValuesIgnored() throws Exception {
     RequestBuilder b = new RequestBuilder();
     b.scale(1);
     assertThat(b.options).isNull();
@@ -111,7 +268,7 @@ public class RequestBuilderTest {
     assertThat(b.options).isNull();
   }
 
-  @Test public void invalidResize() {
+  @Test public void invalidResize() throws Exception {
     try {
       new RequestBuilder().resize(-1, 10);
       fail("Negative width should throw exception.");
@@ -134,7 +291,7 @@ public class RequestBuilderTest {
     }
   }
 
-  @Test public void invalidScale() {
+  @Test public void invalidScale() throws Exception {
     try {
       new RequestBuilder().scale(0);
       fail("Zero scale factor should throw exception.");
@@ -152,7 +309,7 @@ public class RequestBuilderTest {
     }
   }
 
-  @Test public void invalidCenterCrop() {
+  @Test public void invalidCenterCrop() throws Exception {
     try {
       new RequestBuilder().centerCrop();
       fail("Center crop without resize should throw exception.");
@@ -165,7 +322,7 @@ public class RequestBuilderTest {
     }
   }
 
-  @Test public void invalidCenterInside() {
+  @Test public void invalidCenterInside() throws Exception {
     try {
       new RequestBuilder().centerInside();
       fail("Center inside without resize should throw exception.");
@@ -179,11 +336,11 @@ public class RequestBuilderTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void nullTransformationsInvalid() {
+  public void nullTransformationsInvalid() throws Exception {
     new RequestBuilder().transform(null);
   }
 
-  @Test public void nullTargetsInvalid() {
+  @Test public void nullTargetsInvalid() throws Exception {
     try {
       new RequestBuilder().into((ImageView) null);
       fail("Null ImageView should throw exception.");
@@ -194,70 +351,5 @@ public class RequestBuilderTest {
       fail("Null Target should throw exception.");
     } catch (IllegalArgumentException expected) {
     }
-  }
-
-  @Test public void noImageGetDoesNothingAndReturnsNull() throws Exception {
-    final Picasso picasso = mock(Picasso.class);
-
-    final CountDownLatch latch = new CountDownLatch(1);
-    final AtomicReference<Bitmap> result = new AtomicReference<Bitmap>();
-
-    // Calling get() explodes when you call it from the main thread. Spin up a quick BG thread.
-    new Thread(new Runnable() {
-      @Override public void run() {
-        try {
-          result.set(new RequestBuilder(picasso, null, 0).get());
-        } catch (IOException e) {
-          fail(e.getMessage());
-        } finally {
-          latch.countDown();
-        }
-      }
-    }).start();
-    latch.await();
-
-    assertThat(result.get()).isNull();
-    verifyZeroInteractions(picasso);
-  }
-
-  @Test public void noImageIntoTargetDoesNothing() {
-    Picasso picasso = mock(Picasso.class);
-    Target target = mock(Target.class);
-
-    new RequestBuilder(picasso, null, 0).into(target);
-
-    verify(picasso).cancelRequest(target);
-    verifyZeroInteractions(target);
-  }
-
-  @Test public void noImageDoesNotSubmitRequest() {
-    Picasso picasso = mock(Picasso.class);
-    ImageView target = mock(ImageView.class);
-
-    new RequestBuilder(picasso, null, 0).into(target);
-
-    verify(picasso).cancelRequest(target);
-    verifyZeroInteractions(target);
-  }
-
-  @Test public void noImageWithPlaceholderDoesNotSubmitAndSetsPlaceholder() {
-    Context context = Robolectric.application;
-    Picasso picasso = spy(new Picasso(context, null, null, null, null, false));
-    ImageView target = mock(ImageView.class);
-
-    new RequestBuilder(picasso, null, 0).placeholder(R.drawable.ic_dialog_map).into(target);
-
-    verify(picasso).cancelRequest(target);
-    verify(target).setImageDrawable(any(PicassoDrawable.class));
-  }
-
-  @Test public void noImageWithNullPlaceholderDoesNotSubmitAndClears() {
-    Picasso picasso = mock(Picasso.class);
-    ImageView target = mock(ImageView.class);
-
-    new RequestBuilder(picasso, null, 0).placeholder(null).into(target);
-
-    verify(picasso).cancelRequest(target);
-    verify(target).setImageDrawable(null);
   }
 }
