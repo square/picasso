@@ -58,7 +58,7 @@ public class ImageViewRequestTest {
             "", callback);
     request.complete(BITMAP_1, MEMORY);
     verify(target).setImageDrawable(any(PicassoDrawable.class));
-    verify(callback).onSuccess();
+    verify(callback).onImageLoaded();
   }
 
   @Test
@@ -71,7 +71,7 @@ public class ImageViewRequestTest {
             RESOURCE_ID_1, null, "", callback);
     request.error();
     verify(target).setImageResource(RESOURCE_ID_1);
-    verify(callback).onError();
+    verify(callback).onImageFailed();
   }
 
   @Test
@@ -84,7 +84,7 @@ public class ImageViewRequestTest {
             RESOURCE_ID_1, null, "", callback);
     request.error();
     verify(target).setImageResource(RESOURCE_ID_1);
-    verify(callback).onError();
+    verify(callback).onImageFailed();
   }
 
   @Test
@@ -98,6 +98,6 @@ public class ImageViewRequestTest {
             errorDrawable, "", callback);
     request.error();
     verify(target).setImageDrawable(errorDrawable);
-    verify(callback).onError();
+    verify(callback).onImageFailed();
   }
 }

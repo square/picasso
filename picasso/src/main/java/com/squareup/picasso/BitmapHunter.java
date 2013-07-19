@@ -146,6 +146,10 @@ abstract class BitmapHunter implements Runnable {
     return key;
   }
 
+  List<Request> getRequests() {
+    return requests;
+  }
+
   static BitmapHunter forRequest(Context context, Picasso picasso, Dispatcher dispatcher,
       Cache cache, Request request, Downloader downloader, boolean airplaneMode) {
     if (request.getResourceId() != 0) {

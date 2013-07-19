@@ -29,7 +29,9 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 
 import static android.content.Context.CONNECTIVITY_SERVICE;
@@ -59,6 +61,7 @@ class Dispatcher {
   final ExecutorService service;
   final Downloader downloader;
   final Map<String, BitmapHunter> hunterMap;
+  final Map<Object, Request> failedRequests;
   final Handler handler;
   final Handler mainThreadHandler;
   final Cache cache;
@@ -72,6 +75,7 @@ class Dispatcher {
     this.context = context;
     this.service = service;
     this.hunterMap = new LinkedHashMap<String, BitmapHunter>();
+    this.failedRequests = new WeakHashMap<Object, Request>();
     this.handler = new DispatcherHandler(thread.getLooper());
     this.downloader = downloader;
     this.mainThreadHandler = mainThreadHandler;
@@ -126,7 +130,7 @@ class Dispatcher {
     hunter =
         forRequest(context, request.getPicasso(), this, cache, request, downloader, airplaneMode);
     hunter.future = service.submit(hunter);
-    hunterMap.put(request.getKey(), hunter);
+    hunterMap.put(hunter.getKey(), hunter);
   }
 
   void performCancel(Request request) {
@@ -138,6 +142,7 @@ class Dispatcher {
         hunterMap.remove(key);
       }
     }
+    failedRequests.remove(request.getTarget());
   }
 
   void performRetry(BitmapHunter hunter) {
@@ -147,6 +152,13 @@ class Dispatcher {
       hunter.retryCount--;
       hunter.future = service.submit(hunter);
     } else {
+      List<Request> requests = hunter.getRequests();
+      for (Request request : requests) {
+        Object target = request.getTarget();
+        if (target != null) {
+          failedRequests.put(request.getTarget(), request);
+        }
+      }
       performError(hunter);
     }
   }
@@ -173,6 +185,16 @@ class Dispatcher {
       if (service instanceof PicassoExecutorService) {
         ((PicassoExecutorService) service).adjustThreadCount(info);
       }
+    }
+    flushFailedRequests();
+  }
+
+  private void flushFailedRequests() {
+    if (!failedRequests.isEmpty()) {
+      for (Request failed : failedRequests.values()) {
+        performSubmit(failed);
+      }
+      failedRequests.clear();
     }
   }
 

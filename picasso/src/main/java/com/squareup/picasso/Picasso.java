@@ -85,7 +85,7 @@ public class Picasso {
   final Cache cache;
   final Listener listener;
   final Stats stats;
-  final Map<Object, Request> targetToRequest = new WeakHashMap<Object, Request>();
+  final Map<Object, Request> targetToRequest;
   final ReferenceQueue<Object> referenceQueue;
 
   boolean debugging;
@@ -97,8 +97,9 @@ public class Picasso {
     this.cache = cache;
     this.listener = listener;
     this.stats = stats;
-    this.debugging = debugging;
+    this.targetToRequest = new WeakHashMap<Object, Request>();
     this.referenceQueue = new ReferenceQueue<Object>();
+    this.debugging = debugging;
 
     new CleanupThread(referenceQueue, HANDLER).start();
   }

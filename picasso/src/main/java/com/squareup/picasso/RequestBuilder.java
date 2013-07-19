@@ -386,7 +386,7 @@ public class RequestBuilder {
       PicassoDrawable.setBitmap(target, picasso.context, bitmap, MEMORY, noFade, picasso.debugging);
 
       if (callback != null) {
-        callback.onSuccess();
+        callback.onImageLoaded();
       }
 
       return;

@@ -1,15 +1,16 @@
 package com.squareup.picasso;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.widget.ImageView;
 import java.io.File;
-import org.robolectric.Robolectric;
+import java.util.Collections;
+import java.util.List;
 
 import static android.provider.ContactsContract.Contacts.CONTENT_URI;
 import static android.provider.ContactsContract.Contacts.Photo.CONTENT_DIRECTORY;
+import static com.squareup.picasso.BitmapHunter.DEFAULT_RETRY_COUNT;
 import static com.squareup.picasso.Utils.createKey;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -77,11 +78,23 @@ public class TestUtils {
   }
 
   static BitmapHunter mockHunter(String key, Bitmap result, boolean skipCache) {
+    return mockHunter(key, result, skipCache, Collections.<Request>emptyList(),
+        DEFAULT_RETRY_COUNT);
+  }
+
+  static BitmapHunter mockHunter(String key, Bitmap result, boolean skipCache,
+      List<Request> requests) {
+    return mockHunter(key, result, skipCache, requests, DEFAULT_RETRY_COUNT);
+  }
+
+  static BitmapHunter mockHunter(String key, Bitmap result, boolean skipCache,
+      List<Request> requests, int retryCount) {
     BitmapHunter hunter = mock(BitmapHunter.class);
     when(hunter.getKey()).thenReturn(key);
     when(hunter.getResult()).thenReturn(result);
     when(hunter.shouldSkipCache()).thenReturn(skipCache);
-    hunter.retryCount = BitmapHunter.DEFAULT_RETRY_COUNT;
+    when(hunter.getRequests()).thenReturn(requests);
+    hunter.retryCount = retryCount;
     return hunter;
   }
 
