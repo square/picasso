@@ -44,6 +44,10 @@ class ResourceBitmapHunter extends BitmapHunter {
     return DISK;
   }
 
+  @Override String getName() {
+    return Integer.toString(resourceId);
+  }
+
   private Bitmap decodeResource(Resources resources, int resourceId,
       PicassoBitmapOptions bitmapOptions) {
     if (bitmapOptions != null && bitmapOptions.inJustDecodeBounds) {
