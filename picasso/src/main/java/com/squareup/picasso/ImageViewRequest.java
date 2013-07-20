@@ -35,7 +35,7 @@ class ImageViewRequest extends Request<ImageView> {
     PicassoDrawable.setBitmap(target, context, result, from, noFade, debugging);
 
     if (callback != null) {
-      callback.onSuccess();
+      callback.onImageLoaded();
     }
   }
 
@@ -51,7 +51,7 @@ class ImageViewRequest extends Request<ImageView> {
     }
 
     if (callback != null) {
-      callback.onError();
+      callback.onImageFailed();
     }
   }
 

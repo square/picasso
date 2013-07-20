@@ -147,31 +147,36 @@ public class BitmapHunterTest {
 
   @Test public void forContentProviderRequest() throws Exception {
     Request request = mockRequest(CONTENT_KEY_1, CONTENT_1_URL);
-    BitmapHunter hunter = forRequest(context, picasso, dispatcher, cache, request, downloader);
+    BitmapHunter hunter = forRequest(context, picasso, dispatcher, cache, request, downloader,
+        false);
     assertThat(hunter).isInstanceOf(ContentProviderBitmapHunter.class);
   }
 
   @Test public void forContactsPhotoRequest() throws Exception {
     Request request = mockRequest(CONTACT_KEY_1, CONTACT_URI_1);
-    BitmapHunter hunter = forRequest(context, picasso, dispatcher, cache, request, downloader);
+    BitmapHunter hunter = forRequest(context, picasso, dispatcher, cache, request, downloader,
+        false);
     assertThat(hunter).isInstanceOf(ContactsPhotoBitmapHunter.class);
   }
 
   @Test public void forNetworkRequest() throws Exception {
     Request request = mockRequest(URI_KEY_1, URI_1);
-    BitmapHunter hunter = forRequest(context, picasso, dispatcher, cache, request, downloader);
+    BitmapHunter hunter = forRequest(context, picasso, dispatcher, cache, request, downloader,
+        false);
     assertThat(hunter).isInstanceOf(NetworkBitmapHunter.class);
   }
 
   @Test public void forFileWithAuthorityRequest() throws Exception {
     Request request = mockRequest(FILE_KEY_1, FILE_1_URL);
-    BitmapHunter hunter = forRequest(context, picasso, dispatcher, cache, request, downloader);
+    BitmapHunter hunter = forRequest(context, picasso, dispatcher, cache, request, downloader,
+        false);
     assertThat(hunter).isInstanceOf(FileBitmapHunter.class);
   }
 
   @Test public void forAndroidResourceRequest() throws Exception {
     Request request = mockRequest(RESOURCE_ID_KEY_1, null, null, RESOURCE_ID_1);
-    BitmapHunter hunter = forRequest(context, picasso, dispatcher, cache, request, downloader);
+    BitmapHunter hunter = forRequest(context, picasso, dispatcher, cache, request, downloader,
+        false);
     assertThat(hunter).isInstanceOf(ResourceBitmapHunter.class);
   }
 

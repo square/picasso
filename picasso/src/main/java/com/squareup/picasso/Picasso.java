@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static com.squareup.picasso.Dispatcher.HUNTER_COMPLETE;
@@ -86,7 +85,7 @@ public class Picasso {
   final Cache cache;
   final Listener listener;
   final Stats stats;
-  final Map<Object, Request> targetToRequest = new WeakHashMap<Object, Request>();
+  final Map<Object, Request> targetToRequest;
   final ReferenceQueue<Object> referenceQueue;
 
   boolean debugging;
@@ -98,8 +97,9 @@ public class Picasso {
     this.cache = cache;
     this.listener = listener;
     this.stats = stats;
-    this.debugging = debugging;
+    this.targetToRequest = new WeakHashMap<Object, Request>();
     this.referenceQueue = new ReferenceQueue<Object>();
+    this.debugging = debugging;
 
     new CleanupThread(referenceQueue, HANDLER).start();
   }
@@ -251,7 +251,7 @@ public class Picasso {
     }
   }
 
-  static class CleanupThread extends Thread {
+  private static class CleanupThread extends Thread {
     private final ReferenceQueue<?> referenceQueue;
     private final Handler handler;
 
@@ -345,7 +345,14 @@ public class Picasso {
       return this;
     }
 
-    /** Specify the memory cache used for the most recent images. */
+    /**
+     * Specify the memory cache used for the most recent images.
+     * <p/>
+     * <em>Note:</em> The {@link Cache} is accessed by multiple threads. You must ensure
+     * your {@link Cache} implementation is thread safe when {@link Cache#get(String)} or {@link
+     * Cache#set(String, android.graphics.Bitmap)} is called. Alternatively, you can provide a
+     * single threaded {@link ExecutorService}.
+     */
     public Builder memoryCache(Cache memoryCache) {
       if (memoryCache == null) {
         throw new IllegalArgumentException("Memory cache must not be null.");
@@ -386,7 +393,7 @@ public class Picasso {
         cache = new LruCache(context);
       }
       if (service == null) {
-        service = Executors.newFixedThreadPool(3, new Utils.PicassoThreadFactory());
+        service = new PicassoExecutorService();
       }
 
       Stats stats = new Stats(cache);

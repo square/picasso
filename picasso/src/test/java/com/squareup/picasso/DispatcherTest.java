@@ -1,8 +1,11 @@
 package com.squareup.picasso;
 
 import android.content.Context;
+import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.Message;
+import android.widget.ImageView;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,9 +20,12 @@ import static com.squareup.picasso.TestUtils.URI_2;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_2;
 import static com.squareup.picasso.TestUtils.mockHunter;
+import static com.squareup.picasso.TestUtils.mockImageViewTarget;
+import static com.squareup.picasso.TestUtils.mockNetworkInfo;
 import static com.squareup.picasso.TestUtils.mockRequest;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -93,6 +99,15 @@ public class DispatcherTest {
     assertThat(dispatcher.hunterMap).hasSize(1);
   }
 
+  @Test public void performCancelClearsOutFromFailedRequests()
+      throws Exception {
+    ImageView target = mockImageViewTarget();
+    Request request = mockRequest(URI_KEY_1, URI_1, target);
+    dispatcher.failedRequests.put(target, request);
+    dispatcher.performCancel(request);
+    assertThat(dispatcher.failedRequests).isEmpty();
+  }
+
   @Test public void performCompleteSetsResultInCache() throws Exception {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
     dispatcher.performComplete(hunter);
@@ -126,6 +141,7 @@ public class DispatcherTest {
     verify(service, times(2)).submit(hunter);
     dispatcher.performRetry(hunter);
     verifyNoMoreInteractions(service);
+    assertThat(dispatcher.hunterMap).isEmpty();
   }
 
   @Test public void performRetrySkipsRetryIfCancelled() throws Exception {
@@ -135,5 +151,66 @@ public class DispatcherTest {
     when(hunter.isCancelled()).thenReturn(true);
     dispatcher.performRetry(hunter);
     verifyNoMoreInteractions(service);
+    assertThat(dispatcher.hunterMap).isEmpty();
+  }
+
+  @Test public void performRetryAddsToFailedRequests() throws Exception {
+    Request request = mockRequest(URI_KEY_1, URI_1, mockImageViewTarget());
+    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false, Arrays.asList(request), 0);
+    assertThat(dispatcher.failedRequests).isEmpty();
+    dispatcher.performRetry(hunter);
+    assertThat(dispatcher.failedRequests).hasSize(1);
+  }
+
+  @Test public void performAirplaneModeChange() throws Exception {
+    assertThat(dispatcher.airplaneMode).isFalse();
+    dispatcher.performAirplaneModeChange(true);
+    assertThat(dispatcher.airplaneMode).isTrue();
+    dispatcher.performAirplaneModeChange(false);
+    assertThat(dispatcher.airplaneMode).isFalse();
+  }
+
+  @Test public void performNetworkStateChangeWithNullInfoIgnores() throws Exception {
+    dispatcher.performNetworkStateChange(null);
+    verifyZeroInteractions(service);
+  }
+
+  @Test public void performNetworkStateChangeWithDisconnectedInfoIgnores() throws Exception {
+    NetworkInfo info = mockNetworkInfo();
+    when(info.isConnectedOrConnecting()).thenReturn(false);
+    dispatcher.performNetworkStateChange(info);
+    verifyZeroInteractions(service);
+  }
+
+  @Test
+  public void performNetworkStateChangeWithConnectedInfoDifferentInstanceIgnores()
+      throws Exception {
+    NetworkInfo info = mockNetworkInfo();
+    when(info.isConnectedOrConnecting()).thenReturn(true);
+    dispatcher.performNetworkStateChange(info);
+    verifyZeroInteractions(service);
+  }
+
+  @Test
+  public void performNetworkStateChangeWithConnectedInfoAndPicassoExecutorServiceAdjustsThreads()
+      throws Exception {
+    PicassoExecutorService service = mock(PicassoExecutorService.class);
+    Dispatcher dispatcher = new Dispatcher(context, service, mainThreadHandler, downloader, cache);
+    NetworkInfo info = mockNetworkInfo();
+    when(info.isConnectedOrConnecting()).thenReturn(true);
+    dispatcher.performNetworkStateChange(info);
+    verify(service).adjustThreadCount(info);
+    verifyZeroInteractions(service);
+  }
+
+  @Test public void performNetworkStateChangeWithConnectedInfoFlushesFailedRequests()
+      throws Exception {
+    ImageView target = mockImageViewTarget();
+    Request request = mockRequest(URI_KEY_1, URI_1, target);
+    dispatcher.failedRequests.put(target, request);
+    NetworkInfo info = mockNetworkInfo();
+    when(info.isConnectedOrConnecting()).thenReturn(true);
+    dispatcher.performNetworkStateChange(info);
+    assertThat(dispatcher.failedRequests).isEmpty();
   }
 }
