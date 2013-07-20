@@ -74,6 +74,8 @@ abstract class BitmapHunter implements Runnable {
 
   @Override public void run() {
     try {
+      Thread.currentThread().setName(Utils.THREAD_PREFIX + getName());
+
       result = hunt();
 
       if (result == null) {
@@ -84,6 +86,8 @@ abstract class BitmapHunter implements Runnable {
     } catch (IOException e) {
       exception = e;
       dispatcher.dispatchRetry(this);
+    } finally {
+      Thread.currentThread().setName(Utils.THREAD_IDLE_NAME);
     }
   }
 
@@ -144,6 +148,10 @@ abstract class BitmapHunter implements Runnable {
 
   String getKey() {
     return key;
+  }
+
+  String getName() {
+    return uri.getPath();
   }
 
   static BitmapHunter forRequest(Context context, Picasso picasso, Dispatcher dispatcher,
