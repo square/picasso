@@ -48,8 +48,9 @@ final class PicassoDrawable extends Drawable {
     if (picassoDrawable != null) {
       picassoDrawable.setBitmap(bitmap, loadedFrom, noFade);
     } else {
-      target.setImageDrawable(new PicassoDrawable(context, bitmap, loadedFrom, noFade, debugging));
+      picassoDrawable = new PicassoDrawable(context, bitmap, loadedFrom, noFade, debugging);
     }
+    target.setImageDrawable(picassoDrawable);
   }
 
   /**
@@ -62,9 +63,9 @@ final class PicassoDrawable extends Drawable {
     if (picassoDrawable != null) {
       picassoDrawable.setPlaceholder(placeholderResId, placeholderDrawable);
     } else {
-      target.setImageDrawable(
-          new PicassoDrawable(context, placeholderResId, placeholderDrawable, debugging));
+      picassoDrawable = new PicassoDrawable(context, placeholderResId, placeholderDrawable, debugging);
     }
+    target.setImageDrawable(picassoDrawable);
   }
 
   /**
@@ -188,6 +189,8 @@ final class PicassoDrawable extends Drawable {
   @Override public int getIntrinsicWidth() {
     if (bitmapDrawable != null) {
       return bitmapDrawable.getIntrinsicWidth();
+    } else if (placeHolderDrawable != null) {
+      return placeHolderDrawable.getIntrinsicWidth();
     }
     return -1;
   }
@@ -195,6 +198,8 @@ final class PicassoDrawable extends Drawable {
   @Override public int getIntrinsicHeight() {
     if (bitmapDrawable != null) {
       return bitmapDrawable.getIntrinsicHeight();
+    } else if (placeHolderDrawable != null) {
+      return placeHolderDrawable.getIntrinsicHeight();
     }
     return -1;
   }
@@ -214,7 +219,7 @@ final class PicassoDrawable extends Drawable {
   @Override protected void onBoundsChange(Rect bounds) {
     super.onBoundsChange(bounds);
     if (bitmapDrawable != null) {
-      setBounds(this.bitmapDrawable);
+      this.bitmapDrawable.setBounds(getBounds());
     }
     if (placeHolderDrawable != null) {
       this.placeHolderDrawable.setBounds(getBounds());
@@ -251,7 +256,7 @@ final class PicassoDrawable extends Drawable {
     }
 
     bitmapDrawable = new BitmapDrawable(context.getResources(), bitmap);
-    setBounds(bitmapDrawable);
+    bitmapDrawable.setBounds(getBounds());
 
     this.loadedFrom = loadedFrom;
 
@@ -259,32 +264,6 @@ final class PicassoDrawable extends Drawable {
     animating = fade;
 
     invalidateSelf();
-  }
-
-  private void setBounds(Drawable drawable) {
-    Rect bounds = getBounds();
-
-    final int width = bounds.width();
-    final int height = bounds.height();
-    final float ratio = (float) width / height;
-
-    final int drawableWidth = drawable.getIntrinsicWidth();
-    final int drawableHeight = drawable.getIntrinsicHeight();
-    final float drawableRatio = (float) drawableWidth / drawableHeight;
-
-    if (drawableRatio < ratio) {
-      final float scale = (float) height / drawableHeight;
-      final int scaledDrawableWidth = (int) (drawableWidth * scale);
-      final int drawableLeft = bounds.left - (scaledDrawableWidth - width) / 2;
-      final int drawableRight = drawableLeft + scaledDrawableWidth;
-      drawable.setBounds(drawableLeft, bounds.top, drawableRight, bounds.bottom);
-    } else {
-      final float scale = (float) width / drawableWidth;
-      final int scaledDrawableHeight = (int) (drawableHeight * scale);
-      final int drawableTop = bounds.top - (scaledDrawableHeight - height) / 2;
-      final int drawableBottom = drawableTop + scaledDrawableHeight;
-      drawable.setBounds(bounds.left, drawableTop, bounds.right, drawableBottom);
-    }
   }
 
   private void drawDebugIndicator(Canvas canvas) {
