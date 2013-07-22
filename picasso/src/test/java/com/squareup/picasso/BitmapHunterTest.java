@@ -33,8 +33,7 @@ import org.robolectric.shadows.ShadowMatrix;
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso.BitmapHunter.forRequest;
 import static com.squareup.picasso.BitmapHunter.transformResult;
-import static com.squareup.picasso.Request.LoadedFrom;
-import static com.squareup.picasso.Request.LoadedFrom.MEMORY;
+import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.TestUtils.BITMAP_1;
 import static com.squareup.picasso.TestUtils.CONTACT_KEY_1;
 import static com.squareup.picasso.TestUtils.CONTACT_URI_1;
@@ -455,7 +454,7 @@ public class BitmapHunterTest {
       return result;
     }
 
-    @Override LoadedFrom getLoadedFrom() {
+    @Override Picasso.LoadedFrom getLoadedFrom() {
       return MEMORY;
     }
   }

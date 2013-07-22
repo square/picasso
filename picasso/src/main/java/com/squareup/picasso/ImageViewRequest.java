@@ -19,7 +19,7 @@ class ImageViewRequest extends Request<ImageView> {
     this.callback = callback;
   }
 
-  @Override public void complete(Bitmap result, LoadedFrom from) {
+  @Override public void complete(Bitmap result, Picasso.LoadedFrom from) {
     if (result == null) {
       throw new AssertionError(
           String.format("Attempted to complete request with no result!\n%s", this));

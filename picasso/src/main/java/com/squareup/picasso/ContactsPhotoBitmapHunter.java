@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import static android.provider.ContactsContract.Contacts.openContactPhotoInputStream;
-import static com.squareup.picasso.Request.LoadedFrom.DISK;
+import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 
 class ContactsPhotoBitmapHunter extends BitmapHunter {
 
@@ -50,7 +50,7 @@ class ContactsPhotoBitmapHunter extends BitmapHunter {
     }
   }
 
-  @Override Request.LoadedFrom getLoadedFrom() {
+  @Override Picasso.LoadedFrom getLoadedFrom() {
     return DISK;
   }
 
