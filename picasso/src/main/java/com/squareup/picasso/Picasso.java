@@ -109,7 +109,7 @@ public class Picasso {
     cancelExistingRequest(view);
   }
 
-  /** Cancel and existing requests for the specified {@link Target} instance. */
+  /** Cancel any existing requests for the specified {@link Target} instance. */
   public void cancelRequest(Target target) {
     cancelExistingRequest(target);
   }
