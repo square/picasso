@@ -16,7 +16,6 @@
 package com.squareup.picasso;
 
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import java.lang.ref.ReferenceQueue;
@@ -24,17 +23,6 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 
 abstract class Request<T> {
-  enum LoadedFrom {
-    MEMORY(Color.GREEN),
-    DISK(Color.YELLOW),
-    NETWORK(Color.RED);
-
-    final int debugColor;
-
-    private LoadedFrom(int debugColor) {
-      this.debugColor = debugColor;
-    }
-  }
 
   static class RequestWeakReference<T> extends WeakReference<T> {
     final Request request;
@@ -75,7 +63,7 @@ abstract class Request<T> {
     this.key = key;
   }
 
-  abstract void complete(Bitmap result, LoadedFrom from);
+  abstract void complete(Bitmap result, Picasso.LoadedFrom from);
 
   abstract void error();
 

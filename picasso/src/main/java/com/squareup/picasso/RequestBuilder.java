@@ -26,7 +26,7 @@ import java.util.List;
 import org.jetbrains.annotations.TestOnly;
 
 import static com.squareup.picasso.BitmapHunter.forRequest;
-import static com.squareup.picasso.Request.LoadedFrom.MEMORY;
+import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Utils.checkNotMain;
 import static com.squareup.picasso.Utils.createKey;
 

@@ -22,13 +22,12 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import static com.squareup.picasso.Downloader.Response;
-import static com.squareup.picasso.Request.LoadedFrom;
-import static com.squareup.picasso.Request.LoadedFrom.DISK;
-import static com.squareup.picasso.Request.LoadedFrom.NETWORK;
+import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
+import static com.squareup.picasso.Picasso.LoadedFrom.NETWORK;
 
 class NetworkBitmapHunter extends BitmapHunter {
   private final Downloader downloader;
-  private LoadedFrom loadedFrom;
+  private Picasso.LoadedFrom loadedFrom;
 
   public NetworkBitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Request request,
       Downloader downloader) {
@@ -47,7 +46,7 @@ class NetworkBitmapHunter extends BitmapHunter {
     }
   }
 
-  @Override LoadedFrom getLoadedFrom() {
+  @Override Picasso.LoadedFrom getLoadedFrom() {
     return loadedFrom;
   }
 

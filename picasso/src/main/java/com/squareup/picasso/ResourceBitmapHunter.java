@@ -22,7 +22,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import java.io.IOException;
 
-import static com.squareup.picasso.Request.LoadedFrom.DISK;
+import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 
 class ResourceBitmapHunter extends BitmapHunter {
   private final int resourceId;
@@ -40,7 +40,7 @@ class ResourceBitmapHunter extends BitmapHunter {
     return decodeResource(context.getResources(), resourceId, options);
   }
 
-  @Override Request.LoadedFrom getLoadedFrom() {
+  @Override Picasso.LoadedFrom getLoadedFrom() {
     return DISK;
   }
 

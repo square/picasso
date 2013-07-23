@@ -28,8 +28,8 @@ import org.robolectric.annotation.Config;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static android.graphics.Color.RED;
-import static com.squareup.picasso.Request.LoadedFrom.DISK;
-import static com.squareup.picasso.Request.LoadedFrom.MEMORY;
+import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
+import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(RobolectricTestRunner.class) @Config(manifest = Config.NONE)

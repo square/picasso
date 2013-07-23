@@ -17,6 +17,7 @@ package com.squareup.picasso;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -218,7 +219,7 @@ public class Picasso {
     return cached;
   }
 
-  void complete(List<Request> joined, Bitmap result, Request.LoadedFrom from) {
+  void complete(List<Request> joined, Bitmap result, LoadedFrom from) {
     for (Request join : joined) {
       if (!join.isCancelled()) {
         targetToRequest.remove(join.getTarget());
@@ -394,6 +395,19 @@ public class Picasso {
       Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, downloader, cache);
 
       return new Picasso(context, dispatcher, cache, listener, stats, debugging);
+    }
+  }
+
+  /** Describes where the image was loaded from. */
+  public enum LoadedFrom {
+    MEMORY(Color.GREEN),
+    DISK(Color.YELLOW),
+    NETWORK(Color.RED);
+
+    final int debugColor;
+
+    private LoadedFrom(int debugColor) {
+      this.debugColor = debugColor;
     }
   }
 }
