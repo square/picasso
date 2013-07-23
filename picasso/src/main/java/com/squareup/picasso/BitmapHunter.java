@@ -28,8 +28,7 @@ import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentResolver.SCHEME_FILE;
 import static android.provider.ContactsContract.Contacts;
-import static com.squareup.picasso.Request.LoadedFrom;
-import static com.squareup.picasso.Request.LoadedFrom.MEMORY;
+import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 
 abstract class BitmapHunter implements Runnable {
 
@@ -54,7 +53,7 @@ abstract class BitmapHunter implements Runnable {
 
   Bitmap result;
   Future<?> future;
-  LoadedFrom loadedFrom;
+  Picasso.LoadedFrom loadedFrom;
   Exception exception;
 
   int retryCount = DEFAULT_RETRY_COUNT;
@@ -93,7 +92,7 @@ abstract class BitmapHunter implements Runnable {
 
   abstract Bitmap decode(Uri uri, PicassoBitmapOptions options, int retryCount) throws IOException;
 
-  abstract LoadedFrom getLoadedFrom();
+  abstract Picasso.LoadedFrom getLoadedFrom();
 
   Bitmap hunt() throws IOException {
     Bitmap bitmap;

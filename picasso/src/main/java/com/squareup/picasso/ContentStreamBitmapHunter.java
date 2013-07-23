@@ -23,7 +23,7 @@ import android.net.Uri;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static com.squareup.picasso.Request.LoadedFrom.DISK;
+import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 
 class ContentStreamBitmapHunter extends BitmapHunter {
 
@@ -40,7 +40,7 @@ class ContentStreamBitmapHunter extends BitmapHunter {
     return decodeContentStream(uri, options);
   }
 
-  @Override Request.LoadedFrom getLoadedFrom() {
+  @Override Picasso.LoadedFrom getLoadedFrom() {
     return DISK;
   }
 

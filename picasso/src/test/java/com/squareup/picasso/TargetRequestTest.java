@@ -16,14 +16,12 @@
 package com.squareup.picasso;
 
 import android.graphics.Bitmap;
-import android.net.Uri;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import static com.squareup.picasso.Request.LoadedFrom;
-import static com.squareup.picasso.Request.LoadedFrom.MEMORY;
+import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.TestUtils.BITMAP_1;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
@@ -31,10 +29,7 @@ import static com.squareup.picasso.TestUtils.mockTarget;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -68,7 +63,7 @@ public class TargetRequestTest {
 
   @Test public void recyclingInSuccessThrowsException() {
     Target bad = new Target() {
-      @Override public void onSuccess(Bitmap bitmap, LoadedFrom from) {
+      @Override public void onSuccess(Bitmap bitmap, Picasso.LoadedFrom from) {
         bitmap.recycle();
       }
 
@@ -79,7 +74,7 @@ public class TargetRequestTest {
     Picasso picasso = mock(Picasso.class);
     TargetRequest tr = new TargetRequest(picasso, URI_1, 0, bad, null, null, false, URI_KEY_1);
     try {
-      tr.complete(BITMAP_1, any(LoadedFrom.class));
+      tr.complete(BITMAP_1, any(Picasso.LoadedFrom.class));
       fail();
     } catch (IllegalStateException expected) {
     }
