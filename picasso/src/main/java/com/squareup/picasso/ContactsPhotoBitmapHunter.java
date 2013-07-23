@@ -57,13 +57,13 @@ class ContactsPhotoBitmapHunter extends BitmapHunter {
   private InputStream getInputStream() throws IOException {
     ContentResolver contentResolver = context.getContentResolver();
     Uri uri = this.uri;
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-      if (uri.toString().startsWith(ContactsContract.Contacts.CONTENT_LOOKUP_URI.toString())) {
-        uri = ContactsContract.Contacts.lookupContact(contentResolver, uri);
-        if (uri == null) {
-          return null;
-        }
+    if (uri.toString().startsWith(ContactsContract.Contacts.CONTENT_LOOKUP_URI.toString())) {
+      uri = ContactsContract.Contacts.lookupContact(contentResolver, uri);
+      if (uri == null) {
+        return null;
       }
+    }
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
       return openContactPhotoInputStream(contentResolver, uri);
     } else {
       return ContactPhotoStreamIcs.get(contentResolver, uri);
