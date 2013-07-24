@@ -59,7 +59,7 @@
       <dependency>
         <groupId>com.google.android</groupId>
         <artifactId>android</artifactId>
-        <version>4.2</version>
+        <version>4.1.1.4</version>
       </dependency>
       <dependency>
         <groupId>com.google.android</groupId>

@@ -202,22 +202,11 @@ final class Utils {
 
   static boolean isAirplaneModeOn(Context context) {
     ContentResolver contentResolver = context.getContentResolver();
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
-      return Settings.System.getInt(contentResolver, AIRPLANE_MODE_ON, 0) != 0;
-    } else {
-      return SettingsGlobalJBMR1.isAirplaneModeOn(contentResolver);
-    }
+    return Settings.System.getInt(contentResolver, AIRPLANE_MODE_ON, 0) != 0;
   }
 
   static boolean hasPermission(Context context, String permission) {
     return context.checkCallingOrSelfPermission(permission) == PackageManager.PERMISSION_GRANTED;
-  }
-
-  @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-  private static class SettingsGlobalJBMR1 {
-    static boolean isAirplaneModeOn(ContentResolver contentResolver) {
-      return Settings.Global.getInt(contentResolver, Settings.Global.AIRPLANE_MODE_ON, 0) != 0;
-    }
   }
 
   @TargetApi(Build.VERSION_CODES.HONEYCOMB)

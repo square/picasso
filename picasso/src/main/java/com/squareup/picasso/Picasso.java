@@ -345,14 +345,7 @@ public class Picasso {
       return this;
     }
 
-    /**
-     * Specify the memory cache used for the most recent images.
-     * <p/>
-     * <em>Note:</em> The {@link Cache} is accessed by multiple threads. You must ensure
-     * your {@link Cache} implementation is thread safe when {@link Cache#get(String)} or {@link
-     * Cache#set(String, android.graphics.Bitmap)} is called. Alternatively, you can provide a
-     * single threaded {@link ExecutorService}.
-     */
+    /** Specify the memory cache used for the most recent images. */
     public Builder memoryCache(Cache memoryCache) {
       if (memoryCache == null) {
         throw new IllegalArgumentException("Memory cache must not be null.");

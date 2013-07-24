@@ -148,12 +148,12 @@ public class DispatcherTest {
     assertThat(dispatcher.airplaneMode).isFalse();
   }
 
-  @Test public void performNetworkSateChangeWithNullInfoIgnores() throws Exception {
+  @Test public void performNetworkStateChangeWithNullInfoIgnores() throws Exception {
     dispatcher.performNetworkStateChange(null);
     verifyZeroInteractions(service);
   }
 
-  @Test public void performNetworkSateChangeWithDisconnectedInfoIgnores() throws Exception {
+  @Test public void performNetworkStateChangeWithDisconnectedInfoIgnores() throws Exception {
     NetworkInfo info = mockNetworkInfo();
     when(info.isConnectedOrConnecting()).thenReturn(false);
     dispatcher.performNetworkStateChange(info);
@@ -161,7 +161,7 @@ public class DispatcherTest {
   }
 
   @Test
-  public void performNetworkSateChangeWithConnectedInfoDifferentInstanceIgnores() throws Exception {
+  public void performNetworkStateChangeWithConnectedInfoDifferentInstanceIgnores() throws Exception {
     NetworkInfo info = mockNetworkInfo();
     when(info.isConnectedOrConnecting()).thenReturn(true);
     dispatcher.performNetworkStateChange(info);
@@ -169,7 +169,7 @@ public class DispatcherTest {
   }
 
   @Test
-  public void performNetworkSateChangeWithConnectedInfoAndPicassoExecutorServiceAdjustsThreads()
+  public void performNetworkStateChangeWithConnectedInfoAndPicassoExecutorServiceAdjustsThreads()
       throws Exception {
     PicassoExecutorService service = mock(PicassoExecutorService.class);
     Dispatcher dispatcher = new Dispatcher(context, service, mainThreadHandler, downloader, cache);

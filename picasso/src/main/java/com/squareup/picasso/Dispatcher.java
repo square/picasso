@@ -75,7 +75,9 @@ class Dispatcher {
     this.downloader = downloader;
     this.mainThreadHandler = mainThreadHandler;
     this.cache = cache;
-    init();
+    this.airplaneMode = Utils.isAirplaneModeOn(this.context);
+    NetworkBroadcastReceiver receiver = new NetworkBroadcastReceiver(this.context);
+    receiver.register();
   }
 
   void dispatchSubmit(Request request) {
@@ -166,12 +168,6 @@ class Dispatcher {
     }
   }
 
-  private void init() {
-    this.airplaneMode = Utils.isAirplaneModeOn(context);
-    NetworkBroadcastReceiver receiver = new NetworkBroadcastReceiver(context);
-    receiver.register();
-  }
-
   private class DispatcherHandler extends Handler {
     public DispatcherHandler(Looper looper) {
       super(looper);
@@ -231,8 +227,7 @@ class Dispatcher {
     private final ConnectivityManager connectivityManager;
 
     NetworkBroadcastReceiver(Context context) {
-      this.connectivityManager =
-          (ConnectivityManager) context.getSystemService(CONNECTIVITY_SERVICE);
+      connectivityManager = (ConnectivityManager) context.getSystemService(CONNECTIVITY_SERVICE);
     }
 
     void register() {
