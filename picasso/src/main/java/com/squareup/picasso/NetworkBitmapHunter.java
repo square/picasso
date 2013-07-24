@@ -27,19 +27,21 @@ import static com.squareup.picasso.Picasso.LoadedFrom.NETWORK;
 
 class NetworkBitmapHunter extends BitmapHunter {
   private final Downloader downloader;
+  private final boolean airplaneMode;
   private Picasso.LoadedFrom loadedFrom;
 
   public NetworkBitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Request request,
-      Downloader downloader) {
+      Downloader downloader, boolean airplaneMode) {
     super(picasso, dispatcher, cache, request);
     this.downloader = downloader;
+    this.airplaneMode = airplaneMode;
   }
 
   @Override Bitmap decode(Uri uri, PicassoBitmapOptions options, int retryCount)
       throws IOException {
     InputStream is = null;
     try {
-      is = getInputStream(retryCount == 0);
+      is = getInputStream(retryCount == 0 || airplaneMode);
       return decodeStream(is, options);
     } finally {
       Utils.closeQuietly(is);

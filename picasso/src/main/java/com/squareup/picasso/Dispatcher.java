@@ -15,7 +15,14 @@
  */
 package com.squareup.picasso;
 
+import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -24,11 +31,17 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
+import static android.content.Context.CONNECTIVITY_SERVICE;
+import static android.content.Intent.ACTION_AIRPLANE_MODE_CHANGED;
+import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static com.squareup.picasso.BitmapHunter.forRequest;
 
 class Dispatcher {
   private static final int RETRY_DELAY = 500;
+  private static final int AIRPLANE_MODE_ON = 1;
+  private static final int AIRPLANE_MODE_OFF = 0;
+
   static final int REQUEST_SUBMIT = 1;
   static final int REQUEST_CANCEL = 2;
   static final int REQUEST_GCED = 3;
@@ -36,6 +49,8 @@ class Dispatcher {
   static final int HUNTER_RETRY = 5;
   static final int HUNTER_FAILED = 6;
   static final int HUNTER_DECODE_FAILED = 7;
+  static final int NETWORK_STATE_CHANGE = 8;
+  static final int AIRPLANE_MODE_CHANGE = 9;
 
   private static final String DISPATCHER_THREAD_NAME = "Dispatcher";
 
@@ -46,6 +61,8 @@ class Dispatcher {
   final Handler handler;
   final Handler mainThreadHandler;
   final Cache cache;
+
+  boolean airplaneMode;
 
   Dispatcher(Context context, ExecutorService service, Handler mainThreadHandler,
       Downloader downloader, Cache cache) {
@@ -58,6 +75,9 @@ class Dispatcher {
     this.downloader = downloader;
     this.mainThreadHandler = mainThreadHandler;
     this.cache = cache;
+    this.airplaneMode = Utils.isAirplaneModeOn(this.context);
+    NetworkBroadcastReceiver receiver = new NetworkBroadcastReceiver(this.context);
+    receiver.register();
   }
 
   void dispatchSubmit(Request request) {
@@ -80,13 +100,23 @@ class Dispatcher {
     handler.sendMessage(handler.obtainMessage(HUNTER_DECODE_FAILED, hunter));
   }
 
+  void dispatchNetworkStateChange(NetworkInfo info) {
+    handler.sendMessage(handler.obtainMessage(NETWORK_STATE_CHANGE, info));
+  }
+
+  void dispatchAirplaneModeChange(boolean airplaneMode) {
+    handler.sendMessage(handler.obtainMessage(AIRPLANE_MODE_CHANGE,
+        airplaneMode ? AIRPLANE_MODE_ON : AIRPLANE_MODE_OFF, 0));
+  }
+
   void performSubmit(Request request) {
     BitmapHunter hunter = hunterMap.get(request.getKey());
     if (hunter != null) {
       hunter.attach(request);
       return;
     }
-    hunter = forRequest(context, request.getPicasso(), this, cache, request, downloader);
+    hunter =
+        forRequest(context, request.getPicasso(), this, cache, request, downloader, airplaneMode);
     hunter.future = service.submit(hunter);
     hunterMap.put(request.getKey(), hunter);
   }
@@ -126,8 +156,19 @@ class Dispatcher {
     mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(HUNTER_FAILED, hunter));
   }
 
-  private class DispatcherHandler extends Handler {
+  void performAirplaneModeChange(boolean airplaneMode) {
+    this.airplaneMode = airplaneMode;
+  }
 
+  void performNetworkStateChange(NetworkInfo info) {
+    if (info != null && info.isConnectedOrConnecting()) {
+      if (service instanceof PicassoExecutorService) {
+        ((PicassoExecutorService) service).adjustThreadCount(info);
+      }
+    }
+  }
+
+  private class DispatcherHandler extends Handler {
     public DispatcherHandler(Looper looper) {
       super(looper);
     }
@@ -159,6 +200,15 @@ class Dispatcher {
           performError(hunter);
           break;
         }
+        case NETWORK_STATE_CHANGE: {
+          NetworkInfo info = (NetworkInfo) msg.obj;
+          performNetworkStateChange(info);
+          break;
+        }
+        case AIRPLANE_MODE_CHANGE: {
+          performAirplaneModeChange(msg.arg1 == AIRPLANE_MODE_ON);
+          break;
+        }
         default:
           throw new AssertionError("Unknown handler message received: " + msg.what);
       }
@@ -168,6 +218,38 @@ class Dispatcher {
   static class DispatcherThread extends HandlerThread {
     DispatcherThread() {
       super(Utils.THREAD_PREFIX + DISPATCHER_THREAD_NAME, THREAD_PRIORITY_BACKGROUND);
+    }
+  }
+
+  private class NetworkBroadcastReceiver extends BroadcastReceiver {
+    private static final String EXTRA_AIRPLANE_STATE = "state";
+
+    private final ConnectivityManager connectivityManager;
+
+    NetworkBroadcastReceiver(Context context) {
+      connectivityManager = (ConnectivityManager) context.getSystemService(CONNECTIVITY_SERVICE);
+    }
+
+    void register() {
+      boolean shouldScanState = service instanceof PicassoExecutorService && //
+          Utils.hasPermission(context, Manifest.permission.ACCESS_NETWORK_STATE);
+      IntentFilter filter = new IntentFilter();
+      filter.addAction(ACTION_AIRPLANE_MODE_CHANGED);
+      if (shouldScanState) {
+        filter.addAction(CONNECTIVITY_ACTION);
+      }
+      context.registerReceiver(this, filter);
+    }
+
+    @Override public void onReceive(Context context, Intent intent) {
+      String action = intent.getAction();
+      Bundle extras = intent.getExtras();
+
+      if (ACTION_AIRPLANE_MODE_CHANGED.equals(action)) {
+        dispatchAirplaneModeChange(extras.getBoolean(EXTRA_AIRPLANE_STATE, false));
+      } else if (CONNECTIVITY_ACTION.equals(action)) {
+        dispatchNetworkStateChange(connectivityManager.getActiveNetworkInfo());
+      }
     }
   }
 }

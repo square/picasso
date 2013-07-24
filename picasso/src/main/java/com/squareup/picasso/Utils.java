@@ -17,13 +17,16 @@ package com.squareup.picasso;
 
 import android.annotation.TargetApi;
 import android.app.ActivityManager;
+import android.content.ContentResolver;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Looper;
 import android.os.Process;
 import android.os.StatFs;
+import android.provider.Settings;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,6 +38,7 @@ import static android.content.pm.ApplicationInfo.FLAG_LARGE_HEAP;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.HONEYCOMB_MR1;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
+import static android.provider.Settings.System.AIRPLANE_MODE_ON;
 
 final class Utils {
   static final String THREAD_PREFIX = "Picasso-";
@@ -194,6 +198,15 @@ final class Utils {
     int size = 1024 * 1024 * memoryClass / 7;
     // Bound to max size for mem cache.
     return Math.min(size, MAX_MEM_CACHE_SIZE);
+  }
+
+  static boolean isAirplaneModeOn(Context context) {
+    ContentResolver contentResolver = context.getContentResolver();
+    return Settings.System.getInt(contentResolver, AIRPLANE_MODE_ON, 0) != 0;
+  }
+
+  static boolean hasPermission(Context context, String permission) {
+    return context.checkCallingOrSelfPermission(permission) == PackageManager.PERMISSION_GRANTED;
   }
 
   @TargetApi(Build.VERSION_CODES.HONEYCOMB)
