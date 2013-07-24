@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static com.squareup.picasso.Dispatcher.HUNTER_COMPLETE;
@@ -252,7 +251,7 @@ public class Picasso {
     }
   }
 
-  static class CleanupThread extends Thread {
+  private static class CleanupThread extends Thread {
     private final ReferenceQueue<?> referenceQueue;
     private final Handler handler;
 
@@ -387,7 +386,7 @@ public class Picasso {
         cache = new LruCache(context);
       }
       if (service == null) {
-        service = Executors.newFixedThreadPool(3, new Utils.PicassoThreadFactory());
+        service = new PicassoExecutorService();
       }
 
       Stats stats = new Stats(cache);

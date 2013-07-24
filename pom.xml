@@ -121,7 +121,7 @@
           <version>3.6.0</version>
           <configuration>
             <sdk>
-              <platform>16</platform>
+              <platform>17</platform>
             </sdk>
           </configuration>
         </plugin>

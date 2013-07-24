@@ -1,6 +1,7 @@
 package com.squareup.picasso;
 
 import android.content.Context;
+import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.Message;
 import java.util.concurrent.ExecutorService;
@@ -17,9 +18,11 @@ import static com.squareup.picasso.TestUtils.URI_2;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_2;
 import static com.squareup.picasso.TestUtils.mockHunter;
+import static com.squareup.picasso.TestUtils.mockNetworkInfo;
 import static com.squareup.picasso.TestUtils.mockRequest;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -135,5 +138,45 @@ public class DispatcherTest {
     when(hunter.isCancelled()).thenReturn(true);
     dispatcher.performRetry(hunter);
     verifyNoMoreInteractions(service);
+  }
+
+  @Test public void performAirplaneModeChange() throws Exception {
+    assertThat(dispatcher.airplaneMode).isFalse();
+    dispatcher.performAirplaneModeChange(true);
+    assertThat(dispatcher.airplaneMode).isTrue();
+    dispatcher.performAirplaneModeChange(false);
+    assertThat(dispatcher.airplaneMode).isFalse();
+  }
+
+  @Test public void performNetworkStateChangeWithNullInfoIgnores() throws Exception {
+    dispatcher.performNetworkStateChange(null);
+    verifyZeroInteractions(service);
+  }
+
+  @Test public void performNetworkStateChangeWithDisconnectedInfoIgnores() throws Exception {
+    NetworkInfo info = mockNetworkInfo();
+    when(info.isConnectedOrConnecting()).thenReturn(false);
+    dispatcher.performNetworkStateChange(info);
+    verifyZeroInteractions(service);
+  }
+
+  @Test
+  public void performNetworkStateChangeWithConnectedInfoDifferentInstanceIgnores() throws Exception {
+    NetworkInfo info = mockNetworkInfo();
+    when(info.isConnectedOrConnecting()).thenReturn(true);
+    dispatcher.performNetworkStateChange(info);
+    verifyZeroInteractions(service);
+  }
+
+  @Test
+  public void performNetworkStateChangeWithConnectedInfoAndPicassoExecutorServiceAdjustsThreads()
+      throws Exception {
+    PicassoExecutorService service = mock(PicassoExecutorService.class);
+    Dispatcher dispatcher = new Dispatcher(context, service, mainThreadHandler, downloader, cache);
+    NetworkInfo info = mockNetworkInfo();
+    when(info.isConnectedOrConnecting()).thenReturn(true);
+    dispatcher.performNetworkStateChange(info);
+    verify(service).adjustThreadCount(info);
+    verifyZeroInteractions(service);
   }
 }
