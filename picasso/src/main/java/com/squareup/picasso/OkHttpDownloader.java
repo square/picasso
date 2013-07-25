@@ -90,8 +90,8 @@ public class OkHttpDownloader implements Downloader {
     return connection;
   }
 
-  protected OkHttpClient getClient(){
-      return client;
+  protected OkHttpClient getClient() {
+    return client;
   }
 
   @Override public Response load(Uri uri, boolean localCacheOnly) throws IOException {
