@@ -5,18 +5,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Transformation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 final class SampleGridViewAdapter extends BaseAdapter {
   private final Context context;
-  private final Transformation cropSquare = new CropSquareTransformation();
+  private final int size;
   private final List<String> urls = new ArrayList<String>();
 
-  public SampleGridViewAdapter(Context context) {
+  public SampleGridViewAdapter(Context context, int size) {
     this.context = context;
+    this.size = size;
 
     // Ensure we get a different ordering of images on each run.
     Collections.addAll(urls, Data.URLS);
@@ -42,7 +42,8 @@ final class SampleGridViewAdapter extends BaseAdapter {
         .load(url) //
         .placeholder(R.drawable.placeholder) //
         .error(R.drawable.error) //
-        .transform(cropSquare) //
+        .resize(size, size) //
+        .centerCrop() //
         .into(view);
 
     return view;

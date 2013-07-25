@@ -27,7 +27,9 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
@@ -47,12 +49,14 @@ class Dispatcher {
   static final int REQUEST_GCED = 3;
   static final int HUNTER_COMPLETE = 4;
   static final int HUNTER_RETRY = 5;
-  static final int HUNTER_FAILED = 6;
-  static final int HUNTER_DECODE_FAILED = 7;
-  static final int NETWORK_STATE_CHANGE = 8;
-  static final int AIRPLANE_MODE_CHANGE = 9;
+  static final int HUNTER_DECODE_FAILED = 6;
+  static final int HUNTER_DELAY_NEXT_BATCH = 7;
+  static final int HUNTER_BATCH_COMPLETE = 8;
+  static final int NETWORK_STATE_CHANGE = 9;
+  static final int AIRPLANE_MODE_CHANGE = 10;
 
   private static final String DISPATCHER_THREAD_NAME = "Dispatcher";
+  private static final int BATCH_DELAY = 100; // ms
 
   final Context context;
   final ExecutorService service;
@@ -61,6 +65,7 @@ class Dispatcher {
   final Handler handler;
   final Handler mainThreadHandler;
   final Cache cache;
+  final List<BitmapHunter> batch;
 
   boolean airplaneMode;
 
@@ -75,6 +80,7 @@ class Dispatcher {
     this.downloader = downloader;
     this.mainThreadHandler = mainThreadHandler;
     this.cache = cache;
+    this.batch = new ArrayList<BitmapHunter>(4);
     this.airplaneMode = Utils.isAirplaneModeOn(this.context);
     NetworkBroadcastReceiver receiver = new NetworkBroadcastReceiver(this.context);
     receiver.register();
@@ -148,12 +154,18 @@ class Dispatcher {
       cache.set(hunter.getKey(), hunter.getResult());
     }
     hunterMap.remove(hunter.getKey());
-    mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(HUNTER_COMPLETE, hunter));
+    batch(hunter);
+  }
+
+  void performBatchComplete() {
+    List<BitmapHunter> copy = new ArrayList<BitmapHunter>(batch);
+    batch.clear();
+    mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(HUNTER_BATCH_COMPLETE, copy));
   }
 
   void performError(BitmapHunter hunter) {
     hunterMap.remove(hunter.getKey());
-    mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(HUNTER_FAILED, hunter));
+    batch(hunter);
   }
 
   void performAirplaneModeChange(boolean airplaneMode) {
@@ -165,6 +177,16 @@ class Dispatcher {
       if (service instanceof PicassoExecutorService) {
         ((PicassoExecutorService) service).adjustThreadCount(info);
       }
+    }
+  }
+
+  private void batch(BitmapHunter hunter) {
+    if (hunter.isCancelled()) {
+      return;
+    }
+    batch.add(hunter);
+    if (!handler.hasMessages(HUNTER_DELAY_NEXT_BATCH)) {
+      handler.sendEmptyMessageDelayed(HUNTER_DELAY_NEXT_BATCH, BATCH_DELAY);
     }
   }
 
@@ -198,6 +220,10 @@ class Dispatcher {
         case HUNTER_DECODE_FAILED: {
           BitmapHunter hunter = (BitmapHunter) msg.obj;
           performError(hunter);
+          break;
+        }
+        case HUNTER_DELAY_NEXT_BATCH: {
+          performBatchComplete();
           break;
         }
         case NETWORK_STATE_CHANGE: {
