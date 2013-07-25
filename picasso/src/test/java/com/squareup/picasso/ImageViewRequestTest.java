@@ -35,7 +35,8 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-@RunWith(RobolectricTestRunner.class) @Config(manifest = Config.NONE)
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class ImageViewRequestTest {
 
   @Test(expected = AssertionError.class)

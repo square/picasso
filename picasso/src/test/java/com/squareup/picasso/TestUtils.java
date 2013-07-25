@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import java.io.File;
 import org.robolectric.Robolectric;
@@ -62,6 +63,14 @@ public class TestUtils {
 
   static ImageView mockImageViewTarget() {
     return mock(ImageView.class);
+  }
+
+  static ImageView mockFitImageViewTarget(boolean alive) {
+    ViewTreeObserver observer = mock(ViewTreeObserver.class);
+    when(observer.isAlive()).thenReturn(alive);
+    ImageView mock = mock(ImageView.class);
+    when(mock.getViewTreeObserver()).thenReturn(observer);
+    return mock;
   }
 
   static Target mockTarget() {
