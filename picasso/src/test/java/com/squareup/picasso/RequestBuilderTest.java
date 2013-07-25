@@ -184,7 +184,7 @@ public class RequestBuilderTest {
             mock(Stats.class), true));
     ImageView target = mockImageViewTarget();
     new RequestBuilder(picasso, URI_1, 0).placeholder(R.drawable.picture_frame).into(target);
-    verify(target).setImageDrawable(any(PicassoDrawable.class));
+    verify(target).setImageResource(R.drawable.picture_frame);
     verify(picasso).submit(requestCaptor.capture());
     assertThat(requestCaptor.getValue()).isInstanceOf(ImageViewRequest.class);
   }
