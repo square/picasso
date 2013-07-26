@@ -20,7 +20,6 @@ import android.graphics.BitmapFactory;
 class PicassoBitmapOptions extends BitmapFactory.Options {
   int targetWidth;
   int targetHeight;
-  boolean deferredResize;
   boolean centerCrop;
   boolean centerInside;
 

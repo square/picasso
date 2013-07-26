@@ -41,6 +41,7 @@ public class RequestBuilder {
   private List<Transformation> transformations;
   private boolean skipCache;
   private boolean noFade;
+  private boolean deferred;
   private int placeholderResId;
   private Drawable placeholderDrawable;
   private int errorResId;
@@ -123,17 +124,18 @@ public class RequestBuilder {
 
   /**
    * Attempt to resize the image to fit exactly into the target {@link ImageView}'s bounds. This
-   * will only have an affect if the target view has been measured when the image becomes
-   * available.
+   * will result in delayed execution of the request until the {@link ImageView} has been measured.
+   * <p/>
+   * <em>Note:</em> This method works only when your target is an {@link ImageView).
    */
   public RequestBuilder fit() {
     PicassoBitmapOptions options = getOptions();
 
     if (options.targetWidth != 0 || options.targetHeight != 0) {
-      throw new IllegalStateException("Fit cannot be used with resize.");
+     throw new IllegalStateException("Fit cannot be used with resize.");
     }
 
-    options.deferredResize = true;
+    deferred = true;
     return this;
   }
 
@@ -159,7 +161,7 @@ public class RequestBuilder {
     if (options.targetWidth != 0 || options.targetHeight != 0) {
       throw new IllegalStateException("Resize may only be called once.");
     }
-    if (options.deferredResize) {
+    if (deferred) {
       throw new IllegalStateException("Resize cannot be used with fit.");
     }
 
@@ -308,7 +310,7 @@ public class RequestBuilder {
     String requestKey = createKey(uri, resourceId, options, transformations);
     Request request =
         new FetchRequest(picasso, uri, resourceId, options, transformations, skipCache);
-    picasso.submit(request);
+    picasso.enqueueAndSubmit(request);
   }
 
   /**
@@ -342,7 +344,7 @@ public class RequestBuilder {
         new TargetRequest(picasso, uri, resourceId, target, options, transformations, skipCache,
             requestKey);
 
-    picasso.submit(request);
+    picasso.enqueueAndSubmit(request);
   }
 
   /**
@@ -371,7 +373,7 @@ public class RequestBuilder {
 
     if (uri == null && resourceId == 0) {
       picasso.cancelRequest(target);
-      setPlaceHolder(target);
+      PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable);
       return;
     }
 
@@ -382,24 +384,33 @@ public class RequestBuilder {
     if (bitmap != null) {
       picasso.cancelRequest(target);
       PicassoDrawable.setBitmap(target, picasso.context, bitmap, MEMORY, noFade, picasso.debugging);
-
       if (callback != null) {
         callback.onSuccess();
       }
-
       return;
     }
 
-    setPlaceHolder(target);
+    Request request;
 
-    Request request =
+    if (deferred) {
+      int width = target.getWidth();
+      int height = target.getHeight();
+
+      if (width == 0 || height == 0) {
+        request =
+            new DeferredImageViewRequest(picasso, uri, resourceId, target, options, transformations,
+                skipCache, noFade, errorResId, errorDrawable, requestKey, callback);
+        picasso.enqueue(request);
+        return;
+      }
+    }
+
+    PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable);
+
+    request =
         new ImageViewRequest(picasso, uri, resourceId, target, options, transformations, skipCache,
             noFade, errorResId, errorDrawable, requestKey, callback);
 
-    picasso.submit(request);
-  }
-
-  private void setPlaceHolder(ImageView target) {
-    PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable);
+    picasso.enqueueAndSubmit(request);
   }
 }

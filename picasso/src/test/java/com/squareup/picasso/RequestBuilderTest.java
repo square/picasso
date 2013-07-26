@@ -36,6 +36,7 @@ import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.TestUtils.BITMAP_1;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
+import static com.squareup.picasso.TestUtils.mockFitImageViewTarget;
 import static com.squareup.picasso.TestUtils.mockImageViewTarget;
 import static com.squareup.picasso.TestUtils.mockTarget;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -94,7 +95,7 @@ public class RequestBuilderTest {
 
   @Test public void fetchSubmitsFetchRequest() throws Exception {
     new RequestBuilder(picasso, URI_1, 0).fetch();
-    verify(picasso).submit(requestCaptor.capture());
+    verify(picasso).enqueueAndSubmit(requestCaptor.capture());
     assertThat(requestCaptor.getValue()).isInstanceOf(FetchRequest.class);
   }
 
@@ -122,14 +123,14 @@ public class RequestBuilderTest {
     new RequestBuilder(picasso, URI_1, 0).into(target);
     verify(target).onSuccess(BITMAP_1, MEMORY);
     verify(picasso).cancelRequest(target);
-    verify(picasso, never()).submit(any(Request.class));
+    verify(picasso, never()).enqueueAndSubmit(any(Request.class));
   }
 
   @Test
   public void intoTargetAndNotInCacheSubmitsTargetRequest() throws Exception {
     Target target = mockTarget();
     new RequestBuilder(picasso, URI_1, 0).into(target);
-    verify(picasso).submit(requestCaptor.capture());
+    verify(picasso).enqueueAndSubmit(requestCaptor.capture());
     assertThat(requestCaptor.getValue()).isInstanceOf(TargetRequest.class);
   }
 
@@ -148,7 +149,7 @@ public class RequestBuilderTest {
     new RequestBuilder(picasso, null, 0).into(target);
     verify(picasso).cancelRequest(target);
     verify(picasso, never()).quickMemoryCacheCheck(anyString());
-    verify(picasso, never()).submit(any(Request.class));
+    verify(picasso, never()).enqueueAndSubmit(any(Request.class));
   }
 
   @Test
@@ -161,7 +162,7 @@ public class RequestBuilderTest {
     new RequestBuilder(picasso, URI_1, 0).into(target);
     verify(picasso).cancelRequest(target);
     verify(target).setImageDrawable(any(PicassoDrawable.class));
-    verify(picasso, never()).submit(any(Request.class));
+    verify(picasso, never()).enqueueAndSubmit(any(Request.class));
   }
 
   @Test
@@ -173,7 +174,7 @@ public class RequestBuilderTest {
     Drawable placeHolderDrawable = mock(Drawable.class);
     new RequestBuilder(picasso, URI_1, 0).placeholder(placeHolderDrawable).into(target);
     verify(target).setImageDrawable(any(PicassoDrawable.class));
-    verify(picasso).submit(requestCaptor.capture());
+    verify(picasso).enqueueAndSubmit(requestCaptor.capture());
     assertThat(requestCaptor.getValue()).isInstanceOf(ImageViewRequest.class);
   }
 
@@ -185,7 +186,7 @@ public class RequestBuilderTest {
     ImageView target = mockImageViewTarget();
     new RequestBuilder(picasso, URI_1, 0).placeholder(R.drawable.picture_frame).into(target);
     verify(target).setImageResource(R.drawable.picture_frame);
-    verify(picasso).submit(requestCaptor.capture());
+    verify(picasso).enqueueAndSubmit(requestCaptor.capture());
     assertThat(requestCaptor.getValue()).isInstanceOf(ImageViewRequest.class);
   }
 
@@ -193,7 +194,29 @@ public class RequestBuilderTest {
   public void intoImageViewAndNotInCacheSubmitsImageViewRequest() throws Exception {
     ImageView target = mockImageViewTarget();
     new RequestBuilder(picasso, URI_1, 0).into(target);
-    verify(picasso).submit(requestCaptor.capture());
+    verify(picasso).enqueueAndSubmit(requestCaptor.capture());
+    assertThat(requestCaptor.getValue()).isInstanceOf(ImageViewRequest.class);
+  }
+
+  @Test
+  public void intoImageViewWithFitAndNoDimensionsQueuesDeferredImageViewRequest() throws Exception {
+    ImageView target = mockFitImageViewTarget(true);
+    when(target.getWidth()).thenReturn(0);
+    when(target.getHeight()).thenReturn(0);
+    new RequestBuilder(picasso, URI_1, 0).fit().into(target);
+    verify(picasso, never()).enqueueAndSubmit(any(Request.class));
+    verify(picasso).enqueue(requestCaptor.capture());
+    assertThat(requestCaptor.getValue()).isInstanceOf(DeferredImageViewRequest.class);
+  }
+
+  @Test
+  public void intoImageViewWithFitAndDimensionsQueuesImageViewRequest() throws Exception {
+    ImageView target = mockFitImageViewTarget(true);
+    when(target.getWidth()).thenReturn(100);
+    when(target.getHeight()).thenReturn(100);
+    new RequestBuilder(picasso, URI_1, 0).fit().into(target);
+    verify(picasso, never()).enqueue(any(Request.class));
+    verify(picasso).enqueueAndSubmit(requestCaptor.capture());
     assertThat(requestCaptor.getValue()).isInstanceOf(ImageViewRequest.class);
   }
 
@@ -238,7 +261,7 @@ public class RequestBuilderTest {
     }
   }
 
-  public void fitAndResizeMutualExclusivity() throws Exception {
+  @Test public void fitAndResizeMutualExclusivity() throws Exception {
     try {
       new RequestBuilder().resize(10, 10).fit();
       fail("Fit cannot be called after resize.");
