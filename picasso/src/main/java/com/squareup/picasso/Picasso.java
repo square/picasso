@@ -200,14 +200,21 @@ public class Picasso {
     return stats.createSnapshot();
   }
 
-  // Used by into() and fetch() requests.
+  void enqueueAndSubmit(Request request) {
+    enqueue(request);
+    dispatcher.dispatchSubmit(request);
+  }
+
   void submit(Request request) {
+    dispatcher.dispatchSubmit(request);
+  }
+
+  void enqueue(Request request) {
     Object target = request.getTarget();
     if (target != null) {
       cancelExistingRequest(target);
       targetToRequest.put(target, request);
     }
-    dispatcher.dispatchSubmit(request);
   }
 
   Bitmap quickMemoryCacheCheck(String key) {

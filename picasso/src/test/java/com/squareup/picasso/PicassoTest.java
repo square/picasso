@@ -68,7 +68,7 @@ public class PicassoTest {
 
   @Test public void submitWithNullTargetInvokesDispatcher() throws Exception {
     Request request = mockRequest(URI_KEY_1, URI_1, null);
-    picasso.submit(request);
+    picasso.enqueueAndSubmit(request);
     assertThat(picasso.targetToRequest).isEmpty();
     verify(dispatcher).dispatchSubmit(request);
   }
@@ -76,7 +76,7 @@ public class PicassoTest {
   @Test public void submitWithTargetInvokesDispatcher() throws Exception {
     Request request = mockRequest(URI_KEY_1, URI_1, mockImageViewTarget());
     assertThat(picasso.targetToRequest).isEmpty();
-    picasso.submit(request);
+    picasso.enqueueAndSubmit(request);
     assertThat(picasso.targetToRequest).hasSize(1);
     verify(dispatcher).dispatchSubmit(request);
   }
@@ -130,7 +130,7 @@ public class PicassoTest {
   @Test public void cancelExistingRequestWithImageViewTarget() throws Exception {
     ImageView target = mockImageViewTarget();
     Request request = mockRequest(URI_KEY_1, URI_1, target);
-    picasso.submit(request);
+    picasso.enqueueAndSubmit(request);
     assertThat(picasso.targetToRequest).hasSize(1);
     picasso.cancelRequest(target);
     assertThat(picasso.targetToRequest).isEmpty();
@@ -141,7 +141,7 @@ public class PicassoTest {
   @Test public void cancelExistingRequestWithTarget() throws Exception {
     Target target = mockTarget();
     Request request = mockRequest(URI_KEY_1, URI_1, target);
-    picasso.submit(request);
+    picasso.enqueueAndSubmit(request);
     assertThat(picasso.targetToRequest).hasSize(1);
     picasso.cancelRequest(target);
     assertThat(picasso.targetToRequest).isEmpty();
