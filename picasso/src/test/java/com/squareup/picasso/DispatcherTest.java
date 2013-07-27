@@ -23,6 +23,7 @@ import static com.squareup.picasso.TestUtils.mockRequest;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -44,6 +45,11 @@ public class DispatcherTest {
   @Before public void setUp() throws Exception {
     initMocks(this);
     dispatcher = new Dispatcher(context, service, mainThreadHandler, downloader, cache);
+  }
+
+  @Test public void shutdownStopsService() throws Exception {
+    dispatcher.shutdown();
+    verify(service).shutdown();
   }
 
   @Test public void performSubmitWithNewRequestQueuesHunter() throws Exception {
@@ -69,6 +75,25 @@ public class DispatcherTest {
     dispatcher.performSubmit(request2);
     assertThat(dispatcher.hunterMap).hasSize(1);
     verify(service).submit(any(BitmapHunter.class));
+  }
+
+  @Test public void performSubmitWithShutdownServiceIgnoresRequest() throws Exception {
+    when(service.isShutdown()).thenReturn(true);
+    Request request = mockRequest(URI_KEY_1, URI_1);
+    dispatcher.performSubmit(request);
+    assertThat(dispatcher.hunterMap).isEmpty();
+    verify(service, never()).submit(any(BitmapHunter.class));
+  }
+
+  @Test public void performSubmitWithShutdownAttachesRequest() throws Exception {
+    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
+    dispatcher.hunterMap.put(URI_KEY_1, hunter);
+    when(service.isShutdown()).thenReturn(true);
+    Request request = mockRequest(URI_KEY_1, URI_1);
+    dispatcher.performSubmit(request);
+    assertThat(dispatcher.hunterMap).hasSize(1);
+    verify(hunter).attach(request);
+    verify(service, never()).submit(any(BitmapHunter.class));
   }
 
   @Test public void performCancelDetachesRequestAndCleansMap() throws Exception {
@@ -157,16 +182,22 @@ public class DispatcherTest {
     dispatcher.performRetry(hunter);
     verify(service, times(2)).submit(hunter);
     dispatcher.performRetry(hunter);
+    verify(service, times(3)).isShutdown();
     verifyNoMoreInteractions(service);
   }
 
   @Test public void performRetrySkipsRetryIfCancelled() throws Exception {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
-    dispatcher.performRetry(hunter);
-    verify(service).submit(hunter);
     when(hunter.isCancelled()).thenReturn(true);
     dispatcher.performRetry(hunter);
-    verifyNoMoreInteractions(service);
+    verifyZeroInteractions(service);
+  }
+
+  @Test public void performRetrySkipsRetryIfServiceShutdown() throws Exception {
+    when(service.isShutdown()).thenReturn(true);
+    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
+    dispatcher.performRetry(hunter);
+    verify(service, never()).submit(hunter);
   }
 
   @Test public void performAirplaneModeChange() throws Exception {
