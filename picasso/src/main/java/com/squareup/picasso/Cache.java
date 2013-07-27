@@ -37,6 +37,9 @@ public interface Cache {
   /** Returns the maximum size in bytes that the cache can hold. */
   int maxSize();
 
+  /** Clears the cache. */
+  void clear();
+
   /** A cache which does not store any values. */
   Cache NONE = new Cache() {
     @Override public Bitmap get(String key) {
@@ -53,6 +56,10 @@ public interface Cache {
 
     @Override public int maxSize() {
       return 0;
+    }
+
+    @Override
+    public void clear() {
     }
   };
 }

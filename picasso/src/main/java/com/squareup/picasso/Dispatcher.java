@@ -58,6 +58,7 @@ class Dispatcher {
   private static final String DISPATCHER_THREAD_NAME = "Dispatcher";
   private static final int BATCH_DELAY = 100; // ms
 
+  final DispatcherThread dispatcherThread;
   final Context context;
   final ExecutorService service;
   final Downloader downloader;
@@ -71,12 +72,12 @@ class Dispatcher {
 
   Dispatcher(Context context, ExecutorService service, Handler mainThreadHandler,
       Downloader downloader, Cache cache) {
-    DispatcherThread thread = new DispatcherThread();
-    thread.start();
+    this.dispatcherThread = new DispatcherThread();
+    this.dispatcherThread.start();
     this.context = context;
     this.service = service;
     this.hunterMap = new LinkedHashMap<String, BitmapHunter>();
-    this.handler = new DispatcherHandler(thread.getLooper());
+    this.handler = new DispatcherHandler(dispatcherThread.getLooper());
     this.downloader = downloader;
     this.mainThreadHandler = mainThreadHandler;
     this.cache = cache;
@@ -84,6 +85,11 @@ class Dispatcher {
     this.airplaneMode = Utils.isAirplaneModeOn(this.context);
     NetworkBroadcastReceiver receiver = new NetworkBroadcastReceiver(this.context);
     receiver.register();
+  }
+
+  void shutdown() {
+    service.shutdown();
+    dispatcherThread.quit();
   }
 
   void dispatchSubmit(Request request) {
@@ -121,6 +127,12 @@ class Dispatcher {
       hunter.attach(request);
       return;
     }
+
+    // Messages still pending to be delivered should never be submitted.
+    if (service.isShutdown()) {
+      return;
+    }
+
     hunter =
         forRequest(context, request.getPicasso(), this, cache, request, downloader, airplaneMode);
     hunter.future = service.submit(hunter);
@@ -140,6 +152,13 @@ class Dispatcher {
 
   void performRetry(BitmapHunter hunter) {
     if (hunter.isCancelled()) return;
+
+    // Requests that started prior to a shutdown but failed for some reason should
+    // never be retried.
+    if (service.isShutdown()) {
+      performError(hunter);
+      return;
+    }
 
     if (hunter.retryCount > 0) {
       hunter.retryCount--;
