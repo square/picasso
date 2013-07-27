@@ -84,8 +84,10 @@ public class Picasso {
   final Stats stats;
   final Map<Object, Request> targetToRequest = new WeakHashMap<Object, Request>();
   final ReferenceQueue<Object> referenceQueue;
+  final CleanupThread cleanupThread;
 
   boolean debugging;
+  boolean shutdown;
 
   Picasso(Context context, Dispatcher dispatcher, Cache cache, Listener listener, Stats stats,
       boolean debugging) {
@@ -96,8 +98,8 @@ public class Picasso {
     this.stats = stats;
     this.debugging = debugging;
     this.referenceQueue = new ReferenceQueue<Object>();
-
-    new CleanupThread(referenceQueue, HANDLER).start();
+    this.cleanupThread = new CleanupThread(referenceQueue, HANDLER);
+    this.cleanupThread.start();
   }
 
   /** Cancel any existing requests for the specified target {@link ImageView}. */
@@ -196,6 +198,21 @@ public class Picasso {
     return stats.createSnapshot();
   }
 
+  /** Stops this instance from accepting further requests. */
+  public void shutdown() {
+    if (shutdown) {
+      return;
+    }
+    cache.clear();
+    cleanupThread.shutdown();
+    stats.shutdown();
+    dispatcher.shutdown();
+    if (this == singleton) {
+      singleton = null;
+    }
+    shutdown = true;
+  }
+
   void enqueueAndSubmit(Request request) {
     enqueue(request);
     dispatcher.dispatchSubmit(request);
@@ -272,12 +289,14 @@ public class Picasso {
       setName(THREAD_PREFIX + "refQueue");
     }
 
-    public void run() {
+    @Override public void run() {
       Process.setThreadPriority(THREAD_PRIORITY_BACKGROUND);
       while (true) {
         try {
           RequestWeakReference<?> remove = (RequestWeakReference<?>) referenceQueue.remove();
           handler.sendMessage(handler.obtainMessage(REQUEST_GCED, remove.request));
+        } catch (InterruptedException e) {
+          break;
         } catch (final Exception e) {
           handler.post(new Runnable() {
             @Override public void run() {
@@ -287,6 +306,10 @@ public class Picasso {
           break;
         }
       }
+    }
+
+    void shutdown() {
+      interrupt();
     }
   }
 
