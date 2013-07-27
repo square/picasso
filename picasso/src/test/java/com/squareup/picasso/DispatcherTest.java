@@ -3,7 +3,6 @@ package com.squareup.picasso;
 import android.content.Context;
 import android.net.NetworkInfo;
 import android.os.Handler;
-import android.os.Message;
 import java.util.concurrent.ExecutorService;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,6 +12,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import static com.squareup.picasso.TestUtils.BITMAP_1;
+import static com.squareup.picasso.TestUtils.BITMAP_2;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_2;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
@@ -99,9 +99,7 @@ public class DispatcherTest {
   @Test public void performCompleteSetsResultInCache() throws Exception {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
     dispatcher.performComplete(hunter);
-    assertThat(dispatcher.hunterMap).isEmpty();
     verify(cache).set(hunter.getKey(), hunter.getResult());
-    verify(mainThreadHandler).sendMessage(any(Message.class));
   }
 
   @Test public void performCompleteWithSkipCacheDoesNotCache() throws Exception {
@@ -109,16 +107,47 @@ public class DispatcherTest {
     dispatcher.performComplete(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
     verifyZeroInteractions(cache);
-    verify(mainThreadHandler).sendMessage(any(Message.class));
   }
 
-  @Test public void performErrorCleansUp() throws Exception {
-    Request request = mockRequest(URI_KEY_1, URI_1);
+  @Test public void performCompleteCleansUpAndAddsToBatch() throws Exception {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
-    dispatcher.performSubmit(request);
-    assertThat(dispatcher.hunterMap).hasSize(1);
+    dispatcher.performComplete(hunter);
+    assertThat(dispatcher.hunterMap).isEmpty();
+    assertThat(dispatcher.batch).hasSize(1);
+  }
+
+  @Test public void performCompleteCleansUpAndDoesNotAddToBatchIfCancelled() throws Exception {
+    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
+    when(hunter.isCancelled()).thenReturn(true);
+    dispatcher.performComplete(hunter);
+    assertThat(dispatcher.hunterMap).isEmpty();
+    assertThat(dispatcher.batch).isEmpty();
+  }
+
+  @Test public void performErrorCleansUpAndAddsToBatch() throws Exception {
+    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
+    dispatcher.hunterMap.put(hunter.getKey(), hunter);
     dispatcher.performError(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
+    assertThat(dispatcher.batch).hasSize(1);
+  }
+
+  @Test public void performErrorCleansUpAndDoesNotAddToBatchIfCancelled() throws Exception {
+    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
+    when(hunter.isCancelled()).thenReturn(true);
+    dispatcher.hunterMap.put(hunter.getKey(), hunter);
+    dispatcher.performError(hunter);
+    assertThat(dispatcher.hunterMap).isEmpty();
+    assertThat(dispatcher.batch).isEmpty();
+  }
+
+  @Test public void performBatchCompleteFlushesHunters() throws Exception {
+    BitmapHunter hunter1 = mockHunter(URI_KEY_2, BITMAP_1, false);
+    BitmapHunter hunter2 = mockHunter(URI_KEY_2, BITMAP_2, false);
+    dispatcher.batch.add(hunter1);
+    dispatcher.batch.add(hunter2);
+    dispatcher.performBatchComplete();
+    assertThat(dispatcher.batch).isEmpty();
   }
 
   @Test public void performRetryTwoTimesBeforeError() throws Exception {
