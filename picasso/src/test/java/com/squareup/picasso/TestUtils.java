@@ -1,13 +1,11 @@
 package com.squareup.picasso;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import java.io.File;
-import org.robolectric.Robolectric;
 
 import static android.provider.ContactsContract.Contacts.CONTENT_URI;
 import static android.provider.ContactsContract.Contacts.Photo.CONTENT_DIRECTORY;
@@ -22,6 +20,7 @@ public class TestUtils {
   static final String URI_KEY_1 = createKey(URI_1, 0, null, null);
   static final String URI_KEY_2 = createKey(URI_2, 0, null, null);
   static final Bitmap BITMAP_1 = Bitmap.createBitmap(10, 10, null);
+  static final Bitmap BITMAP_2 = Bitmap.createBitmap(15, 15, null);
   static final File FILE_1 = new File("C:\\windows\\system32\\logo.exe");
   static final String FILE_KEY_1 = createKey(Uri.fromFile(FILE_1), 0, null, null);
   static final Uri FILE_1_URL = Uri.parse("file:///" + FILE_1.getPath());

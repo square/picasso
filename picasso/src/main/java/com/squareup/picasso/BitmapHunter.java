@@ -134,7 +134,7 @@ abstract class BitmapHunter implements Runnable {
   }
 
   boolean isCancelled() {
-    return future.isCancelled();
+    return future != null && future.isCancelled();
   }
 
   boolean shouldSkipCache() {
@@ -147,6 +147,18 @@ abstract class BitmapHunter implements Runnable {
 
   String getKey() {
     return key;
+  }
+
+  Uri getUri() {
+    return uri;
+  }
+
+  List<Request> getRequests() {
+    return requests;
+  }
+
+  Exception getException() {
+    return exception;
   }
 
   String getName() {

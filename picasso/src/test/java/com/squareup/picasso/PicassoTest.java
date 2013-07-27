@@ -19,7 +19,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.widget.ImageView;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import org.junit.Before;
@@ -30,10 +29,12 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import static com.squareup.picasso.Picasso.Listener;
+import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.TestUtils.BITMAP_1;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.mockCanceledRequest;
+import static com.squareup.picasso.TestUtils.mockHunter;
 import static com.squareup.picasso.TestUtils.mockImageViewTarget;
 import static com.squareup.picasso.TestUtils.mockRequest;
 import static com.squareup.picasso.TestUtils.mockTarget;
@@ -94,29 +95,25 @@ public class PicassoTest {
     verifyZeroInteractions(stats);
   }
 
-  @Test public void completeInvokesAllNonCanceledRequests() throws Exception {
+  @Test public void completeInvokesSuccessOnAllSuccessfulRequests() throws Exception {
     Request request1 = mockRequest(URI_KEY_1, URI_1, mockImageViewTarget());
     Request request2 = mockCanceledRequest();
-    List<Request> list = Arrays.asList(request1, request2);
-    picasso.complete(list, BITMAP_1, Picasso.LoadedFrom.MEMORY);
-    verify(request1).complete(BITMAP_1, Picasso.LoadedFrom.MEMORY);
+    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
+    when(hunter.getRequests()).thenReturn(Arrays.asList(request1, request2));
+    when(hunter.getLoadedFrom()).thenReturn(MEMORY);
+    picasso.complete(hunter);
+    verify(request1).complete(BITMAP_1, MEMORY);
     verify(request2, never()).complete(eq(BITMAP_1), any(Picasso.LoadedFrom.class));
   }
 
-  @Test public void errorInvokesAllNonCanceledRequestsAndListener() throws Exception {
+  @Test public void completeInvokesErrorOnAllFailedRequests() throws Exception {
     Request request1 = mockRequest(URI_KEY_1, URI_1, mockImageViewTarget());
     Request request2 = mockCanceledRequest();
-    List<Request> list = Arrays.asList(request1, request2);
-    picasso.error(list, URI_1, null);
+    BitmapHunter hunter = mockHunter(URI_KEY_1, null, false);
+    when(hunter.getRequests()).thenReturn(Arrays.asList(request1, request2));
+    picasso.complete(hunter);
     verify(request1).error();
     verify(request2, never()).error();
-    verifyZeroInteractions(listener);
-  }
-
-  @Test public void errorInvokesGlobalListenerWithException() throws Exception {
-    Exception exception = mock(Exception.class);
-    picasso.error(Collections.<Request>emptyList(), URI_1, exception);
-    verify(listener).onImageLoadFailed(picasso, URI_1, exception);
   }
 
   @Test public void cancelExistingRequestWithUnknownTarget() throws Exception {

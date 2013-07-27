@@ -32,8 +32,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
-import static com.squareup.picasso.Dispatcher.HUNTER_COMPLETE;
-import static com.squareup.picasso.Dispatcher.HUNTER_FAILED;
+import static com.squareup.picasso.Dispatcher.HUNTER_BATCH_COMPLETE;
 import static com.squareup.picasso.Dispatcher.REQUEST_GCED;
 import static com.squareup.picasso.Request.RequestWeakReference;
 import static com.squareup.picasso.Utils.THREAD_PREFIX;
@@ -58,14 +57,11 @@ public class Picasso {
   static final Handler HANDLER = new Handler(Looper.getMainLooper()) {
     @Override public void handleMessage(Message msg) {
       switch (msg.what) {
-        case HUNTER_COMPLETE: {
-          BitmapHunter hunter = (BitmapHunter) msg.obj;
-          hunter.picasso.complete(hunter.requests, hunter.result, hunter.getLoadedFrom());
-          break;
-        }
-        case HUNTER_FAILED: {
-          BitmapHunter hunter = (BitmapHunter) msg.obj;
-          hunter.picasso.error(hunter.requests, hunter.uri, hunter.exception);
+        case HUNTER_BATCH_COMPLETE: {
+          @SuppressWarnings("unchecked") List<BitmapHunter> batch = (List<BitmapHunter>) msg.obj;
+          for (BitmapHunter hunter : batch) {
+            hunter.picasso.complete(hunter);
+          }
           break;
         }
         case REQUEST_GCED: {
@@ -225,22 +221,29 @@ public class Picasso {
     return cached;
   }
 
-  void complete(List<Request> joined, Bitmap result, LoadedFrom from) {
-    for (Request join : joined) {
-      if (!join.isCancelled()) {
-        targetToRequest.remove(join.getTarget());
-        join.complete(result, from);
-      }
+  void complete(BitmapHunter hunter) {
+    List<Request> joined = hunter.getRequests();
+    if (joined.isEmpty()) {
+      return;
     }
-  }
 
-  void error(List<Request> joined, Uri uri, Exception exception) {
+    Uri uri = hunter.getUri();
+    Exception exception = hunter.getException();
+    Bitmap result = hunter.getResult();
+    LoadedFrom from = hunter.getLoadedFrom();
+
     for (Request join : joined) {
-      if (!join.isCancelled()) {
-        targetToRequest.remove(join.getTarget());
+      if (join.isCancelled()) {
+        continue;
+      }
+      targetToRequest.remove(join.getTarget());
+      if (result != null) {
+        join.complete(result, from);
+      } else {
         join.error();
       }
     }
+
     if (listener != null && exception != null) {
       listener.onImageLoadFailed(this, uri, exception);
     }
