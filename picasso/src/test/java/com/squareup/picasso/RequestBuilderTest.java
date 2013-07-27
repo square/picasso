@@ -72,6 +72,15 @@ public class RequestBuilderTest {
     }
   }
 
+  @Test public void loadWithShutdownCrashes() throws Exception {
+    picasso.shutdown = true;
+    try {
+      new RequestBuilder(picasso, URI_1, 0).fetch();
+      fail("Should have crashed with a shutdown picasso.");
+    } catch (IllegalStateException expected) {
+    }
+  }
+
   @Test public void getReturnsNullIfNullUriAndResourceId() throws Exception {
     final CountDownLatch latch = new CountDownLatch(1);
     final Bitmap[] result = new Bitmap[1];

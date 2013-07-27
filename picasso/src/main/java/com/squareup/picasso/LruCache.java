@@ -120,6 +120,10 @@ public class LruCache implements Cache {
     return maxSize;
   }
 
+  public final synchronized void clear() {
+    evictAll();
+  }
+
   /** Returns the number of times {@link #get} returned a value. */
   public final synchronized int hitCount() {
     return hitCount;

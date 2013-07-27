@@ -19,7 +19,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.widget.ImageView;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import org.junit.Before;
 import org.junit.Test;
@@ -144,6 +143,23 @@ public class PicassoTest {
     assertThat(picasso.targetToRequest).isEmpty();
     verify(request).cancel();
     verify(dispatcher).dispatchCancel(request);
+  }
+
+  @Test public void shutdown() throws Exception {
+    picasso.shutdown();
+    verify(cache).clear();
+    verify(stats).shutdown();
+    verify(dispatcher).shutdown();
+    assertThat(picasso.shutdown).isTrue();
+  }
+
+  @Test public void shutdownTwice() throws Exception {
+    picasso.shutdown();
+    picasso.shutdown();
+    verify(cache).clear();
+    verify(stats).shutdown();
+    verify(dispatcher).shutdown();
+    assertThat(picasso.shutdown).isTrue();
   }
 
   @Test public void loadThrowsWithInvalidInput() throws Exception {
