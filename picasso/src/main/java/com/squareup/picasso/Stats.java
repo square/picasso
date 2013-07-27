@@ -32,6 +32,7 @@ class Stats {
 
   private static final String STATS_THREAD_NAME = Utils.THREAD_PREFIX + "Stats";
 
+  final HandlerThread statsThread;
   final Cache cache;
   final Handler handler;
 
@@ -46,9 +47,9 @@ class Stats {
 
   Stats(Cache cache) {
     this.cache = cache;
-    HandlerThread statsThread = new HandlerThread(STATS_THREAD_NAME, THREAD_PRIORITY_BACKGROUND);
-    statsThread.start();
-    handler = new StatsHandler(statsThread.getLooper());
+    this.statsThread = new HandlerThread(STATS_THREAD_NAME, THREAD_PRIORITY_BACKGROUND);
+    this.statsThread.start();
+    this.handler = new StatsHandler(statsThread.getLooper());
   }
 
   void bitmapDecoded(Bitmap bitmap) {
@@ -65,6 +66,10 @@ class Stats {
 
   void cacheMiss() {
     handler.sendEmptyMessage(CACHE_MISS);
+  }
+
+  void shutdown() {
+    statsThread.quit();
   }
 
   synchronized StatsSnapshot createSnapshot() {

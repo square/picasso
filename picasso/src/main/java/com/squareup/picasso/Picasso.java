@@ -84,8 +84,10 @@ public class Picasso {
   final Stats stats;
   final Map<Object, Request> targetToRequest = new WeakHashMap<Object, Request>();
   final ReferenceQueue<Object> referenceQueue;
+  final CleanupThread cleanupThread;
 
   boolean debugging;
+  boolean shutdown;
 
   Picasso(Context context, Dispatcher dispatcher, Cache cache, Listener listener, Stats stats,
       boolean debugging) {
@@ -96,8 +98,8 @@ public class Picasso {
     this.stats = stats;
     this.debugging = debugging;
     this.referenceQueue = new ReferenceQueue<Object>();
-
-    new CleanupThread(referenceQueue, HANDLER).start();
+    this.cleanupThread = new CleanupThread(referenceQueue, HANDLER);
+    this.cleanupThread.start();
   }
 
   /** Cancel any existing requests for the specified target {@link ImageView}. */
@@ -196,6 +198,18 @@ public class Picasso {
     return stats.createSnapshot();
   }
 
+  /** Stops this instance from accepting further requests. */
+  @SuppressWarnings("UnusedDeclaration") public void shutdown() {
+    cache.clear();
+    cleanupThread.interrupt();
+    stats.shutdown();
+    dispatcher.shutdown();
+
+    if (this == singleton) {
+      singleton = null;
+    }
+  }
+
   void enqueueAndSubmit(Request request) {
     enqueue(request);
     dispatcher.dispatchSubmit(request);
@@ -206,6 +220,10 @@ public class Picasso {
   }
 
   void enqueue(Request request) {
+    if (shutdown) {
+      throw new IllegalStateException("Picasso instance already shut down. " +
+          "Cannot submit requests");
+    }
     Object target = request.getTarget();
     if (target != null) {
       cancelExistingRequest(target);
@@ -278,6 +296,9 @@ public class Picasso {
         try {
           RequestWeakReference<?> remove = (RequestWeakReference<?>) referenceQueue.remove();
           handler.sendMessage(handler.obtainMessage(REQUEST_GCED, remove.request));
+        } catch (InterruptedException e) {
+          // Can't find another way to "naturally" shut down this thread.
+          break;
         } catch (final Exception e) {
           handler.post(new Runnable() {
             @Override public void run() {

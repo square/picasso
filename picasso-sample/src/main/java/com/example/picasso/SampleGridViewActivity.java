@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.Display;
 import android.view.WindowManager;
 import android.widget.GridView;
+import com.squareup.picasso.Picasso;
 
 public class SampleGridViewActivity extends PicassoSampleActivity {
   @Override protected void onCreate(Bundle savedInstanceState) {
@@ -18,6 +19,13 @@ public class SampleGridViewActivity extends PicassoSampleActivity {
 
     GridView gv = (GridView) findViewById(R.id.grid_view);
     gv.setAdapter(new SampleGridViewAdapter(this, size));
+
+    gv.postDelayed(new Runnable() {
+      @Override
+      public void run() {
+        Picasso.with(SampleGridViewActivity.this).shutdown();
+      }
+    }, 10000);
   }
 
   private Point getDisplaySize() {
