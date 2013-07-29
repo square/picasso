@@ -49,8 +49,8 @@ public class RequestBuilder {
 
   RequestBuilder(Picasso picasso, Uri uri, int resourceId) {
     if (picasso.shutdown) {
-      throw new IllegalStateException("Picasso instance already shut down. "
-          + "Cannot submit new requests.");
+      throw new IllegalStateException(
+          "Picasso instance already shut down. " + "Cannot submit new requests.");
     }
     this.picasso = picasso;
     this.uri = uri;
@@ -136,7 +136,7 @@ public class RequestBuilder {
     PicassoBitmapOptions options = getOptions();
 
     if (options.targetWidth != 0 || options.targetHeight != 0) {
-     throw new IllegalStateException("Fit cannot be used with resize.");
+      throw new IllegalStateException("Fit cannot be used with resize.");
     }
 
     deferred = true;
@@ -302,8 +302,8 @@ public class RequestBuilder {
     }
 
     Request request = new GetRequest(picasso, uri, resourceId, options, transformations, skipCache);
-    return forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache, request,
-        picasso.dispatcher.downloader, Utils.isAirplaneModeOn(picasso.context)).hunt();
+    return forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache, picasso.stats,
+        request, picasso.dispatcher.downloader, Utils.isAirplaneModeOn(picasso.context)).hunt();
   }
 
   /**

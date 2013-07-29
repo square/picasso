@@ -44,6 +44,7 @@ abstract class BitmapHunter implements Runnable {
   final Picasso picasso;
   final Dispatcher dispatcher;
   final Cache cache;
+  final Stats stats;
   final String key;
   final Uri uri;
   final List<Transformation> transformations;
@@ -58,10 +59,11 @@ abstract class BitmapHunter implements Runnable {
 
   int retryCount = DEFAULT_RETRY_COUNT;
 
-  BitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Request request) {
+  BitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats, Request request) {
     this.picasso = picasso;
     this.dispatcher = dispatcher;
     this.cache = cache;
+    this.stats = stats;
     this.key = request.getKey();
     this.uri = request.getUri();
     this.transformations = request.transformations;
@@ -100,6 +102,7 @@ abstract class BitmapHunter implements Runnable {
     if (!skipCache) {
       bitmap = cache.get(key);
       if (bitmap != null) {
+        stats.dispatchCacheHit();
         loadedFrom = MEMORY;
         return bitmap;
       }
@@ -107,14 +110,19 @@ abstract class BitmapHunter implements Runnable {
 
     bitmap = decode(uri, options, retryCount);
 
-    if (bitmap != null && (options != null || transformations != null)) {
-      synchronized (DECODE_LOCK) {
-        if (options != null) {
-          bitmap = transformResult(options, bitmap, options.exifRotation);
+    if (bitmap != null) {
+      stats.dispatchBitmapDecoded(bitmap);
+
+      if (options != null || transformations != null) {
+        synchronized (DECODE_LOCK) {
+          if (options != null) {
+            bitmap = transformResult(options, bitmap, options.exifRotation);
+          }
+          if (transformations != null) {
+            bitmap = applyCustomTransformations(transformations, bitmap);
+          }
         }
-        if (transformations != null) {
-          bitmap = applyCustomTransformations(transformations, bitmap);
-        }
+        stats.dispatchBitmapTransformed(bitmap);
       }
     }
 
@@ -166,25 +174,26 @@ abstract class BitmapHunter implements Runnable {
   }
 
   static BitmapHunter forRequest(Context context, Picasso picasso, Dispatcher dispatcher,
-      Cache cache, Request request, Downloader downloader, boolean airplaneMode) {
+      Cache cache, Stats stats, Request request, Downloader downloader, boolean airplaneMode) {
     if (request.getResourceId() != 0) {
-      return new ResourceBitmapHunter(context, picasso, dispatcher, cache, request);
+      return new ResourceBitmapHunter(context, picasso, dispatcher, cache, stats, request);
     }
     Uri uri = request.getUri();
     String scheme = uri.getScheme();
     if (SCHEME_CONTENT.equals(scheme)) {
       if (Contacts.CONTENT_URI.getHost().equals(uri.getHost()) //
           && !uri.getPathSegments().contains(Contacts.Photo.CONTENT_DIRECTORY)) {
-        return new ContactsPhotoBitmapHunter(context, picasso, dispatcher, cache, request);
+        return new ContactsPhotoBitmapHunter(context, picasso, dispatcher, cache, stats, request);
       } else {
-        return new ContentProviderBitmapHunter(context, picasso, dispatcher, cache, request);
+        return new ContentProviderBitmapHunter(context, picasso, dispatcher, cache, stats, request);
       }
     } else if (SCHEME_FILE.equals(scheme)) {
-      return new FileBitmapHunter(context, picasso, dispatcher, cache, request);
+      return new FileBitmapHunter(context, picasso, dispatcher, cache, stats, request);
     } else if (SCHEME_ANDROID_RESOURCE.equals(scheme)) {
-      return new ResourceBitmapHunter(context, picasso, dispatcher, cache, request);
+      return new ResourceBitmapHunter(context, picasso, dispatcher, cache, stats, request);
     } else {
-      return new NetworkBitmapHunter(picasso, dispatcher, cache, request, downloader, airplaneMode);
+      return new NetworkBitmapHunter(picasso, dispatcher, cache, stats, request, downloader,
+          airplaneMode);
     }
   }
 

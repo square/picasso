@@ -41,6 +41,7 @@ public class NetworkBitmapHunterTest {
   @Mock Context context;
   @Mock Picasso picasso;
   @Mock Cache cache;
+  @Mock Stats stats;
   @Mock Dispatcher dispatcher;
   @Mock Downloader downloader;
 
@@ -52,7 +53,7 @@ public class NetworkBitmapHunterTest {
   @Test public void doesNotForceLocalCacheOnlyWithAirplaneModeOffAndRetryCount() throws Exception {
     Request request = mockRequest(URI_KEY_1, URI_1);
     NetworkBitmapHunter hunter =
-        new NetworkBitmapHunter(picasso, dispatcher, cache, request, downloader, false);
+        new NetworkBitmapHunter(picasso, dispatcher, cache, stats, request, downloader, false);
     hunter.decode(request.getUri(), null, 2);
     verify(downloader).load(URI_1, false);
   }
@@ -60,7 +61,7 @@ public class NetworkBitmapHunterTest {
   @Test public void withZeroRetryCountForcesLocalCacheOnly() throws Exception {
     Request request = mockRequest(URI_KEY_1, URI_1);
     NetworkBitmapHunter hunter =
-        new NetworkBitmapHunter(picasso, dispatcher, cache, request, downloader, false);
+        new NetworkBitmapHunter(picasso, dispatcher, cache, stats, request, downloader, false);
     hunter.decode(request.getUri(), null, 0);
     verify(downloader).load(URI_1, true);
   }
@@ -68,7 +69,7 @@ public class NetworkBitmapHunterTest {
   @Test public void airplaneModeForcesLocalCacheOnly() throws Exception {
     Request request = mockRequest(URI_KEY_1, URI_1);
     NetworkBitmapHunter hunter =
-        new NetworkBitmapHunter(picasso, dispatcher, cache, request, downloader, true);
+        new NetworkBitmapHunter(picasso, dispatcher, cache, stats, request, downloader, true);
     hunter.decode(request.getUri(), null, hunter.retryCount);
     verify(downloader).load(URI_1, true);
   }
