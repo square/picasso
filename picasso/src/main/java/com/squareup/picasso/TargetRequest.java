@@ -43,7 +43,7 @@ final class TargetRequest extends Request<Target> {
     }
     Target target = getTarget();
     if (target != null) {
-      target.onSuccess(result, from);
+      target.onBitmapLoaded(result, from);
       if (result.isRecycled()) {
         throw new IllegalStateException("Target callback must not recycle bitmap!");
       }
@@ -55,6 +55,6 @@ final class TargetRequest extends Request<Target> {
     if (target == null) {
       return;
     }
-    target.onError();
+    target.onBitmapFailed();
   }
 }

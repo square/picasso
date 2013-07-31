@@ -126,13 +126,20 @@ public class RequestBuilderTest {
   }
 
   @Test
-  public void intTargetWithQuickMemoryCacheCheckDoesNotSubmit() throws Exception {
+  public void intoTargetWithQuickMemoryCacheCheckDoesNotSubmit() throws Exception {
     when(picasso.quickMemoryCacheCheck(URI_KEY_1)).thenReturn(BITMAP_1);
     Target target = mockTarget();
     new RequestBuilder(picasso, URI_1, 0).into(target);
-    verify(target).onSuccess(BITMAP_1, MEMORY);
+    verify(target).onBitmapLoaded(BITMAP_1, MEMORY);
     verify(picasso).cancelRequest(target);
     verify(picasso, never()).enqueueAndSubmit(any(Request.class));
+  }
+
+  @Test
+  public void intoTargetAndSkipMemoryCacheDoesNotCheckMemoryCache() throws Exception {
+    Target target = mockTarget();
+    new RequestBuilder(picasso, URI_1, 0).skipMemoryCache().into(target);
+    verify(picasso, never()).quickMemoryCacheCheck(URI_KEY_1);
   }
 
   @Test
@@ -216,6 +223,13 @@ public class RequestBuilderTest {
     verify(picasso, never()).enqueueAndSubmit(any(Request.class));
     verify(picasso).enqueue(requestCaptor.capture());
     assertThat(requestCaptor.getValue()).isInstanceOf(DeferredImageViewRequest.class);
+  }
+
+  @Test
+  public void intoImageViewAndSkipMemoryCacheDoesNotCheckMemoryCache() throws Exception {
+    ImageView target = mockImageViewTarget();
+    new RequestBuilder(picasso, URI_1, 0).skipMemoryCache().into(target);
+    verify(picasso, never()).quickMemoryCacheCheck(URI_KEY_1);
   }
 
   @Test

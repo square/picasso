@@ -21,7 +21,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
-import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -127,15 +126,21 @@ final class PicassoDrawable extends Drawable {
   }
 
   @Override public void setAlpha(int alpha) {
-    // No-op
+    if (placeholder != null) {
+      placeholder.setAlpha(alpha);
+    }
+    image.setAlpha(alpha);
   }
 
   @Override public void setColorFilter(ColorFilter cf) {
-    // No-op
+    if (placeholder != null) {
+      placeholder.setColorFilter(cf);
+    }
+    image.setColorFilter(cf);
   }
 
   @Override public int getOpacity() {
-    return PixelFormat.OPAQUE;
+    return image.getOpacity();
   }
 
   @Override protected void onBoundsChange(Rect bounds) {

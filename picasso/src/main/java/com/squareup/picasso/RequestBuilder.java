@@ -39,7 +39,7 @@ public class RequestBuilder {
 
   PicassoBitmapOptions options;
   private List<Transformation> transformations;
-  private boolean skipCache;
+  private boolean skipMemoryCache;
   private boolean noFade;
   private boolean deferred;
   private int placeholderResId;
@@ -49,8 +49,8 @@ public class RequestBuilder {
 
   RequestBuilder(Picasso picasso, Uri uri, int resourceId) {
     if (picasso.shutdown) {
-      throw new IllegalStateException("Picasso instance already shut down. "
-          + "Cannot submit new requests.");
+      throw new IllegalStateException(
+          "Picasso instance already shut down. Cannot submit new requests.");
     }
     this.picasso = picasso;
     this.uri = uri;
@@ -136,7 +136,7 @@ public class RequestBuilder {
     PicassoBitmapOptions options = getOptions();
 
     if (options.targetWidth != 0 || options.targetHeight != 0) {
-     throw new IllegalStateException("Fit cannot be used with resize.");
+      throw new IllegalStateException("Fit cannot be used with resize.");
     }
 
     deferred = true;
@@ -279,11 +279,11 @@ public class RequestBuilder {
 
   /**
    * Indicate that this request should not use the memory cache for attempting to load or save the
-   * image. This is useful for when you know an image will only ever be used once (e.g., loading
+   * image. This can be useful when you know an image will only ever be used once (e.g., loading
    * an image from the filesystem and uploading to a remote server).
    */
-  public RequestBuilder skipCache() {
-    skipCache = true;
+  public RequestBuilder skipMemoryCache() {
+    skipMemoryCache = true;
     return this;
   }
 
@@ -301,7 +301,8 @@ public class RequestBuilder {
       return null;
     }
 
-    Request request = new GetRequest(picasso, uri, resourceId, options, transformations, skipCache);
+    Request request =
+        new GetRequest(picasso, uri, resourceId, options, transformations, skipMemoryCache);
     return forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache, request,
         picasso.dispatcher.downloader, Utils.isAirplaneModeOn(picasso.context)).hunt();
   }
@@ -313,7 +314,7 @@ public class RequestBuilder {
   public void fetch() {
     String requestKey = createKey(uri, resourceId, options, transformations);
     Request request =
-        new FetchRequest(picasso, uri, resourceId, options, transformations, skipCache);
+        new FetchRequest(picasso, uri, resourceId, options, transformations, skipMemoryCache);
     picasso.enqueueAndSubmit(request);
   }
 
@@ -337,16 +338,17 @@ public class RequestBuilder {
 
     String requestKey = createKey(uri, resourceId, options, transformations);
 
-    Bitmap bitmap = picasso.quickMemoryCacheCheck(requestKey);
-    if (bitmap != null) {
-      picasso.cancelRequest(target);
-      target.onSuccess(bitmap, MEMORY);
-      return;
+    if (!skipMemoryCache) {
+      Bitmap bitmap = picasso.quickMemoryCacheCheck(requestKey);
+      if (bitmap != null) {
+        picasso.cancelRequest(target);
+        target.onBitmapLoaded(bitmap, MEMORY);
+        return;
+      }
     }
 
-    Request request =
-        new TargetRequest(picasso, uri, resourceId, target, options, transformations, skipCache,
-            requestKey);
+    Request request = new TargetRequest(picasso, uri, resourceId, target, options, transformations,
+        skipMemoryCache, requestKey);
 
     picasso.enqueueAndSubmit(request);
   }
@@ -383,15 +385,17 @@ public class RequestBuilder {
 
     String requestKey = createKey(uri, resourceId, options, transformations);
 
-    // Look for the target bitmap in the memory cache without moving to a background thread.
-    Bitmap bitmap = picasso.quickMemoryCacheCheck(requestKey);
-    if (bitmap != null) {
-      picasso.cancelRequest(target);
-      PicassoDrawable.setBitmap(target, picasso.context, bitmap, MEMORY, noFade, picasso.debugging);
-      if (callback != null) {
-        callback.onSuccess();
+    if (!skipMemoryCache) {
+      Bitmap bitmap = picasso.quickMemoryCacheCheck(requestKey);
+      if (bitmap != null) {
+        picasso.cancelRequest(target);
+        PicassoDrawable.setBitmap(target, picasso.context, bitmap, MEMORY, noFade,
+            picasso.debugging);
+        if (callback != null) {
+          callback.onSuccess();
+        }
+        return;
       }
-      return;
     }
 
     Request request;
@@ -403,7 +407,7 @@ public class RequestBuilder {
       if (width == 0 || height == 0) {
         request =
             new DeferredImageViewRequest(picasso, uri, resourceId, target, options, transformations,
-                skipCache, noFade, errorResId, errorDrawable, requestKey, callback);
+                skipMemoryCache, noFade, errorResId, errorDrawable, requestKey, callback);
         picasso.enqueue(request);
         return;
       }
@@ -411,9 +415,8 @@ public class RequestBuilder {
 
     PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable);
 
-    request =
-        new ImageViewRequest(picasso, uri, resourceId, target, options, transformations, skipCache,
-            noFade, errorResId, errorDrawable, requestKey, callback);
+    request = new ImageViewRequest(picasso, uri, resourceId, target, options, transformations,
+        skipMemoryCache, noFade, errorResId, errorDrawable, requestKey, callback);
 
     picasso.enqueueAndSubmit(request);
   }
