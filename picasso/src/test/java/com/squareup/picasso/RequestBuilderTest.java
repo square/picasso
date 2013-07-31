@@ -165,7 +165,7 @@ public class RequestBuilderTest {
   public void intoImageViewWithQuickMemoryCacheCheckDoesNotSubmit() throws Exception {
     Picasso picasso =
         spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null,
-            mock(Stats.class), true));
+            new Stats(Cache.NONE), true));
     when(picasso.quickMemoryCacheCheck(URI_KEY_1)).thenReturn(BITMAP_1);
     ImageView target = mockImageViewTarget();
     new RequestBuilder(picasso, URI_1, 0).into(target);
