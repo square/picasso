@@ -49,7 +49,7 @@ public class TargetRequestTest {
     TargetRequest request =
         new TargetRequest(mock(Picasso.class), URI_1, 0, target, null, null, false, URI_KEY_1);
     request.complete(BITMAP_1, MEMORY);
-    verify(target).onSuccess(BITMAP_1, MEMORY);
+    verify(target).onBitmapLoaded(BITMAP_1, MEMORY);
   }
 
   @Test
@@ -58,16 +58,16 @@ public class TargetRequestTest {
     TargetRequest request =
         new TargetRequest(mock(Picasso.class), URI_1, 0, target, null, null, false, URI_KEY_1);
     request.error();
-    verify(target).onError();
+    verify(target).onBitmapFailed();
   }
 
   @Test public void recyclingInSuccessThrowsException() {
     Target bad = new Target() {
-      @Override public void onSuccess(Bitmap bitmap, Picasso.LoadedFrom from) {
+      @Override public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
         bitmap.recycle();
       }
 
-      @Override public void onError() {
+      @Override public void onBitmapFailed() {
         throw new AssertionError();
       }
     };
