@@ -49,7 +49,7 @@ abstract class BitmapHunter implements Runnable {
   final List<Transformation> transformations;
   final List<Request> requests;
   final PicassoBitmapOptions options;
-  final boolean skipCache;
+  final boolean skipMemoryCache;
 
   Bitmap result;
   Future<?> future;
@@ -66,7 +66,7 @@ abstract class BitmapHunter implements Runnable {
     this.uri = request.getUri();
     this.transformations = request.transformations;
     this.options = request.options;
-    this.skipCache = request.skipCache;
+    this.skipMemoryCache = request.skipCache;
     this.requests = new ArrayList<Request>(4);
     attach(request);
   }
@@ -97,7 +97,7 @@ abstract class BitmapHunter implements Runnable {
   Bitmap hunt() throws IOException {
     Bitmap bitmap;
 
-    if (!skipCache) {
+    if (!skipMemoryCache) {
       bitmap = cache.get(key);
       if (bitmap != null) {
         loadedFrom = MEMORY;
@@ -137,8 +137,8 @@ abstract class BitmapHunter implements Runnable {
     return future != null && future.isCancelled();
   }
 
-  boolean shouldSkipCache() {
-    return skipCache;
+  boolean shouldSkipMemoryCache() {
+    return skipMemoryCache;
   }
 
   Bitmap getResult() {

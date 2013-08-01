@@ -48,5 +48,9 @@ public interface Downloader {
       this.stream = stream;
       this.cached = loadedFromCache;
     }
+
+    @SuppressWarnings("UnusedDeclaration") InputStream getInputStream() {
+      return stream;
+    }
   }
 }
