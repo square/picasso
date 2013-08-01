@@ -29,32 +29,32 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
 import static android.graphics.Color.RED;
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
+import static com.squareup.picasso.TestUtils.BITMAP_1;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-@RunWith(RobolectricTestRunner.class) @Config(manifest = Config.NONE)
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class PicassoDrawableTest {
   private final Context context = Robolectric.application;
-  private final Bitmap bitmap1 = Bitmap.createBitmap(10, 10, ARGB_8888);
-  private final Bitmap bitmap2 = Bitmap.createBitmap(10, 10, ARGB_8888);
   private final Drawable placeholder = new ColorDrawable(RED);
 
   @Test public void createWithNoPlaceholderAnimation() {
-    PicassoDrawable pd = new PicassoDrawable(context, null, bitmap1, DISK, false, false);
-    assertThat(pd.image.getBitmap()).isSameAs(bitmap1);
+    PicassoDrawable pd = new PicassoDrawable(context, null, BITMAP_1, DISK, false, false);
+    assertThat(pd.image.getBitmap()).isSameAs(BITMAP_1);
     assertThat(pd.placeholder).isNull();
     assertThat(pd.animating).isTrue();
   }
 
   @Test public void createWithPlaceholderAnimation() {
-    PicassoDrawable pd = new PicassoDrawable(context, placeholder, bitmap1, DISK, false, false);
-    assertThat(pd.image.getBitmap()).isSameAs(bitmap1);
+    PicassoDrawable pd = new PicassoDrawable(context, placeholder, BITMAP_1, DISK, false, false);
+    assertThat(pd.image.getBitmap()).isSameAs(BITMAP_1);
     assertThat(pd.placeholder).isSameAs(placeholder);
     assertThat(pd.animating).isTrue();
   }
 
   @Test public void createWithBitmapCacheHit() {
-    PicassoDrawable pd = new PicassoDrawable(context, placeholder, bitmap1, MEMORY, false, false);
-    assertThat(pd.image.getBitmap()).isSameAs(bitmap1);
+    PicassoDrawable pd = new PicassoDrawable(context, placeholder, BITMAP_1, MEMORY, false, false);
+    assertThat(pd.image.getBitmap()).isSameAs(BITMAP_1);
     assertThat(pd.placeholder).isNull();
     assertThat(pd.animating).isFalse();
   }

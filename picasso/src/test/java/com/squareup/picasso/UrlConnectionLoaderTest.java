@@ -26,6 +26,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
@@ -46,7 +47,8 @@ public class UrlConnectionLoaderTest {
     server = new MockWebServer();
     server.play();
 
-    loader = new UrlConnectionDownloader(new Activity()) {
+    Activity activity = Robolectric.buildActivity(Activity.class).get();
+    loader = new UrlConnectionDownloader(activity) {
       @Override protected HttpURLConnection openConnection(Uri path) throws IOException {
         return (HttpURLConnection) server.getUrl(path.toString()).openConnection();
       }

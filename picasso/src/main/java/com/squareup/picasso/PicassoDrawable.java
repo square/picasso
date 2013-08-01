@@ -62,12 +62,12 @@ final class PicassoDrawable extends Drawable {
 
   private final boolean debugging;
   private final float density;
-
-  final BitmapDrawable image;
   private final Picasso.LoadedFrom loadedFrom;
+  final BitmapDrawable image;
+
   Drawable placeholder;
 
-  private long startTimeMillis;
+  long startTimeMillis;
   boolean animating;
 
   PicassoDrawable(Context context, Drawable placeholder, Bitmap bitmap,
