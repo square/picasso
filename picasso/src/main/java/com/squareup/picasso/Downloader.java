@@ -49,7 +49,7 @@ public interface Downloader {
       this.cached = loadedFromCache;
     }
 
-    @SuppressWarnings("UnusedDeclaration") InputStream getInputStream() {
+    @SuppressWarnings("UnusedDeclaration") public InputStream getInputStream() {
       return stream;
     }
   }
