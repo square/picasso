@@ -16,7 +16,9 @@
 package com.squareup.picasso;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,9 +26,11 @@ import org.mockito.Mock;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.mockRequest;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.mock;
@@ -71,5 +75,20 @@ public class NetworkBitmapHunterTest {
         new NetworkBitmapHunter(picasso, dispatcher, cache, request, downloader, true);
     hunter.decode(request.getUri(), null, hunter.retryCount);
     verify(downloader).load(URI_1, true);
+  }
+
+  @Test public void downloaderCanReturnBitmapDirectly() throws Exception {
+    final Bitmap expected = Bitmap.createBitmap(10, 10, ARGB_8888);
+    Downloader bitmapDownloader = new Downloader() {
+      @Override public Response load(Uri uri, boolean localCacheOnly) throws IOException {
+        return new Response(expected, false);
+      }
+    };
+    Request request = mockRequest(URI_KEY_1, URI_1);
+    NetworkBitmapHunter hunter =
+        new NetworkBitmapHunter(picasso, dispatcher, cache, request, bitmapDownloader, false);
+
+    Bitmap actual = hunter.decode(request.getUri(), null, 2);
+    assertThat(actual).isSameAs(expected);
   }
 }
