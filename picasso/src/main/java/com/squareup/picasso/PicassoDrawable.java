@@ -143,6 +143,10 @@ final class PicassoDrawable extends Drawable {
     return image.getOpacity();
   }
 
+  public Bitmap getBitmap() {
+    return image.getBitmap();
+  }
+  
   @Override protected void onBoundsChange(Rect bounds) {
     super.onBoundsChange(bounds);
 
