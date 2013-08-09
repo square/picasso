@@ -19,40 +19,35 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import java.io.IOException;
 
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 
 class ResourceBitmapHunter extends BitmapHunter {
-  private final int resourceId;
   private final Context context;
 
   ResourceBitmapHunter(Context context, Picasso picasso, Dispatcher dispatcher, Cache cache,
-      Request request) {
-    super(picasso, dispatcher, cache, request);
+      Action action) {
+    super(picasso, dispatcher, cache, action);
     this.context = context;
-    this.resourceId = request.resourceId;
   }
 
-  @Override Bitmap decode(Uri uri, PicassoBitmapOptions options, int retryCount)
-      throws IOException {
-    return decodeResource(context.getResources(), resourceId, options);
+  @Override Bitmap decode(Request data, int retryCount) throws IOException {
+    return decodeResource(context.getResources(), data);
   }
 
   @Override Picasso.LoadedFrom getLoadedFrom() {
     return DISK;
   }
 
-  @Override String getName() {
-    return Integer.toString(resourceId);
-  }
-
-  private Bitmap decodeResource(Resources resources, int resourceId,
-      PicassoBitmapOptions bitmapOptions) {
-    if (bitmapOptions != null && bitmapOptions.inJustDecodeBounds) {
+  private Bitmap decodeResource(Resources resources, Request data) {
+    int resourceId = data.resourceId;
+    BitmapFactory.Options bitmapOptions = null;
+    if (data.hasSize()) {
+      bitmapOptions = new BitmapFactory.Options();
+      bitmapOptions.inJustDecodeBounds = true;
       BitmapFactory.decodeResource(resources, resourceId, bitmapOptions);
-      calculateInSampleSize(bitmapOptions);
+      calculateInSampleSize(data.targetWidth, data.targetHeight, bitmapOptions);
     }
     return BitmapFactory.decodeResource(resources, resourceId, bitmapOptions);
   }
