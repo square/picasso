@@ -36,6 +36,7 @@
     <activity android:name=".SampleContactsActivity"/>
     <activity android:name=".SampleGalleryActivity"/>
     <activity android:name=".SampleListDetailActivity"/>
+    <activity android:name=".GetSampleActivity"/>
 
   </application>
 </manifest>

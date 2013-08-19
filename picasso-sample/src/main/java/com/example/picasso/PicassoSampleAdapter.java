@@ -14,7 +14,8 @@ final class PicassoSampleAdapter extends BaseAdapter {
     GRID_VIEW("Image Grid View", SampleGridViewActivity.class),
     GALLERY("Load from Gallery", SampleGalleryActivity.class),
     CONTACTS("Contact Photos", SampleContactsActivity.class),
-    LIST_DETAIL("List / Detail View", SampleListDetailActivity.class);
+    LIST_DETAIL("List / Detail View", SampleListDetailActivity.class),
+    GET_SAMPLE("Get sample", GetSampleActivity.class);
 
     private final Class<?> activityClass;
 
