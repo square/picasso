@@ -301,8 +301,10 @@ public class RequestBuilder {
       return null;
     }
 
+    String requestKey = createKey(uri, resourceId, options, transformations);
     Request request =
-        new GetRequest(picasso, uri, resourceId, options, transformations, skipMemoryCache);
+        new GetRequest(picasso, uri, resourceId, options, transformations, skipMemoryCache,
+                requestKey);
     return forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache, request,
         picasso.dispatcher.downloader, Utils.isAirplaneModeOn(picasso.context)).hunt();
   }
