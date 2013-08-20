@@ -19,6 +19,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.widget.ImageView;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import org.junit.Before;
 import org.junit.Test;
@@ -123,7 +124,7 @@ public class PicassoTest {
 
   @Test public void completeSkipsIfNoActions() throws Exception {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
-    when(hunter.getActions()).thenReturn(java.util.Collections.<Action>emptyList());
+    when(hunter.getActions()).thenReturn(Collections.<Action>emptyList());
     picasso.complete(hunter);
     verify(hunter).getActions();
     verifyNoMoreInteractions(hunter);
@@ -317,7 +318,7 @@ public class PicassoTest {
   @Test public void builderInvalidContext() throws Exception {
     try {
       new Picasso.Builder(null);
-      fail("Null context  should throw exception.");
+      fail("Null context should throw exception.");
     } catch (IllegalArgumentException expected) {
     }
   }

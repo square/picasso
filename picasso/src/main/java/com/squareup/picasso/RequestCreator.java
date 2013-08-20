@@ -212,8 +212,9 @@ public class RequestCreator {
     }
 
     Request finalData = picasso.transformRequest(data.build());
+    String key = Utils.createKey(finalData);
 
-    Action action = new GetAction(picasso, finalData, skipMemoryCache);
+    Action action = new GetAction(picasso, finalData, skipMemoryCache, key);
     return forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache, action,
         picasso.dispatcher.downloader, Utils.isAirplaneModeOn(picasso.context)).hunt();
   }
@@ -228,7 +229,9 @@ public class RequestCreator {
     }
     if (data.hasImage()) {
       Request finalData = picasso.transformRequest(data.build());
-      Action action = new FetchAction(picasso, finalData, skipMemoryCache);
+      String key = Utils.createKey(finalData);
+
+      Action action = new FetchAction(picasso, finalData, skipMemoryCache, key);
       picasso.enqueueAndSubmit(action);
     }
   }

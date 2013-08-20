@@ -234,22 +234,6 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getSetOperations()).contains(entry("rotate", "-45.0 10.0 10.0"));
   }
 
-  //@Test public void scale() throws Exception {
-  //  Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
-  //  PicassoBitmapOptions options = new PicassoBitmapOptions();
-  //  options.targetScaleX = -0.5f;
-  //  options.targetScaleY = 2;
-  //
-  //  Bitmap result = transformResult(options, source, 0);
-  //
-  //  ShadowBitmap shadowBitmap = shadowOf(result);
-  //  assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
-  //
-  //  Matrix matrix = shadowBitmap.getCreatedFromMatrix();
-  //  ShadowMatrix shadowMatrix = shadowOf(matrix);
-  //  assertThat(shadowMatrix.getSetOperations()).contains(entry("scale", "-0.5 2.0"));
-  //}
-
   @Test public void resize() throws Exception {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Request data = new Request.Builder(URI_1).resize(20, 15).build();
