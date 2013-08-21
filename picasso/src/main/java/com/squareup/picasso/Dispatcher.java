@@ -92,12 +92,12 @@ class Dispatcher {
     dispatcherThread.quit();
   }
 
-  void dispatchSubmit(Request request) {
-    handler.sendMessage(handler.obtainMessage(REQUEST_SUBMIT, request));
+  void dispatchSubmit(Action action) {
+    handler.sendMessage(handler.obtainMessage(REQUEST_SUBMIT, action));
   }
 
-  void dispatchCancel(Request request) {
-    handler.sendMessage(handler.obtainMessage(REQUEST_CANCEL, request));
+  void dispatchCancel(Action action) {
+    handler.sendMessage(handler.obtainMessage(REQUEST_CANCEL, action));
   }
 
   void dispatchComplete(BitmapHunter hunter) {
@@ -121,10 +121,10 @@ class Dispatcher {
         airplaneMode ? AIRPLANE_MODE_ON : AIRPLANE_MODE_OFF, 0));
   }
 
-  void performSubmit(Request request) {
-    BitmapHunter hunter = hunterMap.get(request.getKey());
+  void performSubmit(Action action) {
+    BitmapHunter hunter = hunterMap.get(action.getKey());
     if (hunter != null) {
-      hunter.attach(request);
+      hunter.attach(action);
       return;
     }
 
@@ -133,16 +133,16 @@ class Dispatcher {
     }
 
     hunter =
-        forRequest(context, request.getPicasso(), this, cache, request, downloader, airplaneMode);
+        forRequest(context, action.getPicasso(), this, cache, action, downloader, airplaneMode);
     hunter.future = service.submit(hunter);
-    hunterMap.put(request.getKey(), hunter);
+    hunterMap.put(action.getKey(), hunter);
   }
 
-  void performCancel(Request request) {
-    String key = request.getKey();
+  void performCancel(Action action) {
+    String key = action.getKey();
     BitmapHunter hunter = hunterMap.get(key);
     if (hunter != null) {
-      hunter.detach(request);
+      hunter.detach(action);
       if (hunter.cancel()) {
         hunterMap.remove(key);
       }
@@ -214,13 +214,13 @@ class Dispatcher {
     @Override public void handleMessage(Message msg) {
       switch (msg.what) {
         case REQUEST_SUBMIT: {
-          Request request = (Request) msg.obj;
-          performSubmit(request);
+          Action action = (Action) msg.obj;
+          performSubmit(action);
           break;
         }
         case REQUEST_CANCEL: {
-          Request request = (Request) msg.obj;
-          performCancel(request);
+          Action action = (Action) msg.obj;
+          performCancel(action);
           break;
         }
         case HUNTER_COMPLETE: {

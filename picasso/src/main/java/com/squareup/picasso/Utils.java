@@ -21,7 +21,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Looper;
 import android.os.Process;
@@ -30,7 +29,6 @@ import android.provider.Settings;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import java.util.concurrent.ThreadFactory;
 
 import static android.content.Context.ACTIVITY_SERVICE;
@@ -74,53 +72,40 @@ final class Utils {
     }
   }
 
-  static String createKey(Uri uri, int resourceId, PicassoBitmapOptions options,
-      List<Transformation> transformations) {
+  static String createKey(Request data) {
     StringBuilder builder;
 
-    if (uri != null) {
-      String path = uri.toString();
+    if (data.uri != null) {
+      String path = data.uri.toString();
       builder = new StringBuilder(path.length() + KEY_PADDING);
       builder.append(path);
     } else {
       builder = new StringBuilder(KEY_PADDING);
-      builder.append(resourceId);
+      builder.append(data.resourceId);
     }
     builder.append('\n');
 
-    if (options != null) {
-      float targetRotation = options.targetRotation;
-      if (targetRotation != 0) {
-        builder.append("rotation:").append(targetRotation);
-        if (options.hasRotationPivot) {
-          builder.append('@').append(options.targetPivotX).append('x').append(options.targetPivotY);
-        }
-        builder.append('\n');
+    if (data.rotationDegrees != 0) {
+      builder.append("rotation:").append(data.rotationDegrees);
+      if (data.hasRotationPivot) {
+        builder.append('@').append(data.rotationPivotX).append('x').append(data.rotationPivotY);
       }
-      int targetWidth = options.targetWidth;
-      int targetHeight = options.targetHeight;
-      if (targetWidth != 0) {
-        builder.append("resize:").append(targetWidth).append('x').append(targetHeight);
-        builder.append('\n');
-      }
-      if (options.centerCrop) {
-        builder.append("centerCrop\n");
-      }
-      if (options.centerInside) {
-        builder.append("centerInside\n");
-      }
-      float targetScaleX = options.targetScaleX;
-      float targetScaleY = options.targetScaleY;
-      if (targetScaleX != 0) {
-        builder.append("scale:").append(targetScaleX).append('x').append(targetScaleY);
-        builder.append('\n');
-      }
+      builder.append('\n');
+    }
+    if (data.targetWidth != 0) {
+      builder.append("resize:").append(data.targetWidth).append('x').append(data.targetHeight);
+      builder.append('\n');
+    }
+    if (data.centerCrop) {
+      builder.append("centerCrop\n");
+    } else if (data.centerInside) {
+      builder.append("centerInside\n");
     }
 
-    if (transformations != null) {
+    if (data.transformations != null) {
       //noinspection ForLoopReplaceableByForEach
-      for (int i = 0, count = transformations.size(); i < count; i++) {
-        builder.append(transformations.get(i).key());
+      for (int i = 0, count = data.transformations.size(); i < count; i++) {
+        builder.append(data.transformations.get(i).key());
         builder.append('\n');
       }
     }

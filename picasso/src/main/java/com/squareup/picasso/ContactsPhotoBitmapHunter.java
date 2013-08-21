@@ -30,21 +30,20 @@ import static android.provider.ContactsContract.Contacts.openContactPhotoInputSt
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 
 class ContactsPhotoBitmapHunter extends BitmapHunter {
-
   final Context context;
 
   ContactsPhotoBitmapHunter(Context context, Picasso picasso, Dispatcher dispatcher, Cache cache,
-      Request request) {
-    super(picasso, dispatcher, cache, request);
+      Action action) {
+    super(picasso, dispatcher, cache, action);
     this.context = context;
   }
 
-  @Override Bitmap decode(Uri uri, PicassoBitmapOptions options, int retryCount)
+  @Override Bitmap decode(Request data, int retryCount)
       throws IOException {
     InputStream is = null;
     try {
       is = getInputStream();
-      return decodeStream(is, options);
+      return decodeStream(is, data);
     } finally {
       Utils.closeQuietly(is);
     }
@@ -56,7 +55,7 @@ class ContactsPhotoBitmapHunter extends BitmapHunter {
 
   private InputStream getInputStream() throws IOException {
     ContentResolver contentResolver = context.getContentResolver();
-    Uri uri = this.uri;
+    Uri uri = getData().uri;
     if (uri.toString().startsWith(ContactsContract.Contacts.CONTENT_LOOKUP_URI.toString())) {
       uri = ContactsContract.Contacts.lookupContact(contentResolver, uri);
       if (uri == null) {
@@ -70,15 +69,18 @@ class ContactsPhotoBitmapHunter extends BitmapHunter {
     }
   }
 
-  private Bitmap decodeStream(InputStream stream, PicassoBitmapOptions options) throws IOException {
-    if (options != null && options.inJustDecodeBounds) {
+  private Bitmap decodeStream(InputStream stream, Request data) throws IOException {
+    BitmapFactory.Options options = null;
+    if (data.hasSize()) {
+      options = new BitmapFactory.Options();
+      options.inJustDecodeBounds = true;
       InputStream is = getInputStream();
       try {
         BitmapFactory.decodeStream(is, null, options);
       } finally {
         Utils.closeQuietly(is);
       }
-      calculateInSampleSize(options);
+      calculateInSampleSize(data.targetWidth, data.targetHeight, options);
     }
     return BitmapFactory.decodeStream(stream, null, options);
   }

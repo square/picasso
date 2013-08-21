@@ -17,6 +17,7 @@ package com.squareup.picasso;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
 import java.io.IOException;
@@ -45,35 +46,36 @@ abstract class BitmapHunter implements Runnable {
   final Dispatcher dispatcher;
   final Cache cache;
   final String key;
-  final Uri uri;
-  final List<Transformation> transformations;
-  final List<Request> requests;
-  final PicassoBitmapOptions options;
+  final Request data;
+  final List<Action> actions;
   final boolean skipMemoryCache;
 
   Bitmap result;
   Future<?> future;
   Picasso.LoadedFrom loadedFrom;
   Exception exception;
+  int exifRotation; // Determined during decoding of original resource.
 
   int retryCount = DEFAULT_RETRY_COUNT;
 
-  BitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Request request) {
+  BitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Action action) {
     this.picasso = picasso;
     this.dispatcher = dispatcher;
     this.cache = cache;
-    this.key = request.getKey();
-    this.uri = request.getUri();
-    this.transformations = request.transformations;
-    this.options = request.options;
-    this.skipMemoryCache = request.skipCache;
-    this.requests = new ArrayList<Request>(4);
-    attach(request);
+    this.key = action.getKey();
+    this.data = action.getData();
+    this.skipMemoryCache = action.skipCache;
+    this.actions = new ArrayList<Action>(4);
+    attach(action);
+  }
+
+  protected void setExifRotation(int exifRotation) {
+    this.exifRotation = exifRotation;
   }
 
   @Override public void run() {
     try {
-      Thread.currentThread().setName(Utils.THREAD_PREFIX + getName());
+      Thread.currentThread().setName(Utils.THREAD_PREFIX + data.getName());
 
       result = hunt();
 
@@ -90,7 +92,7 @@ abstract class BitmapHunter implements Runnable {
     }
   }
 
-  abstract Bitmap decode(Uri uri, PicassoBitmapOptions options, int retryCount) throws IOException;
+  abstract Bitmap decode(Request data, int retryCount) throws IOException;
 
   abstract Picasso.LoadedFrom getLoadedFrom();
 
@@ -105,15 +107,15 @@ abstract class BitmapHunter implements Runnable {
       }
     }
 
-    bitmap = decode(uri, options, retryCount);
+    bitmap = decode(data, retryCount);
 
-    if (bitmap != null && (options != null || transformations != null)) {
+    if (bitmap != null && data.needsTransformation()) {
       synchronized (DECODE_LOCK) {
-        if (options != null) {
-          bitmap = transformResult(options, bitmap, options.exifRotation);
+        if (data.needsMatrixTransform() || exifRotation != 0) {
+          bitmap = transformResult(data, bitmap, exifRotation);
         }
-        if (transformations != null) {
-          bitmap = applyCustomTransformations(transformations, bitmap);
+        if (data.hasCustomTransformations()) {
+          bitmap = applyCustomTransformations(data.transformations, bitmap);
         }
       }
     }
@@ -121,16 +123,16 @@ abstract class BitmapHunter implements Runnable {
     return bitmap;
   }
 
-  void attach(Request request) {
-    requests.add(request);
+  void attach(Action action) {
+    actions.add(action);
   }
 
-  void detach(Request request) {
-    requests.remove(request);
+  void detach(Action action) {
+    actions.remove(action);
   }
 
   boolean cancel() {
-    return requests.isEmpty() && future != null && future.cancel(false);
+    return actions.isEmpty() && future != null && future.cancel(false);
   }
 
   boolean isCancelled() {
@@ -149,50 +151,44 @@ abstract class BitmapHunter implements Runnable {
     return key;
   }
 
-  Uri getUri() {
-    return uri;
+  Request getData() {
+    return data;
   }
 
-  List<Request> getRequests() {
-    return requests;
+  List<Action> getActions() {
+    return actions;
   }
 
   Exception getException() {
     return exception;
   }
 
-  String getName() {
-    return uri.getPath();
-  }
-
   static BitmapHunter forRequest(Context context, Picasso picasso, Dispatcher dispatcher,
-      Cache cache, Request request, Downloader downloader, boolean airplaneMode) {
-    if (request.getResourceId() != 0) {
-      return new ResourceBitmapHunter(context, picasso, dispatcher, cache, request);
+      Cache cache, Action action, Downloader downloader, boolean airplaneMode) {
+    if (action.getData().resourceId != 0) {
+      return new ResourceBitmapHunter(context, picasso, dispatcher, cache, action);
     }
-    Uri uri = request.getUri();
+    Uri uri = action.getData().uri;
     String scheme = uri.getScheme();
     if (SCHEME_CONTENT.equals(scheme)) {
       if (Contacts.CONTENT_URI.getHost().equals(uri.getHost()) //
           && !uri.getPathSegments().contains(Contacts.Photo.CONTENT_DIRECTORY)) {
-        return new ContactsPhotoBitmapHunter(context, picasso, dispatcher, cache, request);
+        return new ContactsPhotoBitmapHunter(context, picasso, dispatcher, cache, action);
       } else {
-        return new ContentProviderBitmapHunter(context, picasso, dispatcher, cache, request);
+        return new ContentProviderBitmapHunter(context, picasso, dispatcher, cache, action);
       }
     } else if (SCHEME_FILE.equals(scheme)) {
-      return new FileBitmapHunter(context, picasso, dispatcher, cache, request);
+      return new FileBitmapHunter(context, picasso, dispatcher, cache, action);
     } else if (SCHEME_ANDROID_RESOURCE.equals(scheme)) {
-      return new ResourceBitmapHunter(context, picasso, dispatcher, cache, request);
+      return new ResourceBitmapHunter(context, picasso, dispatcher, cache, action);
     } else {
-      return new NetworkBitmapHunter(picasso, dispatcher, cache, request, downloader, airplaneMode);
+      return new NetworkBitmapHunter(picasso, dispatcher, cache, action, downloader, airplaneMode);
     }
   }
 
-  static void calculateInSampleSize(PicassoBitmapOptions options) {
+  static void calculateInSampleSize(int reqWidth, int reqHeight, BitmapFactory.Options options) {
     final int height = options.outHeight;
     final int width = options.outWidth;
-    final int reqHeight = options.targetHeight;
-    final int reqWidth = options.targetWidth;
     int sampleSize = 1;
     if (height > reqHeight || width > reqWidth) {
       final int heightRatio = Math.round((float) height / (float) reqHeight);
@@ -238,7 +234,7 @@ abstract class BitmapHunter implements Runnable {
     return result;
   }
 
-  static Bitmap transformResult(PicassoBitmapOptions options, Bitmap result, int exifRotation) {
+  static Bitmap transformResult(Request data, Bitmap result, int exifRotation) {
     int inWidth = result.getWidth();
     int inHeight = result.getHeight();
 
@@ -249,20 +245,20 @@ abstract class BitmapHunter implements Runnable {
 
     Matrix matrix = new Matrix();
 
-    if (options != null) {
-      int targetWidth = options.targetWidth;
-      int targetHeight = options.targetHeight;
+    if (data.needsMatrixTransform()) {
+      int targetWidth = data.targetWidth;
+      int targetHeight = data.targetHeight;
 
-      float targetRotation = options.targetRotation;
+      float targetRotation = data.rotationDegrees;
       if (targetRotation != 0) {
-        if (options.hasRotationPivot) {
-          matrix.setRotate(targetRotation, options.targetPivotX, options.targetPivotY);
+        if (data.hasRotationPivot) {
+          matrix.setRotate(targetRotation, data.rotationPivotX, data.rotationPivotY);
         } else {
           matrix.setRotate(targetRotation);
         }
       }
 
-      if (options.centerCrop) {
+      if (data.centerCrop) {
         float widthRatio = targetWidth / (float) inWidth;
         float heightRatio = targetHeight / (float) inHeight;
         float scale;
@@ -278,7 +274,7 @@ abstract class BitmapHunter implements Runnable {
           drawWidth = newSize;
         }
         matrix.preScale(scale, scale);
-      } else if (options.centerInside) {
+      } else if (data.centerInside) {
         float widthRatio = targetWidth / (float) inWidth;
         float heightRatio = targetHeight / (float) inHeight;
         float scale = widthRatio < heightRatio ? widthRatio : heightRatio;
@@ -290,12 +286,6 @@ abstract class BitmapHunter implements Runnable {
         float sx = targetWidth / (float) inWidth;
         float sy = targetHeight / (float) inHeight;
         matrix.preScale(sx, sy);
-      }
-
-      float targetScaleX = options.targetScaleX;
-      float targetScaleY = options.targetScaleY;
-      if (targetScaleX != 0 || targetScaleY != 0) {
-        matrix.setScale(targetScaleX, targetScaleY);
       }
     }
 

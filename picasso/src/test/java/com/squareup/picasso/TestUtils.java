@@ -6,6 +6,8 @@ import android.net.Uri;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import java.io.File;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import static android.provider.ContactsContract.Contacts.CONTENT_URI;
 import static android.provider.ContactsContract.Contacts.Photo.CONTENT_DIRECTORY;
@@ -13,51 +15,55 @@ import static com.squareup.picasso.Utils.createKey;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class TestUtils {
-
+class TestUtils {
+  static final Answer<Object> TRANSFORM_REQUEST_ANSWER = new Answer<Object>() {
+    @Override public Object answer(InvocationOnMock invocation) throws Throwable {
+      return invocation.getArguments()[0];
+    }
+  };
   static final Uri URI_1 = Uri.parse("http://example.com/1.png");
   static final Uri URI_2 = Uri.parse("http://example.com/2.png");
-  static final String URI_KEY_1 = createKey(URI_1, 0, null, null);
-  static final String URI_KEY_2 = createKey(URI_2, 0, null, null);
+  static final String URI_KEY_1 = createKey(new Request.Builder(URI_1).build());
+  static final String URI_KEY_2 = createKey(new Request.Builder(URI_2).build());
   static final Bitmap BITMAP_1 = Bitmap.createBitmap(10, 10, null);
   static final Bitmap BITMAP_2 = Bitmap.createBitmap(15, 15, null);
   static final File FILE_1 = new File("C:\\windows\\system32\\logo.exe");
-  static final String FILE_KEY_1 = createKey(Uri.fromFile(FILE_1), 0, null, null);
+  static final String FILE_KEY_1 = createKey(new Request.Builder(Uri.fromFile(FILE_1)).build());
   static final Uri FILE_1_URL = Uri.parse("file:///" + FILE_1.getPath());
   static final Uri FILE_1_URL_NO_AUTHORITY = Uri.parse("file:/" + FILE_1.getParent());
   static final Uri CONTENT_1_URL = Uri.parse("content://zip/zap/zoop.jpg");
-  static final String CONTENT_KEY_1 = createKey(CONTENT_1_URL, 0, null, null);
+  static final String CONTENT_KEY_1 = createKey(new Request.Builder(CONTENT_1_URL).build());
   static final Uri CONTACT_URI_1 = CONTENT_URI.buildUpon().path("1234").build();
-  static final String CONTACT_KEY_1 = createKey(CONTACT_URI_1, 0, null, null);
+  static final String CONTACT_KEY_1 = createKey(new Request.Builder(CONTACT_URI_1).build());
   static final Uri CONTACT_PHOTO_URI_1 =
       CONTENT_URI.buildUpon().path("1234").path(CONTENT_DIRECTORY).build();
-  static final String CONTACT_PHOTO_KEY_1 = createKey(CONTACT_PHOTO_URI_1, 0, null, null);
+  static final String CONTACT_PHOTO_KEY_1 = createKey(new Request.Builder(CONTACT_PHOTO_URI_1).build());
   static final int RESOURCE_ID_1 = 1;
-  static final String RESOURCE_ID_KEY_1 = createKey(null, RESOURCE_ID_1, null, null);
+  static final String RESOURCE_ID_KEY_1 = createKey(new Request.Builder(RESOURCE_ID_1).build());
 
-  static Request mockRequest(String key, Uri uri) {
-    return mockRequest(key, uri, null, 0);
+  static Action mockAction(String key, Uri uri) {
+    return mockAction(key, uri, null, 0);
   }
 
-  static Request mockRequest(String key, Uri uri, Object target) {
-    return mockRequest(key, uri, target, 0);
+  static Action mockAction(String key, Uri uri, Object target) {
+    return mockAction(key, uri, target, 0);
   }
 
-  static Request mockRequest(String key, Uri uri, Object target, int resourceId) {
-    Request request = mock(Request.class);
-    when(request.getKey()).thenReturn(key);
-    when(request.getUri()).thenReturn(uri);
-    when(request.getTarget()).thenReturn(target);
-    when(request.getResourceId()).thenReturn(resourceId);
-    when(request.getPicasso()).thenReturn(mock(Picasso.class));
-    return request;
+  static Action mockAction(String key, Uri uri, Object target, int resourceId) {
+    Request request = new Request.Builder(uri, resourceId).build();
+    Action action = mock(Action.class);
+    when(action.getKey()).thenReturn(key);
+    when(action.getData()).thenReturn(request);
+    when(action.getTarget()).thenReturn(target);
+    when(action.getPicasso()).thenReturn(mock(Picasso.class));
+    return action;
   }
 
-  static Request mockCanceledRequest() {
-    Request request = mock(Request.class);
-    request.cancelled = true;
-    when(request.isCancelled()).thenReturn(true);
-    return request;
+  static Action mockCanceledAction() {
+    Action action = mock(Action.class);
+    action.cancelled = true;
+    when(action.isCancelled()).thenReturn(true);
+    return action;
   }
 
   static ImageView mockImageViewTarget() {
@@ -80,14 +86,20 @@ public class TestUtils {
     return mock(Callback.class);
   }
 
+  static DeferredRequestCreator mockDeferredRequestCreator() {
+    return mock(DeferredRequestCreator.class);
+  }
+
   static NetworkInfo mockNetworkInfo() {
     return mock(NetworkInfo.class);
   }
 
   static BitmapHunter mockHunter(String key, Bitmap result, boolean skipCache) {
+    Request data = new Request.Builder(URI_1).build();
     BitmapHunter hunter = mock(BitmapHunter.class);
     when(hunter.getKey()).thenReturn(key);
     when(hunter.getResult()).thenReturn(result);
+    when(hunter.getData()).thenReturn(data);
     when(hunter.shouldSkipMemoryCache()).thenReturn(skipCache);
     hunter.retryCount = BitmapHunter.DEFAULT_RETRY_COUNT;
     return hunter;
