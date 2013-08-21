@@ -95,7 +95,7 @@ public class PicassoTest {
   @Test public void quickMemoryCheckReturnsNullIfNotInCache() throws Exception {
     Bitmap cached = picasso.quickMemoryCacheCheck(URI_KEY_1);
     assertThat(cached).isNull();
-    verifyZeroInteractions(stats);
+    verify(stats).dispatchCacheMiss();
   }
 
   @Test public void completeInvokesSuccessOnAllSuccessfulRequests() throws Exception {
