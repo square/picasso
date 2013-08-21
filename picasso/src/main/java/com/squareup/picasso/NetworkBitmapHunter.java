@@ -29,9 +29,9 @@ class NetworkBitmapHunter extends BitmapHunter {
   private final boolean airplaneMode;
   private Picasso.LoadedFrom loadedFrom;
 
-  public NetworkBitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Action action,
-      Downloader downloader, boolean airplaneMode) {
-    super(picasso, dispatcher, cache, action);
+  public NetworkBitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats,
+      Action action, Downloader downloader, boolean airplaneMode) {
+    super(picasso, dispatcher, cache, stats, action);
     this.downloader = downloader;
     this.airplaneMode = airplaneMode;
   }
