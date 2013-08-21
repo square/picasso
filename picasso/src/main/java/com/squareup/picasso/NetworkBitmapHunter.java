@@ -57,7 +57,7 @@ class NetworkBitmapHunter extends BitmapHunter {
   }
 
   @Override Picasso.LoadedFrom getLoadedFrom() {
-    return loadedFrom;
+    return loadedFrom != null ? loadedFrom : super.getLoadedFrom();
   }
 
   private Bitmap decodeStream(InputStream stream, Request data) throws IOException {

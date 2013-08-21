@@ -96,7 +96,9 @@ abstract class BitmapHunter implements Runnable {
 
   abstract Bitmap decode(Request data, int retryCount) throws IOException;
 
-  abstract Picasso.LoadedFrom getLoadedFrom();
+  Picasso.LoadedFrom getLoadedFrom() {
+      return loadedFrom;
+  }
 
   Bitmap hunt() throws IOException {
     Bitmap bitmap;
