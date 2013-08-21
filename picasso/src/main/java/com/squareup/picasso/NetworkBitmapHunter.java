@@ -17,6 +17,7 @@ package com.squareup.picasso;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.NetworkInfo;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -25,20 +26,23 @@ import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 import static com.squareup.picasso.Picasso.LoadedFrom.NETWORK;
 
 class NetworkBitmapHunter extends BitmapHunter {
+  static final int DEFAULT_RETRY_COUNT = 2;
+
   private final Downloader downloader;
-  private final boolean airplaneMode;
+
   private Picasso.LoadedFrom loadedFrom;
+  int retryCount;
 
   public NetworkBitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats,
-      Action action, Downloader downloader, boolean airplaneMode) {
+      Action action, Downloader downloader) {
     super(picasso, dispatcher, cache, stats, action);
     this.downloader = downloader;
-    this.airplaneMode = airplaneMode;
+    this.retryCount = DEFAULT_RETRY_COUNT;
   }
 
-  @Override Bitmap decode(Request data, int retryCount)
+  @Override Bitmap decode(Request data)
       throws IOException {
-    boolean loadFromLocalCacheOnly = retryCount == 0 || airplaneMode;
+    boolean loadFromLocalCacheOnly = retryCount == 0;
     Response response = downloader.load(data.uri, loadFromLocalCacheOnly);
     loadedFrom = response.cached ? DISK : NETWORK;
 
@@ -58,6 +62,15 @@ class NetworkBitmapHunter extends BitmapHunter {
 
   @Override Picasso.LoadedFrom getLoadedFrom() {
     return loadedFrom;
+  }
+
+  @Override boolean shouldRetry(boolean airplaneMode, NetworkInfo info) {
+    boolean hasRetries = retryCount > 0;
+    if (!hasRetries) {
+      return false;
+    }
+    retryCount--;
+    return info == null || info.isConnectedOrConnecting();
   }
 
   private Bitmap decodeStream(InputStream stream, Request data) throws IOException {

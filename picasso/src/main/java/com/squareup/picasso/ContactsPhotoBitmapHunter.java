@@ -38,7 +38,7 @@ class ContactsPhotoBitmapHunter extends BitmapHunter {
     this.context = context;
   }
 
-  @Override Bitmap decode(Request data, int retryCount)
+  @Override Bitmap decode(Request data)
       throws IOException {
     InputStream is = null;
     try {

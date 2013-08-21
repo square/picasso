@@ -32,7 +32,7 @@ class ResourceBitmapHunter extends BitmapHunter {
     this.context = context;
   }
 
-  @Override Bitmap decode(Request data, int retryCount) throws IOException {
+  @Override Bitmap decode(Request data) throws IOException {
     return decodeResource(context.getResources(), data);
   }
 
