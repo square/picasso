@@ -29,8 +29,8 @@ class ContentProviderBitmapHunter extends ContentStreamBitmapHunter {
   };
 
   ContentProviderBitmapHunter(Context context, Picasso picasso, Dispatcher dispatcher, Cache cache,
-      Action action) {
-    super(context, picasso, dispatcher, cache, action);
+      Stats stats, Action action) {
+    super(context, picasso, dispatcher, cache, stats, action);
   }
 
   @Override Bitmap decode(Request data, int retryCount) throws IOException {

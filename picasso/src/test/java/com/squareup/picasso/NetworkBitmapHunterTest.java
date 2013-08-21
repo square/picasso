@@ -44,6 +44,7 @@ public class NetworkBitmapHunterTest {
   @Mock Context context;
   @Mock Picasso picasso;
   @Mock Cache cache;
+  @Mock Stats stats;
   @Mock Dispatcher dispatcher;
   @Mock Downloader downloader;
 
@@ -55,7 +56,7 @@ public class NetworkBitmapHunterTest {
   @Test public void doesNotForceLocalCacheOnlyWithAirplaneModeOffAndRetryCount() throws Exception {
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     NetworkBitmapHunter hunter =
-        new NetworkBitmapHunter(picasso, dispatcher, cache, action, downloader, false);
+        new NetworkBitmapHunter(picasso, dispatcher, cache, stats, action, downloader, false);
     hunter.decode(action.getData(), 2);
     verify(downloader).load(URI_1, false);
   }
@@ -63,7 +64,7 @@ public class NetworkBitmapHunterTest {
   @Test public void withZeroRetryCountForcesLocalCacheOnly() throws Exception {
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     NetworkBitmapHunter hunter =
-        new NetworkBitmapHunter(picasso, dispatcher, cache, action, downloader, false);
+        new NetworkBitmapHunter(picasso, dispatcher, cache, stats, action, downloader, false);
     hunter.decode(action.getData(), 0);
     verify(downloader).load(URI_1, true);
   }
@@ -71,7 +72,7 @@ public class NetworkBitmapHunterTest {
   @Test public void airplaneModeForcesLocalCacheOnly() throws Exception {
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     NetworkBitmapHunter hunter =
-        new NetworkBitmapHunter(picasso, dispatcher, cache, action, downloader, true);
+        new NetworkBitmapHunter(picasso, dispatcher, cache, stats, action, downloader, true);
     hunter.decode(action.getData(), hunter.retryCount);
     verify(downloader).load(URI_1, true);
   }
@@ -85,7 +86,7 @@ public class NetworkBitmapHunterTest {
     };
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     NetworkBitmapHunter hunter =
-        new NetworkBitmapHunter(picasso, dispatcher, cache, action, bitmapDownloader, false);
+        new NetworkBitmapHunter(picasso, dispatcher, cache, stats, action, bitmapDownloader, false);
 
     Bitmap actual = hunter.decode(action.getData(), 2);
     assertThat(actual).isSameAs(expected);

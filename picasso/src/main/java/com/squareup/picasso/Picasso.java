@@ -100,17 +100,18 @@ public class Picasso {
 
   static Picasso singleton = null;
 
+  private final Listener listener;
+  private final RequestTransformer requestTransformer;
+  private final CleanupThread cleanupThread;
+
   final Context context;
   final Dispatcher dispatcher;
   final Cache cache;
-  private final Listener listener;
-  private final RequestTransformer requestTransformer;
-  private final Stats stats;
+  final Stats stats;
   final Map<Object, Action> targetToRequest = new WeakHashMap<Object, Action>();
   final Map<ImageView, DeferredRequestCreator> targetToDeferredRequest =
       new WeakHashMap<ImageView, DeferredRequestCreator>();
   final ReferenceQueue<Object> referenceQueue;
-  private final CleanupThread cleanupThread;
 
   boolean debugging;
   boolean shutdown;
@@ -275,7 +276,9 @@ public class Picasso {
   Bitmap quickMemoryCacheCheck(String key) {
     Bitmap cached = cache.get(key);
     if (cached != null) {
-      stats.cacheHit();
+      stats.dispatchCacheHit();
+    } else {
+      stats.dispatchCacheMiss();
     }
     return cached;
   }
@@ -486,7 +489,7 @@ public class Picasso {
 
       Stats stats = new Stats(cache);
 
-      Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, downloader, cache);
+      Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, downloader, cache, stats);
 
       return new Picasso(context, dispatcher, cache, listener, transformer, stats, debugging);
     }
