@@ -70,6 +70,9 @@ class ContactsPhotoBitmapHunter extends BitmapHunter {
   }
 
   private Bitmap decodeStream(InputStream stream, Request data) throws IOException {
+    if (stream == null) {
+      return null;
+    }
     BitmapFactory.Options options = null;
     if (data.hasSize()) {
       options = new BitmapFactory.Options();
