@@ -21,6 +21,7 @@ import static com.squareup.picasso.TestUtils.mockHunter;
 import static com.squareup.picasso.TestUtils.mockNetworkInfo;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -180,6 +181,21 @@ public class DispatcherTest {
     when(hunter.isCancelled()).thenReturn(true);
     dispatcher.performRetry(hunter);
     verifyZeroInteractions(service);
+  }
+
+  @Test public void performRetrySkipsIfHunterSaysNo() throws Exception {
+    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
+    when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(false);
+    dispatcher.performRetry(hunter);
+    verify(service).isShutdown();
+    verifyNoMoreInteractions(service);
+  }
+
+  @Test public void performRetrySubmitsToServiceIfHunterSaysYes() throws Exception {
+    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
+    when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(true);
+    dispatcher.performRetry(hunter);
+    verify(service).submit(hunter);
   }
 
   @Test public void performRetrySkipsRetryIfServiceShutdown() throws Exception {
