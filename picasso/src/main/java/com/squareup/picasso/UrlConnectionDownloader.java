@@ -84,7 +84,7 @@ public class UrlConnectionDownloader implements Downloader {
       File cacheDir = Utils.createDefaultCacheDir(context);
       HttpResponseCache cache = HttpResponseCache.getInstalled();
       if (cache == null) {
-        int maxSize = Utils.calculateDiskCacheSize(cacheDir);
+        long maxSize = Utils.calculateDiskCacheSize(cacheDir);
         cache = HttpResponseCache.install(cacheDir, maxSize);
       }
       return cache;
