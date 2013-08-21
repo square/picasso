@@ -30,7 +30,6 @@ class NetworkBitmapHunter extends BitmapHunter {
 
   private final Downloader downloader;
 
-  private Picasso.LoadedFrom loadedFrom;
   int retryCount;
 
   public NetworkBitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats,
@@ -58,10 +57,6 @@ class NetworkBitmapHunter extends BitmapHunter {
     } finally {
       Utils.closeQuietly(is);
     }
-  }
-
-  @Override Picasso.LoadedFrom getLoadedFrom() {
-    return loadedFrom;
   }
 
   @Override boolean shouldRetry(boolean airplaneMode, NetworkInfo info) {
