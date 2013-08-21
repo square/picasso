@@ -157,12 +157,12 @@ final class Utils {
     return cache;
   }
 
-  static int calculateDiskCacheSize(File dir) {
-    int size = MIN_DISK_CACHE_SIZE;
+  static long calculateDiskCacheSize(File dir) {
+    long size = MIN_DISK_CACHE_SIZE;
 
     try {
       StatFs statFs = new StatFs(dir.getAbsolutePath());
-      int available = statFs.getBlockCount() * statFs.getBlockSize();
+      long available = ((long) statFs.getBlockCount()) * statFs.getBlockSize();
       // Target 2% of the total space.
       size = available / 50;
     } catch (IllegalArgumentException ignored) {

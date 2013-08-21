@@ -56,7 +56,7 @@ public class OkHttpDownloader implements Downloader {
    *
    * @param maxSize The size limit for the cache.
    */
-  public OkHttpDownloader(final Context context, final int maxSize) {
+  public OkHttpDownloader(final Context context, final long maxSize) {
     this(Utils.createDefaultCacheDir(context), maxSize);
   }
 
@@ -67,7 +67,7 @@ public class OkHttpDownloader implements Downloader {
    * @param cacheDir The directory in which the cache should be stored
    * @param maxSize The size limit for the cache.
    */
-  public OkHttpDownloader(final File cacheDir, final int maxSize) {
+  public OkHttpDownloader(final File cacheDir, final long maxSize) {
     this(new OkHttpClient());
     try {
       client.setResponseCache(new HttpResponseCache(cacheDir, maxSize));
