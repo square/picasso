@@ -33,8 +33,8 @@ class ContactsPhotoBitmapHunter extends BitmapHunter {
   final Context context;
 
   ContactsPhotoBitmapHunter(Context context, Picasso picasso, Dispatcher dispatcher, Cache cache,
-      Action action) {
-    super(picasso, dispatcher, cache, action);
+      Stats stats, Action action) {
+    super(picasso, dispatcher, cache, stats, action);
     this.context = context;
   }
 

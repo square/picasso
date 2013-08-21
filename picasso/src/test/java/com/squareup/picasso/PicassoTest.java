@@ -89,7 +89,7 @@ public class PicassoTest {
     when(cache.get(URI_KEY_1)).thenReturn(BITMAP_1);
     Bitmap cached = picasso.quickMemoryCacheCheck(URI_KEY_1);
     assertThat(cached).isEqualTo(BITMAP_1);
-    verify(stats).cacheHit();
+    verify(stats).dispatchCacheHit();
   }
 
   @Test public void quickMemoryCheckReturnsNullIfNotInCache() throws Exception {

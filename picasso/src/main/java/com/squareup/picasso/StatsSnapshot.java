@@ -68,12 +68,14 @@ public class StatsSnapshot {
     writer.println(maxSize);
     writer.print("  Cache Size: ");
     writer.println(size);
+    writer.print("  Cache % Full: ");
+    writer.println((int) Math.ceil((float) size / maxSize * 100));
     writer.print("  Cache Hits: ");
     writer.println(cacheHits);
     writer.print("  Cache Misses: ");
     writer.println(cacheMisses);
     writer.println("Bitmap Stats");
-    writer.print("  Total Bitmaps: ");
+    writer.print("  Total Bitmaps Decoded: ");
     writer.println(originalBitmapCount);
     writer.print("  Total Bitmap Size: ");
     writer.println(totalOriginalBitmapSize);
