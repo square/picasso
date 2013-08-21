@@ -19,44 +19,45 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import java.io.IOException;
 import java.io.InputStream;
 
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 
 class ContentStreamBitmapHunter extends BitmapHunter {
-
   final Context context;
 
   ContentStreamBitmapHunter(Context context, Picasso picasso, Dispatcher dispatcher, Cache cache,
-      Request request) {
-    super(picasso, dispatcher, cache, request);
+      Action action) {
+    super(picasso, dispatcher, cache, action);
     this.context = context;
   }
 
-  @Override Bitmap decode(Uri uri, PicassoBitmapOptions options, int retryCount)
+  @Override Bitmap decode(Request data, int retryCount)
       throws IOException {
-    return decodeContentStream(uri, options);
+    return decodeContentStream(data);
   }
 
   @Override Picasso.LoadedFrom getLoadedFrom() {
     return DISK;
   }
 
-  private Bitmap decodeContentStream(Uri path, PicassoBitmapOptions options) throws IOException {
+  protected Bitmap decodeContentStream(Request data) throws IOException {
     ContentResolver contentResolver = context.getContentResolver();
-    if (options != null && options.inJustDecodeBounds) {
+    BitmapFactory.Options options = null;
+    if (data.hasSize()) {
+      options = new BitmapFactory.Options();
+      options.inJustDecodeBounds = true;
       InputStream is = null;
       try {
-        is = contentResolver.openInputStream(path);
+        is = contentResolver.openInputStream(data.uri);
         BitmapFactory.decodeStream(is, null, options);
       } finally {
         Utils.closeQuietly(is);
       }
-      calculateInSampleSize(options);
+      calculateInSampleSize(data.targetWidth, data.targetHeight, options);
     }
-    InputStream is = contentResolver.openInputStream(path);
+    InputStream is = contentResolver.openInputStream(data.uri);
     try {
       return BitmapFactory.decodeStream(is, null, options);
     } finally {

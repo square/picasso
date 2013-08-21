@@ -24,21 +24,18 @@ import android.provider.MediaStore;
 import java.io.IOException;
 
 class ContentProviderBitmapHunter extends ContentStreamBitmapHunter {
-
-  private static final String[] CONTENT_ORIENTATION =
-      new String[] {MediaStore.Images.ImageColumns.ORIENTATION};
+  private static final String[] CONTENT_ORIENTATION = new String[] {
+      MediaStore.Images.ImageColumns.ORIENTATION
+  };
 
   ContentProviderBitmapHunter(Context context, Picasso picasso, Dispatcher dispatcher, Cache cache,
-      Request request) {
-    super(context, picasso, dispatcher, cache, request);
+      Action action) {
+    super(context, picasso, dispatcher, cache, action);
   }
 
-  @Override Bitmap decode(Uri uri, PicassoBitmapOptions options, int retryCount)
-      throws IOException {
-    if (options != null) {
-      options.exifRotation = getContentProviderExifRotation(context.getContentResolver(), uri);
-    }
-    return super.decode(uri, options, retryCount);
+  @Override Bitmap decode(Request data, int retryCount) throws IOException {
+    setExifRotation(getContentProviderExifRotation(context.getContentResolver(), data.uri));
+    return super.decodeContentStream(data);
   }
 
   static int getContentProviderExifRotation(ContentResolver contentResolver, Uri uri) {

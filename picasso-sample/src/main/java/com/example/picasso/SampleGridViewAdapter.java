@@ -9,14 +9,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static android.widget.ImageView.ScaleType.CENTER_CROP;
+
 final class SampleGridViewAdapter extends BaseAdapter {
   private final Context context;
-  private final int size;
   private final List<String> urls = new ArrayList<String>();
 
-  public SampleGridViewAdapter(Context context, int size) {
+  public SampleGridViewAdapter(Context context) {
     this.context = context;
-    this.size = size;
 
     // Ensure we get a different ordering of images on each run.
     Collections.addAll(urls, Data.URLS);
@@ -32,6 +32,7 @@ final class SampleGridViewAdapter extends BaseAdapter {
     SquaredImageView view = (SquaredImageView) convertView;
     if (view == null) {
       view = new SquaredImageView(context);
+      view.setScaleType(CENTER_CROP);
     }
 
     // Get the image URL for the current position.
@@ -42,8 +43,7 @@ final class SampleGridViewAdapter extends BaseAdapter {
         .load(url) //
         .placeholder(R.drawable.placeholder) //
         .error(R.drawable.error) //
-        .resize(size, size) //
-        .centerCrop() //
+        .fit() //
         .into(view);
 
     return view;

@@ -19,7 +19,6 @@ import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_2;
 import static com.squareup.picasso.TestUtils.mockHunter;
 import static com.squareup.picasso.TestUtils.mockNetworkInfo;
-import static com.squareup.picasso.TestUtils.mockRequest;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -53,34 +52,34 @@ public class DispatcherTest {
   }
 
   @Test public void performSubmitWithNewRequestQueuesHunter() throws Exception {
-    Request request = mockRequest(URI_KEY_1, URI_1);
-    dispatcher.performSubmit(request);
+    Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
+    dispatcher.performSubmit(action);
     assertThat(dispatcher.hunterMap).hasSize(1);
     verify(service).submit(any(BitmapHunter.class));
   }
 
   @Test public void performSubmitWithTwoDifferentRequestsQueuesHunters() throws Exception {
-    Request request1 = mockRequest(URI_KEY_1, URI_1);
-    Request request2 = mockRequest(URI_KEY_2, URI_2);
-    dispatcher.performSubmit(request1);
-    dispatcher.performSubmit(request2);
+    Action action1 = TestUtils.mockAction(URI_KEY_1, URI_1);
+    Action action2 = TestUtils.mockAction(URI_KEY_2, URI_2);
+    dispatcher.performSubmit(action1);
+    dispatcher.performSubmit(action2);
     assertThat(dispatcher.hunterMap).hasSize(2);
     verify(service, times(2)).submit(any(BitmapHunter.class));
   }
 
   @Test public void performSubmitWithExistingRequestAttachesToHunter() throws Exception {
-    Request request1 = mockRequest(URI_KEY_1, URI_1);
-    Request request2 = mockRequest(URI_KEY_1, URI_1);
-    dispatcher.performSubmit(request1);
-    dispatcher.performSubmit(request2);
+    Action action1 = TestUtils.mockAction(URI_KEY_1, URI_1);
+    Action action2 = TestUtils.mockAction(URI_KEY_1, URI_1);
+    dispatcher.performSubmit(action1);
+    dispatcher.performSubmit(action2);
     assertThat(dispatcher.hunterMap).hasSize(1);
     verify(service).submit(any(BitmapHunter.class));
   }
 
   @Test public void performSubmitWithShutdownServiceIgnoresRequest() throws Exception {
     when(service.isShutdown()).thenReturn(true);
-    Request request = mockRequest(URI_KEY_1, URI_1);
-    dispatcher.performSubmit(request);
+    Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
+    dispatcher.performSubmit(action);
     assertThat(dispatcher.hunterMap).isEmpty();
     verify(service, never()).submit(any(BitmapHunter.class));
   }
@@ -89,34 +88,34 @@ public class DispatcherTest {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
     dispatcher.hunterMap.put(URI_KEY_1, hunter);
     when(service.isShutdown()).thenReturn(true);
-    Request request = mockRequest(URI_KEY_1, URI_1);
-    dispatcher.performSubmit(request);
+    Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
+    dispatcher.performSubmit(action);
     assertThat(dispatcher.hunterMap).hasSize(1);
-    verify(hunter).attach(request);
+    verify(hunter).attach(action);
     verify(service, never()).submit(any(BitmapHunter.class));
   }
 
   @Test public void performCancelDetachesRequestAndCleansMap() throws Exception {
-    Request request = mockRequest(URI_KEY_1, URI_1);
+    Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
-    hunter.attach(request);
+    hunter.attach(action);
     when(hunter.cancel()).thenReturn(true);
     dispatcher.hunterMap.put(URI_KEY_1, hunter);
-    dispatcher.performCancel(request);
-    verify(hunter).detach(request);
+    dispatcher.performCancel(action);
+    verify(hunter).detach(action);
     verify(hunter).cancel();
     assertThat(dispatcher.hunterMap).isEmpty();
   }
 
   @Test public void performCancelMultipleRequestsDetachesOnly() throws Exception {
-    Request request1 = mockRequest(URI_KEY_1, URI_1);
-    Request request2 = mockRequest(URI_KEY_1, URI_1);
+    Action action1 = TestUtils.mockAction(URI_KEY_1, URI_1);
+    Action action2 = TestUtils.mockAction(URI_KEY_1, URI_1);
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
-    hunter.attach(request1);
-    hunter.attach(request2);
+    hunter.attach(action1);
+    hunter.attach(action2);
     dispatcher.hunterMap.put(URI_KEY_1, hunter);
-    dispatcher.performCancel(request1);
-    verify(hunter).detach(request1);
+    dispatcher.performCancel(action1);
+    verify(hunter).detach(action1);
     verify(hunter).cancel();
     assertThat(dispatcher.hunterMap).hasSize(1);
   }

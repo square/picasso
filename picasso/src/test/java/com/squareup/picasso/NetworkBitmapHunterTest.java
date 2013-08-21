@@ -29,7 +29,6 @@ import org.robolectric.annotation.Config;
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
-import static com.squareup.picasso.TestUtils.mockRequest;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
@@ -54,26 +53,26 @@ public class NetworkBitmapHunterTest {
   }
 
   @Test public void doesNotForceLocalCacheOnlyWithAirplaneModeOffAndRetryCount() throws Exception {
-    Request request = mockRequest(URI_KEY_1, URI_1);
+    Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     NetworkBitmapHunter hunter =
-        new NetworkBitmapHunter(picasso, dispatcher, cache, request, downloader, false);
-    hunter.decode(request.getUri(), null, 2);
+        new NetworkBitmapHunter(picasso, dispatcher, cache, action, downloader, false);
+    hunter.decode(action.getData(), 2);
     verify(downloader).load(URI_1, false);
   }
 
   @Test public void withZeroRetryCountForcesLocalCacheOnly() throws Exception {
-    Request request = mockRequest(URI_KEY_1, URI_1);
+    Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     NetworkBitmapHunter hunter =
-        new NetworkBitmapHunter(picasso, dispatcher, cache, request, downloader, false);
-    hunter.decode(request.getUri(), null, 0);
+        new NetworkBitmapHunter(picasso, dispatcher, cache, action, downloader, false);
+    hunter.decode(action.getData(), 0);
     verify(downloader).load(URI_1, true);
   }
 
   @Test public void airplaneModeForcesLocalCacheOnly() throws Exception {
-    Request request = mockRequest(URI_KEY_1, URI_1);
+    Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     NetworkBitmapHunter hunter =
-        new NetworkBitmapHunter(picasso, dispatcher, cache, request, downloader, true);
-    hunter.decode(request.getUri(), null, hunter.retryCount);
+        new NetworkBitmapHunter(picasso, dispatcher, cache, action, downloader, true);
+    hunter.decode(action.getData(), hunter.retryCount);
     verify(downloader).load(URI_1, true);
   }
 
@@ -84,11 +83,11 @@ public class NetworkBitmapHunterTest {
         return new Response(expected, false);
       }
     };
-    Request request = mockRequest(URI_KEY_1, URI_1);
+    Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     NetworkBitmapHunter hunter =
-        new NetworkBitmapHunter(picasso, dispatcher, cache, request, bitmapDownloader, false);
+        new NetworkBitmapHunter(picasso, dispatcher, cache, action, bitmapDownloader, false);
 
-    Bitmap actual = hunter.decode(request.getUri(), null, 2);
+    Bitmap actual = hunter.decode(action.getData(), 2);
     assertThat(actual).isSameAs(expected);
   }
 }

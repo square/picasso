@@ -30,20 +30,18 @@ import static android.media.ExifInterface.TAG_ORIENTATION;
 class FileBitmapHunter extends ContentStreamBitmapHunter {
 
   FileBitmapHunter(Context context, Picasso picasso, Dispatcher dispatcher, Cache cache,
-      Request request) {
-    super(context, picasso, dispatcher, cache, request);
+      Action action) {
+    super(context, picasso, dispatcher, cache, action);
   }
 
-  @Override Bitmap decode(Uri uri, PicassoBitmapOptions options, int retryCount)
+  @Override Bitmap decode(Request data, int retryCount)
       throws IOException {
-    if (options != null) {
-      options.exifRotation = getFileExifRotation(uri.getPath());
-    }
-    return super.decode(uri, options, retryCount);
+    setExifRotation(getFileExifRotation(data.uri));
+    return super.decode(data, retryCount);
   }
 
-  static int getFileExifRotation(String path) throws IOException {
-    ExifInterface exifInterface = new ExifInterface(path);
+  static int getFileExifRotation(Uri uri) throws IOException {
+    ExifInterface exifInterface = new ExifInterface(uri.getPath());
     int orientation = exifInterface.getAttributeInt(TAG_ORIENTATION, ORIENTATION_NORMAL);
     switch (orientation) {
       case ORIENTATION_ROTATE_90:

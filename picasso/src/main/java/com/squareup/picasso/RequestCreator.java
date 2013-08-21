@@ -21,8 +21,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.widget.ImageView;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import org.jetbrains.annotations.TestOnly;
 
 import static com.squareup.picasso.BitmapHunter.forRequest;
@@ -32,13 +30,10 @@ import static com.squareup.picasso.Utils.createKey;
 
 /** Fluent API for building an image download request. */
 @SuppressWarnings("UnusedDeclaration") // Public API.
-public class RequestBuilder {
+public class RequestCreator {
   private final Picasso picasso;
-  private final Uri uri;
-  private final int resourceId;
+  private final Request.Builder data;
 
-  PicassoBitmapOptions options;
-  private List<Transformation> transformations;
   private boolean skipMemoryCache;
   private boolean noFade;
   private boolean deferred;
@@ -47,27 +42,18 @@ public class RequestBuilder {
   private int errorResId;
   private Drawable errorDrawable;
 
-  RequestBuilder(Picasso picasso, Uri uri, int resourceId) {
+  RequestCreator(Picasso picasso, Uri uri, int resourceId) {
     if (picasso.shutdown) {
       throw new IllegalStateException(
           "Picasso instance already shut down. Cannot submit new requests.");
     }
     this.picasso = picasso;
-    this.uri = uri;
-    this.resourceId = resourceId;
+    this.data = new Request.Builder(uri, resourceId);
   }
 
-  @TestOnly RequestBuilder() {
+  @TestOnly RequestCreator() {
     this.picasso = null;
-    this.uri = null;
-    this.resourceId = 0;
-  }
-
-  private PicassoBitmapOptions getOptions() {
-    if (options == null) {
-      options = new PicassoBitmapOptions();
-    }
-    return options;
+    this.data = new Request.Builder(null, 0);
   }
 
   /**
@@ -75,7 +61,7 @@ public class RequestBuilder {
    * not immediately available in the memory cache then this resource will be set on the target
    * {@link ImageView}.
    */
-  public RequestBuilder placeholder(int placeholderResId) {
+  public RequestCreator placeholder(int placeholderResId) {
     if (placeholderResId == 0) {
       throw new IllegalArgumentException("Placeholder image resource invalid.");
     }
@@ -94,7 +80,7 @@ public class RequestBuilder {
    * If you are not using a placeholder image but want to clear an existing image (such as when
    * used in an {@link android.widget.Adapter adapter}), pass in {@code null}.
    */
-  public RequestBuilder placeholder(Drawable placeholderDrawable) {
+  public RequestCreator placeholder(Drawable placeholderDrawable) {
     if (placeholderResId != 0) {
       throw new IllegalStateException("Placeholder image already set.");
     }
@@ -103,7 +89,7 @@ public class RequestBuilder {
   }
 
   /** An error drawable to be used if the request image could not be loaded. */
-  public RequestBuilder error(int errorResId) {
+  public RequestCreator error(int errorResId) {
     if (errorResId == 0) {
       throw new IllegalArgumentException("Error image resource invalid.");
     }
@@ -115,7 +101,7 @@ public class RequestBuilder {
   }
 
   /** An error drawable to be used if the request image could not be loaded. */
-  public RequestBuilder error(Drawable errorDrawable) {
+  public RequestCreator error(Drawable errorDrawable) {
     if (errorDrawable == null) {
       throw new IllegalArgumentException("Error image may not be null.");
     }
@@ -132,19 +118,19 @@ public class RequestBuilder {
    * <p/>
    * <em>Note:</em> This method works only when your target is an {@link ImageView).
    */
-  public RequestBuilder fit() {
-    PicassoBitmapOptions options = getOptions();
-
-    if (options.targetWidth != 0 || options.targetHeight != 0) {
-      throw new IllegalStateException("Fit cannot be used with resize.");
-    }
-
+  public RequestCreator fit() {
     deferred = true;
     return this;
   }
 
+  /** Internal use only. Used by {@link DeferredRequestCreator}. */
+  RequestCreator unfit() {
+    deferred = false;
+    return this;
+  }
+
   /** Resize the image to the specified dimension size. */
-  public RequestBuilder resizeDimen(int targetWidthResId, int targetHeightResId) {
+  public RequestCreator resizeDimen(int targetWidthResId, int targetHeightResId) {
     Resources resources = picasso.context.getResources();
     int targetWidth = resources.getDimensionPixelSize(targetWidthResId);
     int targetHeight = resources.getDimensionPixelSize(targetHeightResId);
@@ -152,27 +138,8 @@ public class RequestBuilder {
   }
 
   /** Resize the image to the specified size in pixels. */
-  public RequestBuilder resize(int targetWidth, int targetHeight) {
-    if (targetWidth <= 0) {
-      throw new IllegalArgumentException("Width must be positive number.");
-    }
-    if (targetHeight <= 0) {
-      throw new IllegalArgumentException("Height must be positive number.");
-    }
-
-    PicassoBitmapOptions options = getOptions();
-
-    if (options.targetWidth != 0 || options.targetHeight != 0) {
-      throw new IllegalStateException("Resize may only be called once.");
-    }
-    if (deferred) {
-      throw new IllegalStateException("Resize cannot be used with fit.");
-    }
-
-    options.targetWidth = targetWidth;
-    options.targetHeight = targetHeight;
-    options.inJustDecodeBounds = true;
-
+  public RequestCreator resize(int targetWidth, int targetHeight) {
+    data.resize(targetWidth, targetHeight);
     return this;
   }
 
@@ -181,17 +148,8 @@ public class RequestBuilder {
    * distorting the aspect ratio. This cropping technique scales the image so that it fills the
    * requested bounds and then crops the extra.
    */
-  public RequestBuilder centerCrop() {
-    PicassoBitmapOptions options = getOptions();
-
-    if (options.targetWidth == 0 || options.targetHeight == 0) {
-      throw new IllegalStateException("Center crop can only be used after calling resize.");
-    }
-    if (options.centerInside) {
-      throw new IllegalStateException("Center crop can not be used after calling centerInside");
-    }
-
-    options.centerCrop = true;
+  public RequestCreator centerCrop() {
+    data.centerCrop();
     return this;
   }
 
@@ -199,64 +157,20 @@ public class RequestBuilder {
    * Centers an image inside of the bounds specified by {@link #resize(int, int)}. This scales
    * the image so that both dimensions are equal to or less than the requested bounds.
    */
-  public RequestBuilder centerInside() {
-    PicassoBitmapOptions options = getOptions();
-
-    if (options.targetWidth == 0 || options.targetHeight == 0) {
-      throw new IllegalStateException("Center inside can only be used after calling resize.");
-    }
-    if (options.centerCrop) {
-      throw new IllegalStateException("Center inside can not be used after calling centerCrop");
-    }
-
-    options.centerInside = true;
-    return this;
-  }
-
-  /** Scale the image using the specified factor. */
-  public RequestBuilder scale(float factor) {
-    if (factor != 1) {
-      scale(factor, factor);
-    }
-    return this;
-  }
-
-  /** Scale the image using the specified factors. */
-  public RequestBuilder scale(float factorX, float factorY) {
-    if (factorX == 0 || factorY == 0) {
-      throw new IllegalArgumentException("Scale factor must be positive number.");
-    }
-    if (factorX != 1 && factorY != 1) {
-      PicassoBitmapOptions options = getOptions();
-
-      if (options.targetScaleX != 0 || options.targetScaleY != 0) {
-        throw new IllegalStateException("Scale may only be called once.");
-      }
-
-      options.targetScaleX = factorX;
-      options.targetScaleY = factorY;
-    }
+  public RequestCreator centerInside() {
+    data.centerInside();
     return this;
   }
 
   /** Rotate the image by the specified degrees. */
-  public RequestBuilder rotate(float degrees) {
-    if (degrees != 0) {
-      PicassoBitmapOptions options = getOptions();
-      options.targetRotation = degrees;
-    }
+  public RequestCreator rotate(float degrees) {
+    data.rotate(degrees);
     return this;
   }
 
   /** Rotate the image by the specified degrees around a pivot point. */
-  public RequestBuilder rotate(float degrees, float pivotX, float pivotY) {
-    if (degrees != 0) {
-      PicassoBitmapOptions options = getOptions();
-      options.targetRotation = degrees;
-      options.targetPivotX = pivotX;
-      options.targetPivotY = pivotY;
-      options.hasRotationPivot = true;
-    }
+  public RequestCreator rotate(float degrees, float pivotX, float pivotY) {
+    data.rotate(degrees, pivotX, pivotY);
     return this;
   }
 
@@ -266,29 +180,23 @@ public class RequestBuilder {
    * Custom transformations will always be run after the built-in transformations.
    */
   // TODO show example of calling resize after a transform in the javadoc
-  public RequestBuilder transform(Transformation transformation) {
-    if (transformation == null) {
-      throw new IllegalArgumentException("Transformation must not be null.");
-    }
-    if (transformations == null) {
-      transformations = new ArrayList<Transformation>(2);
-    }
-    transformations.add(transformation);
+  public RequestCreator transform(Transformation transformation) {
+    data.transform(transformation);
     return this;
   }
 
   /**
-   * Indicate that this request should not use the memory cache for attempting to load or save the
+   * Indicate that this action should not use the memory cache for attempting to load or save the
    * image. This can be useful when you know an image will only ever be used once (e.g., loading
    * an image from the filesystem and uploading to a remote server).
    */
-  public RequestBuilder skipMemoryCache() {
+  public RequestCreator skipMemoryCache() {
     skipMemoryCache = true;
     return this;
   }
 
   /** Disable brief fade in of images loaded from the disk cache or network. */
-  public RequestBuilder noFade() {
+  public RequestCreator noFade() {
     noFade = true;
     return this;
   }
@@ -296,26 +204,36 @@ public class RequestBuilder {
   /** Synchronously fulfill this request. Must not be called from the main thread. */
   public Bitmap get() throws IOException {
     checkNotMain();
-
-    if (uri == null && resourceId == 0) {
+    if (deferred) {
+      throw new IllegalStateException("Fit cannot be used with get.");
+    }
+    if (!data.hasImage()) {
       return null;
     }
 
-    Request request =
-        new GetRequest(picasso, uri, resourceId, options, transformations, skipMemoryCache);
-    return forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache, request,
+    Request finalData = picasso.transformRequest(data.build());
+    String key = Utils.createKey(finalData);
+
+    Action action = new GetAction(picasso, finalData, skipMemoryCache, key);
+    return forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache, action,
         picasso.dispatcher.downloader, Utils.isAirplaneModeOn(picasso.context)).hunt();
   }
 
   /**
-   * Asynchronously fulfills the request without a {@link Target}. This is useful when you want to
-   * warm up the cache with an image.
+   * Asynchronously fulfills the request without a {@link ImageView} or {@link Target}. This is
+   * useful when you want to warm up the cache with an image.
    */
   public void fetch() {
-    String requestKey = createKey(uri, resourceId, options, transformations);
-    Request request =
-        new FetchRequest(picasso, uri, resourceId, options, transformations, skipMemoryCache);
-    picasso.enqueueAndSubmit(request);
+    if (deferred) {
+      throw new IllegalStateException("Fit cannot be used with fetch.");
+    }
+    if (data.hasImage()) {
+      Request finalData = picasso.transformRequest(data.build());
+      String key = Utils.createKey(finalData);
+
+      Action action = new FetchAction(picasso, finalData, skipMemoryCache, key);
+      picasso.enqueueAndSubmit(action);
+    }
   }
 
   /**
@@ -330,13 +248,16 @@ public class RequestBuilder {
     if (target == null) {
       throw new IllegalArgumentException("Target must not be null.");
     }
-
-    if (uri == null && resourceId == 0) {
+    if (deferred) {
+      throw new IllegalStateException("Fit cannot be used with a Target.");
+    }
+    if (!data.hasImage()) {
       picasso.cancelRequest(target);
       return;
     }
 
-    String requestKey = createKey(uri, resourceId, options, transformations);
+    Request finalData = picasso.transformRequest(data.build());
+    String requestKey = createKey(finalData);
 
     if (!skipMemoryCache) {
       Bitmap bitmap = picasso.quickMemoryCacheCheck(requestKey);
@@ -347,10 +268,8 @@ public class RequestBuilder {
       }
     }
 
-    Request request = new TargetRequest(picasso, uri, resourceId, target, options, transformations,
-        skipMemoryCache, requestKey);
-
-    picasso.enqueueAndSubmit(request);
+    Action action = new TargetAction(picasso, target, finalData, skipMemoryCache, requestKey);
+    picasso.enqueueAndSubmit(action);
   }
 
   /**
@@ -377,13 +296,28 @@ public class RequestBuilder {
       throw new IllegalArgumentException("Target must not be null.");
     }
 
-    if (uri == null && resourceId == 0) {
+    if (!data.hasImage()) {
       picasso.cancelRequest(target);
       PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable);
       return;
     }
 
-    String requestKey = createKey(uri, resourceId, options, transformations);
+    if (deferred) {
+      if (data.hasSize()) {
+        throw new IllegalStateException("Fit cannot be used with resize.");
+      }
+      int measuredWidth = target.getMeasuredWidth();
+      int measuredHeight = target.getMeasuredHeight();
+      if (measuredWidth == 0 && measuredHeight == 0) {
+        PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable);
+        picasso.defer(target, new DeferredRequestCreator(this, target));
+        return;
+      }
+      data.resize(measuredWidth, measuredHeight);
+    }
+
+    Request finalData = picasso.transformRequest(data.build());
+    String requestKey = createKey(finalData);
 
     if (!skipMemoryCache) {
       Bitmap bitmap = picasso.quickMemoryCacheCheck(requestKey);
@@ -398,26 +332,12 @@ public class RequestBuilder {
       }
     }
 
-    Request request;
-
-    if (deferred) {
-      int width = target.getWidth();
-      int height = target.getHeight();
-
-      if (width == 0 || height == 0) {
-        request =
-            new DeferredImageViewRequest(picasso, uri, resourceId, target, options, transformations,
-                skipMemoryCache, noFade, errorResId, errorDrawable, requestKey, callback);
-        picasso.enqueue(request);
-        return;
-      }
-    }
-
     PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable);
 
-    request = new ImageViewRequest(picasso, uri, resourceId, target, options, transformations,
-        skipMemoryCache, noFade, errorResId, errorDrawable, requestKey, callback);
+    Action action =
+        new ImageViewAction(picasso, target, finalData, skipMemoryCache, noFade, errorResId,
+            errorDrawable, requestKey, callback);
 
-    picasso.enqueueAndSubmit(request);
+    picasso.enqueueAndSubmit(action);
   }
 }

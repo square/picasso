@@ -34,7 +34,7 @@ import java.util.concurrent.ExecutorService;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static com.squareup.picasso.Dispatcher.HUNTER_BATCH_COMPLETE;
 import static com.squareup.picasso.Dispatcher.REQUEST_GCED;
-import static com.squareup.picasso.Request.RequestWeakReference;
+import static com.squareup.picasso.Action.RequestWeakReference;
 import static com.squareup.picasso.Utils.THREAD_PREFIX;
 
 /**
@@ -54,6 +54,29 @@ public class Picasso {
     void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception);
   }
 
+  /**
+   * A transformer that is called immediately before every request is submitted. This can be used to
+   * modify any information about a request.
+   * <p>
+   * For example, if you use a CDN you can change the hostname for the image based on the current
+   * location of the user in order to get faster download speeds.
+   */
+  public interface RequestTransformer {
+    /**
+     * Transform a request before it is submitted to be processed.
+     *
+     * @return The original request or a new request to replace it. Must not be null.
+     */
+    Request transformRequest(Request request);
+
+    /** A {@link RequestTransformer} which returns the original request. */
+    RequestTransformer IDENTITY = new RequestTransformer() {
+      @Override public Request transformRequest(Request request) {
+        return request;
+      }
+    };
+  }
+
   static final Handler HANDLER = new Handler(Looper.getMainLooper()) {
     @Override public void handleMessage(Message msg) {
       switch (msg.what) {
@@ -65,8 +88,8 @@ public class Picasso {
           break;
         }
         case REQUEST_GCED: {
-          Request request = (Request) msg.obj;
-          request.picasso.cancelExistingRequest(request.getTarget());
+          Action action = (Action) msg.obj;
+          action.picasso.cancelExistingRequest(action.getTarget());
           break;
         }
         default:
@@ -80,21 +103,25 @@ public class Picasso {
   final Context context;
   final Dispatcher dispatcher;
   final Cache cache;
-  final Listener listener;
-  final Stats stats;
-  final Map<Object, Request> targetToRequest = new WeakHashMap<Object, Request>();
+  private final Listener listener;
+  private final RequestTransformer requestTransformer;
+  private final Stats stats;
+  final Map<Object, Action> targetToRequest = new WeakHashMap<Object, Action>();
+  final Map<ImageView, DeferredRequestCreator> targetToDeferredRequest =
+      new WeakHashMap<ImageView, DeferredRequestCreator>();
   final ReferenceQueue<Object> referenceQueue;
-  final CleanupThread cleanupThread;
+  private final CleanupThread cleanupThread;
 
   boolean debugging;
   boolean shutdown;
 
-  Picasso(Context context, Dispatcher dispatcher, Cache cache, Listener listener, Stats stats,
-      boolean debugging) {
+  Picasso(Context context, Dispatcher dispatcher, Cache cache, Listener listener,
+      RequestTransformer requestTransformer, Stats stats, boolean debugging) {
     this.context = context;
     this.dispatcher = dispatcher;
     this.cache = cache;
     this.listener = listener;
+    this.requestTransformer = requestTransformer;
     this.stats = stats;
     this.debugging = debugging;
     this.referenceQueue = new ReferenceQueue<Object>();
@@ -122,8 +149,8 @@ public class Picasso {
    * @see #load(String)
    * @see #load(int)
    */
-  public RequestBuilder load(Uri uri) {
-    return new RequestBuilder(this, uri, 0);
+  public RequestCreator load(Uri uri) {
+    return new RequestCreator(this, uri, 0);
   }
 
   /**
@@ -141,9 +168,9 @@ public class Picasso {
    * @see #load(File)
    * @see #load(int)
    */
-  public RequestBuilder load(String path) {
+  public RequestCreator load(String path) {
     if (path == null) {
-      return new RequestBuilder(this, null, 0);
+      return new RequestCreator(this, null, 0);
     }
     if (path.trim().length() == 0) {
       throw new IllegalArgumentException("Path must not be empty.");
@@ -162,9 +189,9 @@ public class Picasso {
    * @see #load(String)
    * @see #load(int)
    */
-  public RequestBuilder load(File file) {
+  public RequestCreator load(File file) {
     if (file == null) {
-      return new RequestBuilder(this, null, 0);
+      return new RequestCreator(this, null, 0);
     }
     return load(Uri.fromFile(file));
   }
@@ -176,11 +203,11 @@ public class Picasso {
    * @see #load(String)
    * @see #load(File)
    */
-  public RequestBuilder load(int resourceId) {
+  public RequestCreator load(int resourceId) {
     if (resourceId == 0) {
       throw new IllegalArgumentException("Resource ID must not be zero.");
     }
-    return new RequestBuilder(this, null, resourceId);
+    return new RequestCreator(this, null, resourceId);
   }
 
   /** {@code true} if debug display, logging, and statistics are enabled. */
@@ -200,6 +227,9 @@ public class Picasso {
 
   /** Stops this instance from accepting further requests. */
   public void shutdown() {
+    if (this == singleton) {
+      throw new UnsupportedOperationException("Default singleton instance cannot be shutdown.");
+    }
     if (shutdown) {
       return;
     }
@@ -207,27 +237,39 @@ public class Picasso {
     cleanupThread.shutdown();
     stats.shutdown();
     dispatcher.shutdown();
-    if (this == singleton) {
-      singleton = null;
+    for (DeferredRequestCreator deferredRequestCreator : targetToDeferredRequest.values()) {
+      deferredRequestCreator.cancel();
     }
+    targetToDeferredRequest.clear();
     shutdown = true;
   }
 
-  void enqueueAndSubmit(Request request) {
-    enqueue(request);
-    dispatcher.dispatchSubmit(request);
+  Request transformRequest(Request request) {
+    Request transformed = requestTransformer.transformRequest(request);
+    if (transformed == null) {
+      throw new IllegalStateException("Request transformer "
+          + requestTransformer.getClass().getCanonicalName()
+          + " returned null for "
+          + request);
+    }
+    return transformed;
   }
 
-  void submit(Request request) {
-    dispatcher.dispatchSubmit(request);
+  void defer(ImageView view, DeferredRequestCreator request) {
+    targetToDeferredRequest.put(view, request);
   }
 
-  void enqueue(Request request) {
-    Object target = request.getTarget();
+  void enqueueAndSubmit(Action action) {
+    Object target = action.getTarget();
     if (target != null) {
       cancelExistingRequest(target);
-      targetToRequest.put(target, request);
+      targetToRequest.put(target, action);
     }
+    submit(action);
+  }
+
+  void submit(Action action) {
+    dispatcher.dispatchSubmit(action);
   }
 
   Bitmap quickMemoryCacheCheck(String key) {
@@ -239,17 +281,17 @@ public class Picasso {
   }
 
   void complete(BitmapHunter hunter) {
-    List<Request> joined = hunter.getRequests();
+    List<Action> joined = hunter.getActions();
     if (joined.isEmpty()) {
       return;
     }
 
-    Uri uri = hunter.getUri();
+    Uri uri = hunter.getData().uri;
     Exception exception = hunter.getException();
     Bitmap result = hunter.getResult();
     LoadedFrom from = hunter.getLoadedFrom();
 
-    for (Request join : joined) {
+    for (Action join : joined) {
       if (join.isCancelled()) {
         continue;
       }
@@ -267,14 +309,18 @@ public class Picasso {
   }
 
   private void cancelExistingRequest(Object target) {
-    Request existing = targetToRequest.remove(target);
-    cancelExistingRequest(existing);
-  }
-
-  private void cancelExistingRequest(Request existing) {
-    if (existing != null) {
-      existing.cancel();
-      dispatcher.dispatchCancel(existing);
+    Action action = targetToRequest.remove(target);
+    if (action != null) {
+      action.cancel();
+      dispatcher.dispatchCancel(action);
+    }
+    if (target instanceof ImageView) {
+      ImageView targetImageView = (ImageView) target;
+      DeferredRequestCreator deferredRequestCreator =
+          targetToDeferredRequest.remove(targetImageView);
+      if (deferredRequestCreator != null) {
+        deferredRequestCreator.cancel();
+      }
     }
   }
 
@@ -294,7 +340,7 @@ public class Picasso {
       while (true) {
         try {
           RequestWeakReference<?> remove = (RequestWeakReference<?>) referenceQueue.remove();
-          handler.sendMessage(handler.obtainMessage(REQUEST_GCED, remove.request));
+          handler.sendMessage(handler.obtainMessage(REQUEST_GCED, remove.action));
         } catch (InterruptedException e) {
           break;
         } catch (final Exception e) {
@@ -344,6 +390,7 @@ public class Picasso {
     private ExecutorService service;
     private Cache cache;
     private Listener listener;
+    private RequestTransformer transformer;
     private boolean debugging;
 
     /** Start building a new {@link Picasso} instance. */
@@ -402,6 +449,18 @@ public class Picasso {
       return this;
     }
 
+    /** Specify a transformer for all incoming requests. */
+    public Builder requestTransformer(RequestTransformer transformer) {
+      if (transformer == null) {
+        throw new IllegalArgumentException("Transformer must not be null.");
+      }
+      if (this.transformer != null) {
+        throw new IllegalStateException("Transformer already set.");
+      }
+      this.transformer = transformer;
+      return this;
+    }
+
     /** Whether debugging is enabled or not. */
     public Builder debugging(boolean debugging) {
       this.debugging = debugging;
@@ -421,12 +480,15 @@ public class Picasso {
       if (service == null) {
         service = new PicassoExecutorService();
       }
+      if (transformer == null) {
+        transformer = RequestTransformer.IDENTITY;
+      }
 
       Stats stats = new Stats(cache);
 
       Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, downloader, cache);
 
-      return new Picasso(context, dispatcher, cache, listener, stats, debugging);
+      return new Picasso(context, dispatcher, cache, listener, transformer, stats, debugging);
     }
   }
 
