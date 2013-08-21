@@ -19,8 +19,11 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -180,17 +183,24 @@ final class PicassoDrawable extends Drawable {
   }
 
   private void drawDebugIndicator(Canvas canvas) {
-    canvas.save();
-    canvas.rotate(45);
-
-    // Draw a white square for the indicator border.
     DEBUG_PAINT.setColor(WHITE);
-    canvas.drawRect(0, -10 * density, 7.5f * density, 10 * density, DEBUG_PAINT);
+    Path path = getTrianglePath(new Point(0, 0), (int) (16 * density));
+    canvas.drawPath(path, DEBUG_PAINT);
 
-    // Draw a slightly smaller square for the indicator color.
     DEBUG_PAINT.setColor(loadedFrom.debugColor);
-    canvas.drawRect(0, -9 * density, 6.5f * density, 9 * density, DEBUG_PAINT);
+    path = getTrianglePath(new Point(0, 0), (int) (15 * density));
+    canvas.drawPath(path, DEBUG_PAINT);
+  }
 
-    canvas.restore();
+  private static Path getTrianglePath(Point p1, int width) {
+    Point p2 = new Point(p1.x + width, p1.y);
+    Point p3 = new Point(p1.x, p1.y + width);
+
+    Path path = new Path();
+    path.moveTo(p1.x, p1.y);
+    path.lineTo(p2.x, p2.y);
+    path.lineTo(p3.x, p3.y);
+
+    return path;
   }
 }
