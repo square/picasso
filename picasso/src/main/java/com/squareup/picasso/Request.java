@@ -74,7 +74,7 @@ public final class Request {
     return Integer.toHexString(resourceId);
   }
 
-  boolean hasSize() {
+  public boolean hasSize() {
     return targetWidth != 0;
   }
 
@@ -90,10 +90,14 @@ public final class Request {
     return transformations != null;
   }
 
+  public Builder buildUpon() {
+    return new Builder(this);
+  }
+
   /** Builder for creating {@link Request} instances. */
   public static final class Builder {
-    private final Uri uri;
-    private final int resourceId;
+    private Uri uri;
+    private int resourceId;
     private int targetWidth;
     private int targetHeight;
     private boolean centerCrop;
@@ -106,25 +110,33 @@ public final class Request {
 
     /** Start building a request using the specified {@link Uri}. */
     public Builder(Uri uri) {
-      if (uri == null) {
-        throw new IllegalArgumentException("Image URI may not be null.");
-      }
-      this.uri = uri;
-      this.resourceId = 0;
+      setUri(uri);
     }
 
     /** Start building a request using the specified resource ID. */
     public Builder(int resourceId) {
-      if (resourceId == 0) {
-        throw new IllegalArgumentException("Image ID may not be 0.");
-      }
-      this.uri = null;
-      this.resourceId = resourceId;
+      setResourceId(resourceId);
     }
 
     Builder(Uri uri, int resourceId) {
       this.uri = uri;
       this.resourceId = resourceId;
+    }
+
+    private Builder(Request request) {
+      uri = request.uri;
+      resourceId = request.resourceId;
+      targetWidth = request.targetWidth;
+      targetHeight = request.targetHeight;
+      centerCrop = request.centerCrop;
+      centerInside = request.centerInside;
+      rotationDegrees = request.rotationDegrees;
+      rotationPivotX = request.rotationPivotX;
+      rotationPivotY = request.rotationPivotY;
+      hasRotationPivot = request.hasRotationPivot;
+      if (request.transformations != null) {
+        transformations = new ArrayList<Transformation>(request.transformations);
+      }
     }
 
     boolean hasImage() {
@@ -133,6 +145,34 @@ public final class Request {
 
     boolean hasSize() {
       return targetWidth != 0;
+    }
+
+    /**
+     * Set the target image Uri.
+     * <p>
+     * This will clear an image resource ID if one is set.
+     */
+    public Builder setUri(Uri uri) {
+      if (uri == null) {
+        throw new IllegalArgumentException("Image URI may not be null.");
+      }
+      this.uri = uri;
+      this.resourceId = 0;
+      return this;
+    }
+
+    /**
+     * Set the target image resource ID.
+     * <p>
+     * This will clear an image Uri if one is set.
+     */
+    public Builder setResourceId(int resourceId) {
+      if (resourceId == 0) {
+        throw new IllegalArgumentException("Image resource ID may not be 0.");
+      }
+      this.resourceId = resourceId;
+      this.uri = null;
+      return this;
     }
 
     /** Resize the image to the specified size in pixels. */
@@ -145,6 +185,15 @@ public final class Request {
       }
       this.targetWidth = targetWidth;
       this.targetHeight = targetHeight;
+      return this;
+    }
+
+    /** Clear the resize transformation, if any. This will also clear center crop/inside if set. */
+    public Builder clearResize() {
+      targetWidth = 0;
+      targetHeight = 0;
+      centerCrop = false;
+      centerInside = false;
       return this;
     }
 
@@ -164,6 +213,12 @@ public final class Request {
       return this;
     }
 
+    /** Clear the center crop transformation flag, if set. */
+    public Builder clearCenterCrop() {
+      centerCrop = false;
+      return this;
+    }
+
     /**
      * Centers an image inside of the bounds specified by {@link #resize(int, int)}. This scales
      * the image so that both dimensions are equal to or less than the requested bounds.
@@ -179,6 +234,12 @@ public final class Request {
       return this;
     }
 
+    /** Clear the center inside transformation flag, if set. */
+    public Builder clearCenterInside() {
+      centerInside = false;
+      return this;
+    }
+
     /** Rotate the image by the specified degrees. */
     public Builder rotate(float degrees) {
       rotationDegrees = degrees;
@@ -191,6 +252,15 @@ public final class Request {
       rotationPivotX = pivotX;
       rotationPivotY = pivotY;
       hasRotationPivot = true;
+      return this;
+    }
+
+    /** Clear the rotation transformation, if any. */
+    public Builder clearRotation() {
+      rotationDegrees = 0;
+      rotationPivotX = 0;
+      rotationPivotY = 0;
+      hasRotationPivot = false;
       return this;
     }
 

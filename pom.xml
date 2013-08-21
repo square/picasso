@@ -53,6 +53,7 @@
 
   <modules>
     <module>picasso</module>
+    <module>picasso-pollexor</module>
     <module>picasso-sample</module>
   </modules>
 
