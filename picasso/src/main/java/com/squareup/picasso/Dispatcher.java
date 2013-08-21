@@ -69,6 +69,7 @@ class Dispatcher {
   final Stats stats;
   final List<BitmapHunter> batch;
 
+  NetworkInfo networkInfo;
   boolean airplaneMode;
 
   Dispatcher(Context context, ExecutorService service, Handler mainThreadHandler,
@@ -134,8 +135,7 @@ class Dispatcher {
       return;
     }
 
-    hunter = forRequest(context, action.getPicasso(), this, cache, stats, action, downloader,
-        airplaneMode);
+    hunter = forRequest(context, action.getPicasso(), this, cache, stats, action, downloader);
     hunter.future = service.submit(hunter);
     hunterMap.put(action.getKey(), hunter);
   }
@@ -159,8 +159,7 @@ class Dispatcher {
       return;
     }
 
-    if (hunter.retryCount > 0) {
-      hunter.retryCount--;
+    if (hunter.shouldRetry(airplaneMode, networkInfo)) {
       hunter.future = service.submit(hunter);
     } else {
       performError(hunter);
@@ -191,10 +190,9 @@ class Dispatcher {
   }
 
   void performNetworkStateChange(NetworkInfo info) {
-    if (info != null && info.isConnectedOrConnecting()) {
-      if (service instanceof PicassoExecutorService) {
-        ((PicassoExecutorService) service).adjustThreadCount(info);
-      }
+    networkInfo = info;
+    if (info != null && service instanceof PicassoExecutorService) {
+      ((PicassoExecutorService) service).adjustThreadCount(info);
     }
   }
 

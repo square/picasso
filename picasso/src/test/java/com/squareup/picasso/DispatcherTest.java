@@ -175,17 +175,6 @@ public class DispatcherTest {
     assertThat(dispatcher.batch).isEmpty();
   }
 
-  @Test public void performRetryTwoTimesBeforeError() throws Exception {
-    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
-    dispatcher.performRetry(hunter);
-    verify(service).submit(hunter);
-    dispatcher.performRetry(hunter);
-    verify(service, times(2)).submit(hunter);
-    dispatcher.performRetry(hunter);
-    verify(service, times(3)).isShutdown();
-    verifyNoMoreInteractions(service);
-  }
-
   @Test public void performRetrySkipsRetryIfCancelled() throws Exception {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
     when(hunter.isCancelled()).thenReturn(true);

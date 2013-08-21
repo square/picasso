@@ -19,6 +19,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,8 +41,6 @@ abstract class BitmapHunter implements Runnable {
    */
   private static final Object DECODE_LOCK = new Object();
 
-  static final int DEFAULT_RETRY_COUNT = 2;
-
   final Picasso picasso;
   final Dispatcher dispatcher;
   final Cache cache;
@@ -56,8 +55,6 @@ abstract class BitmapHunter implements Runnable {
   Picasso.LoadedFrom loadedFrom;
   Exception exception;
   int exifRotation; // Determined during decoding of original resource.
-
-  int retryCount = DEFAULT_RETRY_COUNT;
 
   BitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats, Action action) {
     this.picasso = picasso;
@@ -94,7 +91,7 @@ abstract class BitmapHunter implements Runnable {
     }
   }
 
-  abstract Bitmap decode(Request data, int retryCount) throws IOException;
+  abstract Bitmap decode(Request data) throws IOException;
 
   abstract Picasso.LoadedFrom getLoadedFrom();
 
@@ -110,7 +107,7 @@ abstract class BitmapHunter implements Runnable {
       }
     }
 
-    bitmap = decode(data, retryCount);
+    bitmap = decode(data);
 
     if (bitmap != null) {
       stats.dispatchBitmapDecoded(bitmap);
@@ -150,6 +147,10 @@ abstract class BitmapHunter implements Runnable {
     return skipMemoryCache;
   }
 
+  boolean shouldRetry(boolean airplaneMode, NetworkInfo info) {
+    return false;
+  }
+
   Bitmap getResult() {
     return result;
   }
@@ -171,7 +172,7 @@ abstract class BitmapHunter implements Runnable {
   }
 
   static BitmapHunter forRequest(Context context, Picasso picasso, Dispatcher dispatcher,
-      Cache cache, Stats stats, Action action, Downloader downloader, boolean airplaneMode) {
+      Cache cache, Stats stats, Action action, Downloader downloader) {
     if (action.getData().resourceId != 0) {
       return new ResourceBitmapHunter(context, picasso, dispatcher, cache, stats, action);
     }
@@ -189,8 +190,7 @@ abstract class BitmapHunter implements Runnable {
     } else if (SCHEME_ANDROID_RESOURCE.equals(scheme)) {
       return new ResourceBitmapHunter(context, picasso, dispatcher, cache, stats, action);
     } else {
-      return new NetworkBitmapHunter(picasso, dispatcher, cache, stats, action, downloader,
-          airplaneMode);
+      return new NetworkBitmapHunter(picasso, dispatcher, cache, stats, action, downloader);
     }
   }
 
