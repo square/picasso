@@ -33,7 +33,7 @@ class ContentProviderBitmapHunter extends ContentStreamBitmapHunter {
     super(context, picasso, dispatcher, cache, stats, action);
   }
 
-  @Override Bitmap decode(Request data, int retryCount) throws IOException {
+  @Override Bitmap decode(Request data) throws IOException {
     setExifRotation(getContentProviderExifRotation(context.getContentResolver(), data.uri));
     return super.decodeContentStream(data);
   }

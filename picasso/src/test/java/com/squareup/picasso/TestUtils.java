@@ -101,7 +101,6 @@ class TestUtils {
     when(hunter.getResult()).thenReturn(result);
     when(hunter.getData()).thenReturn(data);
     when(hunter.shouldSkipMemoryCache()).thenReturn(skipCache);
-    hunter.retryCount = BitmapHunter.DEFAULT_RETRY_COUNT;
     return hunter;
   }
 
