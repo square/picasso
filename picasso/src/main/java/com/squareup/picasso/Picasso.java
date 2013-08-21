@@ -54,9 +54,19 @@ public class Picasso {
     void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception);
   }
 
-  /** Transformer for all incoming requests. */
+  /**
+   * A transformer that is called immediately before every request is submitted. This can be used to
+   * modify any information about a request.
+   * <p>
+   * For example, if you use a CDN you can change the hostname for the image based on the current
+   * location of the user in order to get faster download speeds.
+   */
   public interface RequestTransformer {
-    /** TODO describe this shit. */
+    /**
+     * Transform a request before it is submitted to be processed.
+     *
+     * @return The original request or a new request to replace it. Must not be null.
+     */
     Request transformRequest(Request request);
 
     /** A {@link RequestTransformer} which returns the original request. */
