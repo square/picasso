@@ -18,6 +18,8 @@ package com.squareup.picasso;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.NetworkInfo;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -26,8 +28,22 @@ import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 import static com.squareup.picasso.Picasso.LoadedFrom.NETWORK;
 
 class NetworkBitmapHunter extends BitmapHunter {
-  static final int DEFAULT_RETRY_COUNT = 2;
+  /* WebP file header
+     0                   1                   2                   3
+     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |      'R'      |      'I'      |      'F'      |      'F'      |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |                           File Size                           |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |      'W'      |      'E'      |      'B'      |      'P'      |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   */
+  private static final int WEBP_FILE_HEADER_SIZE = 12;
+  private static final String WEBP_FILE_HEADER_RIFF = "RIFF";
+  private static final String WEBP_FILE_HEADER_WEBP = "WEBP";
 
+  static final int DEFAULT_RETRY_COUNT = 2;
   private final Downloader downloader;
 
   private Picasso.LoadedFrom loadedFrom;
@@ -77,20 +93,54 @@ class NetworkBitmapHunter extends BitmapHunter {
     if (stream == null) {
       return null;
     }
-    BitmapFactory.Options options = null;
-    if (data.hasSize()) {
-      options = new BitmapFactory.Options();
-      options.inJustDecodeBounds = true;
+    MarkableInputStream markStream = new MarkableInputStream(stream);
+    stream = markStream;
 
-      MarkableInputStream markStream = new MarkableInputStream(stream);
-      stream = markStream;
+    long mark = markStream.savePosition(1024); // Mirrors BitmapFactory.cpp value.
 
-      long mark = markStream.savePosition(1024); // Mirrors BitmapFactory.cpp value.
-      BitmapFactory.decodeStream(stream, null, options);
-      calculateInSampleSize(data.targetWidth, data.targetHeight, options);
-
-      markStream.reset(mark);
+    byte[] fileHeaderBytes = new byte[WEBP_FILE_HEADER_SIZE];
+    boolean isWebPFile = false;
+    if (stream.read(fileHeaderBytes, 0, WEBP_FILE_HEADER_SIZE) == WEBP_FILE_HEADER_SIZE) {
+      //if a file's header starts with RIFF and end with WEBP, the file is a WebP file
+      isWebPFile = WEBP_FILE_HEADER_RIFF.equals(new String(fileHeaderBytes, 0, 4))
+        && WEBP_FILE_HEADER_WEBP.equals(new String(fileHeaderBytes, 8, 4));
     }
-    return BitmapFactory.decodeStream(stream, null, options);
+    markStream.reset(mark);
+    /*When decode WebP network stream, BitmapFactory throw JNI Exception and make app crash.
+      Decode byte array instead
+      */
+    if (isWebPFile) {
+      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+      byte[] buffer = new byte[1024 * 4];
+      int n = 0;
+      while (-1 != (n = stream.read(buffer))) {
+        byteArrayOutputStream.write(buffer, 0, n);
+      }
+      byte[] bytes = byteArrayOutputStream.toByteArray();
+      BitmapFactory.Options options = new BitmapFactory.Options();
+
+      //i'm not sure about these
+      options.inPurgeable = true;
+      options.inInputShareable = true;
+
+      if (data.hasSize()) {
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+        calculateInSampleSize(data.targetWidth, data.targetHeight, options);
+      }
+      return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+    } else {
+      BitmapFactory.Options options = null;
+      if (data.hasSize()) {
+        options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+
+        BitmapFactory.decodeStream(stream, null, options);
+        calculateInSampleSize(data.targetWidth, data.targetHeight, options);
+
+        markStream.reset(mark);
+      }
+      return BitmapFactory.decodeStream(stream, null, options);
+    }
   }
 }
