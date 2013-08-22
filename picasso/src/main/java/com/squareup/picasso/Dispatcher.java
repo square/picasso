@@ -56,7 +56,7 @@ class Dispatcher {
   static final int AIRPLANE_MODE_CHANGE = 10;
 
   private static final String DISPATCHER_THREAD_NAME = "Dispatcher";
-  private static final int BATCH_DELAY = 100; // ms
+  private static final int BATCH_DELAY = 200; // ms
 
   final DispatcherThread dispatcherThread;
   final Context context;
