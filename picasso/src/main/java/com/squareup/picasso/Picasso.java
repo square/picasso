@@ -108,9 +108,8 @@ public class Picasso {
   final Dispatcher dispatcher;
   final Cache cache;
   final Stats stats;
-  final Map<Object, Action> targetToRequest = new WeakHashMap<Object, Action>();
-  final Map<ImageView, DeferredRequestCreator> targetToDeferredRequest =
-      new WeakHashMap<ImageView, DeferredRequestCreator>();
+  final Map<Object, Action> targetToAction;
+  final Map<ImageView, DeferredRequestCreator> targetToDeferredRequestCreator;
   final ReferenceQueue<Object> referenceQueue;
 
   boolean debugging;
@@ -124,6 +123,8 @@ public class Picasso {
     this.listener = listener;
     this.requestTransformer = requestTransformer;
     this.stats = stats;
+    this.targetToAction = new WeakHashMap<Object, Action>();
+    this.targetToDeferredRequestCreator = new WeakHashMap<ImageView, DeferredRequestCreator>();
     this.debugging = debugging;
     this.referenceQueue = new ReferenceQueue<Object>();
     this.cleanupThread = new CleanupThread(referenceQueue, HANDLER);
@@ -238,10 +239,10 @@ public class Picasso {
     cleanupThread.shutdown();
     stats.shutdown();
     dispatcher.shutdown();
-    for (DeferredRequestCreator deferredRequestCreator : targetToDeferredRequest.values()) {
+    for (DeferredRequestCreator deferredRequestCreator : targetToDeferredRequestCreator.values()) {
       deferredRequestCreator.cancel();
     }
-    targetToDeferredRequest.clear();
+    targetToDeferredRequestCreator.clear();
     shutdown = true;
   }
 
@@ -257,14 +258,14 @@ public class Picasso {
   }
 
   void defer(ImageView view, DeferredRequestCreator request) {
-    targetToDeferredRequest.put(view, request);
+    targetToDeferredRequestCreator.put(view, request);
   }
 
   void enqueueAndSubmit(Action action) {
     Object target = action.getTarget();
     if (target != null) {
       cancelExistingRequest(target);
-      targetToRequest.put(target, action);
+      targetToAction.put(target, action);
     }
     submit(action);
   }
@@ -298,7 +299,7 @@ public class Picasso {
       if (join.isCancelled()) {
         continue;
       }
-      targetToRequest.remove(join.getTarget());
+      targetToAction.remove(join.getTarget());
       if (result != null) {
         join.complete(result, from);
       } else {
@@ -312,7 +313,7 @@ public class Picasso {
   }
 
   private void cancelExistingRequest(Object target) {
-    Action action = targetToRequest.remove(target);
+    Action action = targetToAction.remove(target);
     if (action != null) {
       action.cancel();
       dispatcher.dispatchCancel(action);
@@ -320,7 +321,7 @@ public class Picasso {
     if (target instanceof ImageView) {
       ImageView targetImageView = (ImageView) target;
       DeferredRequestCreator deferredRequestCreator =
-          targetToDeferredRequest.remove(targetImageView);
+          targetToDeferredRequestCreator.remove(targetImageView);
       if (deferredRequestCreator != null) {
         deferredRequestCreator.cancel();
       }
