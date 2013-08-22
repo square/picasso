@@ -76,20 +76,38 @@ class NetworkBitmapHunter extends BitmapHunter {
     if (stream == null) {
       return null;
     }
-    BitmapFactory.Options options = null;
-    if (data.hasSize()) {
-      options = new BitmapFactory.Options();
-      options.inJustDecodeBounds = true;
+    MarkableInputStream markStream = new MarkableInputStream(stream);
+    stream = markStream;
 
-      MarkableInputStream markStream = new MarkableInputStream(stream);
-      stream = markStream;
+    long mark = markStream.savePosition(MARKER);
 
-      long mark = markStream.savePosition(MARKER);
-      BitmapFactory.decodeStream(stream, null, options);
-      calculateInSampleSize(data.targetWidth, data.targetHeight, options);
+    boolean isWebPFile = Utils.isWebPFile(stream);
+    markStream.reset(mark);
+    // When decode WebP network stream, BitmapFactory throw JNI Exception and make app crash.
+    // Decode byte array instead
+    if (isWebPFile) {
+      byte[] bytes = Utils.toByteArray(stream);
+      BitmapFactory.Options options = null;
+      if (data.hasSize()) {
+        options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
 
-      markStream.reset(mark);
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+        calculateInSampleSize(data.targetWidth, data.targetHeight, options);
+      }
+      return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+    } else {
+      BitmapFactory.Options options = null;
+      if (data.hasSize()) {
+        options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+
+        BitmapFactory.decodeStream(stream, null, options);
+        calculateInSampleSize(data.targetWidth, data.targetHeight, options);
+
+        markStream.reset(mark);
+      }
+      return BitmapFactory.decodeStream(stream, null, options);
     }
-    return BitmapFactory.decodeStream(stream, null, options);
   }
 }
