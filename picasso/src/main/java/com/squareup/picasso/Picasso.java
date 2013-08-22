@@ -301,6 +301,9 @@ public class Picasso {
       }
       targetToAction.remove(join.getTarget());
       if (result != null) {
+        if (from == null) {
+          throw new AssertionError("LoadedFrom cannot be null.");
+        }
         join.complete(result, from);
       } else {
         join.error();
