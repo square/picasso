@@ -53,7 +53,7 @@ public class DeferredRequestCreatorTest {
     ImageView target = mockFitImageViewTarget(true);
     ViewTreeObserver observer = target.getViewTreeObserver();
     DeferredRequestCreator request = new DeferredRequestCreator(mock(RequestCreator.class), target);
-    verify(observer).addOnGlobalLayoutListener(request);
+    verify(observer).addOnPreDrawListener(request);
   }
 
   @Test public void cancelRemovesLayoutListener() throws Exception {
@@ -61,7 +61,7 @@ public class DeferredRequestCreatorTest {
     ViewTreeObserver observer = target.getViewTreeObserver();
     DeferredRequestCreator request = new DeferredRequestCreator(mock(RequestCreator.class), target);
     request.cancel();
-    verify(observer).removeGlobalOnLayoutListener(request);
+    verify(observer).removeOnPreDrawListener(request);
   }
 
   @Test public void onLayoutSkipsIfTargetIsNull() throws Exception {
@@ -70,9 +70,9 @@ public class DeferredRequestCreatorTest {
     DeferredRequestCreator request = new DeferredRequestCreator(creator, target);
     ViewTreeObserver viewTreeObserver = target.getViewTreeObserver();
     request.target.clear();
-    request.onGlobalLayout();
+    request.onPreDraw();
     verifyZeroInteractions(creator);
-    verify(viewTreeObserver).addOnGlobalLayoutListener(request);
+    verify(viewTreeObserver).addOnPreDrawListener(request);
     verifyNoMoreInteractions(viewTreeObserver);
   }
 
@@ -81,8 +81,8 @@ public class DeferredRequestCreatorTest {
     RequestCreator creator = mock(RequestCreator.class);
     DeferredRequestCreator request = new DeferredRequestCreator(creator, target);
     ViewTreeObserver viewTreeObserver = target.getViewTreeObserver();
-    request.onGlobalLayout();
-    verify(viewTreeObserver).addOnGlobalLayoutListener(request);
+    request.onPreDraw();
+    verify(viewTreeObserver).addOnPreDrawListener(request);
     verify(viewTreeObserver).isAlive();
     verifyNoMoreInteractions(viewTreeObserver);
     verifyZeroInteractions(creator);
@@ -94,8 +94,8 @@ public class DeferredRequestCreatorTest {
     when(target.getMeasuredHeight()).thenReturn(0);
     RequestCreator creator = mock(RequestCreator.class);
     DeferredRequestCreator request = new DeferredRequestCreator(creator, target);
-    request.onGlobalLayout();
-    verify(target.getViewTreeObserver(), never()).removeGlobalOnLayoutListener(request);
+    request.onPreDraw();
+    verify(target.getViewTreeObserver(), never()).removeOnPreDrawListener(request);
     verifyZeroInteractions(creator);
   }
 
@@ -105,7 +105,7 @@ public class DeferredRequestCreatorTest {
     DeferredRequestCreator request = new DeferredRequestCreator(creator, target);
     request.target.clear();
     request.cancel();
-    verify(target.getViewTreeObserver(), never()).removeGlobalOnLayoutListener(request);
+    verify(target.getViewTreeObserver(), never()).removeOnPreDrawListener(request);
   }
 
 
@@ -114,7 +114,7 @@ public class DeferredRequestCreatorTest {
     RequestCreator creator = mock(RequestCreator.class);
     DeferredRequestCreator request = new DeferredRequestCreator(creator, target);
     request.cancel();
-    verify(target.getViewTreeObserver(), never()).removeGlobalOnLayoutListener(request);
+    verify(target.getViewTreeObserver(), never()).removeOnPreDrawListener(request);
   }
 
   @Test public void onGlobalLayoutSubmitsRequestAndCleansUp() throws Exception {
@@ -130,9 +130,9 @@ public class DeferredRequestCreatorTest {
     ViewTreeObserver observer = target.getViewTreeObserver();
 
     DeferredRequestCreator request = new DeferredRequestCreator(creator, target);
-    request.onGlobalLayout();
+    request.onPreDraw();
 
-    verify(observer).removeGlobalOnLayoutListener(request);
+    verify(observer).removeOnPreDrawListener(request);
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
 
     Action value = actionCaptor.getValue();
