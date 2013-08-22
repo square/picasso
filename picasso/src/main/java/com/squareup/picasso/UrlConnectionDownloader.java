@@ -28,7 +28,7 @@ import static com.squareup.picasso.Utils.parseResponseSourceHeader;
 
 /**
  * A {@link Downloader} which uses {@link HttpURLConnection} to download images. A disk cache of
- * 10MB will automatically be installed in the application's cache directory, when available.
+ * 50MB will automatically be installed in the application's cache directory, when available.
  */
 public class UrlConnectionDownloader implements Downloader {
   static final String RESPONSE_SOURCE = "X-Android-Response-Source";
