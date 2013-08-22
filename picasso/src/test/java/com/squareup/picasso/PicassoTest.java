@@ -73,15 +73,15 @@ public class PicassoTest {
   @Test public void submitWithNullTargetInvokesDispatcher() throws Exception {
     Action action = mockAction(URI_KEY_1, URI_1, null);
     picasso.enqueueAndSubmit(action);
-    assertThat(picasso.targetToRequest).isEmpty();
+    assertThat(picasso.targetToAction).isEmpty();
     verify(dispatcher).dispatchSubmit(action);
   }
 
   @Test public void submitWithTargetInvokesDispatcher() throws Exception {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
-    assertThat(picasso.targetToRequest).isEmpty();
+    assertThat(picasso.targetToAction).isEmpty();
     picasso.enqueueAndSubmit(action);
-    assertThat(picasso.targetToRequest).hasSize(1);
+    assertThat(picasso.targetToAction).hasSize(1);
     verify(dispatcher).dispatchSubmit(action);
   }
 
@@ -141,9 +141,9 @@ public class PicassoTest {
     ImageView target = mockImageViewTarget();
     Action action = mockAction(URI_KEY_1, URI_1, target);
     picasso.enqueueAndSubmit(action);
-    assertThat(picasso.targetToRequest).hasSize(1);
+    assertThat(picasso.targetToAction).hasSize(1);
     picasso.cancelRequest(target);
-    assertThat(picasso.targetToRequest).isEmpty();
+    assertThat(picasso.targetToAction).isEmpty();
     verify(action).cancel();
     verify(dispatcher).dispatchCancel(action);
   }
@@ -151,19 +151,19 @@ public class PicassoTest {
   @Test public void cancelExistingRequestWithDeferredImageViewTarget() throws Exception {
     ImageView target = mockImageViewTarget();
     DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator();
-    picasso.targetToDeferredRequest.put(target, deferredRequestCreator);
+    picasso.targetToDeferredRequestCreator.put(target, deferredRequestCreator);
     picasso.cancelRequest(target);
     verify(deferredRequestCreator).cancel();
-    assertThat(picasso.targetToDeferredRequest).isEmpty();
+    assertThat(picasso.targetToDeferredRequestCreator).isEmpty();
   }
 
   @Test public void cancelExistingRequestWithTarget() throws Exception {
     Target target = mockTarget();
     Action action = mockAction(URI_KEY_1, URI_1, target);
     picasso.enqueueAndSubmit(action);
-    assertThat(picasso.targetToRequest).hasSize(1);
+    assertThat(picasso.targetToAction).hasSize(1);
     picasso.cancelRequest(target);
-    assertThat(picasso.targetToRequest).isEmpty();
+    assertThat(picasso.targetToAction).isEmpty();
     verify(action).cancel();
     verify(dispatcher).dispatchCancel(action);
   }
@@ -171,9 +171,9 @@ public class PicassoTest {
   @Test public void deferAddsToMap() throws Exception {
     ImageView target = mockImageViewTarget();
     DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator();
-    assertThat(picasso.targetToDeferredRequest).isEmpty();
+    assertThat(picasso.targetToDeferredRequestCreator).isEmpty();
     picasso.defer(target, deferredRequestCreator);
-    assertThat(picasso.targetToDeferredRequest).hasSize(1);
+    assertThat(picasso.targetToDeferredRequestCreator).hasSize(1);
   }
 
   @Test public void shutdown() throws Exception {
@@ -205,10 +205,10 @@ public class PicassoTest {
   @Test public void shutdownClearsDeferredRequests() throws Exception {
     DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator();
     ImageView target = mockImageViewTarget();
-    picasso.targetToDeferredRequest.put(target, deferredRequestCreator);
+    picasso.targetToDeferredRequestCreator.put(target, deferredRequestCreator);
     picasso.shutdown();
     verify(deferredRequestCreator).cancel();
-    assertThat(picasso.targetToDeferredRequest).isEmpty();
+    assertThat(picasso.targetToDeferredRequestCreator).isEmpty();
   }
 
   @Test public void whenTransformRequestReturnsNullThrows() throws Exception {

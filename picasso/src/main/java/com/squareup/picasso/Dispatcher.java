@@ -191,7 +191,7 @@ class Dispatcher {
 
   void performNetworkStateChange(NetworkInfo info) {
     networkInfo = info;
-    if (info != null && service instanceof PicassoExecutorService) {
+    if (service instanceof PicassoExecutorService) {
       ((PicassoExecutorService) service).adjustThreadCount(info);
     }
   }
