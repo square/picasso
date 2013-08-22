@@ -37,7 +37,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-public class UrlConnectionLoaderTest {
+public class UrlConnectionDownloaderTest {
   private static final Uri URL = Uri.parse("/bees.gif");
 
   private MockWebServer server;
