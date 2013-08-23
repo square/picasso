@@ -293,32 +293,6 @@ public class RequestCreatorTest {
     }
   }
 
-  @Test public void invalidCenterCrop() throws Exception {
-    try {
-      new RequestCreator().centerCrop();
-      fail("Center crop without resize should throw exception.");
-    } catch (IllegalStateException expected) {
-    }
-    try {
-      new RequestCreator().resize(10, 10).centerInside().centerCrop();
-      fail("Calling center crop after center inside should throw exception.");
-    } catch (IllegalStateException expected) {
-    }
-  }
-
-  @Test public void invalidCenterInside() throws Exception {
-    try {
-      new RequestCreator().centerInside();
-      fail("Center inside without resize should throw exception.");
-    } catch (IllegalStateException expected) {
-    }
-    try {
-      new RequestCreator().resize(10, 10).centerInside().centerCrop();
-      fail("Calling center inside after center crop should throw exception.");
-    } catch (IllegalStateException expected) {
-    }
-  }
-
   @Test public void invalidPlaceholderImage() throws Exception {
     try {
       new RequestCreator().placeholder(0);

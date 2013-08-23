@@ -218,12 +218,6 @@ public final class Request {
      * requested bounds and then crops the extra.
      */
     public Builder centerCrop() {
-      if (targetWidth == 0 || targetHeight == 0) {
-        throw new IllegalStateException("Center crop can only be used after calling resize.");
-      }
-      if (centerInside) {
-        throw new IllegalStateException("Center crop can not be used after calling centerInside");
-      }
       centerCrop = true;
       return this;
     }
@@ -239,12 +233,6 @@ public final class Request {
      * the image so that both dimensions are equal to or less than the requested bounds.
      */
     public Builder centerInside() {
-      if (targetWidth == 0 || targetHeight == 0) {
-        throw new IllegalStateException("Center inside can only be used after calling resize.");
-      }
-      if (centerCrop) {
-        throw new IllegalStateException("Center inside can not be used after calling centerCrop");
-      }
       centerInside = true;
       return this;
     }
