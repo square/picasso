@@ -72,6 +72,13 @@ public class BitmapHunterTest {
     initMocks(this);
   }
 
+  @Test public void nullDecodeResponseIsError() throws Exception {
+    Action action = mockAction(URI_KEY_1, URI_1);
+    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, null);
+    hunter.run();
+    verify(dispatcher).dispatchFailed(hunter);
+  }
+
   @Test public void runWithResultDispatchComplete() throws Exception {
     Action action = mockAction(URI_KEY_1, URI_1);
     BitmapHunter hunter =
