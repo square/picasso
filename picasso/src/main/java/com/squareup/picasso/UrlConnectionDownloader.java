@@ -58,7 +58,12 @@ public class UrlConnectionDownloader implements Downloader {
     HttpURLConnection connection = openConnection(uri);
     connection.setUseCaches(true);
     if (localCacheOnly) {
-      connection.setRequestProperty("Cache-Control", "only-if-cached");
+      connection.setRequestProperty("Cache-Control", "only-if-cached;max-age=" + Integer.MAX_VALUE);
+    }
+
+    int responseCode = connection.getResponseCode();
+    if (responseCode >= 300) {
+      return null;
     }
 
     boolean fromCache = parseResponseSourceHeader(connection.getHeaderField(RESPONSE_SOURCE));

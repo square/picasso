@@ -39,10 +39,14 @@ class NetworkBitmapHunter extends BitmapHunter {
     this.retryCount = DEFAULT_RETRY_COUNT;
   }
 
-  @Override Bitmap decode(Request data)
-      throws IOException {
+  @Override Bitmap decode(Request data) throws IOException {
     boolean loadFromLocalCacheOnly = retryCount == 0;
+
     Response response = downloader.load(data.uri, loadFromLocalCacheOnly);
+    if (response == null) {
+      return null;
+    }
+
     loadedFrom = response.cached ? DISK : NETWORK;
 
     Bitmap result = response.getBitmap();
