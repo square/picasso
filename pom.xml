@@ -73,7 +73,7 @@
       <dependency>
         <groupId>com.squareup.okhttp</groupId>
         <artifactId>okhttp</artifactId>
-        <version>1.0.2</version>
+        <version>1.2.1</version>
       </dependency>
 
       <dependency>
@@ -95,7 +95,7 @@
       <dependency>
         <groupId>com.squareup</groupId>
         <artifactId>fest-android</artifactId>
-        <version>1.0.5</version>
+        <version>1.0.6</version>
       </dependency>
       <dependency>
         <groupId>org.robolectric</groupId>

@@ -28,7 +28,8 @@ import static com.squareup.picasso.Utils.parseResponseSourceHeader;
 
 /** A {@link Downloader} which uses OkHttp to download images. */
 public class OkHttpDownloader implements Downloader {
-  static final String RESPONSE_SOURCE = "X-Android-Response-Source";
+  static final String RESPONSE_SOURCE_ANDROID = "X-Android-Response-Source";
+  static final String RESPONSE_SOURCE_OKHTTP = "OkHttp-Response-Source";
 
   private final OkHttpClient client;
 
@@ -98,10 +99,19 @@ public class OkHttpDownloader implements Downloader {
     HttpURLConnection connection = openConnection(uri);
     connection.setUseCaches(true);
     if (localCacheOnly) {
-      connection.setRequestProperty("Cache-Control", "only-if-cached");
+      connection.setRequestProperty("Cache-Control", "only-if-cached;max-age=" + Integer.MAX_VALUE);
     }
 
-    boolean fromCache = parseResponseSourceHeader(connection.getHeaderField(RESPONSE_SOURCE));
+    int responseCode = connection.getResponseCode();
+    if (responseCode >= 300) {
+      return null;
+    }
+
+    String responseSource = connection.getHeaderField(RESPONSE_SOURCE_OKHTTP);
+    if (responseSource == null) {
+      responseSource = connection.getHeaderField(RESPONSE_SOURCE_ANDROID);
+    }
+    boolean fromCache = parseResponseSourceHeader(responseSource);
 
     return new Response(connection.getInputStream(), fromCache);
   }
