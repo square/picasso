@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-Version 2.0.0 *(TBD)*
+Version 2.0.0 *(In Development)*
 ----------------------------
 
  * New architecture distances Picasso further from the main thread using a dedicated dispatcher thread to manage requests.
