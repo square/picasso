@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-Version 2.0.0 *(In Development)*
+Version 2.0.0 *(2013-08-30)*
 ----------------------------
 
  * New architecture distances Picasso further from the main thread using a dedicated dispatcher
