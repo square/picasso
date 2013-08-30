@@ -188,6 +188,9 @@ abstract class BitmapHunter implements Runnable {
         return new ContentProviderBitmapHunter(context, picasso, dispatcher, cache, stats, action);
       }
     } else if (SCHEME_FILE.equals(scheme)) {
+      if ("android_asset".equals(uri.getPathSegments().get(0))) {
+        return new AssetBitmapHunter(context, picasso, dispatcher, cache, stats, action);
+      }
       return new FileBitmapHunter(context, picasso, dispatcher, cache, stats, action);
     } else if (SCHEME_ANDROID_RESOURCE.equals(scheme)) {
       return new ResourceBitmapHunter(context, picasso, dispatcher, cache, stats, action);
