@@ -55,6 +55,8 @@ class TestUtils {
   static final String CONTACT_PHOTO_KEY_1 = createKey(new Request.Builder(CONTACT_PHOTO_URI_1).build());
   static final int RESOURCE_ID_1 = 1;
   static final String RESOURCE_ID_KEY_1 = createKey(new Request.Builder(RESOURCE_ID_1).build());
+  static final Uri ASSET_URI_1 = Uri.parse("file:///android_asset/foo/bar.png");
+  static final String ASSET_KEY_1 = createKey(new Request.Builder(ASSET_URI_1).build());
 
   static Action mockAction(String key, Uri uri) {
     return mockAction(key, uri, null, 0);
