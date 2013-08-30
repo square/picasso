@@ -40,6 +40,9 @@ abstract class BitmapHunter implements Runnable {
    * well as potential OOMs. Shamelessly stolen from Volley.
    */
   private static final Object DECODE_LOCK = new Object();
+  private static final String ANDROID_ASSET = "android_asset";
+  protected static final int ASSET_PREFIX_LENGTH =
+      (SCHEME_FILE + ":///" + ANDROID_ASSET + "/").length();
 
   final Picasso picasso;
   final Dispatcher dispatcher;
@@ -188,7 +191,7 @@ abstract class BitmapHunter implements Runnable {
         return new ContentProviderBitmapHunter(context, picasso, dispatcher, cache, stats, action);
       }
     } else if (SCHEME_FILE.equals(scheme)) {
-      if ("android_asset".equals(uri.getPathSegments().get(0))) {
+      if (ANDROID_ASSET.equals(uri.getPathSegments().get(0))) {
         return new AssetBitmapHunter(context, picasso, dispatcher, cache, stats, action);
       }
       return new FileBitmapHunter(context, picasso, dispatcher, cache, stats, action);
