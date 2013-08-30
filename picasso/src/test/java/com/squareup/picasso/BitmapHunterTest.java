@@ -33,6 +33,8 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso.BitmapHunter.forRequest;
 import static com.squareup.picasso.BitmapHunter.transformResult;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
+import static com.squareup.picasso.TestUtils.ASSET_URI_1;
+import static com.squareup.picasso.TestUtils.ASSET_KEY_1;
 import static com.squareup.picasso.TestUtils.BITMAP_1;
 import static com.squareup.picasso.TestUtils.CONTACT_KEY_1;
 import static com.squareup.picasso.TestUtils.CONTACT_URI_1;
@@ -187,6 +189,13 @@ public class BitmapHunterTest {
     BitmapHunter hunter =
         forRequest(context, picasso, dispatcher, cache, stats, action, downloader);
     assertThat(hunter).isInstanceOf(ResourceBitmapHunter.class);
+  }
+
+  @Test public void forAssetRequest() {
+    Action action = mockAction(ASSET_KEY_1, ASSET_URI_1);
+    BitmapHunter hunter =
+        forRequest(context, picasso, dispatcher, cache, stats, action, downloader);
+    assertThat(hunter).isInstanceOf(AssetBitmapHunter.class);
   }
 
   @Test public void exifRotation() throws Exception {
