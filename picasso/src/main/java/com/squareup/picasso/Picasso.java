@@ -60,6 +60,9 @@ public class Picasso {
    * <p>
    * For example, if you use a CDN you can change the hostname for the image based on the current
    * location of the user in order to get faster download speeds.
+   * <p>
+   * <b>NOTE:</b> This is a beta feature. The API is subject to change in a backwards incompatible
+   * way at any time.
    */
   public interface RequestTransformer {
     /**
@@ -456,7 +459,12 @@ public class Picasso {
       return this;
     }
 
-    /** Specify a transformer for all incoming requests. */
+    /**
+     * Specify a transformer for all incoming requests.
+     * <p>
+     * <b>NOTE:</b> This is a beta feature. The API is subject to change in a backwards incompatible
+     * way at any time.
+     */
     public Builder requestTransformer(RequestTransformer transformer) {
       if (transformer == null) {
         throw new IllegalArgumentException("Transformer must not be null.");
