@@ -19,28 +19,29 @@ class AssetBitmapHunter extends BitmapHunter {
   }
 
   @Override Bitmap decode(Request data) throws IOException {
-    return decodeAsset(data);
+    String filePath = data.uri.toString().substring(ASSET_PREFIX_LENGTH);
+    return decodeAsset(filePath);
   }
 
   @Override Picasso.LoadedFrom getLoadedFrom() {
     return DISK;
   }
 
-  protected Bitmap decodeAsset(Request data) throws IOException {
+  Bitmap decodeAsset(String filePath) throws IOException {
     BitmapFactory.Options options = null;
     if (data.hasSize()) {
       options = new BitmapFactory.Options();
       options.inJustDecodeBounds = true;
       InputStream is = null;
       try {
-        is = assetManager.open(data.uri.toString());
+        is = assetManager.open(filePath);
         BitmapFactory.decodeStream(is, null, options);
       } finally {
         Utils.closeQuietly(is);
       }
       calculateInSampleSize(data.targetWidth, data.targetHeight, options);
     }
-    InputStream is = assetManager.open(data.uri.toString());
+    InputStream is = assetManager.open(filePath);
     try {
       return BitmapFactory.decodeStream(is, null, options);
     } finally {
