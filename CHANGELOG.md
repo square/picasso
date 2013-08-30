@@ -14,6 +14,7 @@ Version 2.0.0 *(In Development)*
  * Ability to rewrite requests on the fly. This is useful if you want to add custom logic for wiring up requests differently. 
  * Ability to specify a callback with `ImageView` requests.
  * Picasso will now decode the bounds of the target bitmap over the network. This helps avoid decoding 2000x2000 images meant for 100x100 views.
+ * Support loading asset URIs in the form `file:///android_asset/...`.
 
 
 Version 1.1.1 *(2013-06-14)*
