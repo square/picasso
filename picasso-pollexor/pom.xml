@@ -10,14 +10,19 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>picasso</artifactId>
-  <name>Picasso</name>
+  <artifactId>picasso-pollexor</artifactId>
+  <name>Picasso Pollexor Transformer</name>
 
   <dependencies>
     <dependency>
-      <groupId>com.squareup.okhttp</groupId>
-      <artifactId>okhttp</artifactId>
-      <optional>true</optional>
+      <groupId>com.squareup.picasso</groupId>
+      <artifactId>picasso</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.squareup</groupId>
+      <artifactId>pollexor</artifactId>
+      <version>1.2.0</version>
     </dependency>
 
     <dependency>
@@ -40,23 +45,6 @@
       <artifactId>robolectric</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.mockwebserver</groupId>
-      <artifactId>mockwebserver</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.intellij</groupId>
-      <artifactId>annotations</artifactId>
-      <version>9.0.4</version>
-      <scope>provided</scope>
-    </dependency>
 
     <dependency>
       <groupId>com.google.android</groupId>
@@ -64,14 +52,4 @@
       <scope>provided</scope>
     </dependency>
   </dependencies>
-
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>emma-maven-plugin</artifactId>
-        <version>1.0-alpha-3</version>
-      </plugin>
-    </plugins>
-  </reporting>
 </project>

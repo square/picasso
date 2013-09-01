@@ -11,7 +11,7 @@
 
   <groupId>com.squareup.picasso</groupId>
   <artifactId>picasso-parent</artifactId>
-  <version>1.1.2-SNAPSHOT</version>
+  <version>2.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Picasso (Parent)</name>
@@ -51,6 +51,7 @@
 
   <modules>
     <module>picasso</module>
+    <module>picasso-pollexor</module>
     <module>picasso-sample</module>
   </modules>
 
@@ -70,7 +71,7 @@
       <dependency>
         <groupId>com.squareup.okhttp</groupId>
         <artifactId>okhttp</artifactId>
-        <version>1.0.2</version>
+        <version>1.2.1</version>
       </dependency>
 
       <dependency>
@@ -92,7 +93,7 @@
       <dependency>
         <groupId>com.squareup</groupId>
         <artifactId>fest-android</artifactId>
-        <version>1.0.5</version>
+        <version>1.0.6</version>
       </dependency>
       <dependency>
         <groupId>org.robolectric</groupId>
@@ -121,7 +122,7 @@
           <version>3.6.0</version>
           <configuration>
             <sdk>
-              <platform>16</platform>
+              <platform>17</platform>
             </sdk>
           </configuration>
         </plugin>
@@ -135,6 +136,19 @@
             <target>${java.version}</target>
           </configuration>
         </plugin>
+
+        <!-- This is needed because 'mvn site' does not work with Maven 3.0. -->
+        <plugin>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.0</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>emma-maven-plugin</artifactId>
+          <version>1.0-alpha-3</version>
+        </plugin>
+
       </plugins>
     </pluginManagement>
 

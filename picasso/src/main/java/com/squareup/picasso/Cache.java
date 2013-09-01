@@ -20,7 +20,9 @@ import android.graphics.Bitmap;
 /**
  * A memory cache for storing the most recently used images.
  * <p/>
- * <em>Note:</em> The {@link #get(String)} method will be invoked on the main thread.
+ * <em>Note:</em> The {@link Cache} is accessed by multiple threads. You must ensure
+ * your {@link Cache} implementation is thread safe when {@link Cache#get(String)} or {@link
+ * Cache#set(String, android.graphics.Bitmap)} is called.
  */
 public interface Cache {
   /** Retrieve an image for the specified {@code key} or {@code null}. */
@@ -34,6 +36,9 @@ public interface Cache {
 
   /** Returns the maximum size in bytes that the cache can hold. */
   int maxSize();
+
+  /** Clears the cache. */
+  void clear();
 
   /** A cache which does not store any values. */
   Cache NONE = new Cache() {
@@ -51,6 +56,9 @@ public interface Cache {
 
     @Override public int maxSize() {
       return 0;
+    }
+
+    @Override public void clear() {
     }
   };
 }

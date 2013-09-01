@@ -1,6 +1,29 @@
 Change Log
 ==========
 
+Version 2.0.0 *(2013-08-30)*
+----------------------------
+
+ * New architecture distances Picasso further from the main thread using a dedicated dispatcher
+   thread to manage requests.
+ * Request merging. Two requests on the same key will be combined and the result will be delivered
+   to both at the same time.
+ * `fetch()` requests are now properly wired up to be used as "warm up the cache" type of requests
+   without a target.
+ * `fit()` will now automatically wait for the view to be measured before executing the request.
+ * `shutdown()` API added. Clears the memory cache and stops all threads. Submitting new requests
+   will cause a crash after `shutdown()` has been called.
+ * Batch completed requests to the main thread to reduce main thread re-layout/draw calls.
+ * Variable thread count depending on network connectivity. The faster the network the more threads
+   and vice versa.
+ * Ability to specify a callback with `ImageView` requests.
+ * Picasso will now decode the bounds of the target bitmap over the network. This helps avoid
+   decoding 2000x2000 images meant for 100x100 views.
+ * Support loading asset URIs in the form `file:///android_asset/...`.
+ * BETA: Ability to rewrite requests on the fly. This is useful if you want to add custom logic for
+   wiring up requests differently.
+
+
 Version 1.1.1 *(2013-06-14)*
 ----------------------------
 

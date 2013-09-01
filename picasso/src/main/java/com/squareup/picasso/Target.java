@@ -17,6 +17,8 @@ package com.squareup.picasso;
 
 import android.graphics.Bitmap;
 
+import static com.squareup.picasso.Picasso.LoadedFrom;
+
 /**
  * Represents an arbitrary listener for image loading.
  * <p/>
@@ -32,8 +34,8 @@ public interface Target {
    * <p/>
    * <strong>Note:</strong> You must not recycle the bitmap.
    */
-  void onSuccess(Bitmap bitmap);
+  void onBitmapLoaded(Bitmap bitmap, LoadedFrom from);
 
   /** Callback indicating the image could not be successfully loaded. */
-  void onError();
+  void onBitmapFailed();
 }

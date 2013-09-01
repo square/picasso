@@ -5,14 +5,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Transformation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static android.widget.ImageView.ScaleType.CENTER_CROP;
+
 final class SampleGridViewAdapter extends BaseAdapter {
   private final Context context;
-  private final Transformation cropSquare = new CropSquareTransformation();
   private final List<String> urls = new ArrayList<String>();
 
   public SampleGridViewAdapter(Context context) {
@@ -32,6 +32,7 @@ final class SampleGridViewAdapter extends BaseAdapter {
     SquaredImageView view = (SquaredImageView) convertView;
     if (view == null) {
       view = new SquaredImageView(context);
+      view.setScaleType(CENTER_CROP);
     }
 
     // Get the image URL for the current position.
@@ -42,7 +43,7 @@ final class SampleGridViewAdapter extends BaseAdapter {
         .load(url) //
         .placeholder(R.drawable.placeholder) //
         .error(R.drawable.error) //
-        .transform(cropSquare) //
+        .fit() //
         .into(view);
 
     return view;

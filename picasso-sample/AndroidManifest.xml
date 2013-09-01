@@ -5,10 +5,18 @@
     android:versionName="1.0.0"
     package="com.example.picasso">
 
-  <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="17"/>
+  <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="18"/>
 
+  <!-- This is required for Picasso to work. -->
   <uses-permission android:name="android.permission.INTERNET"/>
+
+  <!-- The following permissions are OPTIONAL. -->
+
+  <!-- Used to adjust the work load depending on the type of network the device is using. -->
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+  <!-- Used to load images from the gallery content provider. -->
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+  <!-- Used to load images for contact photos. -->
   <uses-permission android:name="android.permission.READ_CONTACTS"/>
 
   <application

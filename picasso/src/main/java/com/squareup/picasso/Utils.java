@@ -19,66 +19,38 @@ import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.database.Cursor;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.media.ExifInterface;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Looper;
 import android.os.Process;
 import android.os.StatFs;
-import android.provider.ContactsContract;
-import android.provider.MediaStore;
+import android.provider.Settings;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import java.util.concurrent.ThreadFactory;
 
 import static android.content.Context.ACTIVITY_SERVICE;
 import static android.content.pm.ApplicationInfo.FLAG_LARGE_HEAP;
-import static android.media.ExifInterface.ORIENTATION_NORMAL;
-import static android.media.ExifInterface.ORIENTATION_ROTATE_180;
-import static android.media.ExifInterface.ORIENTATION_ROTATE_270;
-import static android.media.ExifInterface.ORIENTATION_ROTATE_90;
-import static android.media.ExifInterface.TAG_ORIENTATION;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.HONEYCOMB_MR1;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
-import static android.provider.ContactsContract.Contacts.openContactPhotoInputStream;
+import static android.provider.Settings.System.AIRPLANE_MODE_ON;
 
 final class Utils {
   static final String THREAD_PREFIX = "Picasso-";
   static final String THREAD_IDLE_NAME = THREAD_PREFIX + "Idle";
+  static final int DEFAULT_READ_TIMEOUT = 20 * 1000; // 20s
+  static final int DEFAULT_CONNECT_TIMEOUT = 15 * 1000; // 15s
   private static final String PICASSO_CACHE = "picasso-cache";
   private static final int KEY_PADDING = 50; // Determined by exact science.
   private static final int MIN_DISK_CACHE_SIZE = 5 * 1024 * 1024; // 5MB
   private static final int MAX_DISK_CACHE_SIZE = 50 * 1024 * 1024; // 50MB
-  private static final int MAX_MEM_CACHE_SIZE = 20 * 1024 * 1024; // 20MB
-  private static final String[] CONTENT_ORIENTATION = new String[] {
-      MediaStore.Images.ImageColumns.ORIENTATION
-  };
+  private static final int MAX_MEM_CACHE_SIZE = 30 * 1024 * 1024; // 30MB
 
   private Utils() {
     // No instances.
-  }
-
-  static int getContentProviderExifRotation(ContentResolver contentResolver, Uri uri) {
-    Cursor cursor = null;
-    try {
-      cursor = contentResolver.query(uri, CONTENT_ORIENTATION, null, null, null);
-      if (cursor == null || !cursor.moveToFirst()) {
-        return 0;
-      }
-      return cursor.getInt(0);
-    } catch (RuntimeException ignored) {
-      // If the orientation column doesn't exist, assume no rotation.
-      return 0;
-    } finally {
-      if (cursor != null) {
-        cursor.close();
-      }
-    }
   }
 
   static int getBitmapBytes(Bitmap bitmap) {
@@ -94,78 +66,46 @@ final class Utils {
     return result;
   }
 
-  static int getFileExifRotation(String path) throws IOException {
-    ExifInterface exifInterface = new ExifInterface(path);
-    int orientation = exifInterface.getAttributeInt(TAG_ORIENTATION, ORIENTATION_NORMAL);
-    switch (orientation) {
-      case ORIENTATION_ROTATE_90:
-        return 90;
-      case ORIENTATION_ROTATE_180:
-        return 180;
-      case ORIENTATION_ROTATE_270:
-        return 270;
-      default:
-        return 0;
-    }
-  }
-
   static void checkNotMain() {
     if (Looper.getMainLooper().getThread() == Thread.currentThread()) {
       throw new IllegalStateException("Method call should not happen from the main thread.");
     }
   }
 
-  static String createKey(Request request) {
-    return createKey(request.uri, request.resourceId, request.options, request.transformations);
-  }
-
-  static String createKey(Uri uri, int resourceId, PicassoBitmapOptions options,
-      List<Transformation> transformations) {
+  static String createKey(Request data) {
     StringBuilder builder;
 
-    if (uri != null) {
-      String path = uri.toString();
+    if (data.uri != null) {
+      String path = data.uri.toString();
       builder = new StringBuilder(path.length() + KEY_PADDING);
       builder.append(path);
     } else {
       builder = new StringBuilder(KEY_PADDING);
-      builder.append(resourceId);
+      builder.append(data.resourceId);
     }
     builder.append('\n');
 
-    if (options != null) {
-      float targetRotation = options.targetRotation;
-      if (targetRotation != 0) {
-        builder.append("rotation:").append(targetRotation);
-        if (options.hasRotationPivot) {
-          builder.append('@').append(options.targetPivotX).append('x').append(options.targetPivotY);
-        }
-        builder.append('\n');
+    if (data.rotationDegrees != 0) {
+      builder.append("rotation:").append(data.rotationDegrees);
+      if (data.hasRotationPivot) {
+        builder.append('@').append(data.rotationPivotX).append('x').append(data.rotationPivotY);
       }
-      int targetWidth = options.targetWidth;
-      int targetHeight = options.targetHeight;
-      if (targetWidth != 0) {
-        builder.append("resize:").append(targetWidth).append('x').append(targetHeight);
-        builder.append('\n');
-      }
-      if (options.centerCrop) {
-        builder.append("centerCrop\n");
-      }
-      if (options.centerInside) {
-        builder.append("centerInside\n");
-      }
-      float targetScaleX = options.targetScaleX;
-      float targetScaleY = options.targetScaleY;
-      if (targetScaleX != 0) {
-        builder.append("scale:").append(targetScaleX).append('x').append(targetScaleY);
-        builder.append('\n');
-      }
+      builder.append('\n');
+    }
+    if (data.targetWidth != 0) {
+      builder.append("resize:").append(data.targetWidth).append('x').append(data.targetHeight);
+      builder.append('\n');
+    }
+    if (data.centerCrop) {
+      builder.append("centerCrop\n");
+    } else if (data.centerInside) {
+      builder.append("centerInside\n");
     }
 
-    if (transformations != null) {
+    if (data.transformations != null) {
       //noinspection ForLoopReplaceableByForEach
-      for (int i = 0, count = transformations.size(); i < count; i++) {
-        builder.append(transformations.get(i).key());
+      for (int i = 0, count = data.transformations.size(); i < count; i++) {
+        builder.append(data.transformations.get(i).key());
         builder.append('\n');
       }
     }
@@ -173,23 +113,8 @@ final class Utils {
     return builder.toString();
   }
 
-  static void calculateInSampleSize(PicassoBitmapOptions options) {
-    final int height = options.outHeight;
-    final int width = options.outWidth;
-    final int reqHeight = options.targetHeight;
-    final int reqWidth = options.targetWidth;
-    int sampleSize = 1;
-    if (height > reqHeight || width > reqWidth) {
-      final int heightRatio = Math.round((float) height / (float) reqHeight);
-      final int widthRatio = Math.round((float) width / (float) reqWidth);
-      sampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
-    }
-
-    options.inSampleSize = sampleSize;
-    options.inJustDecodeBounds = false;
-  }
-
   static void closeQuietly(InputStream is) {
+    if (is == null) return;
     try {
       is.close();
     } catch (IOException ignored) {
@@ -215,12 +140,12 @@ final class Utils {
     }
   }
 
-  static Loader createDefaultLoader(Context context) {
+  static Downloader createDefaultDownloader(Context context) {
     try {
       Class.forName("com.squareup.okhttp.OkHttpClient");
       return OkHttpLoaderCreator.create(context);
     } catch (ClassNotFoundException e) {
-      return new UrlConnectionLoader(context);
+      return new UrlConnectionDownloader(context);
     }
   }
 
@@ -232,11 +157,17 @@ final class Utils {
     return cache;
   }
 
-  static int calculateDiskCacheSize(File dir) {
-    StatFs statFs = new StatFs(dir.getAbsolutePath());
-    int available = statFs.getBlockCount() * statFs.getBlockSize();
-    // Target 2% of the total space.
-    int size = available / 50;
+  static long calculateDiskCacheSize(File dir) {
+    long size = MIN_DISK_CACHE_SIZE;
+
+    try {
+      StatFs statFs = new StatFs(dir.getAbsolutePath());
+      long available = ((long) statFs.getBlockCount()) * statFs.getBlockSize();
+      // Target 2% of the total space.
+      size = available / 50;
+    } catch (IllegalArgumentException ignored) {
+    }
+
     // Bound inside min/max size for disk cache.
     return Math.max(Math.min(size, MAX_DISK_CACHE_SIZE), MIN_DISK_CACHE_SIZE);
   }
@@ -254,18 +185,13 @@ final class Utils {
     return Math.min(size, MAX_MEM_CACHE_SIZE);
   }
 
-  public static InputStream getContactPhotoStream(ContentResolver contentResolver, Uri uri) {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-      if (uri.toString().startsWith(ContactsContract.Contacts.CONTENT_LOOKUP_URI.toString())) {
-        uri = ContactsContract.Contacts.lookupContact(contentResolver, uri);
-        if (uri == null) {
-          return null;
-        }
-      }
-      return openContactPhotoInputStream(contentResolver, uri);
-    } else {
-      return ContactPhotoStreamIcs.get(contentResolver, uri);
-    }
+  static boolean isAirplaneModeOn(Context context) {
+    ContentResolver contentResolver = context.getContentResolver();
+    return Settings.System.getInt(contentResolver, AIRPLANE_MODE_ON, 0) != 0;
+  }
+
+  static boolean hasPermission(Context context, String permission) {
+    return context.checkCallingOrSelfPermission(permission) == PackageManager.PERMISSION_GRANTED;
   }
 
   @TargetApi(Build.VERSION_CODES.HONEYCOMB)
@@ -300,16 +226,9 @@ final class Utils {
     }
   }
 
-  @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-  private static class ContactPhotoStreamIcs {
-    static InputStream get(ContentResolver contentResolver, Uri uri) {
-      return openContactPhotoInputStream(contentResolver, uri, true);
-    }
-  }
-
   private static class OkHttpLoaderCreator {
-    static Loader create(Context context) {
-      return new OkHttpLoader(context);
+    static Downloader create(Context context) {
+      return new OkHttpDownloader(context);
     }
   }
 }

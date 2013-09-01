@@ -15,35 +15,22 @@
  */
 package com.squareup.picasso;
 
-import android.net.Uri;
-import java.lang.ref.WeakReference;
-import java.util.List;
+import android.graphics.Bitmap;
 
-final class TargetRequest extends Request {
+final class TargetAction extends Action<Target> {
 
-  private final WeakReference<Target> weakTarget;
-  private final Target strongTarget;
-
-  TargetRequest(Picasso picasso, Uri uri, int resourceId, Target target, boolean strong,
-      PicassoBitmapOptions bitmapOptions, List<Transformation> transformations, boolean skipCache) {
-    super(picasso, uri, resourceId, null, bitmapOptions, transformations, skipCache, false, 0,
-        null);
-    this.weakTarget = strong ? null : new WeakReference<Target>(target);
-    this.strongTarget = strong ? target : null;
+  TargetAction(Picasso picasso, Target target, Request data, boolean skipCache, String key) {
+    super(picasso, target, data, skipCache, false, 0, null, key);
   }
 
-  @Override Target getTarget() {
-    return strongTarget != null ? strongTarget : weakTarget.get();
-  }
-
-  @Override void complete() {
+  @Override void complete(Bitmap result, Picasso.LoadedFrom from) {
     if (result == null) {
       throw new AssertionError(
-          String.format("Attempted to complete request with no result!\n%s", this));
+          String.format("Attempted to complete action with no result!\n%s", this));
     }
     Target target = getTarget();
     if (target != null) {
-      target.onSuccess(result);
+      target.onBitmapLoaded(result, from);
       if (result.isRecycled()) {
         throw new IllegalStateException("Target callback must not recycle bitmap!");
       }
@@ -52,9 +39,8 @@ final class TargetRequest extends Request {
 
   @Override void error() {
     Target target = getTarget();
-    if (target == null) {
-      return;
+    if (target != null) {
+      target.onBitmapFailed();
     }
-    target.onError();
   }
 }

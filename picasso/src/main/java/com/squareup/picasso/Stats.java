@@ -32,6 +32,7 @@ class Stats {
 
   private static final String STATS_THREAD_NAME = Utils.THREAD_PREFIX + "Stats";
 
+  final HandlerThread statsThread;
   final Cache cache;
   final Handler handler;
 
@@ -46,25 +47,50 @@ class Stats {
 
   Stats(Cache cache) {
     this.cache = cache;
-    HandlerThread statsThread = new HandlerThread(STATS_THREAD_NAME, THREAD_PRIORITY_BACKGROUND);
-    statsThread.start();
-    handler = new StatsHandler(statsThread.getLooper());
+    this.statsThread = new HandlerThread(STATS_THREAD_NAME, THREAD_PRIORITY_BACKGROUND);
+    this.statsThread.start();
+    this.handler = new StatsHandler(statsThread.getLooper());
   }
 
-  void bitmapDecoded(Bitmap bitmap) {
+  void dispatchBitmapDecoded(Bitmap bitmap) {
     processBitmap(bitmap, BITMAP_DECODE_FINISHED);
   }
 
-  void bitmapTransformed(Bitmap bitmap) {
+  void dispatchBitmapTransformed(Bitmap bitmap) {
     processBitmap(bitmap, BITMAP_TRANSFORMED_FINISHED);
   }
 
-  void cacheHit() {
+  void dispatchCacheHit() {
     handler.sendEmptyMessage(CACHE_HIT);
   }
 
-  void cacheMiss() {
+  void dispatchCacheMiss() {
     handler.sendEmptyMessage(CACHE_MISS);
+  }
+
+  void shutdown() {
+    statsThread.quit();
+  }
+
+  void performCacheHit() {
+    cacheHits++;
+  }
+
+  void performCacheMiss() {
+    cacheMisses++;
+  }
+
+  void performBitmapDecoded(long size) {
+    originalBitmapCount++;
+    totalOriginalBitmapSize += size;
+    averageOriginalBitmapSize = getAverage(originalBitmapCount, totalOriginalBitmapSize);
+  }
+
+  void performBitmapTransformed(long size) {
+    transformedBitmapCount++;
+    totalTransformedBitmapSize += size;
+    averageTransformedBitmapSize =
+        getAverage(originalBitmapCount, totalTransformedBitmapSize);
   }
 
   synchronized StatsSnapshot createSnapshot() {
@@ -94,21 +120,16 @@ class Stats {
       synchronized (Stats.this) {
         switch (msg.what) {
           case CACHE_HIT:
-            cacheHits++;
+            performCacheHit();
             break;
           case CACHE_MISS:
-            cacheMisses++;
+            performCacheMiss();
             break;
           case BITMAP_DECODE_FINISHED:
-            originalBitmapCount++;
-            totalOriginalBitmapSize += msg.arg1;
-            averageOriginalBitmapSize = getAverage(originalBitmapCount, totalOriginalBitmapSize);
+            performBitmapDecoded(msg.arg1);
             break;
           case BITMAP_TRANSFORMED_FINISHED:
-            transformedBitmapCount++;
-            totalTransformedBitmapSize += msg.arg1;
-            averageTransformedBitmapSize =
-                getAverage(originalBitmapCount, totalTransformedBitmapSize);
+            performBitmapTransformed(msg.arg1);
             break;
           case REQUESTED_COMPLETED:
             break;

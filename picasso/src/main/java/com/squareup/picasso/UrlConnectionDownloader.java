@@ -27,10 +27,11 @@ import java.net.URL;
 import static com.squareup.picasso.Utils.parseResponseSourceHeader;
 
 /**
- * A {@link Loader} which uses {@link HttpURLConnection} to download images. A disk cache of 10MB
- * will automatically be installed in the application's cache directory, when available.
+ * A {@link Downloader} which uses {@link HttpURLConnection} to download images. A disk cache of 2%
+ * of the total available space will be used (capped at 50MB) will automatically be installed in the
+ * application's cache directory, when available.
  */
-public class UrlConnectionLoader implements Loader {
+public class UrlConnectionDownloader implements Downloader {
   static final String RESPONSE_SOURCE = "X-Android-Response-Source";
 
   private static final Object lock = new Object();
@@ -38,12 +39,15 @@ public class UrlConnectionLoader implements Loader {
 
   private final Context context;
 
-  public UrlConnectionLoader(Context context) {
+  public UrlConnectionDownloader(Context context) {
     this.context = context.getApplicationContext();
   }
 
-  protected HttpURLConnection openConnection(String path) throws IOException {
-    return (HttpURLConnection) new URL(path).openConnection();
+  protected HttpURLConnection openConnection(Uri path) throws IOException {
+    HttpURLConnection connection = (HttpURLConnection) new URL(path.toString()).openConnection();
+    connection.setConnectTimeout(Utils.DEFAULT_CONNECT_TIMEOUT);
+    connection.setReadTimeout(Utils.DEFAULT_READ_TIMEOUT);
+    return connection;
   }
 
   @Override public Response load(Uri uri, boolean localCacheOnly) throws IOException {
@@ -51,10 +55,15 @@ public class UrlConnectionLoader implements Loader {
       installCacheIfNeeded(context);
     }
 
-    HttpURLConnection connection = openConnection(uri.toString());
+    HttpURLConnection connection = openConnection(uri);
     connection.setUseCaches(true);
     if (localCacheOnly) {
-      connection.setRequestProperty("Cache-Control", "only-if-cached");
+      connection.setRequestProperty("Cache-Control", "only-if-cached;max-age=" + Integer.MAX_VALUE);
+    }
+
+    int responseCode = connection.getResponseCode();
+    if (responseCode >= 300) {
+      return null;
     }
 
     boolean fromCache = parseResponseSourceHeader(connection.getHeaderField(RESPONSE_SOURCE));
@@ -81,7 +90,7 @@ public class UrlConnectionLoader implements Loader {
       File cacheDir = Utils.createDefaultCacheDir(context);
       HttpResponseCache cache = HttpResponseCache.getInstalled();
       if (cache == null) {
-        int maxSize = Utils.calculateDiskCacheSize(cacheDir);
+        long maxSize = Utils.calculateDiskCacheSize(cacheDir);
         cache = HttpResponseCache.install(cacheDir, maxSize);
       }
       return cache;

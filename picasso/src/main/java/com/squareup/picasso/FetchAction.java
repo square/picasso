@@ -15,20 +15,16 @@
  */
 package com.squareup.picasso;
 
-import android.graphics.BitmapFactory;
+import android.graphics.Bitmap;
 
-class PicassoBitmapOptions extends BitmapFactory.Options {
-  int targetWidth;
-  int targetHeight;
-  boolean deferredResize;
-  boolean centerCrop;
-  boolean centerInside;
+class FetchAction extends Action<Void> {
+  FetchAction(Picasso picasso, Request data, boolean skipCache, String key) {
+    super(picasso, null, data, skipCache, false, 0, null, key);
+  }
 
-  float targetScaleX;
-  float targetScaleY;
+  @Override void complete(Bitmap result, Picasso.LoadedFrom from) {
+  }
 
-  float targetRotation;
-  float targetPivotX;
-  float targetPivotY;
-  boolean hasRotationPivot;
+  @Override public void error() {
+  }
 }
