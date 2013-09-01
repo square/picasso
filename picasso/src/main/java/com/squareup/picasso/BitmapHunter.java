@@ -310,7 +310,7 @@ abstract class BitmapHunter implements Runnable {
     }
 
     Bitmap newResult =
-        Bitmap.createBitmap(result, drawX, drawY, drawWidth, drawHeight, matrix, false);
+        Bitmap.createBitmap(result, drawX, drawY, drawWidth, drawHeight, matrix, true);
     if (newResult != result) {
       result.recycle();
       result = newResult;
