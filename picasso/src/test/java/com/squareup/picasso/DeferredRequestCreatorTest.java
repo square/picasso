@@ -27,6 +27,7 @@ import org.robolectric.annotation.Config;
 
 import static com.squareup.picasso.TestUtils.TRANSFORM_REQUEST_ANSWER;
 import static com.squareup.picasso.TestUtils.URI_1;
+import static com.squareup.picasso.TestUtils.mockCallback;
 import static com.squareup.picasso.TestUtils.mockFitImageViewTarget;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -62,6 +63,16 @@ public class DeferredRequestCreatorTest {
     DeferredRequestCreator request = new DeferredRequestCreator(mock(RequestCreator.class), target);
     request.cancel();
     verify(observer).removeOnPreDrawListener(request);
+  }
+
+  @Test public void cancelClearsCallback() throws Exception {
+    ImageView target = mockFitImageViewTarget(true);
+    Callback callback = mockCallback();
+    DeferredRequestCreator request =
+        new DeferredRequestCreator(mock(RequestCreator.class), target, callback);
+    assertThat(request.callback).isNotNull();
+    request.cancel();
+    assertThat(request.callback).isNull();
   }
 
   @Test public void onLayoutSkipsIfTargetIsNull() throws Exception {
@@ -107,7 +118,6 @@ public class DeferredRequestCreatorTest {
     request.cancel();
     verify(target.getViewTreeObserver(), never()).removeOnPreDrawListener(request);
   }
-
 
   @Test public void cancelSkipsIfViewTreeObserverIsDead() throws Exception {
     ImageView target = mockFitImageViewTarget(false);

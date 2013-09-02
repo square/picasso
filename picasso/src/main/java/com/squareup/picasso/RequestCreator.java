@@ -339,7 +339,7 @@ public class RequestCreator {
       int measuredHeight = target.getMeasuredHeight();
       if (measuredWidth == 0 && measuredHeight == 0) {
         PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable);
-        picasso.defer(target, new DeferredRequestCreator(this, target));
+        picasso.defer(target, new DeferredRequestCreator(this, target, callback));
         return;
       }
       data.resize(measuredWidth, measuredHeight);
