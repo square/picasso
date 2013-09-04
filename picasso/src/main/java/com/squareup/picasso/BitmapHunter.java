@@ -21,6 +21,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.provider.MediaStore;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -190,8 +191,10 @@ abstract class BitmapHunter implements Runnable {
       if (Contacts.CONTENT_URI.getHost().equals(uri.getHost()) //
           && !uri.getPathSegments().contains(Contacts.Photo.CONTENT_DIRECTORY)) {
         return new ContactsPhotoBitmapHunter(context, picasso, dispatcher, cache, stats, action);
+      } else if (MediaStore.AUTHORITY.equals(uri.getAuthority())) {
+        return new MediaStoreBitmapHunter(context, picasso, dispatcher, cache, stats, action);
       } else {
-        return new ContentProviderBitmapHunter(context, picasso, dispatcher, cache, stats, action);
+        return new ContentStreamBitmapHunter(context, picasso, dispatcher, cache, stats, action);
       }
     } else if (SCHEME_FILE.equals(scheme)) {
       if (!uri.getPathSegments().isEmpty() && ANDROID_ASSET.equals(uri.getPathSegments().get(0))) {
@@ -206,8 +209,11 @@ abstract class BitmapHunter implements Runnable {
   }
 
   static void calculateInSampleSize(int reqWidth, int reqHeight, BitmapFactory.Options options) {
-    final int height = options.outHeight;
-    final int width = options.outWidth;
+    calculateInSampleSize(reqWidth, reqHeight, options.outWidth, options.outHeight, options);
+  }
+
+  static void calculateInSampleSize(int reqWidth, int reqHeight, int width, int height,
+      BitmapFactory.Options options) {
     int sampleSize = 1;
     if (height > reqHeight || width > reqWidth) {
       final int heightRatio = Math.round((float) height / (float) reqHeight);

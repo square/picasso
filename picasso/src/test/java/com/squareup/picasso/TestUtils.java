@@ -46,6 +46,9 @@ class TestUtils {
   static final String FILE_KEY_1 = createKey(new Request.Builder(Uri.fromFile(FILE_1)).build());
   static final Uri FILE_1_URL = Uri.parse("file:///" + FILE_1.getPath());
   static final Uri FILE_1_URL_NO_AUTHORITY = Uri.parse("file:/" + FILE_1.getParent());
+  static final Uri MEDIA_STORE_CONTENT_1_URL = Uri.parse("content://media/external/images/media/1");
+  static final String MEDIA_STORE_CONTENT_KEY_1 =
+      createKey(new Request.Builder(MEDIA_STORE_CONTENT_1_URL).build());
   static final Uri CONTENT_1_URL = Uri.parse("content://zip/zap/zoop.jpg");
   static final String CONTENT_KEY_1 = createKey(new Request.Builder(CONTENT_1_URL).build());
   static final Uri CONTACT_URI_1 = CONTENT_URI.buildUpon().path("1234").build();
