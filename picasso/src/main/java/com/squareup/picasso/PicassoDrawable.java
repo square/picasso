@@ -95,18 +95,17 @@ final class PicassoDrawable extends Drawable {
     if (!animating) {
       image.draw(canvas);
     } else {
-      if (placeholder != null) {
-        placeholder.draw(canvas);
-      }
-
       float normalized = (SystemClock.uptimeMillis() - startTimeMillis) / FADE_DURATION;
-      int alpha = (int) (0xFF * normalized);
-
       if (normalized >= 1f) {
         animating = false;
         placeholder = null;
         image.draw(canvas);
       } else {
+        if (placeholder != null) {
+          placeholder.draw(canvas);
+        }
+
+        int alpha = (int) (0xFF * normalized);
         image.setAlpha(alpha);
         image.draw(canvas);
         image.setAlpha(0xFF);
