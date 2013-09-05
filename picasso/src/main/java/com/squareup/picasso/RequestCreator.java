@@ -43,9 +43,6 @@ public class RequestCreator {
   private Drawable errorDrawable;
   private Bitmap.Config config;
 
-  private int maxWidth = -1;
-  private int maxHeight = -1;
-
   RequestCreator(Picasso picasso, Uri uri, int resourceId) {
     if (picasso.shutdown) {
       throw new IllegalStateException(
@@ -60,13 +57,6 @@ public class RequestCreator {
     this.data = new Request.Builder(null, 0);
   }
 
-  public int getMaxWidth() {
-    return maxWidth;
-  }
-
-  public int getMaxHeight() {
-    return maxHeight;
-  }
 
   /**
    * A placeholder drawable to be used while the image is being loaded. If the requested image is
@@ -132,18 +122,6 @@ public class RequestCreator {
    */
   public RequestCreator fit() {
     deferred = true;
-    return this;
-  }
-
-  /**
-   * Sets the maximum width and height values the Bitmap can be sized to.
-   * Used in conjunction with {@link #fit()} method;
-   * <p/>
-   * <em>Note:</em> This method works only when your target is an {@link ImageView).
-   */
-  public RequestCreator maxSize(int maxWidth, int maxHeight) {
-    this.maxWidth = maxWidth;
-    this.maxHeight = maxHeight;
     return this;
   }
 
@@ -371,14 +349,9 @@ public class RequestCreator {
       }
       int measuredWidth = target.getMeasuredWidth();
       int measuredHeight = target.getMeasuredHeight();
-      if (maxWidth != -1 && measuredWidth > maxWidth)
-        measuredWidth = maxWidth;
-      if (maxHeight != -1 && measuredHeight > maxHeight)
-        measuredHeight = maxHeight;
       if (measuredWidth == 0 && measuredHeight == 0) {
         PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable);
-        picasso.defer(target,
-          new DeferredRequestCreator(this, target, callback));
+        picasso.defer(target, new DeferredRequestCreator(this, target, callback));
         return;
       }
       data.resize(measuredWidth, measuredHeight);
