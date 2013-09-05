@@ -84,7 +84,7 @@ class NetworkBitmapHunter extends BitmapHunter {
       MarkableInputStream markStream = new MarkableInputStream(stream);
       stream = markStream;
 
-      long mark = markStream.savePosition(1024); // Mirrors BitmapFactory.cpp value.
+      long mark = markStream.savePosition(4096);
       BitmapFactory.decodeStream(stream, null, options);
       calculateInSampleSize(data.targetWidth, data.targetHeight, options);
 
