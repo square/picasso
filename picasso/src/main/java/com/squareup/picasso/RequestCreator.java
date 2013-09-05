@@ -66,7 +66,7 @@ public class RequestCreator {
 
   public int getMaxHeight() {
     return maxHeight;
-  }  
+  }
 
   /**
    * A placeholder drawable to be used while the image is being loaded. If the requested image is
