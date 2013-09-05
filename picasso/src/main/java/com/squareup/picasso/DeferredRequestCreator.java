@@ -25,8 +25,6 @@ class DeferredRequestCreator implements ViewTreeObserver.OnPreDrawListener {
   final RequestCreator creator;
   final WeakReference<ImageView> target;
   Callback callback;
-  int maxWidth = -1;
-  int maxHeight = -1;
 
   @TestOnly DeferredRequestCreator(RequestCreator creator, ImageView target) {
     this(creator, target, null);
@@ -37,12 +35,6 @@ class DeferredRequestCreator implements ViewTreeObserver.OnPreDrawListener {
     this.target = new WeakReference<ImageView>(target);
     this.callback = callback;
     target.getViewTreeObserver().addOnPreDrawListener(this);
-  }
-
-  DeferredRequestCreator withBounds(int maxWidth, int maxHeight) {
-    this.maxWidth = maxWidth;
-    this.maxHeight = maxHeight;
-    return this;
   }
 
   @Override public boolean onPreDraw() {
@@ -57,6 +49,8 @@ class DeferredRequestCreator implements ViewTreeObserver.OnPreDrawListener {
 
     int width = target.getMeasuredWidth();
     int height = target.getMeasuredHeight();
+    int maxWidth = creator.getMaxWidth();
+    int maxHeight = creator.getMaxHeight();
 
     if (width <= 0 || height <= 0) {
       return true;
