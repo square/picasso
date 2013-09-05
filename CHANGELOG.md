@@ -1,6 +1,16 @@
 Change Log
 ==========
 
+Version 2.0.1 *(2013-09-04)*
+----------------------------
+
+ * Enable filtered bitmaps for higher transform quality.
+ * Fix: Using callbacks with `into()` on `fit()` requests are now always invoked.
+ * Fix: Ensure final frame of cross-fade between place holder and image renders correctly.
+ * Fix: Work around Android's behavior of reading more than 1K of image header data when decoding
+   bounds for some images.
+
+
 Version 2.0.0 *(2013-08-30)*
 ----------------------------
 
