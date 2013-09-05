@@ -41,6 +41,7 @@ public class RequestCreator {
   private Drawable placeholderDrawable;
   private int errorResId;
   private Drawable errorDrawable;
+  private Bitmap.Config config;
 
   private int maxWidth = -1;
   private int maxHeight = -1;
@@ -211,6 +212,15 @@ public class RequestCreator {
     return this;
   }
 
+  /**
+   * Sets the Bitmap.Config to be used to decode this image.
+   */
+  public RequestCreator withConfig(Bitmap.Config config) {
+    data.config(config);
+    this.config = config;
+    return this;
+  }
+
   /** Disable brief fade in of images loaded from the disk cache or network. */
   public RequestCreator noFade() {
     noFade = true;
@@ -230,7 +240,7 @@ public class RequestCreator {
     Request finalData = picasso.transformRequest(data.build());
     String key = Utils.createKey(finalData);
 
-    Action action = new GetAction(picasso, finalData, skipMemoryCache, key);
+    Action action = new GetAction(picasso, finalData, skipMemoryCache, key).withConfig(config);
     return forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache, picasso.stats,
         action, picasso.dispatcher.downloader).hunt();
   }
@@ -247,7 +257,7 @@ public class RequestCreator {
       Request finalData = picasso.transformRequest(data.build());
       String key = Utils.createKey(finalData);
 
-      Action action = new FetchAction(picasso, finalData, skipMemoryCache, key);
+      Action action = new FetchAction(picasso, finalData, skipMemoryCache, key).withConfig(config);
       picasso.enqueueAndSubmit(action);
     }
   }
@@ -313,7 +323,8 @@ public class RequestCreator {
       }
     }
 
-    Action action = new TargetAction(picasso, target, finalData, skipMemoryCache, requestKey);
+    Action action = new TargetAction(picasso, target, finalData, skipMemoryCache, requestKey)
+                          .withConfig(config);
     picasso.enqueueAndSubmit(action);
   }
 
@@ -387,7 +398,7 @@ public class RequestCreator {
 
     Action action =
         new ImageViewAction(picasso, target, finalData, skipMemoryCache, noFade, errorResId,
-            errorDrawable, requestKey, callback);
+            errorDrawable, requestKey, callback).withConfig(config);
 
     picasso.enqueueAndSubmit(action);
   }
