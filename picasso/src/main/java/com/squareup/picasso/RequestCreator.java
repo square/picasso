@@ -42,6 +42,9 @@ public class RequestCreator {
   private int errorResId;
   private Drawable errorDrawable;
 
+  private int maxWidth = -1;
+  private int maxHeight = -1;
+
   RequestCreator(Picasso picasso, Uri uri, int resourceId) {
     if (picasso.shutdown) {
       throw new IllegalStateException(
@@ -119,6 +122,19 @@ public class RequestCreator {
    * <em>Note:</em> This method works only when your target is an {@link ImageView).
    */
   public RequestCreator fit() {
+    return fit(-1, -1);
+  }
+
+  /**
+   * Attempt to resize the image to fit exactly into the target {@link ImageView}'s bounds, to
+   * a maximum set of width and height values. This will result in delayed execution of the request
+   * until the {@link ImageView} has been measured.
+   * <p/>
+   * <em>Note:</em> This method works only when your target is an {@link ImageView).
+   */
+  public RequestCreator fit(int maxWidth, int maxHeight) {
+    this.maxWidth = maxWidth;
+    this.maxHeight = maxHeight;
     deferred = true;
     return this;
   }
@@ -337,9 +353,15 @@ public class RequestCreator {
       }
       int measuredWidth = target.getMeasuredWidth();
       int measuredHeight = target.getMeasuredHeight();
+      if (maxWidth != -1 && measuredWidth > maxWidth)
+        measuredWidth = maxWidth;
+      if (maxHeight != -1 && measuredHeight > maxHeight)
+        measuredHeight = maxHeight;
       if (measuredWidth == 0 && measuredHeight == 0) {
         PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable);
-        picasso.defer(target, new DeferredRequestCreator(this, target, callback));
+        picasso.defer(target,
+          new DeferredRequestCreator(this, target, callback)
+            .withBounds(maxWidth, maxHeight));
         return;
       }
       data.resize(measuredWidth, measuredHeight);
