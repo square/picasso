@@ -15,6 +15,7 @@
  */
 package com.squareup.picasso;
 
+import android.graphics.Bitmap;
 import android.net.Uri;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,9 +63,11 @@ public final class Request {
   /** Whether or not {@link #rotationPivotX} and {@link #rotationPivotY} are set. */
   public final boolean hasRotationPivot;
 
+  public final Bitmap.Config config;
+
   private Request(Uri uri, int resourceId, List<Transformation> transformations, int targetWidth,
       int targetHeight, boolean centerCrop, boolean centerInside, float rotationDegrees,
-      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot) {
+      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot, Bitmap.Config config) {
     this.uri = uri;
     this.resourceId = resourceId;
     if (transformations == null) {
@@ -80,6 +83,7 @@ public final class Request {
     this.rotationPivotX = rotationPivotX;
     this.rotationPivotY = rotationPivotY;
     this.hasRotationPivot = hasRotationPivot;
+    this.config = config;
   }
 
   String getName() {
@@ -122,6 +126,7 @@ public final class Request {
     private float rotationPivotY;
     private boolean hasRotationPivot;
     private List<Transformation> transformations;
+    private Bitmap.Config config;
 
     /** Start building a request using the specified {@link Uri}. */
     public Builder(Uri uri) {
@@ -289,6 +294,11 @@ public final class Request {
       return this;
     }
 
+    public Builder config(Bitmap.Config config) {
+      this.config = config;
+      return this;
+    }
+
     /** Create the immutable {@link Request} object. */
     public Request build() {
       if (centerInside && centerCrop) {
@@ -301,7 +311,7 @@ public final class Request {
         throw new IllegalStateException("Center inside requires calling resize.");
       }
       return new Request(uri, resourceId, transformations, targetWidth, targetHeight, centerCrop,
-          centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot);
+          centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot, config);
     }
   }
 }
