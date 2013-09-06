@@ -47,7 +47,7 @@ class ResourceBitmapHunter extends BitmapHunter {
       bitmapOptions = new BitmapFactory.Options();
       bitmapOptions.inJustDecodeBounds = true;
       BitmapFactory.decodeResource(resources, resourceId, bitmapOptions);
-      calculateInSampleSize(data.targetWidth, data.targetHeight, bitmapOptions, config);
+      calculateInSampleSize(data.targetWidth, data.targetHeight, bitmapOptions, data.config);
     }
     return BitmapFactory.decodeResource(resources, resourceId, bitmapOptions);
   }

@@ -86,7 +86,7 @@ class NetworkBitmapHunter extends BitmapHunter {
 
       long mark = markStream.savePosition(4096);
       BitmapFactory.decodeStream(stream, null, options);
-      calculateInSampleSize(data.targetWidth, data.targetHeight, options, config);
+      calculateInSampleSize(data.targetWidth, data.targetHeight, options, data.config);
 
       markStream.reset(mark);
     }
