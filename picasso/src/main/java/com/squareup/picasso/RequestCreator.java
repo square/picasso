@@ -135,8 +135,7 @@ public class RequestCreator {
   }
 
   /**
-   * Sets the maximum width and height values the Bitmap can be sized to.
-   * Used in conjunction with {@link #fit()} method;
+   * Maximum width and height values the Bitmap can be sized to.
    * <p/>
    * <em>Note:</em> This method works only when your target is an {@link ImageView).
    */
