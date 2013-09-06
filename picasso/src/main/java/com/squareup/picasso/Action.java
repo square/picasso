@@ -38,7 +38,6 @@ abstract class Action<T> {
   final int errorResId;
   final Drawable errorDrawable;
   final String key;
-  Bitmap.Config config;
 
   boolean cancelled;
 
@@ -80,10 +79,5 @@ abstract class Action<T> {
 
   Picasso getPicasso() {
     return picasso;
-  }
-
-  Action withConfig(Bitmap.Config config) {
-    this.config = config;
-    return this;
   }
 }

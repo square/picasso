@@ -225,7 +225,7 @@ public class RequestCreator {
     Request finalData = picasso.transformRequest(data.build());
     String key = Utils.createKey(finalData);
 
-    Action action = new GetAction(picasso, finalData, skipMemoryCache, key).withConfig(config);
+    Action action = new GetAction(picasso, finalData, skipMemoryCache, key);
     return forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache, picasso.stats,
         action, picasso.dispatcher.downloader).hunt();
   }
@@ -242,7 +242,7 @@ public class RequestCreator {
       Request finalData = picasso.transformRequest(data.build());
       String key = Utils.createKey(finalData);
 
-      Action action = new FetchAction(picasso, finalData, skipMemoryCache, key).withConfig(config);
+      Action action = new FetchAction(picasso, finalData, skipMemoryCache, key);
       picasso.enqueueAndSubmit(action);
     }
   }
@@ -308,8 +308,7 @@ public class RequestCreator {
       }
     }
 
-    Action action = new TargetAction(picasso, target, finalData, skipMemoryCache, requestKey)
-                          .withConfig(config);
+    Action action = new TargetAction(picasso, target, finalData, skipMemoryCache, requestKey);
     picasso.enqueueAndSubmit(action);
   }
 
@@ -377,7 +376,7 @@ public class RequestCreator {
 
     Action action =
         new ImageViewAction(picasso, target, finalData, skipMemoryCache, noFade, errorResId,
-            errorDrawable, requestKey, callback).withConfig(config);
+            errorDrawable, requestKey, callback);
 
     picasso.enqueueAndSubmit(action);
   }
