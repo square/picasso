@@ -49,10 +49,17 @@ class DeferredRequestCreator implements ViewTreeObserver.OnPreDrawListener {
 
     int width = target.getMeasuredWidth();
     int height = target.getMeasuredHeight();
+    int maxWidth = creator.getMaxWidth();
+    int maxHeight = creator.getMaxHeight();
 
     if (width <= 0 || height <= 0) {
       return true;
     }
+
+    if (maxWidth != -1 && width > maxWidth)
+      width = maxWidth;
+    if (maxHeight != -1 && height > maxHeight)
+      height = maxHeight;
 
     vto.removeOnPreDrawListener(this);
 
