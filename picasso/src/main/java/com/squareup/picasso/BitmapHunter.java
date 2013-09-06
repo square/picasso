@@ -58,7 +58,6 @@ abstract class BitmapHunter implements Runnable {
   Picasso.LoadedFrom loadedFrom;
   Exception exception;
   int exifRotation; // Determined during decoding of original resource.
-  Bitmap.Config config;
 
   BitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats, Action action) {
     this.picasso = picasso;
@@ -74,11 +73,6 @@ abstract class BitmapHunter implements Runnable {
 
   protected void setExifRotation(int exifRotation) {
     this.exifRotation = exifRotation;
-  }
-
-  public BitmapHunter withConfig(Bitmap.Config config) {
-    this.config = config;
-    return this;
   }
 
   @Override public void run() {
