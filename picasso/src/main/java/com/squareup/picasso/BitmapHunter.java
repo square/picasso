@@ -58,6 +58,7 @@ abstract class BitmapHunter implements Runnable {
   Picasso.LoadedFrom loadedFrom;
   Exception exception;
   int exifRotation; // Determined during decoding of original resource.
+  Bitmap.Config config;
 
   BitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats, Action action) {
     this.picasso = picasso;
@@ -73,6 +74,11 @@ abstract class BitmapHunter implements Runnable {
 
   protected void setExifRotation(int exifRotation) {
     this.exifRotation = exifRotation;
+  }
+
+  public BitmapHunter withConfig(Bitmap.Config config) {
+    this.config = config;
+    return this;
   }
 
   @Override public void run() {
@@ -202,7 +208,8 @@ abstract class BitmapHunter implements Runnable {
     }
   }
 
-  static void calculateInSampleSize(int reqWidth, int reqHeight, BitmapFactory.Options options) {
+  static void calculateInSampleSize(int reqWidth, int reqHeight, BitmapFactory.Options options,
+      Bitmap.Config config) {
     final int height = options.outHeight;
     final int width = options.outWidth;
     int sampleSize = 1;
@@ -214,6 +221,9 @@ abstract class BitmapHunter implements Runnable {
 
     options.inSampleSize = sampleSize;
     options.inJustDecodeBounds = false;
+
+    if (config != null)
+      options.inPreferredConfig = config;
   }
 
   static Bitmap applyCustomTransformations(List<Transformation> transformations, Bitmap result) {
