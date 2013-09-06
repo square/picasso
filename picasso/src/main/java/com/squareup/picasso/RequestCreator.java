@@ -200,7 +200,7 @@ public class RequestCreator {
   /**
    * Sets the Bitmap.Config to be used to decode this image.
    */
-  public RequestCreator withConfig(Bitmap.Config config) {
+  public RequestCreator config(Bitmap.Config config) {
     data.config(config);
     this.config = config;
     return this;
