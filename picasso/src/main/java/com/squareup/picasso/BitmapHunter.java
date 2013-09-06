@@ -202,7 +202,8 @@ abstract class BitmapHunter implements Runnable {
     }
   }
 
-  static void calculateInSampleSize(int reqWidth, int reqHeight, BitmapFactory.Options options) {
+  static void calculateInSampleSize(int reqWidth, int reqHeight, BitmapFactory.Options options,
+      Bitmap.Config config) {
     final int height = options.outHeight;
     final int width = options.outWidth;
     int sampleSize = 1;
@@ -214,6 +215,9 @@ abstract class BitmapHunter implements Runnable {
 
     options.inSampleSize = sampleSize;
     options.inJustDecodeBounds = false;
+
+    if (config != null)
+      options.inPreferredConfig = config;
   }
 
   static Bitmap applyCustomTransformations(List<Transformation> transformations, Bitmap result) {

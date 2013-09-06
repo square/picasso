@@ -41,6 +41,7 @@ public class RequestCreator {
   private Drawable placeholderDrawable;
   private int errorResId;
   private Drawable errorDrawable;
+  private Bitmap.Config config;
 
   RequestCreator(Picasso picasso, Uri uri, int resourceId) {
     if (picasso.shutdown) {
@@ -55,6 +56,7 @@ public class RequestCreator {
     this.picasso = null;
     this.data = new Request.Builder(null, 0);
   }
+
 
   /**
    * A placeholder drawable to be used while the image is being loaded. If the requested image is
@@ -192,6 +194,15 @@ public class RequestCreator {
    */
   public RequestCreator skipMemoryCache() {
     skipMemoryCache = true;
+    return this;
+  }
+
+  /**
+   * Sets the Bitmap.Config to be used to decode this image.
+   */
+  public RequestCreator config(Bitmap.Config config) {
+    data.config(config);
+    this.config = config;
     return this;
   }
 
