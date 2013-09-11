@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 2.0.2 *(2013-09-11)*
+----------------------------
+
+ * Fix: Additional work around for Android's header decoding algorithm reading more than 4K of image
+   data when decoding bounds.
+
+
 Version 2.0.1 *(2013-09-04)*
 ----------------------------
 
