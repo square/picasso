@@ -55,9 +55,8 @@ class NetworkBitmapHunter extends BitmapHunter {
       return result;
     }
 
-    InputStream is = null;
+    InputStream is = response.getInputStream();
     try {
-      is = response.getInputStream();
       return decodeStream(is, data);
     } finally {
       Utils.closeQuietly(is);
