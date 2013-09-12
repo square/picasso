@@ -63,6 +63,7 @@ public class UrlConnectionDownloader implements Downloader {
 
     int responseCode = connection.getResponseCode();
     if (responseCode >= 300) {
+      connection.disconnect();
       return null;
     }
 
