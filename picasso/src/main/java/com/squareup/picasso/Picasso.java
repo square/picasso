@@ -110,6 +110,7 @@ public class Picasso {
   final Context context;
   final Dispatcher dispatcher;
   final Cache cache;
+  final Cache placeholderCache;
   final Stats stats;
   final Map<Object, Action> targetToAction;
   final Map<ImageView, DeferredRequestCreator> targetToDeferredRequestCreator;
@@ -118,11 +119,12 @@ public class Picasso {
   boolean debugging;
   boolean shutdown;
 
-  Picasso(Context context, Dispatcher dispatcher, Cache cache, Listener listener,
-      RequestTransformer requestTransformer, Stats stats, boolean debugging) {
+  Picasso(Context context, Dispatcher dispatcher, Cache cache, Cache placeholderCache,
+      Listener listener, RequestTransformer requestTransformer, Stats stats, boolean debugging) {
     this.context = context;
     this.dispatcher = dispatcher;
     this.cache = cache;
+    this.placeholderCache = placeholderCache;
     this.listener = listener;
     this.requestTransformer = requestTransformer;
     this.stats = stats;
@@ -239,6 +241,7 @@ public class Picasso {
       return;
     }
     cache.clear();
+    placeholderCache.clear();
     cleanupThread.shutdown();
     stats.shutdown();
     dispatcher.shutdown();
@@ -399,6 +402,7 @@ public class Picasso {
     private Downloader downloader;
     private ExecutorService service;
     private Cache cache;
+    private Cache placeholderCache;
     private Listener listener;
     private RequestTransformer transformer;
     private boolean debugging;
@@ -447,6 +451,18 @@ public class Picasso {
       return this;
     }
 
+    /** Specify the memory cache used for the placeholders transformed cache. */
+    public Builder placeholderCache(Cache placeholderCache) {
+      if (placeholderCache == null) {
+        throw new IllegalArgumentException("Placeholder cache must not be null.");
+      }
+      if (this.placeholderCache != null) {
+        throw new IllegalStateException("Placeholder cache already set.");
+      }
+      this.placeholderCache = placeholderCache;
+      return this;
+    }
+
     /** Specify a listener for interesting events. */
     public Builder listener(Listener listener) {
       if (listener == null) {
@@ -492,6 +508,11 @@ public class Picasso {
       if (cache == null) {
         cache = new LruCache(context);
       }
+
+      if (placeholderCache == null) {
+        placeholderCache = new WeakReferencesCache();
+      }
+
       if (service == null) {
         service = new PicassoExecutorService();
       }
@@ -503,7 +524,8 @@ public class Picasso {
 
       Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, downloader, cache, stats);
 
-      return new Picasso(context, dispatcher, cache, listener, transformer, stats, debugging);
+      return new Picasso(context, dispatcher, cache, placeholderCache, listener, transformer, stats,
+          debugging);
     }
   }
 
