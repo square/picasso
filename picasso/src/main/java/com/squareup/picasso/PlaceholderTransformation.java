@@ -5,5 +5,5 @@ package com.squareup.picasso;
  *
  * @author "Jorge J. Barroso" <jbarroso@tuenti.com>
  */
-public interface PlaceHolderTransformation {
+public class PlaceholderTransformation extends Transformation{
 }
