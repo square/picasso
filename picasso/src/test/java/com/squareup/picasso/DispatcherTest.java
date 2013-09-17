@@ -68,6 +68,11 @@ public class DispatcherTest {
     verify(service).shutdown();
   }
 
+  @Test public void shutdownUnregistersReceiver() throws Exception {
+    dispatcher.shutdown();
+    verify(context).unregisterReceiver(dispatcher.receiver);
+  }
+
   @Test public void performSubmitWithNewRequestQueuesHunter() throws Exception {
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     dispatcher.performSubmit(action);
