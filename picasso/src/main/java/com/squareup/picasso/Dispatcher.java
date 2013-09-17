@@ -68,6 +68,7 @@ class Dispatcher {
   final Cache cache;
   final Stats stats;
   final List<BitmapHunter> batch;
+  final NetworkBroadcastReceiver receiver;
 
   NetworkInfo networkInfo;
   boolean airplaneMode;
@@ -86,13 +87,14 @@ class Dispatcher {
     this.stats = stats;
     this.batch = new ArrayList<BitmapHunter>(4);
     this.airplaneMode = Utils.isAirplaneModeOn(this.context);
-    NetworkBroadcastReceiver receiver = new NetworkBroadcastReceiver(this.context);
+    this.receiver = new NetworkBroadcastReceiver(this.context);
     receiver.register();
   }
 
   void shutdown() {
     service.shutdown();
     dispatcherThread.quit();
+    receiver.unregister();
   }
 
   void dispatchSubmit(Action action) {
@@ -281,6 +283,10 @@ class Dispatcher {
         filter.addAction(CONNECTIVITY_ACTION);
       }
       context.registerReceiver(this, filter);
+    }
+
+    void unregister() {
+      context.unregisterReceiver(this);
     }
 
     @Override public void onReceive(Context context, Intent intent) {
