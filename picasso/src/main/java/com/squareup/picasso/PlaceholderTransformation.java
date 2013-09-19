@@ -1,9 +1,8 @@
 package com.squareup.picasso;
 
 /**
- * Copyright (c) Tuenti Technologies. All rights reserved.
- *
- * @author "Jorge J. Barroso" <jbarroso@tuenti.com>
+ * With this interface you mark that this Transformation must be apply to Placeholders too.
+ * Warning! the first time, the transformation will be resolved in the UI thread.
  */
-public class PlaceholderTransformation extends Transformation{
+public interface PlaceholderTransformation extends Transformation {
 }

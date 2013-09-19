@@ -17,24 +17,54 @@ package com.squareup.picasso;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.*;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import static android.graphics.Color.WHITE;
+import android.graphics.ColorFilter;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.widget.ImageView;
+import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.graphics.Color.GREEN;
-import static android.graphics.Color.WHITE;
-import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
-
 final class PicassoDrawable extends Drawable {
     // Only accessed from main thread.
     private static final Paint DEBUG_PAINT = new Paint();
-
     private static final float FADE_DURATION = 200f; //ms
+    final BitmapDrawable image;
+    private final boolean debugging;
+    private final float density;
+    private final Picasso.LoadedFrom loadedFrom;
+    Drawable placeholder;
+    long startTimeMillis;
+    boolean animating;
+
+    PicassoDrawable(Context context, Drawable placeholder, Bitmap bitmap,
+                    Picasso.LoadedFrom loadedFrom, boolean noFade, boolean debugging) {
+        Resources res = context.getResources();
+
+        this.debugging = debugging;
+        this.density = res.getDisplayMetrics().density;
+
+        this.loadedFrom = loadedFrom;
+
+        this.image = new BitmapDrawable(res, bitmap);
+
+        boolean fade = loadedFrom != MEMORY && !noFade;
+        if (fade) {
+            this.placeholder = placeholder;
+            animating = true;
+            startTimeMillis = SystemClock.uptimeMillis();
+        }
+    }
 
     /**
      * Create or update the drawable on the target {@link ImageView} to display the supplied bitmap
@@ -52,20 +82,28 @@ final class PicassoDrawable extends Drawable {
      * Create or update the drawable on the target {@link ImageView} to display the supplied
      * placeholder image.
      */
-    static void setPlaceholder(ImageView target, int placeholderResId, Drawable placeholderDrawable, List<Transformation> transformations, Cache placeholderCache) {
+    static void setPlaceholder(ImageView target, int placeholderResId, Drawable placeholderDrawable,
+                               List<Transformation> transformations, Cache placeholderCache) {
 
+        List<PlaceholderTransformation> placeHolderTransformations =
+                obtainPlaceholderTransformations(transformations);
 
         if (placeholderResId != 0) {
-            List<PlaceholderTransformation> placeHolderTransformations = obtainPlaceholderTransformations(transformations);
 
             if (placeHolderTransformations.isEmpty()) {
 
                 target.setImageResource(placeholderResId);
             } else {
-                setPlaceholderWithTransformation(target, placeholderResId, placeHolderTransformations, placeholderCache);
+                setPlaceholderWithTransformation(target, placeholderResId,
+                        placeHolderTransformations, placeholderCache);
             }
         } else {
-            target.setImageDrawable(placeholderDrawable);
+            if(placeHolderTransformations.isEmpty()){
+                target.setImageDrawable(placeholderDrawable);
+            }else {
+                throw new IllegalStateException("PlaceholderDrawable don't support apply a " +
+                        "placeholder transformation. It works only with placeholerId");
+            }
         }
 
     }
@@ -73,7 +111,10 @@ final class PicassoDrawable extends Drawable {
     /**
      * Set the placeHolder after apply the transformation, this check if we have a placeholderCache.
      */
-    private static void setPlaceholderWithTransformation(ImageView target, int placeholderResId, List<PlaceholderTransformation> placeHolderTransformations, Cache placeholderCache) {
+    private static void setPlaceholderWithTransformation(ImageView target, int placeholderResId,
+                                                         List<PlaceholderTransformation>
+                                                                 placeHolderTransformations,
+                                                         Cache placeholderCache) {
         String placeholderName = obtainPlaceholerName(placeholderResId, placeHolderTransformations);
 
         Bitmap transformBitmap = placeholderCache.get(placeholderName);
@@ -82,7 +123,8 @@ final class PicassoDrawable extends Drawable {
             target.setImageBitmap(transformBitmap);
         } else {
             // create the transform bitmap.
-            transformBitmap = createPlaceholderWithTransformation(target,placeholderResId,placeHolderTransformations);
+            transformBitmap = createPlaceholderWithTransformation(target, placeholderResId,
+                    placeHolderTransformations);
 
 
             //set the image
@@ -95,8 +137,13 @@ final class PicassoDrawable extends Drawable {
 
     }
 
-    private static Bitmap createPlaceholderWithTransformation(ImageView target, int placeholderResId, List<PlaceholderTransformation> placeHolderTransformations) {
-        Bitmap transformBitmap = BitmapFactory.decodeResource(target.getContext().getResources(), placeholderResId);
+    private static Bitmap createPlaceholderWithTransformation(ImageView target,
+                                                              int placeholderResId,
+                                                              List<PlaceholderTransformation>
+                                                                      placeHolderTransformations) {
+
+        Bitmap transformBitmap = BitmapFactory.decodeResource(target.getContext().getResources(),
+                placeholderResId);
         if (transformBitmap != null) {
 
             for (PlaceholderTransformation transformation : placeHolderTransformations) {
@@ -115,8 +162,9 @@ final class PicassoDrawable extends Drawable {
                 }
 
                 if (newResult == transformBitmap && transformBitmap.isRecycled()) {
-                    throw new IllegalStateException(
-                            "Transformation " + transformation.key() + " returned input Bitmap but recycled it.");
+                    throw new IllegalStateException("Transformation "
+                            + transformation.key()
+                            + " returned input Bitmap but recycled it.");
                 }
 
                 // If the transformation returned a new bitmap ensure they recycled the original.
@@ -136,7 +184,9 @@ final class PicassoDrawable extends Drawable {
 
     }
 
-    private static String obtainPlaceholerName(int placeholderResId, List<PlaceholderTransformation> placeHolderTransformations) {
+    static String obtainPlaceholerName(int placeholderResId,
+                                               List<PlaceholderTransformation>
+                                                       placeHolderTransformations) {
         //this 50 is copy from other name buffers in the library.
         StringBuffer nameBuffer = new StringBuffer(50);
         nameBuffer.append(placeholderResId);
@@ -161,8 +211,10 @@ final class PicassoDrawable extends Drawable {
     /**
      * Obtain all transformations that will apply to the placeholder.
      */
-    private static List<PlaceholderTransformation> obtainPlaceholderTransformations(List<Transformation> transformations) {
-        List<PlaceholderTransformation> obtainedTransformations = new ArrayList<PlaceholderTransformation>();
+    private static List<PlaceholderTransformation> obtainPlaceholderTransformations(
+            List<Transformation> transformations) {
+        List<PlaceholderTransformation> obtainedTransformations = new
+                ArrayList<PlaceholderTransformation>();
 
         if ((transformations != null) && (!transformations.isEmpty())) {
 
@@ -176,33 +228,16 @@ final class PicassoDrawable extends Drawable {
         return obtainedTransformations;
     }
 
-    private final boolean debugging;
-    private final float density;
-    private final Picasso.LoadedFrom loadedFrom;
-    final BitmapDrawable image;
+    private static Path getTrianglePath(Point p1, int width) {
+        Point p2 = new Point(p1.x + width, p1.y);
+        Point p3 = new Point(p1.x, p1.y + width);
 
-    Drawable placeholder;
+        Path path = new Path();
+        path.moveTo(p1.x, p1.y);
+        path.lineTo(p2.x, p2.y);
+        path.lineTo(p3.x, p3.y);
 
-    long startTimeMillis;
-    boolean animating;
-
-    PicassoDrawable(Context context, Drawable placeholder, Bitmap bitmap,
-                    Picasso.LoadedFrom loadedFrom, boolean noFade, boolean debugging) {
-        Resources res = context.getResources();
-
-        this.debugging = debugging;
-        this.density = res.getDisplayMetrics().density;
-
-        this.loadedFrom = loadedFrom;
-
-        this.image = new BitmapDrawable(res, bitmap);
-
-        boolean fade = loadedFrom != MEMORY && !noFade;
-        if (fade) {
-            this.placeholder = placeholder;
-            animating = true;
-            startTimeMillis = SystemClock.uptimeMillis();
-        }
+        return path;
     }
 
     @Override
@@ -309,17 +344,5 @@ final class PicassoDrawable extends Drawable {
         DEBUG_PAINT.setColor(loadedFrom.debugColor);
         path = getTrianglePath(new Point(0, 0), (int) (15 * density));
         canvas.drawPath(path, DEBUG_PAINT);
-    }
-
-    private static Path getTrianglePath(Point p1, int width) {
-        Point p2 = new Point(p1.x + width, p1.y);
-        Point p3 = new Point(p1.x, p1.y + width);
-
-        Path path = new Path();
-        path.moveTo(p1.x, p1.y);
-        path.lineTo(p2.x, p2.y);
-        path.lineTo(p3.x, p3.y);
-
-        return path;
     }
 }

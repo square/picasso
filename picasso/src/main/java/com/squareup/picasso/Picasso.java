@@ -23,7 +23,12 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
+import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import android.widget.ImageView;
+import static com.squareup.picasso.Action.RequestWeakReference;
+import static com.squareup.picasso.Dispatcher.HUNTER_BATCH_COMPLETE;
+import static com.squareup.picasso.Dispatcher.REQUEST_GCED;
+import static com.squareup.picasso.Utils.THREAD_PREFIX;
 
 import java.io.File;
 import java.lang.ref.ReferenceQueue;
@@ -31,12 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
-
-import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
-import static com.squareup.picasso.Dispatcher.HUNTER_BATCH_COMPLETE;
-import static com.squareup.picasso.Dispatcher.REQUEST_GCED;
-import static com.squareup.picasso.Action.RequestWeakReference;
-import static com.squareup.picasso.Utils.THREAD_PREFIX;
 
 /**
  * Image downloading, transformation, and caching manager.
@@ -46,52 +45,13 @@ import static com.squareup.picasso.Utils.THREAD_PREFIX;
  */
 public class Picasso {
 
-    /**
-     * Callbacks for Picasso events.
-     */
-    public interface Listener {
-        /**
-         * Invoked when an image has failed to load. This is useful for reporting image failures to a
-         * remote analytics service, for example.
-         */
-        void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception);
-    }
-
-    /**
-     * A transformer that is called immediately before every request is submitted. This can be used to
-     * modify any information about a request.
-     * <p/>
-     * For example, if you use a CDN you can change the hostname for the image based on the current
-     * location of the user in order to get faster download speeds.
-     * <p/>
-     * <b>NOTE:</b> This is a beta feature. The API is subject to change in a backwards incompatible
-     * way at any time.
-     */
-    public interface RequestTransformer {
-        /**
-         * Transform a request before it is submitted to be processed.
-         *
-         * @return The original request or a new request to replace it. Must not be null.
-         */
-        Request transformRequest(Request request);
-
-        /**
-         * A {@link RequestTransformer} which returns the original request.
-         */
-        RequestTransformer IDENTITY = new RequestTransformer() {
-            @Override
-            public Request transformRequest(Request request) {
-                return request;
-            }
-        };
-    }
-
     static final Handler HANDLER = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case HUNTER_BATCH_COMPLETE: {
-                    @SuppressWarnings("unchecked") List<BitmapHunter> batch = (List<BitmapHunter>) msg.obj;
+                    @SuppressWarnings("unchecked")
+                    List<BitmapHunter> batch = (List<BitmapHunter>) msg.obj;
                     for (BitmapHunter hunter : batch) {
                         hunter.picasso.complete(hunter);
                     }
@@ -107,13 +67,7 @@ public class Picasso {
             }
         }
     };
-
     static Picasso singleton = null;
-
-    private final Listener listener;
-    private final RequestTransformer requestTransformer;
-    private final CleanupThread cleanupThread;
-
     final Context context;
     final Dispatcher dispatcher;
     final Cache cache;
@@ -122,12 +76,15 @@ public class Picasso {
     final Map<Object, Action> targetToAction;
     final Map<ImageView, DeferredRequestCreator> targetToDeferredRequestCreator;
     final ReferenceQueue<Object> referenceQueue;
-
+    private final Listener listener;
+    private final RequestTransformer requestTransformer;
+    private final CleanupThread cleanupThread;
     boolean debugging;
     boolean shutdown;
 
-    Picasso(Context context, Dispatcher dispatcher, Cache cache, Cache placeholderCache, Listener listener,
-            RequestTransformer requestTransformer, Stats stats, boolean debugging) {
+    Picasso(Context context, Dispatcher dispatcher, Cache cache, Cache placeholderCache,
+            Listener listener, RequestTransformer requestTransformer, Stats stats,
+            boolean debugging) {
         this.context = context;
         this.dispatcher = dispatcher;
         this.cache = cache;
@@ -141,6 +98,29 @@ public class Picasso {
         this.referenceQueue = new ReferenceQueue<Object>();
         this.cleanupThread = new CleanupThread(referenceQueue, HANDLER);
         this.cleanupThread.start();
+    }
+
+    /**
+     * The global default {@link Picasso} instance.
+     * <p/>
+     * This instance is automatically initialized with defaults that are suitable to most
+     * implementations.
+     * <ul>
+     * <li>LRU memory cache of 15% the available application RAM up to 20MB</li>
+     * <li>Disk cache of 2% storage space up to 50MB but no less than 5MB. (Note: this is only
+     * available on API 14+ <em>or</em> if you are using a standalone library that provides a disk
+     * cache on all API levels like OkHttp)</li>
+     * <li>Three download threads for disk and network access.</li>
+     * </ul>
+     * <p/>
+     * If these settings do not meet the requirements of your application you can construct your own
+     * instance with full control over the configuration by using {@link Picasso.Builder}.
+     */
+    public static Picasso with(Context context) {
+        if (singleton == null) {
+            singleton = new Builder(context).build();
+        }
+        return singleton;
     }
 
     /**
@@ -160,8 +140,8 @@ public class Picasso {
     /**
      * Start an image request using the specified URI.
      * <p/>
-     * Passing {@code null} as a {@code uri} will not trigger any request but will set a placeholder,
-     * if one is specified.
+     * Passing {@code null} as a {@code uri} will not trigger any request but will set a
+     * placeholder, if one is specified.
      *
      * @see #load(File)
      * @see #load(String)
@@ -257,7 +237,8 @@ public class Picasso {
      */
     public void shutdown() {
         if (this == singleton) {
-            throw new UnsupportedOperationException("Default singleton instance cannot be shutdown.");
+            throw new UnsupportedOperationException("Default singleton instance cannot be "
+                   + "shutdown.");
         }
         if (shutdown) {
             return;
@@ -267,7 +248,8 @@ public class Picasso {
         cleanupThread.shutdown();
         stats.shutdown();
         dispatcher.shutdown();
-        for (DeferredRequestCreator deferredRequestCreator : targetToDeferredRequestCreator.values()) {
+        for (DeferredRequestCreator deferredRequestCreator : targetToDeferredRequestCreator
+                .values()) {
             deferredRequestCreator.cancel();
         }
         targetToDeferredRequestCreator.clear();
@@ -359,6 +341,60 @@ public class Picasso {
         }
     }
 
+    /**
+     * Describes where the image was loaded from.
+     */
+    public enum LoadedFrom {
+        MEMORY(Color.GREEN),
+        DISK(Color.YELLOW),
+        NETWORK(Color.RED);
+        final int debugColor;
+
+        private LoadedFrom(int debugColor) {
+            this.debugColor = debugColor;
+        }
+    }
+
+    /**
+     * Callbacks for Picasso events.
+     */
+    public interface Listener {
+        /**
+         * Invoked when an image has failed to load. This is useful for reporting image failures to
+         * a remote analytics service, for example.
+         */
+        void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception);
+    }
+
+    /**
+     * A transformer that is called immediately before every request is submitted. This can be
+     * used to modify any information about a request.
+     * <p/>
+     * For example, if you use a CDN you can change the hostname for the image based on the current
+     * location of the user in order to get faster download speeds.
+     * <p/>
+     * <b>NOTE:</b> This is a beta feature. The API is subject to change in a backwards incompatible
+     * way at any time.
+     */
+    public interface RequestTransformer {
+        /**
+         * A {@link RequestTransformer} which returns the original request.
+         */
+        RequestTransformer IDENTITY = new RequestTransformer() {
+            @Override
+            public Request transformRequest(Request request) {
+                return request;
+            }
+        };
+
+        /**
+         * Transform a request before it is submitted to be processed.
+         *
+         * @return The original request or a new request to replace it. Must not be null.
+         */
+        Request transformRequest(Request request);
+    }
+
     private static class CleanupThread extends Thread {
         private final ReferenceQueue<?> referenceQueue;
         private final Handler handler;
@@ -375,7 +411,8 @@ public class Picasso {
             Process.setThreadPriority(THREAD_PRIORITY_BACKGROUND);
             while (true) {
                 try {
-                    RequestWeakReference<?> remove = (RequestWeakReference<?>) referenceQueue.remove();
+                    RequestWeakReference<?> remove = (RequestWeakReference<?>) referenceQueue
+                            .remove();
                     handler.sendMessage(handler.obtainMessage(REQUEST_GCED, remove.action));
                 } catch (InterruptedException e) {
                     break;
@@ -394,29 +431,6 @@ public class Picasso {
         void shutdown() {
             interrupt();
         }
-    }
-
-    /**
-     * The global default {@link Picasso} instance.
-     * <p/>
-     * This instance is automatically initialized with defaults that are suitable to most
-     * implementations.
-     * <ul>
-     * <li>LRU memory cache of 15% the available application RAM up to 20MB</li>
-     * <li>Disk cache of 2% storage space up to 50MB but no less than 5MB. (Note: this is only
-     * available on API 14+ <em>or</em> if you are using a standalone library that provides a disk
-     * cache on all API levels like OkHttp)</li>
-     * <li>Three download threads for disk and network access.</li>
-     * </ul>
-     * <p/>
-     * If these settings do not meet the requirements of your application you can construct your own
-     * instance with full control over the configuration by using {@link Picasso.Builder}.
-     */
-    public static Picasso with(Context context) {
-        if (singleton == null) {
-            singleton = new Builder(context).build();
-        }
-        return singleton;
     }
 
     /**
@@ -517,8 +531,8 @@ public class Picasso {
         /**
          * Specify a transformer for all incoming requests.
          * <p/>
-         * <b>NOTE:</b> This is a beta feature. The API is subject to change in a backwards incompatible
-         * way at any time.
+         * <b>NOTE:</b> This is a beta feature. The API is subject to change in a backwards
+         * incompatible way at any time.
          */
         public Builder requestTransformer(RequestTransformer transformer) {
             if (transformer == null) {
@@ -553,7 +567,7 @@ public class Picasso {
             }
 
             if (placeholderCache == null) {
-                placeholderCache = new SoftReferencesCache();
+                placeholderCache = new WeakReferencesCache();
 
             }
 
@@ -566,24 +580,11 @@ public class Picasso {
 
             Stats stats = new Stats(cache);
 
-            Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, downloader, cache, stats);
+            Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, downloader, cache,
+                    stats);
 
-            return new Picasso(context, dispatcher, cache,placeholderCache, listener, transformer, stats, debugging);
-        }
-    }
-
-    /**
-     * Describes where the image was loaded from.
-     */
-    public enum LoadedFrom {
-        MEMORY(Color.GREEN),
-        DISK(Color.YELLOW),
-        NETWORK(Color.RED);
-
-        final int debugColor;
-
-        private LoadedFrom(int debugColor) {
-            this.debugColor = debugColor;
+            return new Picasso(context, dispatcher, cache, placeholderCache, listener,
+                    transformer, stats, debugging);
         }
     }
 }

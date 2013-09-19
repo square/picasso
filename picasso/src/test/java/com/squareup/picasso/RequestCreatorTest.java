@@ -17,11 +17,15 @@ package com.squareup.picasso;
 
 import android.R;
 import android.graphics.Bitmap;
+import static android.graphics.Bitmap.Config.ALPHA_8;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
+
+import static com.squareup.picasso.TestUtils.mockPlaceholderTransformationToReturn;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,6 +64,11 @@ public class RequestCreatorTest {
   @Before public void shutUp() throws Exception {
     initMocks(this);
     when(picasso.transformRequest(any(Request.class))).thenAnswer(TRANSFORM_REQUEST_ANSWER);
+  }
+
+  private Picasso anyPicasso() {
+        return new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE,Cache.NONE, null, IDENTITY,
+                mock(Stats.class), true);
   }
 
   @Test
@@ -176,6 +185,8 @@ public class RequestCreatorTest {
     }
   }
 
+
+
   @Test
   public void intoImageViewWithNullUriAndResourceIdSkipsAndCancels() throws Exception {
     ImageView target = mockImageViewTarget();
@@ -188,8 +199,7 @@ public class RequestCreatorTest {
   @Test
   public void intoImageViewWithQuickMemoryCacheCheckDoesNotSubmit() throws Exception {
     Picasso picasso =
-        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE,Cache.NONE, null, IDENTITY,
-            mock(Stats.class), true));
+        spy(anyPicasso());
     doReturn(BITMAP_1).when(picasso).quickMemoryCacheCheck(URI_KEY_1);
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
@@ -200,11 +210,11 @@ public class RequestCreatorTest {
     verify(picasso, never()).enqueueAndSubmit(any(Action.class));
   }
 
-  @Test
+
+    @Test
   public void intoImageViewSetsPlaceholderDrawable() throws Exception {
     Picasso picasso =
-        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE,Cache.NONE, null, IDENTITY,
-            mock(Stats.class), true));
+        spy(anyPicasso());
     ImageView target = mockImageViewTarget();
     Drawable placeHolderDrawable = mock(Drawable.class);
     new RequestCreator(picasso, URI_1, 0).placeholder(placeHolderDrawable).into(target);
@@ -216,14 +226,56 @@ public class RequestCreatorTest {
   @Test
   public void intoImageViewSetsPlaceholderWithResourceId() throws Exception {
     Picasso picasso =
-        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE,Cache.NONE, null, IDENTITY,
-            mock(Stats.class), true));
+        spy(anyPicasso());
     ImageView target = mockImageViewTarget();
-    new RequestCreator(picasso, URI_1, 0).placeholder(R.drawable.picture_frame).into(target);
+
+    new RequestCreator(picasso, URI_1, 0).placeholder(R.drawable.picture_frame).into
+            (target);
     verify(target).setImageResource(R.drawable.picture_frame);
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue()).isInstanceOf(ImageViewAction.class);
   }
+
+
+    @Test
+    public void intoImageViewSetsPlaceholderWithResourceIdAndPlaceholderTransform() throws
+            Exception {
+
+        Bitmap anyBitmap =Bitmap.createBitmap(1, 1, ALPHA_8);
+
+        Picasso picasso =
+                spy(anyPicasso());
+
+        //we need the context for create the placeholder
+        ImageView target = spy(new ImageView(Robolectric.application));
+
+        PlaceholderTransformation placehoderTransformation =
+                mockPlaceholderTransformationToReturn(anyBitmap);
+
+        new RequestCreator(picasso, URI_1, 0).placeholder(R.drawable.picture_frame)
+                .transform(placehoderTransformation)
+                .into(target);
+
+        verify(target).setImageBitmap(anyBitmap);
+        verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+        assertThat(actionCaptor.getValue()).isInstanceOf(ImageViewAction.class);
+    }
+
+    @Test
+    public void intoImageViewWithResourceIdAndDrawableThrows() throws Exception {
+        ImageView target = mockImageViewTarget();
+        Drawable placeHolderDrawable = mock(Drawable.class);
+        PlaceholderTransformation placeholderTransformation = mock(PlaceholderTransformation.class);
+        try {
+            new RequestCreator(picasso, URI_1, 0)
+                    .placeholder(placeHolderDrawable)
+                    .transform(placeholderTransformation)
+                    .into(target);
+            fail("Calling into() with a placeHolderTransformation need a resourceId placeholder " +
+                    "or don't have it, if it is not the case should throw exception");
+        } catch (IllegalStateException expected) {
+        }
+    }
 
   @Test
   public void intoImageViewAndNotInCacheSubmitsImageViewRequest() throws Exception {

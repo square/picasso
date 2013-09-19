@@ -9,11 +9,10 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import com.squareup.picasso.PlaceHolderTransformation;
-import com.squareup.picasso.Transformation;
+import com.squareup.picasso.PlaceholderTransformation;
 
 
-public class CropRoundTransformation implements PlaceHolderTransformation {
+public class CropRoundTransformation implements PlaceholderTransformation {
     @Override
     public Bitmap transform(Bitmap source) {
         int size = Math.min(source.getWidth(), source.getHeight());

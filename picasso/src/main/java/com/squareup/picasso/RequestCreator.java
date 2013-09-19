@@ -20,15 +20,13 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.widget.ImageView;
-
-import java.io.IOException;
-
-import org.jetbrains.annotations.TestOnly;
-
 import static com.squareup.picasso.BitmapHunter.forRequest;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Utils.checkNotMain;
 import static com.squareup.picasso.Utils.createKey;
+import org.jetbrains.annotations.TestOnly;
+
+import java.io.IOException;
 
 /**
  * Fluent API for building an image download request.
@@ -37,7 +35,6 @@ import static com.squareup.picasso.Utils.createKey;
 public class RequestCreator {
     private final Picasso picasso;
     private final Request.Builder data;
-
     private boolean skipMemoryCache;
     private boolean noFade;
     private boolean deferred;
@@ -123,7 +120,8 @@ public class RequestCreator {
 
     /**
      * Attempt to resize the image to fit exactly into the target {@link ImageView}'s bounds. This
-     * will result in delayed execution of the request until the {@link ImageView} has been measured.
+     * will result in delayed execution of the request until the {@link ImageView} has been
+     * measured.
      * <p/>
      * <em>Note:</em> This method works only when your target is an {@link ImageView).
      */
@@ -238,8 +236,8 @@ public class RequestCreator {
         String key = Utils.createKey(finalData);
 
         Action action = new GetAction(picasso, finalData, skipMemoryCache, key);
-        return forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache, picasso.stats,
-                action, picasso.dispatcher.downloader).hunt();
+        return forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache,
+                picasso.stats, action, picasso.dispatcher.downloader).hunt();
     }
 
     /**
@@ -367,8 +365,9 @@ public class RequestCreator {
         Request finalData = picasso.transformRequest(data.build());
 
         // if we dont have an image we set the placeholder directly
-        if (data.hasImage()) {
-            PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable,finalData.transformations,picasso.placeholderCache);
+        if (!data.hasImage()) {
+            PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable,
+                    finalData.transformations, picasso.placeholderCache);
         } else {
 
             String requestKey = createKey(finalData);
@@ -386,11 +385,12 @@ public class RequestCreator {
                 }
             }
 
-            PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable,finalData.transformations,picasso.placeholderCache);
+            PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable,
+                    finalData.transformations, picasso.placeholderCache);
 
             Action action =
-                    new ImageViewAction(picasso, target, finalData, skipMemoryCache, noFade, errorResId,
-                            errorDrawable, requestKey, callback);
+                    new ImageViewAction(picasso, target, finalData, skipMemoryCache, noFade,
+                            errorResId, errorDrawable, requestKey, callback);
 
             picasso.enqueueAndSubmit(action);
         }
