@@ -16,6 +16,7 @@
 package com.squareup.picasso;
 
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 
 import static com.squareup.picasso.Picasso.LoadedFrom;
 
@@ -37,5 +38,8 @@ public interface Target {
   void onBitmapLoaded(Bitmap bitmap, LoadedFrom from);
 
   /** Callback indicating the image could not be successfully loaded. */
-  void onBitmapFailed();
+  void onBitmapFailed(Drawable errorDrawable);
+
+  /** Callback invoked right before your request is submitted. */
+  void onPrepareLoad(Drawable placeHolderDrawable);
 }
