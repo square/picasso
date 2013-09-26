@@ -16,6 +16,7 @@
 package com.squareup.picasso;
 
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -54,7 +55,7 @@ public class TargetActionTest {
     Target target = mockTarget();
     TargetAction request = new TargetAction(mock(Picasso.class), target, null, false, URI_KEY_1);
     request.error();
-    verify(target).onBitmapFailed();
+    verify(target).onBitmapFailed(null);
   }
 
   @Test public void recyclingInSuccessThrowsException() {
@@ -63,7 +64,11 @@ public class TargetActionTest {
         bitmap.recycle();
       }
 
-      @Override public void onBitmapFailed() {
+      @Override public void onBitmapFailed(Drawable errorDrawable) {
+        throw new AssertionError();
+      }
+
+      @Override public void onPrepareLoad(Drawable placeHolderDrawable) {
         throw new AssertionError();
       }
     };

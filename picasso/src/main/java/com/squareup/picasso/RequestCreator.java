@@ -280,8 +280,14 @@ public class RequestCreator {
     if (deferred) {
       throw new IllegalStateException("Fit cannot be used with a Target.");
     }
+
+    Drawable drawable =
+        placeholderResId != 0 ? picasso.context.getResources().getDrawable(placeholderResId)
+            : placeholderDrawable;
+
     if (!data.hasImage()) {
       picasso.cancelRequest(target);
+      target.onPrepareLoad(drawable);
       return;
     }
 
@@ -296,6 +302,8 @@ public class RequestCreator {
         return;
       }
     }
+
+    target.onPrepareLoad(drawable);
 
     Action action = new TargetAction(picasso, target, finalData, skipMemoryCache, requestKey);
     picasso.enqueueAndSubmit(action);
