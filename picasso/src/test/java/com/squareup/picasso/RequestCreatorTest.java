@@ -137,8 +137,10 @@ public class RequestCreatorTest {
   @Test
   public void intoTargetWithNullUriAndResourceIdSkipsAndCancels() throws Exception {
     Target target = mockTarget();
-    new RequestCreator(picasso, null, 0).into(target);
+    Drawable placeHolderDrawable = mock(Drawable.class);
+    new RequestCreator(picasso, null, 0).placeholder(placeHolderDrawable).into(target);
     verify(picasso).cancelRequest(target);
+    verify(target).onPrepareLoad(placeHolderDrawable);
     verifyNoMoreInteractions(picasso);
   }
 
@@ -162,7 +164,9 @@ public class RequestCreatorTest {
   @Test
   public void intoTargetAndNotInCacheSubmitsTargetRequest() throws Exception {
     Target target = mockTarget();
-    new RequestCreator(picasso, URI_1, 0).into(target);
+    Drawable placeHolderDrawable = mock(Drawable.class);
+    new RequestCreator(picasso, URI_1, 0).placeholder(placeHolderDrawable).into(target);
+    verify(target).onPrepareLoad(placeHolderDrawable);
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue()).isInstanceOf(TargetAction.class);
   }
