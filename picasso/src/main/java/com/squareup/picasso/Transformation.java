@@ -31,6 +31,4 @@ public interface Transformation {
    * has parameters (e.g. size, scale factor, etc) then these should be part of the key.
    */
   String key();
-
-
 }

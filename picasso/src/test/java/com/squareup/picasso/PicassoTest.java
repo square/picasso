@@ -279,9 +279,9 @@ public class PicassoTest {
   @Test public void builderInvalidExecutor() throws Exception {
     try {
       new Picasso.Builder(context).executor(null);
-      fail("Null Executor should throw exception.");
-    } catch (IllegalArgumentException expected) {
-    }
+	  fail("Null Executor should throw exception.");
+  } catch (IllegalArgumentException expected) {
+	}
     try {
       ExecutorService executor = mock(ExecutorService.class);
       new Picasso.Builder(context).executor(executor).executor(executor);

@@ -17,10 +17,18 @@ package com.squareup.picasso;
 
 import android.R;
 import android.content.Context;
-import static android.graphics.Color.RED;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+
+import static android.graphics.Color.RED;
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.PicassoDrawable.obtainPlaceholerName;
@@ -28,96 +36,79 @@ import static com.squareup.picasso.TestUtils.BITMAP_1;
 import static com.squareup.picasso.TestUtils.BITMAP_2;
 import static com.squareup.picasso.TestUtils.mockPlaceholderTransformationToReturn;
 import static org.fest.assertions.api.Assertions.assertThat;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 
-import java.util.ArrayList;
-import java.util.List;
-
-
-@RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@RunWith(RobolectricTestRunner.class) @Config(manifest = Config.NONE)
 public class PicassoDrawableTest {
-    private final Context context = Robolectric.application;
-    private final Drawable placeholder = new ColorDrawable(RED);
+  private final Context context = Robolectric.application;
+  private final Drawable placeholder = new ColorDrawable(RED);
 
-    @Test
-    public void createWithNoPlaceholderAnimation() {
-        PicassoDrawable pd = new PicassoDrawable(context, null, BITMAP_1, DISK, false, false);
-        assertThat(pd.image.getBitmap()).isSameAs(BITMAP_1);
-        assertThat(pd.placeholder).isNull();
-        assertThat(pd.animating).isTrue();
-    }
+  @Test public void createWithNoPlaceholderAnimation() {
+    PicassoDrawable pd = new PicassoDrawable(context, null, BITMAP_1, DISK, false, false);
+    assertThat(pd.image.getBitmap()).isSameAs(BITMAP_1);
+    assertThat(pd.placeholder).isNull();
+    assertThat(pd.animating).isTrue();
+  }
 
-    @Test
-    public void createWithPlaceholderAnimation() {
-        PicassoDrawable pd = new PicassoDrawable(context, placeholder, BITMAP_1, DISK, false, false);
-        assertThat(pd.image.getBitmap()).isSameAs(BITMAP_1);
-        assertThat(pd.placeholder).isSameAs(placeholder);
-        assertThat(pd.animating).isTrue();
-    }
+  @Test public void createWithPlaceholderAnimation() {
+    PicassoDrawable pd = new PicassoDrawable(context, placeholder, BITMAP_1, DISK, false, false);
+    assertThat(pd.image.getBitmap()).isSameAs(BITMAP_1);
+    assertThat(pd.placeholder).isSameAs(placeholder);
+    assertThat(pd.animating).isTrue();
+  }
 
-    @Test
-    public void setPlaceholderWithTransformationCacheHit() {
-        //mock data
-        PlaceholderTransformation placehoderTransformation =
-                mockPlaceholderTransformationToReturn(BITMAP_2);
-        List transformations = new
-                ArrayList<PlaceholderTransformation>();
+  @Test public void setPlaceholderWithTransformationCacheHit() {
+    //mock data
+    PlaceholderTransformation placehoderTransformation =
+        mockPlaceholderTransformationToReturn(BITMAP_2);
+    List transformations = new ArrayList<PlaceholderTransformation>();
 
-        transformations.add(placehoderTransformation);
+    transformations.add(placehoderTransformation);
 
-        String placeHolderName = obtainPlaceholerName(R.drawable.picture_frame, transformations);
+    String placeHolderName = obtainPlaceholerName(R.drawable.picture_frame, transformations);
 
-        Cache placeHolderCache = spy(new WeakReferencesCache());
-        placeHolderCache.set(placeHolderName, BITMAP_1);
+    Cache placeHolderCache = spy(new WeakReferencesCache());
+    placeHolderCache.set(placeHolderName, BITMAP_1);
 
-        //we need the context for create the placeholder
-        ImageView target = spy(new ImageView(Robolectric.application));
+    //we need the context for create the placeholder
+    ImageView imageViewTarget = spy(new ImageView(Robolectric.application));
 
-        PicassoDrawable.setPlaceholder(target, R.drawable.picture_frame, null, transformations, placeHolderCache);
+    PicassoDrawable.setPlaceholder(imageViewTarget, R.drawable.picture_frame, null, transformations,
+        placeHolderCache);
 
-        verify(target).setImageBitmap(BITMAP_1);
-        verify(placeHolderCache, never()).set(placeHolderName, BITMAP_2);
-    }
+    verify(imageViewTarget).setImageBitmap(BITMAP_1);
+    verify(placeHolderCache, never()).set(placeHolderName, BITMAP_2);
+  }
 
-    @Test
-    public void setPlaceholderWithTransformationCacheMiss() {
-        //mock data
-        PlaceholderTransformation placehoderTransformation =
-                mockPlaceholderTransformationToReturn(BITMAP_2);
-        List transformations = new
-                ArrayList<PlaceholderTransformation>();
+  @Test public void setPlaceholderWithTransformationCacheMissWillUpdateCache() {
+    //mock data
+    PlaceholderTransformation placehoderTransformation =
+        mockPlaceholderTransformationToReturn(BITMAP_2);
+    List transformations = new ArrayList<PlaceholderTransformation>();
 
-        transformations.add(placehoderTransformation);
+    transformations.add(placehoderTransformation);
 
-        String placeHolderName = obtainPlaceholerName(R.drawable.picture_frame, transformations);
+    String placeHolderName = obtainPlaceholerName(R.drawable.picture_frame, transformations);
 
-        Cache placeHolderCache = spy(new WeakReferencesCache());
+    Cache placeHolderCache = spy(new WeakReferencesCache());
 
-        //we need the context for create the placeholder
-        ImageView target = spy(new ImageView(Robolectric.application));
+    //we need the context for create the placeholder
+    ImageView target = spy(new ImageView(Robolectric.application));
 
-        PicassoDrawable.setPlaceholder(target, R.drawable.picture_frame, null, transformations, placeHolderCache);
+    PicassoDrawable.setPlaceholder(target, R.drawable.picture_frame, null, transformations,
+        placeHolderCache);
 
-        verify(target).setImageBitmap(BITMAP_2);
-        verify(placeHolderCache).set(placeHolderName, BITMAP_2);
-    }
+    verify(target).setImageBitmap(BITMAP_2);
+    verify(placeHolderCache).set(placeHolderName, BITMAP_2);
+  }
 
-    @Test
-    public void createWithBitmapCacheHit() {
-        PicassoDrawable pd = new PicassoDrawable(context, placeholder, BITMAP_1, MEMORY, false, false);
+  @Test public void createWithBitmapCacheHit() {
+    PicassoDrawable pd = new PicassoDrawable(context, placeholder, BITMAP_1, MEMORY, false, false);
 
-        assertThat(pd.image.getBitmap()).isSameAs(BITMAP_1);
-        assertThat(pd.placeholder).isNull();
-        assertThat(pd.animating).isFalse();
-    }
-
-
+    assertThat(pd.image.getBitmap()).isSameAs(BITMAP_1);
+    assertThat(pd.placeholder).isNull();
+    assertThat(pd.animating).isFalse();
+  }
 }
