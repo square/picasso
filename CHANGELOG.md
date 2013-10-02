@@ -1,6 +1,17 @@
 Change Log
 ==========
 
+Version 2.1.0 *(2013-10-01)*
+----------------------------
+
+ * `Target` now has callback for applying placeholder. This makes it symmetric with image views when
+   using `into()`.
+ * Fix: Another work around for Android's header decoding algorthm readin more than 4K of image data
+   when decoding bounds.
+ * Fix: Ensure default network-based executor is unregistered when instance is shut down.
+ * Fix: Ensure connection is always closed for non-2xx response codes.
+
+
 Version 2.0.2 *(2013-09-11)*
 ----------------------------
 
