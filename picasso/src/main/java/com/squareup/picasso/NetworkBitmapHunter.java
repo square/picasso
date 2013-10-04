@@ -27,7 +27,7 @@ import static com.squareup.picasso.Picasso.LoadedFrom.NETWORK;
 
 class NetworkBitmapHunter extends BitmapHunter {
   static final int DEFAULT_RETRY_COUNT = 2;
-  private static final int MARKER = 16384;
+  private static final int MARKER = 65536;
 
   private final Downloader downloader;
 
@@ -55,9 +55,8 @@ class NetworkBitmapHunter extends BitmapHunter {
       return result;
     }
 
-    InputStream is = null;
+    InputStream is = response.getInputStream();
     try {
-      is = response.getInputStream();
       return decodeStream(is, data);
     } finally {
       Utils.closeQuietly(is);
