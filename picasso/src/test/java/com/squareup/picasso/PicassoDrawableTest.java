@@ -31,7 +31,7 @@ import org.robolectric.annotation.Config;
 import static android.graphics.Color.RED;
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
-import static com.squareup.picasso.PicassoDrawable.obtainPlaceholerName;
+import static com.squareup.picasso.PicassoDrawable.obtainPlaceholderName;
 import static com.squareup.picasso.TestUtils.BITMAP_1;
 import static com.squareup.picasso.TestUtils.BITMAP_2;
 import static com.squareup.picasso.TestUtils.mockPlaceholderTransformationToReturn;
@@ -67,7 +67,7 @@ public class PicassoDrawableTest {
 
     transformations.add(placehoderTransformation);
 
-    String placeHolderName = obtainPlaceholerName(R.drawable.picture_frame, transformations);
+    String placeHolderName = obtainPlaceholderName(R.drawable.picture_frame, transformations);
 
     Cache placeHolderCache = spy(new WeakReferencesCache());
     placeHolderCache.set(placeHolderName, BITMAP_1);
@@ -90,7 +90,7 @@ public class PicassoDrawableTest {
 
     transformations.add(placehoderTransformation);
 
-    String placeHolderName = obtainPlaceholerName(R.drawable.picture_frame, transformations);
+    String placeHolderName = obtainPlaceholderName(R.drawable.picture_frame, transformations);
 
     Cache placeHolderCache = spy(new WeakReferencesCache());
 

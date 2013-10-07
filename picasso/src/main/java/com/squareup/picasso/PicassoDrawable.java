@@ -38,7 +38,6 @@ import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 final class PicassoDrawable extends Drawable {
   // Only accessed from main thread.
   private static final Paint DEBUG_PAINT = new Paint();
-
   private static final float FADE_DURATION = 200f; //ms
   final BitmapDrawable image;
   private final boolean debugging;
@@ -114,7 +113,7 @@ final class PicassoDrawable extends Drawable {
    */
   private static void setPlaceholderWithTransformation(ImageView target, int placeholderResId,
       List<PlaceholderTransformation> placeHolderTransformations, Cache placeholderCache) {
-    String placeholderName = obtainPlaceholerName(placeholderResId, placeHolderTransformations);
+    String placeholderName = obtainPlaceholderName(placeholderResId, placeHolderTransformations);
 
     Bitmap transformBitmap = placeholderCache.get(placeholderName);
 
@@ -175,7 +174,7 @@ final class PicassoDrawable extends Drawable {
     return transformBitmap;
   }
 
-  static String obtainPlaceholerName(int placeholderResId,
+  static String obtainPlaceholderName(int placeholderResId,
       List<PlaceholderTransformation> placeHolderTransformations) {
     //this 50 is copy from other name buffers in the library.
     StringBuffer nameBuffer = new StringBuffer(50);
