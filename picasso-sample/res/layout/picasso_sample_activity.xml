@@ -40,5 +40,14 @@
         android:textOn="@string/hide"
         style="@style/Widget.PicassoSample.ActionBarButton"
         />
+    <ToggleButton
+        android:id="@+id/faux_action_bar_round"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:textOff="@string/round"
+        android:textOn="@string/square"
+        android:visibility="gone"
+        style="@style/Widget.PicassoSample.ActionBarButton"
+        />
   </LinearLayout>
 </FrameLayout>

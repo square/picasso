@@ -335,18 +335,13 @@ public class RequestCreator {
 
     if (!data.hasImage()) {
       picasso.cancelRequest(target);
-      PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable);
-      return;
-    }
-
-    if (deferred) {
+    } else if (deferred) {
       if (data.hasSize()) {
         throw new IllegalStateException("Fit cannot be used with resize.");
       }
       int measuredWidth = target.getMeasuredWidth();
       int measuredHeight = target.getMeasuredHeight();
       if (measuredWidth == 0 && measuredHeight == 0) {
-        PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable);
         picasso.defer(target, new DeferredRequestCreator(this, target, callback));
         return;
       }
@@ -354,27 +349,35 @@ public class RequestCreator {
     }
 
     Request finalData = picasso.transformRequest(data.build());
-    String requestKey = createKey(finalData);
 
-    if (!skipMemoryCache) {
-      Bitmap bitmap = picasso.quickMemoryCacheCheck(requestKey);
-      if (bitmap != null) {
-        picasso.cancelRequest(target);
-        PicassoDrawable.setBitmap(target, picasso.context, bitmap, MEMORY, noFade,
-            picasso.debugging);
-        if (callback != null) {
-          callback.onSuccess();
+    // if we dont have an image we set the placeholder directly
+    if (!data.hasImage()) {
+      PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable,
+          finalData.transformations, picasso.placeholderCache);
+    } else {
+      String requestKey = createKey(finalData);
+
+      if (!skipMemoryCache) {
+        Bitmap bitmap = picasso.quickMemoryCacheCheck(requestKey);
+        if (bitmap != null) {
+          picasso.cancelRequest(target);
+          PicassoDrawable.setBitmap(target, picasso.context, bitmap, MEMORY, noFade,
+              picasso.debugging);
+          if (callback != null) {
+            callback.onSuccess();
+          }
+          return;
         }
-        return;
       }
+
+      PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable,
+          finalData.transformations, picasso.placeholderCache);
+
+      Action action =
+          new ImageViewAction(picasso, target, finalData, skipMemoryCache, noFade, errorResId,
+              errorDrawable, requestKey, callback);
+
+      picasso.enqueueAndSubmit(action);
     }
-
-    PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable);
-
-    Action action =
-        new ImageViewAction(picasso, target, finalData, skipMemoryCache, noFade, errorResId,
-            errorDrawable, requestKey, callback);
-
-    picasso.enqueueAndSubmit(action);
   }
 }

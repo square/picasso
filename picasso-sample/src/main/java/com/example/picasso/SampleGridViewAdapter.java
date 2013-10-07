@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.RequestCreator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -14,6 +15,7 @@ import static android.widget.ImageView.ScaleType.CENTER_CROP;
 final class SampleGridViewAdapter extends BaseAdapter {
   private final Context context;
   private final List<String> urls = new ArrayList<String>();
+  private boolean roundEffect = false;
 
   public SampleGridViewAdapter(Context context) {
     this.context = context;
@@ -39,12 +41,17 @@ final class SampleGridViewAdapter extends BaseAdapter {
     String url = getItem(position);
 
     // Trigger the download of the URL asynchronously into the image view.
-    Picasso.with(context) //
+    RequestCreator creator = Picasso.with(context) //
         .load(url) //
         .placeholder(R.drawable.placeholder) //
         .error(R.drawable.error) //
-        .fit() //
-        .into(view);
+        .fit();
+
+    if (roundEffect) {
+      creator.transform(new CropRoundTransformation());
+    }
+
+    creator.into(view);
 
     return view;
   }
@@ -59,5 +66,9 @@ final class SampleGridViewAdapter extends BaseAdapter {
 
   @Override public long getItemId(int position) {
     return position;
+  }
+
+  public void setRoundEffect(boolean roundEffect) {
+    this.roundEffect = roundEffect;
   }
 }

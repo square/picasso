@@ -27,6 +27,8 @@ import org.mockito.stubbing.Answer;
 import static android.provider.ContactsContract.Contacts.CONTENT_URI;
 import static android.provider.ContactsContract.Contacts.Photo.CONTENT_DIRECTORY;
 import static com.squareup.picasso.Utils.createKey;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -52,7 +54,8 @@ class TestUtils {
   static final String CONTACT_KEY_1 = createKey(new Request.Builder(CONTACT_URI_1).build());
   static final Uri CONTACT_PHOTO_URI_1 =
       CONTENT_URI.buildUpon().path("1234").path(CONTENT_DIRECTORY).build();
-  static final String CONTACT_PHOTO_KEY_1 = createKey(new Request.Builder(CONTACT_PHOTO_URI_1).build());
+  static final String CONTACT_PHOTO_KEY_1 =
+      createKey(new Request.Builder(CONTACT_PHOTO_URI_1).build());
   static final int RESOURCE_ID_1 = 1;
   static final String RESOURCE_ID_KEY_1 = createKey(new Request.Builder(RESOURCE_ID_1).build());
   static final Uri ASSET_URI_1 = Uri.parse("file:///android_asset/foo/bar.png");
@@ -85,6 +88,22 @@ class TestUtils {
 
   static ImageView mockImageViewTarget() {
     return mock(ImageView.class);
+  }
+
+  static PlaceholderTransformation mockPlaceholderTransformationToReturn(
+      final Bitmap bitmapToReturn) {
+
+    PlaceholderTransformation placeholderTransformation = mock(PlaceholderTransformation.class);
+
+    doAnswer(new Answer() {
+      @Override public Object answer(InvocationOnMock invocation) throws Throwable {
+        Object[] args = invocation.getArguments();
+        ((Bitmap) args[0]).recycle();
+        return bitmapToReturn;
+      }
+    }).when(placeholderTransformation).transform(any(Bitmap.class));
+
+    return placeholderTransformation;
   }
 
   static ImageView mockFitImageViewTarget(boolean alive) {
