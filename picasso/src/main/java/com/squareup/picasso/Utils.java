@@ -47,7 +47,6 @@ final class Utils {
   private static final int KEY_PADDING = 50; // Determined by exact science.
   private static final int MIN_DISK_CACHE_SIZE = 5 * 1024 * 1024; // 5MB
   private static final int MAX_DISK_CACHE_SIZE = 50 * 1024 * 1024; // 50MB
-  private static final int MAX_MEM_CACHE_SIZE = 30 * 1024 * 1024; // 30MB
 
   private Utils() {
     // No instances.
@@ -179,10 +178,8 @@ final class Utils {
     if (largeHeap && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
       memoryClass = ActivityManagerHoneycomb.getLargeMemoryClass(am);
     }
-    // Target 15% of the available RAM.
-    int size = 1024 * 1024 * memoryClass / 7;
-    // Bound to max size for mem cache.
-    return Math.min(size, MAX_MEM_CACHE_SIZE);
+    // Target 20% of the available VM Heap.
+    return (int) 1024 * 1024 * memoryClass / 5;
   }
 
   static boolean isAirplaneModeOn(Context context) {
