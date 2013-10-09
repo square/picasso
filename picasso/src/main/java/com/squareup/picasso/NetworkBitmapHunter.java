@@ -15,17 +15,17 @@
  */
 package com.squareup.picasso;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.NetworkInfo;
-import android.util.Log;
+import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
+import static com.squareup.picasso.Picasso.LoadedFrom.NETWORK;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import static com.squareup.picasso.Downloader.Response;
-import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
-import static com.squareup.picasso.Picasso.LoadedFrom.NETWORK;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.NetworkInfo;
+
+import com.squareup.picasso.Downloader.Response;
 
 class NetworkBitmapHunter extends BitmapHunter {
   static final int DEFAULT_RETRY_COUNT = 2;
@@ -36,7 +36,7 @@ class NetworkBitmapHunter extends BitmapHunter {
   int retryCount;
 
   public NetworkBitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats,
-      Action action, Downloader downloader) {
+      Action<?> action, Downloader downloader) {
     super(picasso, dispatcher, cache, stats, action);
     this.downloader = downloader;
     this.retryCount = DEFAULT_RETRY_COUNT;
@@ -80,8 +80,6 @@ class NetworkBitmapHunter extends BitmapHunter {
     }
     BitmapFactory.Options options = data.options;
     
-    Log.d( "picasso", "options: " + options );
-    
     if (data.hasSize()) {
       if( null == options ) options = new BitmapFactory.Options();
       options.inJustDecodeBounds = true;
@@ -95,11 +93,6 @@ class NetworkBitmapHunter extends BitmapHunter {
 
       markStream.reset(mark);
     }
-    
-    Log.d( "picasso", "inDensity: " + options.inDensity );
-    Log.d( "picasso", "inTargetDensity: " + options.inTargetDensity );
-    Log.d( "picasso", "inScaled: " + options.inScaled );    
-    
     return BitmapFactory.decodeStream(stream, null, options);
   }
 }

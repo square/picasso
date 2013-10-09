@@ -15,24 +15,23 @@
  */
 package com.squareup.picasso;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
-import android.net.NetworkInfo;
-import android.net.Uri;
-import android.util.Log;
+import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
+import static android.content.ContentResolver.SCHEME_CONTENT;
+import static android.content.ContentResolver.SCHEME_FILE;
+import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 
-import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
-import static android.content.ContentResolver.SCHEME_CONTENT;
-import static android.content.ContentResolver.SCHEME_FILE;
-import static android.provider.ContactsContract.Contacts;
-import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.net.NetworkInfo;
+import android.net.Uri;
+import android.provider.ContactsContract.Contacts;
 
 abstract class BitmapHunter implements Runnable {
 
@@ -52,7 +51,7 @@ abstract class BitmapHunter implements Runnable {
   final Stats stats;
   final String key;
   final Request data;
-  final List<Action> actions;
+  final List<Action<?>> actions;
   final boolean skipMemoryCache;
 
   Bitmap result;
@@ -61,7 +60,7 @@ abstract class BitmapHunter implements Runnable {
   Throwable exception;
   int exifRotation; // Determined during decoding of original resource.
 
-  BitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats, Action action) {
+  BitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats, Action<?> action) {
     this.picasso = picasso;
     this.dispatcher = dispatcher;
     this.cache = cache;
@@ -69,7 +68,7 @@ abstract class BitmapHunter implements Runnable {
     this.key = action.getKey();
     this.data = action.getData();
     this.skipMemoryCache = action.skipCache;
-    this.actions = new ArrayList<Action>(4);
+    this.actions = new ArrayList<Action<?>>(4);
     attach(action);
   }
 
@@ -114,7 +113,6 @@ abstract class BitmapHunter implements Runnable {
     }
 
     bitmap = decode(data);
-    Log.d( "picasso", "original: " + bitmap.getWidth() + "x" + bitmap.getHeight() + ", density: " + bitmap.getDensity() );
 
     if (bitmap != null) {
       stats.dispatchBitmapDecoded(bitmap);
@@ -131,15 +129,14 @@ abstract class BitmapHunter implements Runnable {
       }
     }
 
-    Log.d( "picasso", "final: " + bitmap.getWidth() + "x" + bitmap.getHeight() + ", density: " + bitmap.getDensity() );
     return bitmap;
   }
 
-  void attach(Action action) {
+  void attach(Action<?> action) {
     actions.add(action);
   }
 
-  void detach(Action action) {
+  void detach(Action<?> action) {
     actions.remove(action);
   }
 
@@ -171,7 +168,7 @@ abstract class BitmapHunter implements Runnable {
     return data;
   }
 
-  List<Action> getActions() {
+  List<Action<?>> getActions() {
     return actions;
   }
 
@@ -184,7 +181,7 @@ abstract class BitmapHunter implements Runnable {
   }
 
   static BitmapHunter forRequest(Context context, Picasso picasso, Dispatcher dispatcher,
-      Cache cache, Stats stats, Action action, Downloader downloader) {
+      Cache cache, Stats stats, Action<?> action, Downloader downloader) {
     if (action.getData().resourceId != 0) {
       return new ResourceBitmapHunter(context, picasso, dispatcher, cache, stats, action);
     }
@@ -219,10 +216,6 @@ abstract class BitmapHunter implements Runnable {
       sampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
     }
     
-    Log.d( "picasso", "inDensity: " + options.inDensity );
-    Log.d( "picasso", "inTargetDensity: " + options.inTargetDensity );
-    Log.d( "picasso", "inScaled: " + options.inScaled );
-
     options.inSampleSize = sampleSize;
     options.inJustDecodeBounds = false;
   }

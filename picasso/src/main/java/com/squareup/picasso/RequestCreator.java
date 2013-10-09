@@ -15,22 +15,23 @@
  */
 package com.squareup.picasso;
 
+import static com.squareup.picasso.BitmapHunter.forRequest;
+import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
+import static com.squareup.picasso.Utils.checkNotMain;
+import static com.squareup.picasso.Utils.createKey;
+
+import java.io.IOException;
+
+import org.jetbrains.annotations.TestOnly;
+
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.widget.ImageView;
-import java.io.IOException;
-import org.jetbrains.annotations.TestOnly;
-
-import static com.squareup.picasso.BitmapHunter.forRequest;
-import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
-import static com.squareup.picasso.Utils.checkNotMain;
-import static com.squareup.picasso.Utils.createKey;
 
 /** Fluent API for building an image download request. */
-@SuppressWarnings("UnusedDeclaration") // Public API.
 public class RequestCreator {
   private final Picasso picasso;
   private final Request.Builder data;

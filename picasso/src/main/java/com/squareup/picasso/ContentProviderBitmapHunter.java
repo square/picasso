@@ -29,7 +29,7 @@ class ContentProviderBitmapHunter extends ContentStreamBitmapHunter {
   };
 
   ContentProviderBitmapHunter(Context context, Picasso picasso, Dispatcher dispatcher, Cache cache,
-      Stats stats, Action action) {
+      Stats stats, Action<?> action) {
     super(context, picasso, dispatcher, cache, stats, action);
   }
 

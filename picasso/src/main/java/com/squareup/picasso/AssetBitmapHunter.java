@@ -14,7 +14,7 @@ class AssetBitmapHunter extends BitmapHunter {
   private AssetManager assetManager;
 
   public AssetBitmapHunter(Context context, Picasso picasso, Dispatcher dispatcher, Cache cache,
-      Stats stats, Action action) {
+      Stats stats, Action<?> action) {
     super(picasso, dispatcher, cache, stats, action);
     assetManager = context.getAssets();
   }

@@ -15,6 +15,18 @@
  */
 package com.squareup.picasso;
 
+import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
+import static com.squareup.picasso.Dispatcher.HUNTER_BATCH_COMPLETE;
+import static com.squareup.picasso.Dispatcher.REQUEST_GCED;
+import static com.squareup.picasso.Utils.THREAD_PREFIX;
+
+import java.io.File;
+import java.lang.ref.ReferenceQueue;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.concurrent.ExecutorService;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -24,18 +36,8 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
 import android.widget.ImageView;
-import java.io.File;
-import java.lang.ref.ReferenceQueue;
-import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.concurrent.ExecutorService;
 
-import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
-import static com.squareup.picasso.Dispatcher.HUNTER_BATCH_COMPLETE;
-import static com.squareup.picasso.Dispatcher.REQUEST_GCED;
-import static com.squareup.picasso.Action.RequestWeakReference;
-import static com.squareup.picasso.Utils.THREAD_PREFIX;
+import com.squareup.picasso.Action.RequestWeakReference;
 
 /**
  * Image downloading, transformation, and caching manager.
@@ -44,6 +46,8 @@ import static com.squareup.picasso.Utils.THREAD_PREFIX;
  * own instance with {@link Builder}.
  */
 public class Picasso {
+	
+  public static final String LOG_TAG = "Picasso";
 
   /** Callbacks for Picasso events. */
   public interface Listener {
@@ -216,17 +220,17 @@ public class Picasso {
   }
 
   /** {@code true} if debug display, logging, and statistics are enabled. */
-  @SuppressWarnings("UnusedDeclaration") public boolean isDebugging() {
+  public boolean isDebugging() {
     return debugging;
   }
 
   /** Toggle whether debug display, logging, and statistics are enabled. */
-  @SuppressWarnings("UnusedDeclaration") public void setDebugging(boolean debugging) {
+  public void setDebugging(boolean debugging) {
     this.debugging = debugging;
   }
 
   /** Creates a {@link StatsSnapshot} of the current stats for this instance. */
-  @SuppressWarnings("UnusedDeclaration") public StatsSnapshot getSnapshot() {
+  public StatsSnapshot getSnapshot() {
     return stats.createSnapshot();
   }
 
@@ -288,7 +292,7 @@ public class Picasso {
   }
 
   void complete(BitmapHunter hunter) {
-    List<Action> joined = hunter.getActions();
+    List<Action<?>> joined = hunter.getActions();
     if (joined.isEmpty()) {
       return;
     }
@@ -298,7 +302,7 @@ public class Picasso {
     Bitmap result = hunter.getResult();
     LoadedFrom from = hunter.getLoadedFrom();
 
-    for (Action join : joined) {
+    for (Action<?> join : joined) {
       if (join.isCancelled()) {
         continue;
       }
@@ -319,7 +323,7 @@ public class Picasso {
   }
 
   private void cancelExistingRequest(Object target) {
-    Action action = targetToAction.remove(target);
+    Action<?> action = targetToAction.remove(target);
     if (action != null) {
       action.cancel();
       dispatcher.dispatchCancel(action);
@@ -393,7 +397,7 @@ public class Picasso {
   }
 
   /** Fluent API for creating {@link Picasso} instances. */
-  @SuppressWarnings("UnusedDeclaration") // Public API.
+  // Public API.
   public static class Builder {
     private final Context context;
     private Downloader downloader;
