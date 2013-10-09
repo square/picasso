@@ -91,7 +91,7 @@ public class Picasso {
           break;
         }
         case REQUEST_GCED: {
-          Action action = (Action) msg.obj;
+          Action<?> action = (Action<?>) msg.obj;
           action.picasso.cancelExistingRequest(action.getTarget());
           break;
         }
@@ -111,7 +111,7 @@ public class Picasso {
   final Dispatcher dispatcher;
   final Cache cache;
   final Stats stats;
-  final Map<Object, Action> targetToAction;
+  final Map<Object, Action<?>> targetToAction;
   final Map<ImageView, DeferredRequestCreator> targetToDeferredRequestCreator;
   final ReferenceQueue<Object> referenceQueue;
 
@@ -126,7 +126,7 @@ public class Picasso {
     this.listener = listener;
     this.requestTransformer = requestTransformer;
     this.stats = stats;
-    this.targetToAction = new WeakHashMap<Object, Action>();
+    this.targetToAction = new WeakHashMap<Object, Action<?>>();
     this.targetToDeferredRequestCreator = new WeakHashMap<ImageView, DeferredRequestCreator>();
     this.debugging = debugging;
     this.referenceQueue = new ReferenceQueue<Object>();
@@ -264,17 +264,17 @@ public class Picasso {
     targetToDeferredRequestCreator.put(view, request);
   }
 
-  void enqueueAndSubmit(Action action) {
+  void enqueueAndSubmit(Action<?> action, long delayMillis) {
     Object target = action.getTarget();
     if (target != null) {
       cancelExistingRequest(target);
       targetToAction.put(target, action);
     }
-    submit(action);
+    submit(action, delayMillis);
   }
 
-  void submit(Action action) {
-    dispatcher.dispatchSubmit(action);
+  void submit(Action<?> action, long delayMillis) {
+    dispatcher.dispatchSubmit(action, delayMillis);
   }
 
   Bitmap quickMemoryCacheCheck(String key) {

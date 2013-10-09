@@ -21,6 +21,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.util.Log;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -109,6 +111,7 @@ abstract class BitmapHunter implements Runnable {
     }
 
     bitmap = decode(data);
+    Log.d( "picasso", "original: " + bitmap.getWidth() + "x" + bitmap.getHeight() + ", density: " + bitmap.getDensity() );
 
     if (bitmap != null) {
       stats.dispatchBitmapDecoded(bitmap);
@@ -125,6 +128,7 @@ abstract class BitmapHunter implements Runnable {
       }
     }
 
+    Log.d( "picasso", "final: " + bitmap.getWidth() + "x" + bitmap.getHeight() + ", density: " + bitmap.getDensity() );
     return bitmap;
   }
 
@@ -211,6 +215,10 @@ abstract class BitmapHunter implements Runnable {
       final int widthRatio = Math.round((float) width / (float) reqWidth);
       sampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
     }
+    
+    Log.d( "picasso", "inDensity: " + options.inDensity );
+    Log.d( "picasso", "inTargetDensity: " + options.inTargetDensity );
+    Log.d( "picasso", "inScaled: " + options.inScaled );
 
     options.inSampleSize = sampleSize;
     options.inJustDecodeBounds = false;
@@ -264,6 +272,7 @@ abstract class BitmapHunter implements Runnable {
     if (data.needsMatrixTransform()) {
       int targetWidth = data.targetWidth;
       int targetHeight = data.targetHeight;
+      boolean resizeOnlyIfBigger = data.resizeOnlyIfBigger;
 
       float targetRotation = data.rotationDegrees;
       if (targetRotation != 0) {
@@ -289,19 +298,26 @@ abstract class BitmapHunter implements Runnable {
           drawX = (inWidth - newSize) / 2;
           drawWidth = newSize;
         }
-        matrix.preScale(scale, scale);
+        if( !resizeOnlyIfBigger || ( resizeOnlyIfBigger && (inWidth > targetWidth || inHeight > targetHeight ) ) ) {
+        	matrix.preScale(scale, scale);
+        }
       } else if (data.centerInside) {
         float widthRatio = targetWidth / (float) inWidth;
         float heightRatio = targetHeight / (float) inHeight;
         float scale = widthRatio < heightRatio ? widthRatio : heightRatio;
-        matrix.preScale(scale, scale);
+        
+        if( !resizeOnlyIfBigger || ( resizeOnlyIfBigger && (inWidth > targetWidth || inHeight > targetHeight ) ) ) {
+        	matrix.preScale(scale, scale);
+        }
       } else if (targetWidth != 0 && targetHeight != 0 //
           && (targetWidth != inWidth || targetHeight != inHeight)) {
         // If an explicit target size has been specified and they do not match the results bounds,
         // pre-scale the existing matrix appropriately.
         float sx = targetWidth / (float) inWidth;
         float sy = targetHeight / (float) inHeight;
-        matrix.preScale(sx, sy);
+        if( !resizeOnlyIfBigger || ( resizeOnlyIfBigger && (inWidth > targetWidth || inHeight > targetHeight ) ) ) {
+        	matrix.preScale(sx, sy);
+        }
       }
     }
 

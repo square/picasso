@@ -1,13 +1,14 @@
 package com.squareup.picasso;
 
+import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
+
+import java.io.IOException;
+import java.io.InputStream;
+
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import java.io.IOException;
-import java.io.InputStream;
-
-import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 
 class AssetBitmapHunter extends BitmapHunter {
   private AssetManager assetManager;
@@ -28,9 +29,9 @@ class AssetBitmapHunter extends BitmapHunter {
   }
 
   Bitmap decodeAsset(String filePath) throws IOException {
-    BitmapFactory.Options options = null;
+    BitmapFactory.Options options = data.options;
     if (data.hasSize()) {
-      options = new BitmapFactory.Options();
+      if( null == options ) options = new BitmapFactory.Options();
       options.inJustDecodeBounds = true;
       InputStream is = null;
       try {

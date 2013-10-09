@@ -17,6 +17,7 @@ package com.squareup.picasso;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.widget.ImageView;
@@ -41,6 +42,7 @@ public class RequestCreator {
   private Drawable placeholderDrawable;
   private int errorResId;
   private Drawable errorDrawable;
+  private long delayMillis;
 
   RequestCreator(Picasso picasso, Uri uri, int resourceId) {
     if (picasso.shutdown) {
@@ -129,18 +131,35 @@ public class RequestCreator {
     return this;
   }
 
-  /** Resize the image to the specified dimension size. */
-  public RequestCreator resizeDimen(int targetWidthResId, int targetHeightResId) {
+  /**
+   * Resizes the image to the specified dimensions
+   * @param targetWidthResId target width
+   * @param targetHeightResId target height
+   * @param onlyIfBigger If true the bitmap will be resized only only if bigger than targetWidth or targetHeight. If false the bitmap will be always resized
+   * @return
+   */
+  public RequestCreator resizeDimen(int targetWidthResId, int targetHeightResId, boolean onlyIfBigger) {
     Resources resources = picasso.context.getResources();
     int targetWidth = resources.getDimensionPixelSize(targetWidthResId);
     int targetHeight = resources.getDimensionPixelSize(targetHeightResId);
-    return resize(targetWidth, targetHeight);
+    return resize(targetWidth, targetHeight, onlyIfBigger);
   }
 
-  /** Resize the image to the specified size in pixels. */
-  public RequestCreator resize(int targetWidth, int targetHeight) {
-    data.resize(targetWidth, targetHeight);
+  /**
+   * Resizes the image to the specified size in pixels
+   * @param targetWidthResId target width
+   * @param targetHeightResId target height
+   * @param onlyIfBigger If true the bitmap will be resized only only if bigger than targetWidth or targetHeight. If false the bitmap will be always resized
+   * @return
+   */  
+  public RequestCreator resize(int targetWidth, int targetHeight, boolean onlyIfBigger) {
+    data.resize(targetWidth, targetHeight, onlyIfBigger);
     return this;
+  }
+  
+  public RequestCreator withOptions( BitmapFactory.Options options ) {
+	  data.useOptions(options);
+	  return this;
   }
 
   /**
@@ -200,6 +219,11 @@ public class RequestCreator {
     noFade = true;
     return this;
   }
+  
+  public RequestCreator withDelay( long millis ) {
+	  delayMillis = millis;
+	  return this;
+  }
 
   /** Synchronously fulfill this request. Must not be called from the main thread. */
   public Bitmap get() throws IOException {
@@ -214,7 +238,7 @@ public class RequestCreator {
     Request finalData = picasso.transformRequest(data.build());
     String key = Utils.createKey(finalData);
 
-    Action action = new GetAction(picasso, finalData, skipMemoryCache, key);
+    Action<Void> action = new GetAction(picasso, finalData, skipMemoryCache, key);
     return forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache, picasso.stats,
         action, picasso.dispatcher.downloader).hunt();
   }
@@ -227,12 +251,13 @@ public class RequestCreator {
     if (deferred) {
       throw new IllegalStateException("Fit cannot be used with fetch.");
     }
+    
     if (data.hasImage()) {
       Request finalData = picasso.transformRequest(data.build());
       String key = Utils.createKey(finalData);
 
-      Action action = new FetchAction(picasso, finalData, skipMemoryCache, key);
-      picasso.enqueueAndSubmit(action);
+      Action<Void> action = new FetchAction(picasso, finalData, skipMemoryCache, key);
+      picasso.enqueueAndSubmit(action, delayMillis);
     }
   }
 
@@ -305,8 +330,8 @@ public class RequestCreator {
 
     target.onPrepareLoad(drawable);
 
-    Action action = new TargetAction(picasso, target, finalData, skipMemoryCache, requestKey);
-    picasso.enqueueAndSubmit(action);
+    Action<Target> action = new TargetAction(picasso, target, finalData, skipMemoryCache, requestKey);
+    picasso.enqueueAndSubmit(action, delayMillis);
   }
 
   /**
@@ -350,7 +375,7 @@ public class RequestCreator {
         picasso.defer(target, new DeferredRequestCreator(this, target, callback));
         return;
       }
-      data.resize(measuredWidth, measuredHeight);
+      data.resize(measuredWidth, measuredHeight, false);
     }
 
     Request finalData = picasso.transformRequest(data.build());
@@ -371,10 +396,10 @@ public class RequestCreator {
 
     PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable);
 
-    Action action =
+    Action<ImageView> action =
         new ImageViewAction(picasso, target, finalData, skipMemoryCache, noFade, errorResId,
             errorDrawable, requestKey, callback);
 
-    picasso.enqueueAndSubmit(action);
+    picasso.enqueueAndSubmit(action, delayMillis);
   }
 }

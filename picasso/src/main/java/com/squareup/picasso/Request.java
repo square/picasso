@@ -15,11 +15,13 @@
  */
 package com.squareup.picasso;
 
-import android.net.Uri;
+import static java.util.Collections.unmodifiableList;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.util.Collections.unmodifiableList;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 
 /** Immutable data about an image and the transformations that will be applied to it. */
 public final class Request {
@@ -61,10 +63,14 @@ public final class Request {
   public final float rotationPivotY;
   /** Whether or not {@link #rotationPivotX} and {@link #rotationPivotY} are set. */
   public final boolean hasRotationPivot;
+  /** If true the bitmap will be resized only only if bigger than {@link #targetWidth} or {@link #targetHeight} */
+  public final boolean resizeOnlyIfBigger;
+  
+  public final BitmapFactory.Options options;
 
   private Request(Uri uri, int resourceId, List<Transformation> transformations, int targetWidth,
       int targetHeight, boolean centerCrop, boolean centerInside, float rotationDegrees,
-      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot) {
+      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot, boolean resizeOnlyIfBigger, BitmapFactory.Options options) {
     this.uri = uri;
     this.resourceId = resourceId;
     if (transformations == null) {
@@ -80,6 +86,8 @@ public final class Request {
     this.rotationPivotX = rotationPivotX;
     this.rotationPivotY = rotationPivotY;
     this.hasRotationPivot = hasRotationPivot;
+    this.resizeOnlyIfBigger = resizeOnlyIfBigger;
+    this.options = options;
   }
 
   String getName() {
@@ -117,11 +125,13 @@ public final class Request {
     private int targetHeight;
     private boolean centerCrop;
     private boolean centerInside;
+    private boolean resizeOnlyIfBigger;
     private float rotationDegrees;
     private float rotationPivotX;
     private float rotationPivotY;
     private boolean hasRotationPivot;
     private List<Transformation> transformations;
+    private BitmapFactory.Options options;
 
     /** Start building a request using the specified {@link Uri}. */
     public Builder(Uri uri) {
@@ -149,6 +159,7 @@ public final class Request {
       rotationPivotX = request.rotationPivotX;
       rotationPivotY = request.rotationPivotY;
       hasRotationPivot = request.hasRotationPivot;
+      resizeOnlyIfBigger = request.resizeOnlyIfBigger;
       if (request.transformations != null) {
         transformations = new ArrayList<Transformation>(request.transformations);
       }
@@ -175,6 +186,11 @@ public final class Request {
       this.resourceId = 0;
       return this;
     }
+    
+    public Builder useOptions( BitmapFactory.Options options) {
+    	this.options = options;
+    	return this;
+    }
 
     /**
      * Set the target image resource ID.
@@ -191,7 +207,7 @@ public final class Request {
     }
 
     /** Resize the image to the specified size in pixels. */
-    public Builder resize(int targetWidth, int targetHeight) {
+    public Builder resize(int targetWidth, int targetHeight, boolean onlyIfBigger) {
       if (targetWidth <= 0) {
         throw new IllegalArgumentException("Width must be positive number.");
       }
@@ -200,6 +216,7 @@ public final class Request {
       }
       this.targetWidth = targetWidth;
       this.targetHeight = targetHeight;
+      this.resizeOnlyIfBigger = onlyIfBigger;
       return this;
     }
 
@@ -301,7 +318,7 @@ public final class Request {
         throw new IllegalStateException("Center inside requires calling resize.");
       }
       return new Request(uri, resourceId, transformations, targetWidth, targetHeight, centerCrop,
-          centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot);
+          centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot, resizeOnlyIfBigger, options);
     }
   }
 }

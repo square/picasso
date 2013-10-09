@@ -32,7 +32,7 @@ import android.widget.ImageView;
 import static android.graphics.Color.WHITE;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 
-final class PicassoDrawable extends Drawable {
+final public class PicassoDrawable extends Drawable {
   // Only accessed from main thread.
   private static final Paint DEBUG_PAINT = new Paint();
 
@@ -88,6 +88,12 @@ final class PicassoDrawable extends Drawable {
       this.placeholder = placeholder;
       animating = true;
       startTimeMillis = SystemClock.uptimeMillis();
+    }
+  }
+  
+  public void recycle() {
+    if( null != image && null != image.getBitmap() && image.getBitmap().isRecycled() ) {
+      image.getBitmap().recycle();
     }
   }
 

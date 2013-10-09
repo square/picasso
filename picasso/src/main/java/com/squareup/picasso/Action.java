@@ -22,9 +22,9 @@ import java.lang.ref.WeakReference;
 
 abstract class Action<T> {
   static class RequestWeakReference<T> extends WeakReference<T> {
-    final Action action;
+    final Action<T> action;
 
-    public RequestWeakReference(Action action, T referent, ReferenceQueue<? super T> q) {
+    public RequestWeakReference(Action<T> action, T referent, ReferenceQueue<? super T> q) {
       super(referent, q);
       this.action = action;
     }

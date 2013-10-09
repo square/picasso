@@ -97,11 +97,15 @@ class Dispatcher {
     receiver.unregister();
   }
 
-  void dispatchSubmit(Action action) {
-    handler.sendMessage(handler.obtainMessage(REQUEST_SUBMIT, action));
+  void dispatchSubmit(Action<?> action, long delayMillis) {
+	if( delayMillis > 0 ) {
+		handler.sendMessageDelayed(handler.obtainMessage(REQUEST_SUBMIT, action), delayMillis );
+	} else {
+		handler.sendMessage(handler.obtainMessage(REQUEST_SUBMIT, action));
+	}
   }
 
-  void dispatchCancel(Action action) {
+  void dispatchCancel(Action<?> action) {
     handler.sendMessage(handler.obtainMessage(REQUEST_CANCEL, action));
   }
 
@@ -126,7 +130,7 @@ class Dispatcher {
         airplaneMode ? AIRPLANE_MODE_ON : AIRPLANE_MODE_OFF, 0));
   }
 
-  void performSubmit(Action action) {
+  void performSubmit(Action<?> action) {
     BitmapHunter hunter = hunterMap.get(action.getKey());
     if (hunter != null) {
       hunter.attach(action);
@@ -142,7 +146,7 @@ class Dispatcher {
     hunterMap.put(action.getKey(), hunter);
   }
 
-  void performCancel(Action action) {
+  void performCancel(Action<?> action) {
     String key = action.getKey();
     BitmapHunter hunter = hunterMap.get(key);
     if (hunter != null) {
@@ -216,12 +220,12 @@ class Dispatcher {
     @Override public void handleMessage(Message msg) {
       switch (msg.what) {
         case REQUEST_SUBMIT: {
-          Action action = (Action) msg.obj;
+          Action<?> action = (Action<?>) msg.obj;
           performSubmit(action);
           break;
         }
         case REQUEST_CANCEL: {
-          Action action = (Action) msg.obj;
+          Action<?> action = (Action<?>) msg.obj;
           performCancel(action);
           break;
         }

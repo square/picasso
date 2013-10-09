@@ -18,6 +18,8 @@ package com.squareup.picasso;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.NetworkInfo;
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -76,9 +78,12 @@ class NetworkBitmapHunter extends BitmapHunter {
     if (stream == null) {
       return null;
     }
-    BitmapFactory.Options options = null;
+    BitmapFactory.Options options = data.options;
+    
+    Log.d( "picasso", "options: " + options );
+    
     if (data.hasSize()) {
-      options = new BitmapFactory.Options();
+      if( null == options ) options = new BitmapFactory.Options();
       options.inJustDecodeBounds = true;
 
       MarkableInputStream markStream = new MarkableInputStream(stream);
@@ -90,6 +95,11 @@ class NetworkBitmapHunter extends BitmapHunter {
 
       markStream.reset(mark);
     }
+    
+    Log.d( "picasso", "inDensity: " + options.inDensity );
+    Log.d( "picasso", "inTargetDensity: " + options.inTargetDensity );
+    Log.d( "picasso", "inScaled: " + options.inScaled );    
+    
     return BitmapFactory.decodeStream(stream, null, options);
   }
 }
