@@ -58,7 +58,7 @@ abstract class BitmapHunter implements Runnable {
   Bitmap result;
   Future<?> future;
   Picasso.LoadedFrom loadedFrom;
-  Exception exception;
+  Throwable exception;
   int exifRotation; // Determined during decoding of original resource.
 
   BitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats, Action action) {
@@ -88,6 +88,9 @@ abstract class BitmapHunter implements Runnable {
       } else {
         dispatcher.dispatchComplete(this);
       }
+    } catch( OutOfMemoryError e ) {
+      exception = e;
+      dispatcher.dispatchFailed(this);
     } catch (IOException e) {
       exception = e;
       dispatcher.dispatchRetry(this);
@@ -172,7 +175,7 @@ abstract class BitmapHunter implements Runnable {
     return actions;
   }
 
-  Exception getException() {
+  Throwable getException() {
     return exception;
   }
 

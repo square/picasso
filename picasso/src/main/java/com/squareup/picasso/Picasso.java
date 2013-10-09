@@ -51,7 +51,7 @@ public class Picasso {
      * Invoked when an image has failed to load. This is useful for reporting image failures to a
      * remote analytics service, for example.
      */
-    void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception);
+    void onImageLoadFailed(Picasso picasso, Uri uri, Throwable exception);
   }
 
   /**
@@ -294,7 +294,7 @@ public class Picasso {
     }
 
     Uri uri = hunter.getData().uri;
-    Exception exception = hunter.getException();
+    Throwable exception = hunter.getException();
     Bitmap result = hunter.getResult();
     LoadedFrom from = hunter.getLoadedFrom();
 
