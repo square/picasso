@@ -27,6 +27,8 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -50,7 +52,6 @@ class Dispatcher {
   static final int HUNTER_COMPLETE = 4;
   static final int HUNTER_RETRY = 5;
   static final int HUNTER_DECODE_FAILED = 6;
-  static final int HUNTER_DELAY_NEXT_BATCH = 7;
   static final int HUNTER_BATCH_COMPLETE = 8;
   static final int NETWORK_STATE_CHANGE = 9;
   static final int AIRPLANE_MODE_CHANGE = 10;
@@ -173,6 +174,7 @@ class Dispatcher {
   }
 
   void performComplete(BitmapHunter hunter) {
+	  Log.i( Picasso.LOG_TAG, "performComplete" );
     if (!hunter.shouldSkipMemoryCache()) {
       cache.set(hunter.getKey(), hunter.getResult());
     }
@@ -180,10 +182,9 @@ class Dispatcher {
     batch(hunter);
   }
 
-  void performBatchComplete() {
-    List<BitmapHunter> copy = new ArrayList<BitmapHunter>(batch);
-    batch.clear();
-    mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(HUNTER_BATCH_COMPLETE, copy));
+  void performBatchComplete( BitmapHunter hunter) {
+	  Log.i( Picasso.LOG_TAG, "performBatchComplete" );
+    mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(HUNTER_BATCH_COMPLETE, hunter));
   }
 
   void performError(BitmapHunter hunter) {
@@ -206,10 +207,7 @@ class Dispatcher {
     if (hunter.isCancelled()) {
       return;
     }
-    batch.add(hunter);
-    if (!handler.hasMessages(HUNTER_DELAY_NEXT_BATCH)) {
-      handler.sendEmptyMessageDelayed(HUNTER_DELAY_NEXT_BATCH, BATCH_DELAY);
-    }
+    mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(HUNTER_BATCH_COMPLETE, hunter));
   }
 
   private class DispatcherHandler extends Handler {
@@ -230,22 +228,15 @@ class Dispatcher {
           break;
         }
         case HUNTER_COMPLETE: {
-          BitmapHunter hunter = (BitmapHunter) msg.obj;
-          performComplete(hunter);
+          performComplete((BitmapHunter) msg.obj);
           break;
         }
         case HUNTER_RETRY: {
-          BitmapHunter hunter = (BitmapHunter) msg.obj;
-          performRetry(hunter);
+          performRetry((BitmapHunter) msg.obj);
           break;
         }
         case HUNTER_DECODE_FAILED: {
-          BitmapHunter hunter = (BitmapHunter) msg.obj;
-          performError(hunter);
-          break;
-        }
-        case HUNTER_DELAY_NEXT_BATCH: {
-          performBatchComplete();
+          performError((BitmapHunter) msg.obj);
           break;
         }
         case NETWORK_STATE_CHANGE: {

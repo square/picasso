@@ -35,6 +35,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
+import android.util.Log;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Action.RequestWeakReference;
@@ -88,10 +89,16 @@ public class Picasso {
     @Override public void handleMessage(Message msg) {
       switch (msg.what) {
         case HUNTER_BATCH_COMPLETE: {
-          @SuppressWarnings("unchecked") List<BitmapHunter> batch = (List<BitmapHunter>) msg.obj;
-          for (BitmapHunter hunter : batch) {
-            hunter.picasso.complete(hunter);
-          }
+//          @SuppressWarnings("unchecked") List<BitmapHunter> batch = (List<BitmapHunter>) msg.obj;
+//          for (BitmapHunter hunter : batch) {
+//            hunter.picasso.complete(hunter);
+//          }
+//          
+          Log.d( LOG_TAG, "complete" );
+          
+          BitmapHunter hunter = (BitmapHunter) msg.obj;
+          hunter.picasso.complete( hunter );
+          
           break;
         }
         case REQUEST_GCED: {
@@ -231,7 +238,10 @@ public class Picasso {
 
   /** Creates a {@link StatsSnapshot} of the current stats for this instance. */
   public StatsSnapshot getSnapshot() {
-    return stats.createSnapshot();
+	if( null != stats ) {
+      return stats.createSnapshot();
+	}
+	return null;
   }
 
   /** Stops this instance from accepting further requests. */
@@ -244,7 +254,7 @@ public class Picasso {
     }
     cache.clear();
     cleanupThread.shutdown();
-    stats.shutdown();
+    if( null != stats ) stats.shutdown();
     dispatcher.shutdown();
     for (DeferredRequestCreator deferredRequestCreator : targetToDeferredRequestCreator.values()) {
       deferredRequestCreator.cancel();
@@ -283,10 +293,12 @@ public class Picasso {
 
   Bitmap quickMemoryCacheCheck(String key) {
     Bitmap cached = cache.get(key);
-    if (cached != null) {
-      stats.dispatchCacheHit();
-    } else {
-      stats.dispatchCacheMiss();
+    if( null != stats ) {
+      if (cached != null) {
+	    stats.dispatchCacheHit();
+	  } else {
+	    stats.dispatchCacheMiss();
+	  }
     }
     return cached;
   }
@@ -503,7 +515,10 @@ public class Picasso {
         transformer = RequestTransformer.IDENTITY;
       }
 
-      Stats stats = new Stats(cache);
+      Stats stats = null;
+      if( debugging ) {
+    	  stats = new Stats(cache);
+      }
 
       Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, downloader, cache, stats);
 

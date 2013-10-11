@@ -27,16 +27,17 @@ import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
+import android.util.Log;
 import android.widget.ImageView;
 
 import static android.graphics.Color.WHITE;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 
-final public class PicassoDrawable extends Drawable {
+final public class PicassoDrawable extends Drawable implements Runnable {
   // Only accessed from main thread.
   private static final Paint DEBUG_PAINT = new Paint();
 
-  private static final float FADE_DURATION = 200f; //ms
+  private static final float FADE_DURATION = 450f; //ms
 
   /**
    * Create or update the drawable on the target {@link ImageView} to display the supplied bitmap
@@ -57,7 +58,7 @@ final public class PicassoDrawable extends Drawable {
   static void setPlaceholder(ImageView target, int placeholderResId, Drawable placeholderDrawable) {
     if (placeholderResId != 0) {
       target.setImageResource(placeholderResId);
-    } else {
+    } else if( null != placeholderDrawable ){
       target.setImageDrawable(placeholderDrawable);
     }
   }
@@ -84,6 +85,9 @@ final public class PicassoDrawable extends Drawable {
     this.image = new BitmapDrawable(res, bitmap);
 
     boolean fade = loadedFrom != MEMORY && !noFade;
+    
+    Log.i( Picasso.LOG_TAG, "fade: " + fade );
+    
     if (fade) {
       this.placeholder = placeholder;
       animating = true;
@@ -115,7 +119,8 @@ final public class PicassoDrawable extends Drawable {
         image.setAlpha(alpha);
         image.draw(canvas);
         image.setAlpha(0xFF);
-        invalidateSelf();
+        
+        scheduleSelf( this, SystemClock.uptimeMillis() + 16 );
       }
     }
 
@@ -123,6 +128,11 @@ final public class PicassoDrawable extends Drawable {
       drawDebugIndicator(canvas);
     }
   }
+  
+  @Override
+	public void run() {
+	  invalidateSelf();
+	}
 
   @Override public int getIntrinsicWidth() {
     return image.getIntrinsicWidth();
@@ -162,7 +172,9 @@ final public class PicassoDrawable extends Drawable {
 
   private void setBounds(Drawable drawable) {
     Rect bounds = getBounds();
-
+    
+    this.image.setBounds( bounds );
+/*
     final int width = bounds.width();
     final int height = bounds.height();
     final float ratio = (float) width / height;
@@ -184,6 +196,7 @@ final public class PicassoDrawable extends Drawable {
       final int drawableBottom = drawableTop + scaledDrawableHeight;
       drawable.setBounds(bounds.left, drawableTop, bounds.right, drawableBottom);
     }
+    */
   }
 
   private void drawDebugIndicator(Canvas canvas) {

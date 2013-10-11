@@ -33,7 +33,9 @@ class ResourceBitmapHunter extends BitmapHunter {
   }
 
   @Override Bitmap decode(Request data) throws IOException {
-    return decodeResource(context.getResources(), data);
+	  synchronized ( DECODE_LOCK ) {
+		  return decodeResource(context.getResources(), data);
+	}
   }
 
   @Override Picasso.LoadedFrom getLoadedFrom() {

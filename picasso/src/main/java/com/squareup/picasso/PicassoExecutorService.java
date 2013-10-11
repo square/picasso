@@ -32,7 +32,7 @@ class PicassoExecutorService extends ThreadPoolExecutor {
   private static final int DEFAULT_THREAD_COUNT = 3;
 
   PicassoExecutorService() {
-    super(DEFAULT_THREAD_COUNT, DEFAULT_THREAD_COUNT, 0, TimeUnit.MILLISECONDS,
+    super(DEFAULT_THREAD_COUNT, DEFAULT_THREAD_COUNT, 5, TimeUnit.SECONDS,
         new LinkedBlockingQueue<Runnable>(), new Utils.PicassoThreadFactory());
   }
 

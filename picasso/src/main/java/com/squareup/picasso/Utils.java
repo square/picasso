@@ -15,6 +15,17 @@
  */
 package com.squareup.picasso;
 
+import static android.content.Context.ACTIVITY_SERVICE;
+import static android.content.pm.ApplicationInfo.FLAG_LARGE_HEAP;
+import static android.os.Build.VERSION.SDK_INT;
+import static android.os.Build.VERSION_CODES.HONEYCOMB_MR1;
+import static android.provider.Settings.System.AIRPLANE_MODE_ON;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.concurrent.ThreadFactory;
+
 import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.ContentResolver;
@@ -26,17 +37,6 @@ import android.os.Looper;
 import android.os.Process;
 import android.os.StatFs;
 import android.provider.Settings;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.concurrent.ThreadFactory;
-
-import static android.content.Context.ACTIVITY_SERVICE;
-import static android.content.pm.ApplicationInfo.FLAG_LARGE_HEAP;
-import static android.os.Build.VERSION.SDK_INT;
-import static android.os.Build.VERSION_CODES.HONEYCOMB_MR1;
-import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
-import static android.provider.Settings.System.AIRPLANE_MODE_ON;
 
 final class Utils {
   static final String THREAD_PREFIX = "Picasso-";
@@ -202,7 +202,6 @@ final class Utils {
   }
 
   static class PicassoThreadFactory implements ThreadFactory {
-    @SuppressWarnings("NullableProblems")
     public Thread newThread(Runnable r) {
       return new PicassoThread(r);
     }
@@ -214,7 +213,7 @@ final class Utils {
     }
 
     @Override public void run() {
-      Process.setThreadPriority(THREAD_PRIORITY_BACKGROUND);
+      Process.setThreadPriority( android.os.Process.THREAD_PRIORITY_LOWEST);
       super.run();
     }
   }

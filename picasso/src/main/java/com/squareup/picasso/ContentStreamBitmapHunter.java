@@ -19,6 +19,8 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -35,7 +37,9 @@ class ContentStreamBitmapHunter extends BitmapHunter {
 
   @Override Bitmap decode(Request data)
       throws IOException {
-    return decodeContentStream(data);
+	  synchronized ( DECODE_LOCK ) {
+		  return decodeContentStream(data);
+	}
   }
 
   @Override Picasso.LoadedFrom getLoadedFrom() {

@@ -15,13 +15,12 @@
  */
 package com.squareup.picasso;
 
+import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
-
-import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 
 class Stats {
   private static final int REQUESTED_COMPLETED = 0;

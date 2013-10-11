@@ -32,6 +32,7 @@ import android.graphics.Matrix;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.provider.ContactsContract.Contacts;
+import android.util.Log;
 
 abstract class BitmapHunter implements Runnable {
 
@@ -40,7 +41,7 @@ abstract class BitmapHunter implements Runnable {
    * this will only ever happen in background threads we help avoid excessive memory thrashing as
    * well as potential OOMs. Shamelessly stolen from Volley.
    */
-  private static final Object DECODE_LOCK = new Object();
+  protected static final Object DECODE_LOCK = new Object();
   private static final String ANDROID_ASSET = "android_asset";
   protected static final int ASSET_PREFIX_LENGTH =
       (SCHEME_FILE + ":///" + ANDROID_ASSET + "/").length();
@@ -106,7 +107,7 @@ abstract class BitmapHunter implements Runnable {
     if (!skipMemoryCache) {
       bitmap = cache.get(key);
       if (bitmap != null) {
-        stats.dispatchCacheHit();
+        if( null != stats ) stats.dispatchCacheHit();
         loadedFrom = MEMORY;
         return bitmap;
       }
@@ -115,7 +116,7 @@ abstract class BitmapHunter implements Runnable {
     bitmap = decode(data);
 
     if (bitmap != null) {
-      stats.dispatchBitmapDecoded(bitmap);
+      if( null != stats ) stats.dispatchBitmapDecoded(bitmap);
       if (data.needsTransformation()) {
         synchronized (DECODE_LOCK) {
           if (data.needsMatrixTransform() || exifRotation != 0) {
@@ -125,7 +126,7 @@ abstract class BitmapHunter implements Runnable {
             bitmap = applyCustomTransformations(data.transformations, bitmap);
           }
         }
-        stats.dispatchBitmapTransformed(bitmap);
+        if( null != stats )  stats.dispatchBitmapTransformed(bitmap);
       }
     }
 

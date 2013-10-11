@@ -21,7 +21,9 @@ class AssetBitmapHunter extends BitmapHunter {
 
   @Override Bitmap decode(Request data) throws IOException {
     String filePath = data.uri.toString().substring(ASSET_PREFIX_LENGTH);
-    return decodeAsset(filePath);
+    synchronized ( DECODE_LOCK ) {
+    	return decodeAsset(filePath);
+	}
   }
 
   @Override Picasso.LoadedFrom getLoadedFrom() {
