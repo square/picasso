@@ -35,7 +35,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
-import android.util.Log;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Action.RequestWeakReference;
@@ -49,6 +48,11 @@ import com.squareup.picasso.Action.RequestWeakReference;
 public class Picasso {
 	
   public static final String LOG_TAG = "Picasso";
+  
+  /**
+   * Custom Uri scheme to be used associated with a custom {@link Generator}
+   */
+  public static final String SCHEME_CUSTOM = "custom.resource";
 
   /** Callbacks for Picasso events. */
   public interface Listener {
@@ -88,14 +92,7 @@ public class Picasso {
   static final Handler HANDLER = new Handler(Looper.getMainLooper()) {
     @Override public void handleMessage(Message msg) {
       switch (msg.what) {
-        case HUNTER_BATCH_COMPLETE: {
-//          @SuppressWarnings("unchecked") List<BitmapHunter> batch = (List<BitmapHunter>) msg.obj;
-//          for (BitmapHunter hunter : batch) {
-//            hunter.picasso.complete(hunter);
-//          }
-//          
-          Log.d( LOG_TAG, "complete" );
-          
+        case HUNTER_BATCH_COMPLETE: {          
           BitmapHunter hunter = (BitmapHunter) msg.obj;
           hunter.picasso.complete( hunter );
           

@@ -15,6 +15,17 @@
  */
 package com.squareup.picasso;
 
+import static android.content.Context.CONNECTIVITY_SERVICE;
+import static android.content.Intent.ACTION_AIRPLANE_MODE_CHANGED;
+import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
+import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -27,19 +38,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
-import android.util.Log;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-
-import static android.content.Context.CONNECTIVITY_SERVICE;
-import static android.content.Intent.ACTION_AIRPLANE_MODE_CHANGED;
-import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
-import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
-import static com.squareup.picasso.BitmapHunter.forRequest;
 
 class Dispatcher {
   private static final int RETRY_DELAY = 500;
@@ -57,7 +55,6 @@ class Dispatcher {
   static final int AIRPLANE_MODE_CHANGE = 10;
 
   private static final String DISPATCHER_THREAD_NAME = "Dispatcher";
-  private static final int BATCH_DELAY = 200; // ms
 
   final DispatcherThread dispatcherThread;
   final Context context;
@@ -142,7 +139,7 @@ class Dispatcher {
       return;
     }
 
-    hunter = forRequest(context, action.getPicasso(), this, cache, stats, action, downloader);
+    hunter = BitmapHunter.forRequest(context, action.getPicasso(), this, cache, stats, action, downloader);
     hunter.future = service.submit(hunter);
     hunterMap.put(action.getKey(), hunter);
   }
@@ -174,7 +171,6 @@ class Dispatcher {
   }
 
   void performComplete(BitmapHunter hunter) {
-	  Log.i( Picasso.LOG_TAG, "performComplete" );
     if (!hunter.shouldSkipMemoryCache()) {
       cache.set(hunter.getKey(), hunter.getResult());
     }
@@ -183,7 +179,6 @@ class Dispatcher {
   }
 
   void performBatchComplete( BitmapHunter hunter) {
-	  Log.i( Picasso.LOG_TAG, "performBatchComplete" );
     mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(HUNTER_BATCH_COMPLETE, hunter));
   }
 

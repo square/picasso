@@ -19,6 +19,7 @@ import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentResolver.SCHEME_FILE;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
+import static com.squareup.picasso.Picasso.SCHEME_CUSTOM;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,7 +33,6 @@ import android.graphics.Matrix;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.provider.ContactsContract.Contacts;
-import android.util.Log;
 
 abstract class BitmapHunter implements Runnable {
 
@@ -45,7 +45,7 @@ abstract class BitmapHunter implements Runnable {
   private static final String ANDROID_ASSET = "android_asset";
   protected static final int ASSET_PREFIX_LENGTH =
       (SCHEME_FILE + ":///" + ANDROID_ASSET + "/").length();
-
+  
   final Picasso picasso;
   final Dispatcher dispatcher;
   final Cache cache;
@@ -202,6 +202,8 @@ abstract class BitmapHunter implements Runnable {
       return new FileBitmapHunter(context, picasso, dispatcher, cache, stats, action);
     } else if (SCHEME_ANDROID_RESOURCE.equals(scheme)) {
       return new ResourceBitmapHunter(context, picasso, dispatcher, cache, stats, action);
+    } else if( SCHEME_CUSTOM.equals( scheme ) ) {
+    	return new CustomBitmapHunter( picasso, dispatcher, cache, stats, action );
     } else {
       return new NetworkBitmapHunter(picasso, dispatcher, cache, stats, action, downloader);
     }

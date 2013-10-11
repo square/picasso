@@ -86,8 +86,6 @@ final public class PicassoDrawable extends Drawable implements Runnable {
 
     boolean fade = loadedFrom != MEMORY && !noFade;
     
-    Log.i( Picasso.LOG_TAG, "fade: " + fade );
-    
     if (fade) {
       this.placeholder = placeholder;
       animating = true;

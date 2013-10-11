@@ -22,6 +22,7 @@ import static com.squareup.picasso.Utils.createKey;
 
 import java.io.IOException;
 
+import org.apache.http.conn.scheme.Scheme;
 import org.jetbrains.annotations.TestOnly;
 
 import android.content.res.Resources;
@@ -160,6 +161,17 @@ public class RequestCreator {
   
   public RequestCreator withOptions( BitmapFactory.Options options ) {
 	  data.useOptions(options);
+	  return this;
+  }
+  
+  /**
+   * Assign a custom {@link Generator} which will be used to decode the Uri,
+   * only if the uri {@link Scheme} is {@link Picasso#SCHEME_CUSTOM}
+   * @param generator
+   * @return
+   */
+  public RequestCreator withGenerator( Generator generator ) {
+	  data.setGenerator( generator );
 	  return this;
   }
 
