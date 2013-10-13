@@ -213,7 +213,7 @@ final class Utils {
     }
 
     @Override public void run() {
-      Process.setThreadPriority( android.os.Process.THREAD_PRIORITY_LOWEST);
+      Process.setThreadPriority( android.os.Process.THREAD_PRIORITY_BACKGROUND);
       super.run();
     }
   }

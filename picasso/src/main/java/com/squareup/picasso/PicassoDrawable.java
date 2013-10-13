@@ -170,9 +170,6 @@ final public class PicassoDrawable extends Drawable implements Runnable {
 
   private void setBounds(Drawable drawable) {
     Rect bounds = getBounds();
-    
-    this.image.setBounds( bounds );
-/*
     final int width = bounds.width();
     final int height = bounds.height();
     final float ratio = (float) width / height;
@@ -194,7 +191,6 @@ final public class PicassoDrawable extends Drawable implements Runnable {
       final int drawableBottom = drawableTop + scaledDrawableHeight;
       drawable.setBounds(bounds.left, drawableTop, bounds.right, drawableBottom);
     }
-    */
   }
 
   private void drawDebugIndicator(Canvas canvas) {

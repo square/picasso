@@ -15,17 +15,22 @@
  */
 package com.squareup.picasso;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.media.ExifInterface;
-import android.net.Uri;
-import java.io.IOException;
-
 import static android.media.ExifInterface.ORIENTATION_NORMAL;
 import static android.media.ExifInterface.ORIENTATION_ROTATE_180;
 import static android.media.ExifInterface.ORIENTATION_ROTATE_270;
 import static android.media.ExifInterface.ORIENTATION_ROTATE_90;
 import static android.media.ExifInterface.TAG_ORIENTATION;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+
+import android.content.ContentResolver;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.media.ExifInterface;
+import android.net.Uri;
 
 class FileBitmapHunter extends ContentStreamBitmapHunter {
 
@@ -39,6 +44,15 @@ class FileBitmapHunter extends ContentStreamBitmapHunter {
     setExifRotation(getFileExifRotation(data.uri));
     return super.decode(data);
   }
+  
+  @Override
+	protected InputStream openInputStream( ContentResolver contentResolver, Uri uri ) throws FileNotFoundException {
+	  	final String scheme = uri.getScheme();
+	  	if( null == scheme ) {
+	  		return super.openInputStream( contentResolver, Uri.fromFile( new File( uri.getPath() ) ) );
+	  	}
+		return super.openInputStream( contentResolver, uri );
+	}
 
   static int getFileExifRotation(Uri uri) throws IOException {
     ExifInterface exifInterface = new ExifInterface(uri.getPath());

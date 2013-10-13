@@ -15,16 +15,17 @@
  */
 package com.squareup.picasso;
 
+import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+
 import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
-
-import java.io.IOException;
-import java.io.InputStream;
-
-import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
+import android.net.Uri;
 
 class ContentStreamBitmapHunter extends BitmapHunter {
   final Context context;
@@ -45,6 +46,10 @@ class ContentStreamBitmapHunter extends BitmapHunter {
   @Override Picasso.LoadedFrom getLoadedFrom() {
     return DISK;
   }
+  
+  protected InputStream openInputStream( ContentResolver contentResolver, Uri uri ) throws FileNotFoundException {
+	  return contentResolver.openInputStream( uri );
+  }
 
   protected Bitmap decodeContentStream(Request data) throws IOException {
     ContentResolver contentResolver = context.getContentResolver();
@@ -54,14 +59,14 @@ class ContentStreamBitmapHunter extends BitmapHunter {
       options.inJustDecodeBounds = true;
       InputStream is = null;
       try {
-        is = contentResolver.openInputStream(data.uri);
+        is = openInputStream(contentResolver, data.uri);
         BitmapFactory.decodeStream(is, null, options);
       } finally {
         Utils.closeQuietly(is);
       }
       calculateInSampleSize(data.targetWidth, data.targetHeight, options);
     }
-    InputStream is = contentResolver.openInputStream(data.uri);
+    InputStream is = openInputStream(contentResolver, data.uri);
     try {
       return BitmapFactory.decodeStream(is, null, options);
     } finally {

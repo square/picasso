@@ -33,6 +33,7 @@ import android.graphics.Matrix;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.provider.ContactsContract.Contacts;
+import android.util.Log;
 
 abstract class BitmapHunter implements Runnable {
 
@@ -188,6 +189,7 @@ abstract class BitmapHunter implements Runnable {
     }
     Uri uri = action.getData().uri;
     String scheme = uri.getScheme();
+    
     if (SCHEME_CONTENT.equals(scheme)) {
       if (Contacts.CONTENT_URI.getHost().equals(uri.getHost()) //
           && !uri.getPathSegments().contains(Contacts.Photo.CONTENT_DIRECTORY)) {
@@ -195,8 +197,8 @@ abstract class BitmapHunter implements Runnable {
       } else {
         return new ContentProviderBitmapHunter(context, picasso, dispatcher, cache, stats, action);
       }
-    } else if (SCHEME_FILE.equals(scheme)) {
-      if (ANDROID_ASSET.equals(uri.getPathSegments().get(0))) {
+    } else if (SCHEME_FILE.equals(scheme) || null == scheme ) {
+      if ( null != scheme && ANDROID_ASSET.equals(uri.getPathSegments().get(0))) {
         return new AssetBitmapHunter(context, picasso, dispatcher, cache, stats, action);
       }
       return new FileBitmapHunter(context, picasso, dispatcher, cache, stats, action);
