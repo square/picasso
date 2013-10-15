@@ -42,13 +42,13 @@ public class RequestCreator {
   private int errorResId;
   private Drawable errorDrawable;
 
-  RequestCreator(Picasso picasso, Uri uri, int resourceId) {
+  RequestCreator(Picasso picasso, Uri uri, int resourceId, String resourcePackage) {
     if (picasso.shutdown) {
       throw new IllegalStateException(
           "Picasso instance already shut down. Cannot submit new requests.");
     }
     this.picasso = picasso;
-    this.data = new Request.Builder(uri, resourceId);
+    this.data = new Request.Builder(uri, resourceId, resourcePackage);
   }
 
   @TestOnly RequestCreator() {

@@ -16,6 +16,7 @@
 package com.squareup.picasso;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -33,11 +34,22 @@ class ResourceBitmapHunter extends BitmapHunter {
   }
 
   @Override Bitmap decode(Request data) throws IOException {
-    return decodeResource(context.getResources(), data);
+    return decodeResource(getResources(data), data);
   }
 
   @Override Picasso.LoadedFrom getLoadedFrom() {
     return DISK;
+  }
+
+  private Resources getResources(Request data) throws IOException {
+     if (data.resourcePackage != null) {
+      try {
+        return context.getPackageManager().getResourcesForApplication(data.resourcePackage);
+      } catch (PackageManager.NameNotFoundException e) {
+        throw new IOException("Cannot find external resources and load Bitmap", e);
+      }
+    }
+    return context.getResources();
   }
 
   private Bitmap decodeResource(Resources resources, Request data) {
