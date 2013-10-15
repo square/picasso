@@ -21,7 +21,6 @@ import android.graphics.Matrix;
 import java.io.IOException;
 import java.util.concurrent.FutureTask;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -34,8 +33,8 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso.BitmapHunter.forRequest;
 import static com.squareup.picasso.BitmapHunter.transformResult;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
-import static com.squareup.picasso.TestUtils.ASSET_URI_1;
 import static com.squareup.picasso.TestUtils.ASSET_KEY_1;
+import static com.squareup.picasso.TestUtils.ASSET_URI_1;
 import static com.squareup.picasso.TestUtils.BITMAP_1;
 import static com.squareup.picasso.TestUtils.CONTACT_KEY_1;
 import static com.squareup.picasso.TestUtils.CONTACT_URI_1;
@@ -397,8 +396,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
   }
 
-  // @Ignore to unblock master. Need robolectric change perhaps to fix this.
-  @Test @Ignore public void reusedBitmapIsNotRecycled() throws Exception {
+  @Test public void reusedBitmapIsNotRecycled() {
     Request data = new Request.Builder(URI_1).build();
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, 0);
