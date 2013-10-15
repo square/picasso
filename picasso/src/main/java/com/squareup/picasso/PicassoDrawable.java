@@ -71,6 +71,7 @@ final class PicassoDrawable extends Drawable {
 
   long startTimeMillis;
   boolean animating;
+  int alpha = 0xFF;
 
   PicassoDrawable(Context context, Drawable placeholder, Bitmap bitmap,
       Picasso.LoadedFrom loadedFrom, boolean noFade, boolean debugging) {
@@ -105,10 +106,10 @@ final class PicassoDrawable extends Drawable {
           placeholder.draw(canvas);
         }
 
-        int alpha = (int) (0xFF * normalized);
-        image.setAlpha(alpha);
+        int partialAlpha = (int) (alpha * normalized);
+        image.setAlpha(partialAlpha);
         image.draw(canvas);
-        image.setAlpha(0xFF);
+        image.setAlpha(alpha);
         invalidateSelf();
       }
     }
@@ -127,6 +128,7 @@ final class PicassoDrawable extends Drawable {
   }
 
   @Override public void setAlpha(int alpha) {
+    this.alpha = alpha;
     if (placeholder != null) {
       placeholder.setAlpha(alpha);
     }
