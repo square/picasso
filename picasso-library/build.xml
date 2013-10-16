@@ -93,7 +93,7 @@
     
     <property name="out.combined.absolute.file" value="${out.absolute.dir}/combined.jar" />
     
-	<target name="-post-compile" depends="-combine-jars">
+	<target name="-post-build" depends="-combine-jars">
 		<!-- combine all the needed jars into the final jar -->
 		<antcall target="-rename-jar">
 		    <param name="dst.file" value="${out.absolute.dir}/${picasso.jar}" />

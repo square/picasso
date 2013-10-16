@@ -240,6 +240,10 @@ public class Picasso {
 	}
 	return null;
   }
+  
+  public void clearCache() {
+	  cache.clear();
+  }
 
   /** Stops this instance from accepting further requests. */
   public void shutdown() {
