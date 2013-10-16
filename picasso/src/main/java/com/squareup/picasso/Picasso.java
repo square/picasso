@@ -35,7 +35,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
-import android.util.Log;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Action.RequestWeakReference;
@@ -97,7 +96,6 @@ public class Picasso {
 //          BitmapHunter hunter = (BitmapHunter) msg.obj;
 //          hunter.picasso.complete( hunter );
             List<BitmapHunter> batch = (List<BitmapHunter>) msg.obj;
-            Log.d( LOG_TAG, "HUNTER_BATCH_COMPLETE: " + batch.size() );
             for (BitmapHunter hunter : batch) {
               hunter.picasso.complete(hunter);
             }        	
@@ -123,7 +121,7 @@ public class Picasso {
 
   final Context context;
   final Dispatcher dispatcher;
-  final Cache cache;
+  private final Cache cache;
   final Stats stats;
   final Map<Object, Action<?>> targetToAction;
   final Map<ImageView, DeferredRequestCreator> targetToDeferredRequestCreator;
@@ -250,6 +248,10 @@ public class Picasso {
   public void clearCache() {
 	  cache.clear();
   }
+  
+  Cache getCache() {
+	  return this.cache;
+  }
 
   /** Stops this instance from accepting further requests. */
   public void shutdown() {
@@ -298,7 +300,7 @@ public class Picasso {
     dispatcher.dispatchSubmit(action, delayMillis);
   }
 
-  Bitmap quickMemoryCacheCheck(String key) {
+  Bitmap quickMemoryCacheCheck(Cache cache, String key) {
     Bitmap cached = cache.get(key);
     if( null != stats ) {
       if (cached != null) {

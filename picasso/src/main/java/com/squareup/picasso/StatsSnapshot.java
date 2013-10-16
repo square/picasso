@@ -57,7 +57,7 @@ public class StatsSnapshot {
   public void dump() {
     StringWriter logWriter = new StringWriter();
     dump(new PrintWriter(logWriter));
-    Log.i(TAG, logWriter.toString());
+    Log.i(TAG, "dump: " + logWriter.toString());
   }
 
   /** Prints out this {@link StatsSnapshot} with the the provided {@link PrintWriter}. */

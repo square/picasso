@@ -18,8 +18,8 @@ package com.squareup.picasso;
 import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentResolver.SCHEME_FILE;
-import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Picasso.SCHEME_CUSTOM;
+import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,7 +33,6 @@ import android.graphics.Matrix;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.provider.ContactsContract.Contacts;
-import android.util.Log;
 
 abstract class BitmapHunter implements Runnable {
 

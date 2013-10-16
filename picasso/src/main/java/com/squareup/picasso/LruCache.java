@@ -15,10 +15,12 @@
  */
 package com.squareup.picasso;
 
-import android.content.Context;
-import android.graphics.Bitmap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.util.Log;
 
 /** A memory cache which uses a least-recently used eviction policy. */
 public class LruCache implements Cache {
@@ -30,6 +32,9 @@ public class LruCache implements Cache {
   private int evictionCount;
   private int hitCount;
   private int missCount;
+  private int id;
+  
+  static int _id = 0;
 
   /** Create a cache using an appropriate portion of the available RAM as the maximum size. */
   public LruCache(Context context) {
@@ -38,17 +43,20 @@ public class LruCache implements Cache {
 
   /** Create a cache with a given maximum size in bytes. */
   public LruCache(int maxSize) {
+	  Log.i( Picasso.LOG_TAG, "LruCache(" + maxSize + ")" );
     if (maxSize <= 0) {
       throw new IllegalArgumentException("Max size must be positive.");
     }
     this.maxSize = maxSize;
     this.map = new LinkedHashMap<String, Bitmap>(0, 0.75f, true);
+    this.id = _id++;
   }
 
   @Override public Bitmap get(String key) {
     if (key == null) {
       throw new NullPointerException("key == null");
     }
+    
 
     Bitmap mapValue;
     synchronized (this) {
@@ -59,7 +67,7 @@ public class LruCache implements Cache {
       }
       missCount++;
     }
-
+    
     return null;
   }
 
@@ -101,12 +109,14 @@ public class LruCache implements Cache {
         map.remove(key);
         size -= Utils.getBitmapBytes(value);
         evictionCount++;
+        Log.d( Picasso.LOG_TAG, "[" + id + "] resized to " + map.size() );
       }
     }
   }
 
   /** Clear the cache. */
   public final void evictAll() {
+	  Log.i( Picasso.LOG_TAG, "[" + id + "] evictAll" );
     trimToSize(-1); // -1 will evict 0-sized elements
   }
 
@@ -121,6 +131,7 @@ public class LruCache implements Cache {
   }
 
   public final synchronized void clear() {
+	  Log.i( Picasso.LOG_TAG, "[" + id + "] clear");
     evictAll();
   }
 

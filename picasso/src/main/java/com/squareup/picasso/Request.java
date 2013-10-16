@@ -69,10 +69,12 @@ public final class Request {
   public final Generator customGenerator;
   
   public final BitmapFactory.Options options;
+  
+  public final Cache cache;
 
   private Request(Uri uri, int resourceId, List<Transformation> transformations, int targetWidth,
       int targetHeight, boolean centerCrop, boolean centerInside, float rotationDegrees,
-      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot, boolean resizeOnlyIfBigger, BitmapFactory.Options options, Generator generator) {
+      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot, boolean resizeOnlyIfBigger, BitmapFactory.Options options, Generator generator, Cache cache) {
     this.uri = uri;
     this.resourceId = resourceId;
     if (transformations == null) {
@@ -91,6 +93,7 @@ public final class Request {
     this.resizeOnlyIfBigger = resizeOnlyIfBigger;
     this.options = options;
     this.customGenerator = generator;
+    this.cache = cache;
   }
 
   String getName() {
@@ -140,6 +143,7 @@ public final class Request {
     private List<Transformation> transformations;
     private BitmapFactory.Options options;
     private Generator generator;
+    private Cache cache;
 
     /** Start building a request using the specified {@link Uri}. */
     public Builder(Uri uri) {
@@ -168,6 +172,7 @@ public final class Request {
       rotationPivotY = request.rotationPivotY;
       hasRotationPivot = request.hasRotationPivot;
       resizeOnlyIfBigger = request.resizeOnlyIfBigger;
+      cache = request.cache;
       if (request.transformations != null) {
         transformations = new ArrayList<Transformation>(request.transformations);
       }
@@ -204,6 +209,15 @@ public final class Request {
     	this.generator = generator;
     	return this;
     }
+    
+    public Builder setCache( Cache cache ) {
+    	this.cache = cache;
+    	return this;
+    }
+    
+    public Cache getCache() {
+		return cache;
+	}
 
     /**
      * Set the target image resource ID.
@@ -331,7 +345,7 @@ public final class Request {
         throw new IllegalStateException("Center inside requires calling resize.");
       }
       return new Request(uri, resourceId, transformations, targetWidth, targetHeight, centerCrop,
-          centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot, resizeOnlyIfBigger, options, generator);
+          centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot, resizeOnlyIfBigger, options, generator, cache);
     }
   }
 }

@@ -174,6 +174,15 @@ public class RequestCreator {
 	  data.setGenerator( generator );
 	  return this;
   }
+  
+  /**
+   * Temporary use a different cache instance
+   * @param cache
+   */
+  public RequestCreator withCache( Cache cache ) {
+	  data.setCache( cache );
+	  return this;
+  }
 
   /**
    * Crops an image inside of the bounds specified by {@link #resize(int, int)} rather than
@@ -252,7 +261,7 @@ public class RequestCreator {
     String key = Utils.createKey(finalData);
 
     Action<Void> action = new GetAction(picasso, finalData, skipMemoryCache, key);
-    return forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache, picasso.stats,
+    return forRequest(picasso.context, picasso, picasso.dispatcher, data.getCache() != null ? data.getCache() : picasso.getCache(), picasso.stats,
         action, picasso.dispatcher.downloader).hunt();
   }
 
@@ -333,7 +342,7 @@ public class RequestCreator {
     String requestKey = createKey(finalData);
 
     if (!skipMemoryCache) {
-      Bitmap bitmap = picasso.quickMemoryCacheCheck(requestKey);
+      Bitmap bitmap = picasso.quickMemoryCacheCheck(data.getCache() != null ? data.getCache() : picasso.getCache(), requestKey );
       if (bitmap != null) {
         picasso.cancelRequest(target);
         target.onBitmapLoaded(bitmap, MEMORY);
@@ -395,7 +404,7 @@ public class RequestCreator {
     String requestKey = createKey(finalData);
 
     if (!skipMemoryCache) {
-      Bitmap bitmap = picasso.quickMemoryCacheCheck(requestKey);
+      Bitmap bitmap = picasso.quickMemoryCacheCheck( data.getCache() != null ? data.getCache() : picasso.getCache(), requestKey);
       if (bitmap != null) {
         picasso.cancelRequest(target);
         PicassoDrawable.setBitmap(target, picasso.context, bitmap, MEMORY, noFade,

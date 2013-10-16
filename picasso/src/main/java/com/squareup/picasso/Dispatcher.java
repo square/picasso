@@ -140,8 +140,8 @@ class Dispatcher {
     if (service.isShutdown()) {
       return;
     }
-
-    hunter = BitmapHunter.forRequest(context, action.getPicasso(), this, cache, stats, action, downloader);
+    
+    hunter = BitmapHunter.forRequest(context, action.getPicasso(), this, action.getData().cache != null ? action.getData().cache : this.cache, stats, action, downloader);
     hunter.future = service.submit(hunter);
     hunterMap.put(action.getKey(), hunter);
   }
@@ -174,7 +174,7 @@ class Dispatcher {
 
   void performComplete(BitmapHunter hunter) {
     if (!hunter.shouldSkipMemoryCache()) {
-      cache.set(hunter.getKey(), hunter.getResult());
+      hunter.cache.set(hunter.getKey(), hunter.getResult());
     }
     hunterMap.remove(hunter.getKey());
     batch(hunter);
