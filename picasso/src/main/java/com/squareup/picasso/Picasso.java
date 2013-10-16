@@ -35,6 +35,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
+import android.util.Log;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Action.RequestWeakReference;
@@ -93,8 +94,13 @@ public class Picasso {
     @Override public void handleMessage(Message msg) {
       switch (msg.what) {
         case HUNTER_BATCH_COMPLETE: {          
-          BitmapHunter hunter = (BitmapHunter) msg.obj;
-          hunter.picasso.complete( hunter );
+//          BitmapHunter hunter = (BitmapHunter) msg.obj;
+//          hunter.picasso.complete( hunter );
+            List<BitmapHunter> batch = (List<BitmapHunter>) msg.obj;
+            Log.d( LOG_TAG, "HUNTER_BATCH_COMPLETE: " + batch.size() );
+            for (BitmapHunter hunter : batch) {
+              hunter.picasso.complete(hunter);
+            }        	
           
           break;
         }

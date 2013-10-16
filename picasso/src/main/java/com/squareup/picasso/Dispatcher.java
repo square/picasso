@@ -50,11 +50,13 @@ class Dispatcher {
   static final int HUNTER_COMPLETE = 4;
   static final int HUNTER_RETRY = 5;
   static final int HUNTER_DECODE_FAILED = 6;
+  static final int HUNTER_DELAY_NEXT_BATCH = 7;
   static final int HUNTER_BATCH_COMPLETE = 8;
   static final int NETWORK_STATE_CHANGE = 9;
   static final int AIRPLANE_MODE_CHANGE = 10;
 
   private static final String DISPATCHER_THREAD_NAME = "Dispatcher";
+  private static final int BATCH_DELAY = 200; // ms
 
   final DispatcherThread dispatcherThread;
   final Context context;
@@ -178,8 +180,12 @@ class Dispatcher {
     batch(hunter);
   }
 
-  void performBatchComplete( BitmapHunter hunter) {
-    mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(HUNTER_BATCH_COMPLETE, hunter));
+  //void performBatchComplete( BitmapHunter hunter) {
+  void performBatchComplete() {
+    List<BitmapHunter> copy = new ArrayList<BitmapHunter>(batch);
+    batch.clear();
+    mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(HUNTER_BATCH_COMPLETE, copy));
+    // mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(HUNTER_BATCH_COMPLETE, hunter));
   }
 
   void performError(BitmapHunter hunter) {
@@ -202,7 +208,11 @@ class Dispatcher {
     if (hunter.isCancelled()) {
       return;
     }
-    mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(HUNTER_BATCH_COMPLETE, hunter));
+    batch.add(hunter);
+    if (!handler.hasMessages(HUNTER_DELAY_NEXT_BATCH)) {
+      handler.sendEmptyMessageDelayed(HUNTER_DELAY_NEXT_BATCH, BATCH_DELAY);
+    }
+    // mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(HUNTER_BATCH_COMPLETE, hunter));
   }
 
   private class DispatcherHandler extends Handler {
@@ -223,15 +233,22 @@ class Dispatcher {
           break;
         }
         case HUNTER_COMPLETE: {
-          performComplete((BitmapHunter) msg.obj);
+          BitmapHunter hunter = (BitmapHunter) msg.obj;
+          performComplete(hunter);
           break;
         }
         case HUNTER_RETRY: {
-          performRetry((BitmapHunter) msg.obj);
+          BitmapHunter hunter = (BitmapHunter) msg.obj;
+          performRetry(hunter);
           break;
         }
         case HUNTER_DECODE_FAILED: {
-          performError((BitmapHunter) msg.obj);
+          BitmapHunter hunter = (BitmapHunter) msg.obj;
+          performError(hunter);
+          break;
+        }
+        case HUNTER_DELAY_NEXT_BATCH: {
+          performBatchComplete();
           break;
         }
         case NETWORK_STATE_CHANGE: {
