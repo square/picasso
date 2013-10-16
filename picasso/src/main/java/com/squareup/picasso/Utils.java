@@ -79,7 +79,12 @@ final class Utils {
       builder = new StringBuilder(path.length() + KEY_PADDING);
       builder.append(path);
     } else {
-      builder = new StringBuilder(KEY_PADDING);
+      if (data.resourcePackage != null) {
+        builder = new StringBuilder(data.resourcePackage.length() + KEY_PADDING);
+        builder.append(data.resourcePackage).append(':');
+      } else {
+          builder = new StringBuilder(KEY_PADDING);
+      }
       builder.append(data.resourceId);
     }
     builder.append('\n');
