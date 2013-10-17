@@ -51,12 +51,16 @@ class Dispatcher {
   static final int HUNTER_RETRY = 5;
   static final int HUNTER_DECODE_FAILED = 6;
   static final int HUNTER_DELAY_NEXT_BATCH = 7;
-  static final int HUNTER_BATCH_COMPLETE = 8;
+  static final int REQUEST_BATCH_COMPLETE = 8; // with batch
+  static final int REQUEST_COMPLETE = 11;	// single
   static final int NETWORK_STATE_CHANGE = 9;
   static final int AIRPLANE_MODE_CHANGE = 10;
 
   private static final String DISPATCHER_THREAD_NAME = "Dispatcher";
   private static final int BATCH_DELAY = 200; // ms
+  
+  // temporary flag
+  private static final boolean USE_BATCH = false;
 
   final DispatcherThread dispatcherThread;
   final Context context;
@@ -180,12 +184,10 @@ class Dispatcher {
     batch(hunter);
   }
 
-  //void performBatchComplete( BitmapHunter hunter) {
   void performBatchComplete() {
     List<BitmapHunter> copy = new ArrayList<BitmapHunter>(batch);
     batch.clear();
-    mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(HUNTER_BATCH_COMPLETE, copy));
-    // mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(HUNTER_BATCH_COMPLETE, hunter));
+    mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(REQUEST_BATCH_COMPLETE, copy));
   }
 
   void performError(BitmapHunter hunter) {
@@ -208,11 +210,16 @@ class Dispatcher {
     if (hunter.isCancelled()) {
       return;
     }
-    batch.add(hunter);
-    if (!handler.hasMessages(HUNTER_DELAY_NEXT_BATCH)) {
-      handler.sendEmptyMessageDelayed(HUNTER_DELAY_NEXT_BATCH, BATCH_DELAY);
+    
+    if( USE_BATCH ) {
+      batch.add(hunter);
+    
+      if (!handler.hasMessages(HUNTER_DELAY_NEXT_BATCH)) {
+    	handler.sendEmptyMessageDelayed(HUNTER_DELAY_NEXT_BATCH, BATCH_DELAY);
+      }
+    } else {
+    	mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(REQUEST_COMPLETE, hunter));
     }
-    // mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(HUNTER_BATCH_COMPLETE, hunter));
   }
 
   private class DispatcherHandler extends Handler {

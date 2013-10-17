@@ -18,6 +18,8 @@ package com.squareup.picasso;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.telephony.TelephonyManager;
+import android.util.Log;
+
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -30,13 +32,13 @@ import java.util.concurrent.TimeUnit;
  */
 class PicassoExecutorService extends ThreadPoolExecutor {
 	private static final int CORE_POOL_SIZE = 3;
-	private static final int MAX_CORE_POOL_SIZE = 5;
+	private static final int MAX_CORE_POOL_SIZE = 3;
 
   PicassoExecutorService() {
     super(CORE_POOL_SIZE, MAX_CORE_POOL_SIZE, 5, TimeUnit.SECONDS,
         new LinkedBlockingQueue<Runnable>(), new Utils.PicassoThreadFactory());
   }
-
+  
   void adjustThreadCount(NetworkInfo info) {
     if (info == null || !info.isConnectedOrConnecting()) {
       setThreadCount(CORE_POOL_SIZE, MAX_CORE_POOL_SIZE);
@@ -76,6 +78,7 @@ class PicassoExecutorService extends ThreadPoolExecutor {
   }
 
   private void setThreadCount(int threadCount, int maxThreadCount) {
+	  Log.i( Picasso.LOG_TAG, "setThreadCount: " + threadCount + ", " + maxThreadCount );
     setCorePoolSize(threadCount);
     setMaximumPoolSize(threadCount);
   }

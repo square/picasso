@@ -16,7 +16,8 @@
 package com.squareup.picasso;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
-import static com.squareup.picasso.Dispatcher.HUNTER_BATCH_COMPLETE;
+import static com.squareup.picasso.Dispatcher.REQUEST_BATCH_COMPLETE;
+import static com.squareup.picasso.Dispatcher.REQUEST_COMPLETE;
 import static com.squareup.picasso.Dispatcher.REQUEST_GCED;
 import static com.squareup.picasso.Utils.THREAD_PREFIX;
 
@@ -90,23 +91,29 @@ public class Picasso {
   }
 
   static final Handler HANDLER = new Handler(Looper.getMainLooper()) {
-    @Override public void handleMessage(Message msg) {
+    @SuppressWarnings ( "unchecked" )
+	@Override public void handleMessage(Message msg) {
       switch (msg.what) {
-        case HUNTER_BATCH_COMPLETE: {          
-//          BitmapHunter hunter = (BitmapHunter) msg.obj;
-//          hunter.picasso.complete( hunter );
+    	case REQUEST_COMPLETE: {
+    		BitmapHunter hunter = (BitmapHunter) msg.obj;
+    		hunter.picasso.complete( hunter );
+    		break;
+    	}
+    		  
+        case REQUEST_BATCH_COMPLETE: {          
             List<BitmapHunter> batch = (List<BitmapHunter>) msg.obj;
             for (BitmapHunter hunter : batch) {
               hunter.picasso.complete(hunter);
             }        	
-          
           break;
         }
+        
         case REQUEST_GCED: {
           Action<?> action = (Action<?>) msg.obj;
           action.picasso.cancelExistingRequest(action.getTarget());
           break;
         }
+        
         default:
           throw new AssertionError("Unknown handler message received: " + msg.what);
       }
