@@ -35,9 +35,7 @@ public final class Request {
    * This is mutually exclusive with {@link #uri}.
    */
   public final int resourceId;
-  /**
-   * The resource's package name where to load the image {@link #resourceId}.
-   */
+  /** The resource's package name where to load the image {@link #resourceId}. */
   public final String resourcePackage;
   /** List of custom transformations to be applied after the built-in transformations. */
   public final List<Transformation> transformations;
