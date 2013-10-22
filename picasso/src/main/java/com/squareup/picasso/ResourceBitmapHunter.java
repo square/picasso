@@ -42,7 +42,7 @@ class ResourceBitmapHunter extends BitmapHunter {
   }
 
   private Resources getResources(Request data) throws IOException {
-     if (data.resourcePackage != null) {
+    if (data.resourcePackage != null) {
       try {
         return context.getPackageManager().getResourcesForApplication(data.resourcePackage);
       } catch (PackageManager.NameNotFoundException e) {
