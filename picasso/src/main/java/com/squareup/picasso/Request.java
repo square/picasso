@@ -90,7 +90,7 @@ public final class Request {
     if (uri != null) {
       return uri.getPath();
     } else if (resourcePackage != null) {
-      return new StringBuilder(resourcePackage).append(':').append(resourceId).toString();
+      return resourcePackage + ':' + resourceId;
     }
     return Integer.toHexString(resourceId);
   }
