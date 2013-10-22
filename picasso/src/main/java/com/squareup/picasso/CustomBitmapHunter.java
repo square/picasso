@@ -26,6 +26,6 @@ public class CustomBitmapHunter extends BitmapHunter {
 		if( !data.hasCustomGenerator() ) {
 			throw new IllegalStateException( "Custom Uri can be used only with a Generator" );
 		}
-		return data.customGenerator.decode( data.uri.getPath() );
+		return data.customGenerator.decode( data.uri );
 	}
 }
