@@ -91,6 +91,8 @@ public final class Request {
   String getName() {
     if (uri != null) {
       return uri.getPath();
+    } else if (resourcePackage != null) {
+      return new StringBuilder(resourcePackage).append(':').append(resourceId).toString();
     }
     return Integer.toHexString(resourceId);
   }
