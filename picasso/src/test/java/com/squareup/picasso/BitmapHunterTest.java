@@ -18,6 +18,8 @@ package com.squareup.picasso;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import android.net.Uri;
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.FutureTask;
 import org.junit.Before;
@@ -196,6 +198,13 @@ public class BitmapHunterTest {
     BitmapHunter hunter =
         forRequest(context, picasso, dispatcher, cache, stats, action, downloader);
     assertThat(hunter).isInstanceOf(AssetBitmapHunter.class);
+  }
+
+  @Test public void forFileWithNoPathSegments() {
+    Action action = mockAction("keykeykey", Uri.fromFile(new File("/")));
+    BitmapHunter hunter =
+        forRequest(context, picasso, dispatcher, cache, stats, action, downloader);
+    assertThat(hunter).isInstanceOf(FileBitmapHunter.class);
   }
 
   @Test public void exifRotation() throws Exception {
