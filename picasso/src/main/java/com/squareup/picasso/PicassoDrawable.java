@@ -37,7 +37,7 @@ final public class PicassoDrawable extends Drawable implements Runnable {
   // Only accessed from main thread.
   private static final Paint DEBUG_PAINT = new Paint();
 
-  private static final float FADE_DURATION = 450f; //ms
+  private static final float FADE_DURATION = 200f; //ms
 
   /**
    * Create or update the drawable on the target {@link ImageView} to display the supplied bitmap
@@ -72,6 +72,7 @@ final public class PicassoDrawable extends Drawable implements Runnable {
 
   long startTimeMillis;
   boolean animating;
+  int alpha = 0xFF;
 
   PicassoDrawable(Context context, Drawable placeholder, Bitmap bitmap,
       Picasso.LoadedFrom loadedFrom, boolean noFade, boolean debugging) {
@@ -85,7 +86,6 @@ final public class PicassoDrawable extends Drawable implements Runnable {
     this.image = new BitmapDrawable(res, bitmap);
 
     boolean fade = loadedFrom != MEMORY && !noFade;
-    
     if (fade) {
       this.placeholder = placeholder;
       animating = true;
@@ -113,11 +113,9 @@ final public class PicassoDrawable extends Drawable implements Runnable {
           placeholder.draw(canvas);
         }
 
-        int alpha = (int) (0xFF * normalized);
-        image.setAlpha(alpha);
+        int partialAlpha = (int) (alpha * normalized);
+        image.setAlpha(partialAlpha);
         image.draw(canvas);
-        image.setAlpha(0xFF);
-        
         scheduleSelf( this, SystemClock.uptimeMillis() + 16 );
       }
     }
@@ -141,6 +139,7 @@ final public class PicassoDrawable extends Drawable implements Runnable {
   }
 
   @Override public void setAlpha(int alpha) {
+    this.alpha = alpha;
     if (placeholder != null) {
       placeholder.setAlpha(alpha);
     }
@@ -170,6 +169,7 @@ final public class PicassoDrawable extends Drawable implements Runnable {
 
   private void setBounds(Drawable drawable) {
     Rect bounds = getBounds();
+
     final int width = bounds.width();
     final int height = bounds.height();
     final float ratio = (float) width / height;
