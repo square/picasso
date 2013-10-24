@@ -48,6 +48,9 @@ final class Utils {
   private static final int MIN_DISK_CACHE_SIZE = 5 * 1024 * 1024; // 5MB
   private static final int MAX_DISK_CACHE_SIZE = 50 * 1024 * 1024; // 50MB
   private static final int MAX_MEM_CACHE_SIZE = 30 * 1024 * 1024; // 30MB
+  
+  /** default drawable fade duration */
+  public static final long FADE_DURATION = 200; //ms
 
   private Utils() {
     // No instances.

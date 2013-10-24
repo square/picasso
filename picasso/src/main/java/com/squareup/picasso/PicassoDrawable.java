@@ -15,6 +15,8 @@
  */
 package com.squareup.picasso;
 
+import static android.graphics.Color.WHITE;
+import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -27,27 +29,23 @@ import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
-import android.util.Log;
 import android.widget.ImageView;
-
-import static android.graphics.Color.WHITE;
-import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 
 final public class PicassoDrawable extends Drawable implements Runnable {
   // Only accessed from main thread.
   private static final Paint DEBUG_PAINT = new Paint();
 
-  private static final float FADE_DURATION = 200f; //ms
+  
 
   /**
    * Create or update the drawable on the target {@link ImageView} to display the supplied bitmap
    * image.
    */
   static void setBitmap(ImageView target, Context context, Bitmap bitmap,
-      Picasso.LoadedFrom loadedFrom, boolean noFade, boolean debugging) {
+      Picasso.LoadedFrom loadedFrom, long fadeTime, boolean debugging) {
     Drawable placeholder = target.getDrawable();
     PicassoDrawable drawable =
-        new PicassoDrawable(context, placeholder, bitmap, loadedFrom, noFade, debugging);
+        new PicassoDrawable(context, placeholder, bitmap, loadedFrom, fadeTime, debugging);
     target.setImageDrawable(drawable);
   }
 
@@ -72,20 +70,24 @@ final public class PicassoDrawable extends Drawable implements Runnable {
 
   long startTimeMillis;
   boolean animating;
-  int alpha = 0xFF;
+  double alpha = 0xFF;
+  long fadeTime;
 
   PicassoDrawable(Context context, Drawable placeholder, Bitmap bitmap,
-      Picasso.LoadedFrom loadedFrom, boolean noFade, boolean debugging) {
+      Picasso.LoadedFrom loadedFrom, long fadeTime, boolean debugging) {
     Resources res = context.getResources();
-
+    
     this.debugging = debugging;
     this.density = res.getDisplayMetrics().density;
 
     this.loadedFrom = loadedFrom;
 
     this.image = new BitmapDrawable(res, bitmap);
+    
+    this.fadeTime = fadeTime;
 
-    boolean fade = loadedFrom != MEMORY && !noFade;
+    boolean fade = loadedFrom != MEMORY && (fadeTime > 0);
+    
     if (fade) {
       this.placeholder = placeholder;
       animating = true;
@@ -103,7 +105,7 @@ final public class PicassoDrawable extends Drawable implements Runnable {
     if (!animating) {
       image.draw(canvas);
     } else {
-      float normalized = (SystemClock.uptimeMillis() - startTimeMillis) / FADE_DURATION;
+      double normalized = (double)(SystemClock.uptimeMillis() - startTimeMillis) / fadeTime;
       if (normalized >= 1f) {
         animating = false;
         placeholder = null;

@@ -38,7 +38,7 @@ public class RequestCreator {
   private final Request.Builder data;
 
   private boolean skipMemoryCache;
-  private boolean noFade;
+  private long fadeTime = Utils.FADE_DURATION;
   private boolean deferred;
   private int placeholderResId;
   private Drawable placeholderDrawable;
@@ -238,8 +238,18 @@ public class RequestCreator {
 
   /** Disable brief fade in of images loaded from the disk cache or network. */
   public RequestCreator noFade() {
-    noFade = true;
+    fadeTime = 0;
     return this;
+  }
+  
+  /** use a custom fade-in duration, instead of the default.
+   * @see {@link Utils#FADE_DURATION}
+   * @param ms
+   * @return
+   */
+  public RequestCreator fade( long ms ) {
+	fadeTime = ms;
+	return this;
   }
   
   public RequestCreator withDelay( long millis ) {
@@ -260,7 +270,7 @@ public class RequestCreator {
     Request finalData = picasso.transformRequest(data.build());
     String key = Utils.createKey(finalData);
 
-    Action<Void> action = new GetAction(picasso, finalData, skipMemoryCache, key);
+    Action<Void> action = new GetAction(picasso, finalData, skipMemoryCache, fadeTime, key);
     return forRequest(picasso.context, picasso, picasso.dispatcher, data.getCache() != null ? data.getCache() : picasso.getCache(), picasso.stats,
         action, picasso.dispatcher.downloader).hunt();
   }
@@ -278,7 +288,7 @@ public class RequestCreator {
       Request finalData = picasso.transformRequest(data.build());
       String key = Utils.createKey(finalData);
 
-      Action<Void> action = new FetchAction(picasso, finalData, skipMemoryCache, key);
+      Action<Void> action = new FetchAction(picasso, finalData, skipMemoryCache, fadeTime, key);
       picasso.enqueueAndSubmit(action, delayMillis);
     }
   }
@@ -352,7 +362,7 @@ public class RequestCreator {
 
     target.onPrepareLoad(drawable);
 
-    Action<Target> action = new TargetAction(picasso, target, finalData, skipMemoryCache, requestKey);
+    Action<Target> action = new TargetAction(picasso, target, finalData, skipMemoryCache, fadeTime, requestKey);
     picasso.enqueueAndSubmit(action, delayMillis);
   }
 
@@ -407,7 +417,7 @@ public class RequestCreator {
       Bitmap bitmap = picasso.quickMemoryCacheCheck( data.getCache() != null ? data.getCache() : picasso.getCache(), requestKey);
       if (bitmap != null) {
         picasso.cancelRequest(target);
-        PicassoDrawable.setBitmap(target, picasso.context, bitmap, MEMORY, noFade,
+        PicassoDrawable.setBitmap(target, picasso.context, bitmap, MEMORY, fadeTime,
             picasso.debugging);
         if (callback != null) {
           callback.onSuccess();
@@ -419,7 +429,7 @@ public class RequestCreator {
     PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable);
 
     Action<ImageView> action =
-        new ImageViewAction(picasso, target, finalData, skipMemoryCache, noFade, errorResId,
+        new ImageViewAction(picasso, target, finalData, skipMemoryCache, fadeTime, errorResId,
             errorDrawable, requestKey, callback);
 
     picasso.enqueueAndSubmit(action, delayMillis);
