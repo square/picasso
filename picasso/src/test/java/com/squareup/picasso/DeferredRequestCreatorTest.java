@@ -131,7 +131,7 @@ public class DeferredRequestCreatorTest {
     Picasso picasso = mock(Picasso.class);
     when(picasso.transformRequest(any(Request.class))).thenAnswer(TRANSFORM_REQUEST_ANSWER);
 
-    RequestCreator creator = new RequestCreator(picasso, URI_1, 0);
+    RequestCreator creator = new RequestCreator(picasso, URI_1, 0, null);
 
     ImageView target = mockFitImageViewTarget(true);
     when(target.getMeasuredWidth()).thenReturn(100);

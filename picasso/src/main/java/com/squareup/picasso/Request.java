@@ -35,6 +35,8 @@ public final class Request {
    * This is mutually exclusive with {@link #uri}.
    */
   public final int resourceId;
+  /** The resource's package name where to load the image {@link #resourceId}. */
+  public final String resourcePackage;
   /** List of custom transformations to be applied after the built-in transformations. */
   public final List<Transformation> transformations;
   /** Target image width for resizing. */
@@ -62,11 +64,13 @@ public final class Request {
   /** Whether or not {@link #rotationPivotX} and {@link #rotationPivotY} are set. */
   public final boolean hasRotationPivot;
 
-  private Request(Uri uri, int resourceId, List<Transformation> transformations, int targetWidth,
-      int targetHeight, boolean centerCrop, boolean centerInside, float rotationDegrees,
-      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot) {
+  private Request(Uri uri, int resourceId, String resourcePackage,
+      List<Transformation> transformations, int targetWidth, int targetHeight, boolean centerCrop,
+      boolean centerInside, float rotationDegrees, float rotationPivotX, float rotationPivotY,
+      boolean hasRotationPivot) {
     this.uri = uri;
     this.resourceId = resourceId;
+    this.resourcePackage = resourcePackage;
     if (transformations == null) {
       this.transformations = null;
     } else {
@@ -85,6 +89,8 @@ public final class Request {
   String getName() {
     if (uri != null) {
       return uri.getPath();
+    } else if (resourcePackage != null) {
+      return resourcePackage + ':' + resourceId;
     }
     return Integer.toHexString(resourceId);
   }
@@ -113,6 +119,7 @@ public final class Request {
   public static final class Builder {
     private Uri uri;
     private int resourceId;
+    private String resourcePackage;
     private int targetWidth;
     private int targetHeight;
     private boolean centerCrop;
@@ -138,9 +145,16 @@ public final class Request {
       this.resourceId = resourceId;
     }
 
+    Builder(Uri uri, int resourceId, String resourcePackage) {
+      this.uri = uri;
+      this.resourceId = resourceId;
+      this.resourcePackage = resourcePackage;
+    }
+
     private Builder(Request request) {
       uri = request.uri;
       resourceId = request.resourceId;
+      resourcePackage = request.resourcePackage;
       targetWidth = request.targetWidth;
       targetHeight = request.targetHeight;
       centerCrop = request.centerCrop;
@@ -186,8 +200,22 @@ public final class Request {
         throw new IllegalArgumentException("Image resource ID may not be 0.");
       }
       this.resourceId = resourceId;
+      this.resourcePackage = null;
       this.uri = null;
       return this;
+    }
+
+    /**
+     * Set the target image resource id and package.
+     * <p>
+     * This will clear an image Uri if one is set.
+     */
+    public Builder setResourceIdAndPackage(int resourceId, String resourcePackage) {
+      if (resourcePackage == null) {
+        throw new IllegalArgumentException("Image resource package may not be null.");
+      }
+      this.resourcePackage = resourcePackage;
+      return setResourceId(resourceId);
     }
 
     /** Resize the image to the specified size in pixels. */
@@ -300,8 +328,9 @@ public final class Request {
       if (centerInside && targetWidth == 0) {
         throw new IllegalStateException("Center inside requires calling resize.");
       }
-      return new Request(uri, resourceId, transformations, targetWidth, targetHeight, centerCrop,
-          centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot);
+      return new Request(uri, resourceId, resourcePackage, transformations, targetWidth,
+          targetHeight, centerCrop, centerInside, rotationDegrees, rotationPivotX, rotationPivotY,
+          hasRotationPivot);
     }
   }
 }

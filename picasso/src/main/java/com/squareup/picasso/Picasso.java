@@ -155,7 +155,7 @@ public class Picasso {
    * @see #load(int)
    */
   public RequestCreator load(Uri uri) {
-    return new RequestCreator(this, uri, 0);
+    return new RequestCreator(this, uri, 0, null);
   }
 
   /**
@@ -172,10 +172,11 @@ public class Picasso {
    * @see #load(Uri)
    * @see #load(File)
    * @see #load(int)
+   * @see #load(int, String)
    */
   public RequestCreator load(String path) {
     if (path == null) {
-      return new RequestCreator(this, null, 0);
+      return new RequestCreator(this, null, 0, null);
     }
     if (path.trim().length() == 0) {
       throw new IllegalArgumentException("Path must not be empty.");
@@ -193,10 +194,11 @@ public class Picasso {
    * @see #load(Uri)
    * @see #load(String)
    * @see #load(int)
+   * @see #load(int, String)
    */
   public RequestCreator load(File file) {
     if (file == null) {
-      return new RequestCreator(this, null, 0);
+      return new RequestCreator(this, null, 0, null);
     }
     return load(Uri.fromFile(file));
   }
@@ -207,12 +209,28 @@ public class Picasso {
    * @see #load(Uri)
    * @see #load(String)
    * @see #load(File)
+   * @see #load(int, String)
    */
   public RequestCreator load(int resourceId) {
     if (resourceId == 0) {
       throw new IllegalArgumentException("Resource ID must not be zero.");
     }
-    return new RequestCreator(this, null, resourceId);
+    return new RequestCreator(this, null, resourceId, null);
+  }
+
+  /**
+   * Start an image request using the specified drawable resource ID from specified package.
+   *
+   * @see #load(Uri)
+   * @see #load(String)
+   * @see #load(File)
+   * @see #load(int)
+   */
+  public RequestCreator load(int resourceId, String resourcePackage) {
+    if (resourceId == 0) {
+      throw new IllegalArgumentException("Resource ID must not be zero.");
+    }
+    return new RequestCreator(this, null, resourceId, resourcePackage);
   }
 
   /** {@code true} if debug display, logging, and statistics are enabled. */
