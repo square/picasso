@@ -19,8 +19,9 @@ import android.graphics.Bitmap;
 
 final class TargetAction extends Action<Target> {
 
-  TargetAction(Picasso picasso, Target target, Request data, boolean skipCache, String key) {
-    super(picasso, target, data, skipCache, false, 0, null, key);
+  TargetAction(Picasso picasso, Target target, Request data, boolean skipCache, boolean localOnly,
+      String key) {
+    super(picasso, target, data, skipCache, localOnly, false, 0, null, key);
   }
 
   @Override void complete(Bitmap result, Picasso.LoadedFrom from) {

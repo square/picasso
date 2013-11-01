@@ -35,6 +35,7 @@ public class RequestCreator {
   private final Request.Builder data;
 
   private boolean skipMemoryCache;
+  private boolean localOnly;
   private boolean noFade;
   private boolean deferred;
   private int placeholderResId;
@@ -195,6 +196,14 @@ public class RequestCreator {
     return this;
   }
 
+  /**
+   * Indicate that this action should only load image from local.
+   */
+  public RequestCreator localOnly() {
+    localOnly = true;
+    return this;
+  }
+
   /** Disable brief fade in of images loaded from the disk cache or network. */
   public RequestCreator noFade() {
     noFade = true;
@@ -214,7 +223,7 @@ public class RequestCreator {
     Request finalData = picasso.transformRequest(data.build());
     String key = Utils.createKey(finalData);
 
-    Action action = new GetAction(picasso, finalData, skipMemoryCache, key);
+    Action action = new GetAction(picasso, finalData, skipMemoryCache, localOnly, key);
     return forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache, picasso.stats,
         action, picasso.dispatcher.downloader).hunt();
   }
@@ -231,7 +240,7 @@ public class RequestCreator {
       Request finalData = picasso.transformRequest(data.build());
       String key = Utils.createKey(finalData);
 
-      Action action = new FetchAction(picasso, finalData, skipMemoryCache, key);
+      Action action = new FetchAction(picasso, finalData, skipMemoryCache, localOnly, key);
       picasso.enqueueAndSubmit(action);
     }
   }
@@ -305,7 +314,8 @@ public class RequestCreator {
 
     target.onPrepareLoad(drawable);
 
-    Action action = new TargetAction(picasso, target, finalData, skipMemoryCache, requestKey);
+    Action action =
+         new TargetAction(picasso, target, finalData, skipMemoryCache, localOnly, requestKey);
     picasso.enqueueAndSubmit(action);
   }
 
@@ -372,8 +382,8 @@ public class RequestCreator {
     PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable);
 
     Action action =
-        new ImageViewAction(picasso, target, finalData, skipMemoryCache, noFade, errorResId,
-            errorDrawable, requestKey, callback);
+        new ImageViewAction(picasso, target, finalData, skipMemoryCache, localOnly, noFade,
+            errorResId, errorDrawable, requestKey, callback);
 
     picasso.enqueueAndSubmit(action);
   }
