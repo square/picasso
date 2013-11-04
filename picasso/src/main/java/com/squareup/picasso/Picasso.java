@@ -36,6 +36,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
+import android.util.Log;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Action.RequestWeakReference;
@@ -346,6 +347,7 @@ public class Picasso {
     }
 
     if (listener != null && exception != null) {
+      Log.w( LOG_TAG, exception );
       listener.onImageLoadFailed(this, uri, exception);
     }
   }

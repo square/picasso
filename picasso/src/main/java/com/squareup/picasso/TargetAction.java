@@ -16,6 +16,7 @@
 package com.squareup.picasso;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 
 final class TargetAction extends Action<Target> {
 
@@ -34,6 +35,8 @@ final class TargetAction extends Action<Target> {
       if (result.isRecycled()) {
         throw new IllegalStateException("Target callback must not recycle bitmap!");
       }
+    } else {
+      Log.w( Picasso.LOG_TAG, "target is null" );
     }
   }
 

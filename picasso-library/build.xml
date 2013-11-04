@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="picasso-library" default="help">
+<project name="picasso" default="help">
 
     <!-- The local.properties file is created and updated by the 'android' tool.
          It contains the path to the SDK. It should *NOT* be checked into
@@ -91,10 +91,10 @@
     <!-- version-tag: 1 -->
     <import file="${sdk.dir}/tools/ant/build.xml" />
     
+    <!-- 
     <property name="out.combined.absolute.file" value="${out.absolute.dir}/combined.jar" />
     
 	<target name="-post-build" depends="-combine-jars">
-		<!-- combine all the needed jars into the final jar -->
 		<antcall target="-rename-jar">
 		    <param name="dst.file" value="${out.absolute.dir}/${picasso.jar}" />
 		    <param name="src.file" value="${out.combined.absolute.file}" />
@@ -109,6 +109,6 @@
 	            <attribute name="Main-Class" value="com.squareup.picasso.Picasso"/>
 	        </manifest>
 	    </jar>
-	</target>    
-
+	</target>
+	-->
 </project>

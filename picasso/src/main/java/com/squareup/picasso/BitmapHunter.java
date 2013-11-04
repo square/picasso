@@ -33,6 +33,7 @@ import android.graphics.Matrix;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.provider.ContactsContract.Contacts;
+import android.util.Log;
 
 abstract class BitmapHunter implements Runnable {
 
@@ -80,18 +81,21 @@ abstract class BitmapHunter implements Runnable {
   @Override public void run() {
     try {
       Thread.currentThread().setName(Utils.THREAD_PREFIX + data.getName());
-
+      
       result = hunt();
 
       if (result == null) {
+        Log.e( Picasso.LOG_TAG, "result is null" );
         dispatcher.dispatchFailed(this);
       } else {
         dispatcher.dispatchComplete(this);
       }
     } catch( OutOfMemoryError e ) {
+    	e.printStackTrace();
       exception = e;
       dispatcher.dispatchFailed(this);
-    } catch (IOException e) {
+    } catch (Exception e) {
+    	e.printStackTrace();
       exception = e;
       dispatcher.dispatchRetry(this);
     } finally {
@@ -230,6 +234,7 @@ abstract class BitmapHunter implements Runnable {
       Bitmap newResult = transformation.transform(result);
 
       if (newResult == null) {
+        Log.e( Picasso.LOG_TAG, "One of the transformation instances returned null!" );
         StringBuilder builder = new StringBuilder() //
             .append("Transformation ")
             .append(transformation.key())
