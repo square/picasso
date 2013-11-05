@@ -118,6 +118,7 @@ final public class PicassoDrawable extends Drawable implements Runnable {
         int partialAlpha = (int) (alpha * normalized);
         image.setAlpha(partialAlpha);
         image.draw(canvas);
+        image.setAlpha((int) alpha);
         scheduleSelf( this, SystemClock.uptimeMillis() + 16 );
       }
     }

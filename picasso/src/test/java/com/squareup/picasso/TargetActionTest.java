@@ -27,7 +27,6 @@ import static com.squareup.picasso.TestUtils.BITMAP_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.mockTarget;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -73,9 +72,10 @@ public class TargetActionTest {
       }
     };
     Picasso picasso = mock(Picasso.class);
+
     TargetAction tr = new TargetAction(picasso, bad, null, false, URI_KEY_1);
     try {
-      tr.complete(BITMAP_1, any(Picasso.LoadedFrom.class));
+      tr.complete(BITMAP_1, MEMORY);
       fail();
     } catch (IllegalStateException expected) {
     }
