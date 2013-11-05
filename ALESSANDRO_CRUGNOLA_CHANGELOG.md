@@ -66,6 +66,16 @@ Example:
 		.into(imageView);
 
 
+###Fade Time
+Added `.fade(ms time)` method in the RequestCreator class in order to let you change the fade in animation time. 
+Usage:
+
+	Picasso.with(this)
+		.load(file)
+		.fade(500)
+		.into(imageView);
+		
+
 
 
 ---
