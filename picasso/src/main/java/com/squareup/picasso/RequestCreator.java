@@ -20,8 +20,9 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.widget.ImageView;
-import java.io.IOException;
 import org.jetbrains.annotations.TestOnly;
+
+import java.io.IOException;
 
 import static com.squareup.picasso.BitmapHunter.forRequest;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
@@ -171,6 +172,12 @@ public class RequestCreator {
   /** Rotate the image by the specified degrees around a pivot point. */
   public RequestCreator rotate(float degrees, float pivotX, float pivotY) {
     data.rotate(degrees, pivotX, pivotY);
+    return this;
+  }
+
+  /** Decode the image using the specified config. */
+  public RequestCreator config(Bitmap.Config config) {
+    data.config(config);
     return this;
   }
 

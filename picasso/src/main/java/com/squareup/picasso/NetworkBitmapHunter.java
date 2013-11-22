@@ -87,9 +87,8 @@ class NetworkBitmapHunter extends BitmapHunter {
     // Decode byte array instead
     if (isWebPFile) {
       byte[] bytes = Utils.toByteArray(stream);
-      BitmapFactory.Options options = null;
+      BitmapFactory.Options options = createBitmapOptions(data);
       if (data.hasSize()) {
-        options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
 
         BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
@@ -97,9 +96,8 @@ class NetworkBitmapHunter extends BitmapHunter {
       }
       return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
     } else {
-      BitmapFactory.Options options = null;
+      BitmapFactory.Options options = createBitmapOptions(data);
       if (data.hasSize()) {
-        options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
 
         BitmapFactory.decodeStream(stream, null, options);

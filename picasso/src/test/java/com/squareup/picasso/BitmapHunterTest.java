@@ -32,6 +32,7 @@ import org.robolectric.shadows.ShadowBitmap;
 import org.robolectric.shadows.ShadowMatrix;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
+import static com.squareup.picasso.BitmapHunter.createBitmapOptions;
 import static com.squareup.picasso.BitmapHunter.forRequest;
 import static com.squareup.picasso.BitmapHunter.transformResult;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
@@ -326,6 +327,16 @@ public class BitmapHunterTest {
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 2.0 1.5");
+  }
+
+  @Test public void bitmapConfig() throws Exception {
+    for (Bitmap.Config config : Bitmap.Config.values()) {
+      Request data = new Request.Builder(URI_1).config(config).build();
+      Request copy = data.buildUpon().build();
+
+      assertThat(createBitmapOptions(data).inPreferredConfig).isSameAs(config);
+      assertThat(createBitmapOptions(copy).inPreferredConfig).isSameAs(config);
+    }
   }
 
   @Test public void centerCropTallTooSmall() throws Exception {

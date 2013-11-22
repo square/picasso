@@ -55,7 +55,7 @@ class MediaStoreBitmapHunter extends ContentStreamBitmapHunter {
 
       long id = parseId(data.uri);
 
-      BitmapFactory.Options options = new BitmapFactory.Options();
+      BitmapFactory.Options options = createBitmapOptions(data);
       options.inJustDecodeBounds = true;
 
       calculateInSampleSize(data.targetWidth, data.targetHeight, picassoKind.width,
