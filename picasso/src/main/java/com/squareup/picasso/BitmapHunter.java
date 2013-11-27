@@ -21,6 +21,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Build;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -217,6 +218,9 @@ abstract class BitmapHunter implements Runnable {
 
     options.inSampleSize = sampleSize;
     options.inJustDecodeBounds = false;
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+      options.inMutable = true;
+    }
   }
 
   static Bitmap applyCustomTransformations(List<Transformation> transformations, Bitmap result) {
