@@ -24,6 +24,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
@@ -45,6 +46,9 @@ final class PicassoDrawable extends Drawable {
   static void setBitmap(ImageView target, Context context, Bitmap bitmap,
       Picasso.LoadedFrom loadedFrom, boolean noFade, boolean debugging) {
     Drawable placeholder = target.getDrawable();
+    if (placeholder instanceof AnimationDrawable) {
+      ((AnimationDrawable) placeholder).stop();
+    }
     PicassoDrawable drawable =
         new PicassoDrawable(context, placeholder, bitmap, loadedFrom, noFade, debugging);
     target.setImageDrawable(drawable);
@@ -59,6 +63,9 @@ final class PicassoDrawable extends Drawable {
       target.setImageResource(placeholderResId);
     } else {
       target.setImageDrawable(placeholderDrawable);
+    }
+    if (target.getDrawable() instanceof AnimationDrawable) {
+      ((AnimationDrawable) target.getDrawable()).start();
     }
   }
 
