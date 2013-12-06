@@ -375,7 +375,7 @@ public class Picasso {
    * This instance is automatically initialized with defaults that are suitable to most
    * implementations.
    * <ul>
-   * <li>LRU memory cache of 15% the available application RAM up to 20MB</li>
+   * <li>LRU memory cache of 15% the available application RAM</li>
    * <li>Disk cache of 2% storage space up to 50MB but no less than 5MB. (Note: this is only
    * available on API 14+ <em>or</em> if you are using a standalone library that provides a disk
    * cache on all API levels like OkHttp)</li>
