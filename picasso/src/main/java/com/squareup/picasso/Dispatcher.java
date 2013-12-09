@@ -27,6 +27,8 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -80,7 +82,7 @@ class Dispatcher {
     this.context = context;
     this.service = service;
     this.hunterMap = new LinkedHashMap<String, BitmapHunter>();
-    this.handler = new DispatcherHandler(dispatcherThread.getLooper());
+    this.handler = new DispatcherHandler(dispatcherThread.getLooper(), this);
     this.downloader = downloader;
     this.mainThreadHandler = mainThreadHandler;
     this.cache = cache;
@@ -208,53 +210,59 @@ class Dispatcher {
     }
   }
 
-  private class DispatcherHandler extends Handler {
-    public DispatcherHandler(Looper looper) {
+  private static class DispatcherHandler extends Handler {
+    WeakReference<Dispatcher> mDispatcher;
+    public DispatcherHandler(Looper looper, Dispatcher dispatcher) {
       super(looper);
+      mDispatcher = new WeakReference<Dispatcher>(dispatcher);
     }
 
-    @Override public void handleMessage(Message msg) {
-      switch (msg.what) {
-        case REQUEST_SUBMIT: {
-          Action action = (Action) msg.obj;
-          performSubmit(action);
-          break;
+    @Override
+    public void handleMessage(Message msg) {
+      Dispatcher outerThis = mDispatcher.get();
+      if (outerThis != null) {
+        switch (msg.what) {
+          case REQUEST_SUBMIT : {
+            Action action = (Action) msg.obj;
+            outerThis.performSubmit(action);
+            break;
+          }
+          case REQUEST_CANCEL : {
+            Action action = (Action) msg.obj;
+            outerThis.performCancel(action);
+            break;
+          }
+          case HUNTER_COMPLETE : {
+            BitmapHunter hunter = (BitmapHunter) msg.obj;
+            outerThis.performComplete(hunter);
+            break;
+          }
+          case HUNTER_RETRY : {
+            BitmapHunter hunter = (BitmapHunter) msg.obj;
+            outerThis.performRetry(hunter);
+            break;
+          }
+          case HUNTER_DECODE_FAILED : {
+            BitmapHunter hunter = (BitmapHunter) msg.obj;
+            outerThis.performError(hunter);
+            break;
+          }
+          case HUNTER_DELAY_NEXT_BATCH : {
+            outerThis.performBatchComplete();
+            break;
+          }
+          case NETWORK_STATE_CHANGE : {
+            NetworkInfo info = (NetworkInfo) msg.obj;
+            outerThis.performNetworkStateChange(info);
+            break;
+          }
+          case AIRPLANE_MODE_CHANGE : {
+            outerThis.performAirplaneModeChange(msg.arg1 == AIRPLANE_MODE_ON);
+            break;
+          }
+          default :
+            throw new AssertionError("Unknown handler message received: " + msg.what);
         }
-        case REQUEST_CANCEL: {
-          Action action = (Action) msg.obj;
-          performCancel(action);
-          break;
-        }
-        case HUNTER_COMPLETE: {
-          BitmapHunter hunter = (BitmapHunter) msg.obj;
-          performComplete(hunter);
-          break;
-        }
-        case HUNTER_RETRY: {
-          BitmapHunter hunter = (BitmapHunter) msg.obj;
-          performRetry(hunter);
-          break;
-        }
-        case HUNTER_DECODE_FAILED: {
-          BitmapHunter hunter = (BitmapHunter) msg.obj;
-          performError(hunter);
-          break;
-        }
-        case HUNTER_DELAY_NEXT_BATCH: {
-          performBatchComplete();
-          break;
-        }
-        case NETWORK_STATE_CHANGE: {
-          NetworkInfo info = (NetworkInfo) msg.obj;
-          performNetworkStateChange(info);
-          break;
-        }
-        case AIRPLANE_MODE_CHANGE: {
-          performAirplaneModeChange(msg.arg1 == AIRPLANE_MODE_ON);
-          break;
-        }
-        default:
-          throw new AssertionError("Unknown handler message received: " + msg.what);
       }
     }
   }
