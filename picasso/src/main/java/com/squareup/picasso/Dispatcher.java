@@ -211,58 +211,59 @@ class Dispatcher {
   }
 
   private static class DispatcherHandler extends Handler {
-    WeakReference<Dispatcher> mDispatcher;
+    private final WeakReference<Dispatcher> dispatcherRef;
     public DispatcherHandler(Looper looper, Dispatcher dispatcher) {
       super(looper);
-      mDispatcher = new WeakReference<Dispatcher>(dispatcher);
+      dispatcherRef = new WeakReference<Dispatcher>(dispatcher);
     }
 
     @Override
     public void handleMessage(Message msg) {
-      Dispatcher outerThis = mDispatcher.get();
-      if (outerThis != null) {
-        switch (msg.what) {
-          case REQUEST_SUBMIT : {
-            Action action = (Action) msg.obj;
-            outerThis.performSubmit(action);
-            break;
-          }
-          case REQUEST_CANCEL : {
-            Action action = (Action) msg.obj;
-            outerThis.performCancel(action);
-            break;
-          }
-          case HUNTER_COMPLETE : {
-            BitmapHunter hunter = (BitmapHunter) msg.obj;
-            outerThis.performComplete(hunter);
-            break;
-          }
-          case HUNTER_RETRY : {
-            BitmapHunter hunter = (BitmapHunter) msg.obj;
-            outerThis.performRetry(hunter);
-            break;
-          }
-          case HUNTER_DECODE_FAILED : {
-            BitmapHunter hunter = (BitmapHunter) msg.obj;
-            outerThis.performError(hunter);
-            break;
-          }
-          case HUNTER_DELAY_NEXT_BATCH : {
-            outerThis.performBatchComplete();
-            break;
-          }
-          case NETWORK_STATE_CHANGE : {
-            NetworkInfo info = (NetworkInfo) msg.obj;
-            outerThis.performNetworkStateChange(info);
-            break;
-          }
-          case AIRPLANE_MODE_CHANGE : {
-            outerThis.performAirplaneModeChange(msg.arg1 == AIRPLANE_MODE_ON);
-            break;
-          }
-          default :
-            throw new AssertionError("Unknown handler message received: " + msg.what);
+      Dispatcher outerThis = dispatcherRef.get();
+      if (outerThis == null) {
+        return;
+      }
+      switch (msg.what) {
+        case REQUEST_SUBMIT : {
+          Action action = (Action) msg.obj;
+          outerThis.performSubmit(action);
+          break;
         }
+        case REQUEST_CANCEL : {
+          Action action = (Action) msg.obj;
+          outerThis.performCancel(action);
+          break;
+        }
+        case HUNTER_COMPLETE : {
+          BitmapHunter hunter = (BitmapHunter) msg.obj;
+          outerThis.performComplete(hunter);
+          break;
+        }
+        case HUNTER_RETRY : {
+          BitmapHunter hunter = (BitmapHunter) msg.obj;
+          outerThis.performRetry(hunter);
+          break;
+        }
+        case HUNTER_DECODE_FAILED : {
+          BitmapHunter hunter = (BitmapHunter) msg.obj;
+          outerThis.performError(hunter);
+          break;
+        }
+        case HUNTER_DELAY_NEXT_BATCH : {
+          outerThis.performBatchComplete();
+          break;
+        }
+        case NETWORK_STATE_CHANGE : {
+          NetworkInfo info = (NetworkInfo) msg.obj;
+          outerThis.performNetworkStateChange(info);
+          break;
+        }
+        case AIRPLANE_MODE_CHANGE : {
+          outerThis.performAirplaneModeChange(msg.arg1 == AIRPLANE_MODE_ON);
+          break;
+        }
+        default :
+          throw new AssertionError("Unknown handler message received: " + msg.what);
       }
     }
   }

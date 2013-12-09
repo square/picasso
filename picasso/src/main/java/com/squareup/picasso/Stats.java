@@ -113,41 +113,42 @@ class Stats {
   }
 
   private static class StatsHandler extends Handler {
-    WeakReference<Stats> mStats;
+    private final WeakReference<Stats> statsRef;
     public StatsHandler(Looper looper, Stats stats) {
       super(looper);
-      mStats = new WeakReference<Stats>(stats);
+      statsRef = new WeakReference<Stats>(stats);
     }
 
     @Override
     public void handleMessage(final Message msg) {
-      Stats stats = mStats.get();
-      if (stats != null) {
-        synchronized (StatsHandler.class) {
-          switch (msg.what) {
-            case CACHE_HIT :
-              stats.performCacheHit();
-              break;
-            case CACHE_MISS :
-              stats.performCacheMiss();
-              break;
-            case BITMAP_DECODE_FINISHED :
-              stats.performBitmapDecoded(msg.arg1);
-              break;
-            case BITMAP_TRANSFORMED_FINISHED :
-              stats.performBitmapTransformed(msg.arg1);
-              break;
-            case REQUESTED_COMPLETED :
-              break;
-            default :
-              Handler mainHandler = new Handler(Looper.getMainLooper());
-              mainHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                  throw new AssertionError("Unhandled stats message." + msg.what);
-                }
-              });
-          }
+      Stats stats = statsRef.get();
+      if (stats == null) {
+        return;
+      }
+      synchronized (StatsHandler.class) {
+        switch (msg.what) {
+          case CACHE_HIT :
+            stats.performCacheHit();
+            break;
+          case CACHE_MISS :
+            stats.performCacheMiss();
+            break;
+          case BITMAP_DECODE_FINISHED :
+            stats.performBitmapDecoded(msg.arg1);
+            break;
+          case BITMAP_TRANSFORMED_FINISHED :
+            stats.performBitmapTransformed(msg.arg1);
+            break;
+          case REQUESTED_COMPLETED :
+            break;
+          default :
+            Handler mainHandler = new Handler(Looper.getMainLooper());
+            mainHandler.post(new Runnable() {
+              @Override
+              public void run() {
+                throw new AssertionError("Unhandled stats message." + msg.what);
+              }
+            });
         }
       }
     }
