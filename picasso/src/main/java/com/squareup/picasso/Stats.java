@@ -15,6 +15,8 @@
  */
 package com.squareup.picasso;
 
+import java.lang.ref.WeakReference;
+
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -49,7 +51,7 @@ class Stats {
     this.cache = cache;
     this.statsThread = new HandlerThread(STATS_THREAD_NAME, THREAD_PRIORITY_BACKGROUND);
     this.statsThread.start();
-    this.handler = new StatsHandler(statsThread.getLooper());
+    this.handler = new StatsHandler(statsThread.getLooper(), this);
   }
 
   void dispatchBitmapDecoded(Bitmap bitmap) {
@@ -110,36 +112,42 @@ class Stats {
     return totalSize / count;
   }
 
-  private class StatsHandler extends Handler {
-
-    public StatsHandler(Looper looper) {
+  private static class StatsHandler extends Handler {
+    WeakReference<Stats> mStats;
+    public StatsHandler(Looper looper, Stats stats) {
       super(looper);
+      mStats = new WeakReference<Stats>(stats);
     }
 
-    @Override public void handleMessage(final Message msg) {
-      synchronized (Stats.this) {
-        switch (msg.what) {
-          case CACHE_HIT:
-            performCacheHit();
-            break;
-          case CACHE_MISS:
-            performCacheMiss();
-            break;
-          case BITMAP_DECODE_FINISHED:
-            performBitmapDecoded(msg.arg1);
-            break;
-          case BITMAP_TRANSFORMED_FINISHED:
-            performBitmapTransformed(msg.arg1);
-            break;
-          case REQUESTED_COMPLETED:
-            break;
-          default:
-            Handler mainHandler = new Handler(Looper.getMainLooper());
-            mainHandler.post(new Runnable() {
-              @Override public void run() {
-                throw new AssertionError("Unhandled stats message." + msg.what);
-              }
-            });
+    @Override
+    public void handleMessage(final Message msg) {
+      Stats stats = mStats.get();
+      if (stats != null) {
+        synchronized (StatsHandler.class) {
+          switch (msg.what) {
+            case CACHE_HIT :
+              stats.performCacheHit();
+              break;
+            case CACHE_MISS :
+              stats.performCacheMiss();
+              break;
+            case BITMAP_DECODE_FINISHED :
+              stats.performBitmapDecoded(msg.arg1);
+              break;
+            case BITMAP_TRANSFORMED_FINISHED :
+              stats.performBitmapTransformed(msg.arg1);
+              break;
+            case REQUESTED_COMPLETED :
+              break;
+            default :
+              Handler mainHandler = new Handler(Looper.getMainLooper());
+              mainHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                  throw new AssertionError("Unhandled stats message." + msg.what);
+                }
+              });
+          }
         }
       }
     }
