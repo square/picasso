@@ -219,50 +219,50 @@ class Dispatcher {
 
     @Override
     public void handleMessage(Message msg) {
-      Dispatcher outerThis = dispatcherRef.get();
-      if (outerThis == null) {
+      Dispatcher dispatcher = dispatcherRef.get();
+      if (dispatcher == null) {
         return;
       }
       switch (msg.what) {
-        case REQUEST_SUBMIT : {
+        case REQUEST_SUBMIT: {
           Action action = (Action) msg.obj;
-          outerThis.performSubmit(action);
+          dispatcher.performSubmit(action);
           break;
         }
-        case REQUEST_CANCEL : {
+        case REQUEST_CANCEL: {
           Action action = (Action) msg.obj;
-          outerThis.performCancel(action);
+          dispatcher.performCancel(action);
           break;
         }
-        case HUNTER_COMPLETE : {
+        case HUNTER_COMPLETE: {
           BitmapHunter hunter = (BitmapHunter) msg.obj;
-          outerThis.performComplete(hunter);
+          dispatcher.performComplete(hunter);
           break;
         }
-        case HUNTER_RETRY : {
+        case HUNTER_RETRY: {
           BitmapHunter hunter = (BitmapHunter) msg.obj;
-          outerThis.performRetry(hunter);
+          dispatcher.performRetry(hunter);
           break;
         }
-        case HUNTER_DECODE_FAILED : {
+        case HUNTER_DECODE_FAILED: {
           BitmapHunter hunter = (BitmapHunter) msg.obj;
-          outerThis.performError(hunter);
+          dispatcher.performError(hunter);
           break;
         }
-        case HUNTER_DELAY_NEXT_BATCH : {
-          outerThis.performBatchComplete();
+        case HUNTER_DELAY_NEXT_BATCH: {
+          dispatcher.performBatchComplete();
           break;
         }
-        case NETWORK_STATE_CHANGE : {
+        case NETWORK_STATE_CHANGE: {
           NetworkInfo info = (NetworkInfo) msg.obj;
-          outerThis.performNetworkStateChange(info);
+          dispatcher.performNetworkStateChange(info);
           break;
         }
-        case AIRPLANE_MODE_CHANGE : {
-          outerThis.performAirplaneModeChange(msg.arg1 == AIRPLANE_MODE_ON);
+        case AIRPLANE_MODE_CHANGE: {
+          dispatcher.performAirplaneModeChange(msg.arg1 == AIRPLANE_MODE_ON);
           break;
         }
-        default :
+        default:
           throw new AssertionError("Unknown handler message received: " + msg.what);
       }
     }
