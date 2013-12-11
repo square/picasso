@@ -15,13 +15,20 @@
  */
 package com.squareup.picasso;
 
+import java.io.IOException;
+
+import android.content.res.Resources;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import java.io.ByteArrayInputStream;
 
+import static com.squareup.picasso.TestUtils.RESOURCE_ID_1;
+import static com.squareup.picasso.TestUtils.RESOURCE_ID_URI;
+import static com.squareup.picasso.TestUtils.RESOURCE_TYPE_URI;
 import static com.squareup.picasso.TestUtils.URI_1;
+import static com.squareup.picasso.TestUtils.mockPackageResourceContext;
 import static com.squareup.picasso.Utils.createKey;
 import static com.squareup.picasso.Utils.isWebPFile;
 import static com.squareup.picasso.Utils.parseResponseSourceHeader;
@@ -86,5 +93,19 @@ public class UtilsTest {
     assertThat(isWebPFile(new ByteArrayInputStream("ABCDxxxxWEBP".getBytes("US-ASCII")))).isFalse();
     assertThat(isWebPFile(new ByteArrayInputStream("RIFFxxxxABCD".getBytes("US-ASCII")))).isFalse();
     assertThat(isWebPFile(new ByteArrayInputStream("RIFFxxWEBP".getBytes("US-ASCII")))).isFalse();
+  }
+
+  @Test public void getResourceById() throws IOException {
+    Request request = new Request.Builder(RESOURCE_ID_URI).build();
+    Resources resources = Utils.getResources(mockPackageResourceContext(), request);
+    int id = Utils.getResourceId(resources, request);
+    assertThat(id).isEqualTo(RESOURCE_ID_1);
+  }
+
+  @Test public void getResourceByTypeAndName() throws IOException {
+    Request request = new Request.Builder(RESOURCE_TYPE_URI).build();
+    Resources resources = Utils.getResources(mockPackageResourceContext(), request);
+    int id = Utils.getResourceId(resources, request);
+    assertThat(id).isEqualTo(RESOURCE_ID_1);
   }
 }
