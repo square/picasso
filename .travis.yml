@@ -1,18 +1,33 @@
 language: java
 
+jdk: oraclejdk7
+
 branches:
-  excludes:
+  except:
     - gh-pages
 
 notifications:
   email: false
 
 before_install:
-  - wget http://dl.google.com/android/android-sdk_r21.0.1-linux.tgz
-  - tar -zxf android-sdk_r21.0.1-linux.tgz
-  - export ANDROID_HOME=~/builds/square/spoon/android-sdk-linux
+  # Install base Android SDK
+  - sudo apt-get update -qq
+  - if [ `uname -m` = x86_64 ]; then sudo apt-get install -qq --force-yes libgd2-xpm ia32-libs ia32-libs-multiarch > /dev/null; fi
+  - wget http://dl.google.com/android/android-sdk_r22.3-linux.tgz
+  - tar xzf android-sdk_r22.3-linux.tgz
+  - export ANDROID_HOME=$PWD/android-sdk-linux
   - export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools
-  - TOOLS=$(android list sdk --no-ui | grep "Android SDK Platform-tools" | cut -d"-" -f1)
-  - android update sdk --filter "$TOOLS" --no-ui --force
-  - SDK=$(android list sdk --no-ui | grep ", API 16," | cut -d"-" -f1)
-  - android update sdk --filter "$SDK" --no-ui --force
+
+  # install android build tools
+  - wget https://dl-ssl.google.com/android/repository/build-tools_r19-linux.zip
+  - unzip build-tools_r19-linux.zip -d $ANDROID_HOME
+  - mkdir -p $ANDROID_HOME/build-tools/
+  - mv $ANDROID_HOME/android-4.4 $ANDROID_HOME/build-tools/19
+
+  # Install required components.
+  # For a full list, run `android list sdk -a --extended`
+  # Other relevant API's
+  - echo yes | android update sdk --filter platform-tools --no-ui --force > /dev/null
+  - echo yes | android update sdk --filter android-17 --no-ui --force > /dev/null
+
+script: mvn clean verify
