@@ -18,16 +18,7 @@ before_install:
   - export ANDROID_HOME=$PWD/android-sdk-linux
   - export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools
 
-  # install android build tools
-  - wget https://dl-ssl.google.com/android/repository/build-tools_r19-linux.zip
-  - unzip build-tools_r19-linux.zip -d $ANDROID_HOME
-  - mkdir -p $ANDROID_HOME/build-tools/
-  - mv $ANDROID_HOME/android-4.4 $ANDROID_HOME/build-tools/19
-
   # Install required components.
-  # For a full list, run `android list sdk -a --extended`
-  # Other relevant API's
-  - echo yes | android update sdk --filter platform-tools --no-ui --force > /dev/null
-  - echo yes | android update sdk --filter android-17 --no-ui --force > /dev/null
+  - echo yes | android update sdk -a -t platform-tools,build-tools-19.0.0,android-17 --no-ui --force > /dev/null
 
 script: mvn clean verify
