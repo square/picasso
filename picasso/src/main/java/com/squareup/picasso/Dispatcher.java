@@ -290,6 +290,11 @@ class Dispatcher {
     }
 
     @Override public void onReceive(Context context, Intent intent) {
+      // On some versions of Android this may be called with a null Intent
+      if (null == intent) {
+        return;
+      }
+
       String action = intent.getAction();
       Bundle extras = intent.getExtras();
 
