@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import java.io.ByteArrayInputStream;
 
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.Utils.createKey;
@@ -74,5 +75,13 @@ public class UtilsTest {
     assertThat(parseResponseSourceHeader("STREAM 304")).isFalse();
     assertThat(parseResponseSourceHeader("")).isFalse();
     assertThat(parseResponseSourceHeader("HELLO WORLD")).isFalse();
+  }
+
+  @Test public void detectedWebPFile() throws Exception {
+    assertThat(Utils.isWebPFile(new ByteArrayInputStream("RIFFxxxxWEBP".getBytes("US-ASCII")))).isTrue();
+    assertThat(Utils.isWebPFile(new ByteArrayInputStream("RIFFxxxxxWEBP".getBytes("US-ASCII")))).isFalse();
+    assertThat(Utils.isWebPFile(new ByteArrayInputStream("ABCDxxxxWEBP".getBytes("US-ASCII")))).isFalse();
+    assertThat(Utils.isWebPFile(new ByteArrayInputStream("RIFFxxxxABCD".getBytes("US-ASCII")))).isFalse();
+    assertThat(Utils.isWebPFile(new ByteArrayInputStream("RIFFxxWEBP".getBytes("US-ASCII")))).isFalse();
   }
 }

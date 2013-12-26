@@ -26,6 +26,8 @@ import android.os.Looper;
 import android.os.Process;
 import android.os.StatFs;
 import android.provider.Settings;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,6 +49,21 @@ final class Utils {
   private static final int KEY_PADDING = 50; // Determined by exact science.
   private static final int MIN_DISK_CACHE_SIZE = 5 * 1024 * 1024; // 5MB
   private static final int MAX_DISK_CACHE_SIZE = 50 * 1024 * 1024; // 50MB
+
+  /* WebP file header
+     0                   1                   2                   3
+     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |      'R'      |      'I'      |      'F'      |      'F'      |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |                           File Size                           |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |      'W'      |      'E'      |      'B'      |      'P'      |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  */
+  private static final int WEBP_FILE_HEADER_SIZE = 12;
+  private static final String WEBP_FILE_HEADER_RIFF = "RIFF";
+  private static final String WEBP_FILE_HEADER_WEBP = "WEBP";
 
   private Utils() {
     // No instances.
@@ -189,6 +206,27 @@ final class Utils {
 
   static boolean hasPermission(Context context, String permission) {
     return context.checkCallingOrSelfPermission(permission) == PackageManager.PERMISSION_GRANTED;
+  }
+
+  static byte[] toByteArray(InputStream input) throws IOException {
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+    byte[] buffer = new byte[1024 * 4];
+    int n = 0;
+    while (-1 != (n = input.read(buffer))) {
+      byteArrayOutputStream.write(buffer, 0, n);
+    }
+    return byteArrayOutputStream.toByteArray();
+  }
+
+  static boolean isWebPFile(InputStream stream) throws IOException {
+    byte[] fileHeaderBytes = new byte[WEBP_FILE_HEADER_SIZE];
+    boolean isWebPFile = false;
+    if (stream.read(fileHeaderBytes, 0, WEBP_FILE_HEADER_SIZE) == WEBP_FILE_HEADER_SIZE) {
+      // If a file's header starts with RIFF and end with WEBP, the file is a WebP file
+      isWebPFile = WEBP_FILE_HEADER_RIFF.equals(new String(fileHeaderBytes, 0, 4, "US-ASCII"))
+          && WEBP_FILE_HEADER_WEBP.equals(new String(fileHeaderBytes, 8, 4, "US-ASCII"));
+    }
+    return isWebPFile;
   }
 
   @TargetApi(Build.VERSION_CODES.HONEYCOMB)
