@@ -61,10 +61,12 @@ public final class Request {
   public final float rotationPivotY;
   /** Whether or not {@link #rotationPivotX} and {@link #rotationPivotY} are set. */
   public final boolean hasRotationPivot;
+  /** Whether or not bitmap size can exceed OpenGL texture size **/
+  public final boolean overTextureSize;
 
   private Request(Uri uri, int resourceId, List<Transformation> transformations, int targetWidth,
       int targetHeight, boolean centerCrop, boolean centerInside, float rotationDegrees,
-      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot) {
+      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot, boolean overTextureSize) {
     this.uri = uri;
     this.resourceId = resourceId;
     if (transformations == null) {
@@ -80,6 +82,7 @@ public final class Request {
     this.rotationPivotX = rotationPivotX;
     this.rotationPivotY = rotationPivotY;
     this.hasRotationPivot = hasRotationPivot;
+    this.overTextureSize = overTextureSize;
   }
 
   String getName() {
@@ -91,6 +94,10 @@ public final class Request {
 
   public boolean hasSize() {
     return targetWidth != 0;
+  }
+  
+  public boolean needInSampleSize() {
+	  return hasSize() || !overTextureSize;
   }
 
   boolean needsTransformation() {
@@ -121,6 +128,7 @@ public final class Request {
     private float rotationPivotX;
     private float rotationPivotY;
     private boolean hasRotationPivot;
+    private boolean overTextureSize;
     private List<Transformation> transformations;
 
     /** Start building a request using the specified {@link Uri}. */
@@ -149,6 +157,7 @@ public final class Request {
       rotationPivotX = request.rotationPivotX;
       rotationPivotY = request.rotationPivotY;
       hasRotationPivot = request.hasRotationPivot;
+      overTextureSize = request.overTextureSize;
       if (request.transformations != null) {
         transformations = new ArrayList<Transformation>(request.transformations);
       }
@@ -288,6 +297,18 @@ public final class Request {
       transformations.add(transformation);
       return this;
     }
+    
+    /** Bitmap size can exceed OpenGL texture size **/
+    public Builder overTextureSize() {
+    	overTextureSize = true;
+    	return this;
+    }
+    
+    /** Clear the overTextureSize flag, if set. */
+    public Builder clearOverTextureSize() {
+	  overTextureSize = false;
+      return this;
+    }
 
     /** Create the immutable {@link Request} object. */
     public Request build() {
@@ -301,7 +322,7 @@ public final class Request {
         throw new IllegalStateException("Center inside requires calling resize.");
       }
       return new Request(uri, resourceId, transformations, targetWidth, targetHeight, centerCrop,
-          centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot);
+          centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot, overTextureSize);
     }
   }
 }

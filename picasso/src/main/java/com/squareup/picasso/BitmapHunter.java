@@ -31,6 +31,7 @@ import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentResolver.SCHEME_FILE;
 import static android.provider.ContactsContract.Contacts;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
+import android.opengl.GLES10;
 
 abstract class BitmapHunter implements Runnable {
 
@@ -43,6 +44,9 @@ abstract class BitmapHunter implements Runnable {
   private static final String ANDROID_ASSET = "android_asset";
   protected static final int ASSET_PREFIX_LENGTH =
       (SCHEME_FILE + ":///" + ANDROID_ASSET + "/").length();
+  
+  private static final int DEFAULT_MAX_BITMAP_DIMENSION = 2048;
+  private static int MAX_TEXTURE_SIZE;
 
   final Picasso picasso;
   final Dispatcher dispatcher;
@@ -59,6 +63,12 @@ abstract class BitmapHunter implements Runnable {
   Exception exception;
   int exifRotation; // Determined during decoding of original resource.
 
+  static {
+	int[] maxTextureSize = new int[1];
+	GLES10.glGetIntegerv(GLES10.GL_MAX_TEXTURE_SIZE, maxTextureSize, 0);
+	MAX_TEXTURE_SIZE = Math.max(maxTextureSize[0], DEFAULT_MAX_BITMAP_DIMENSION);
+  }
+  
   BitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats, Action action) {
     this.picasso = picasso;
     this.dispatcher = dispatcher;
@@ -215,6 +225,23 @@ abstract class BitmapHunter implements Runnable {
       sampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
     }
 
+    options.inSampleSize = sampleSize;
+    options.inJustDecodeBounds = false;
+  }
+  
+  static void calculateMaxTextureSizeInSampleSize(BitmapFactory.Options options) {
+    final int height = options.outHeight;
+    final int width = options.outWidth;
+	int sampleSize = options.inSampleSize > 0 ? options.inSampleSize : 1;  
+	
+    final int scaledHeight = height / sampleSize;
+    final int scaledWidth = width / sampleSize;
+    if (scaledHeight > MAX_TEXTURE_SIZE || scaledWidth > MAX_TEXTURE_SIZE) {
+    	final int heightRatio = Math.round((float) scaledHeight / (float) MAX_TEXTURE_SIZE);
+        final int widthRatio = Math.round((float) scaledWidth / (float) MAX_TEXTURE_SIZE);
+        sampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+    }
+    
     options.inSampleSize = sampleSize;
     options.inJustDecodeBounds = false;
   }

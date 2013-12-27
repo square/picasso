@@ -29,7 +29,7 @@ class AssetBitmapHunter extends BitmapHunter {
 
   Bitmap decodeAsset(String filePath) throws IOException {
     BitmapFactory.Options options = null;
-    if (data.hasSize()) {
+    if (data.needInSampleSize()) {
       options = new BitmapFactory.Options();
       options.inJustDecodeBounds = true;
       InputStream is = null;
@@ -39,7 +39,14 @@ class AssetBitmapHunter extends BitmapHunter {
       } finally {
         Utils.closeQuietly(is);
       }
-      calculateInSampleSize(data.targetWidth, data.targetHeight, options);
+      
+      if (data.hasSize()) {
+	    calculateInSampleSize(data.targetWidth, data.targetHeight, options);
+      }
+      
+      if (!data.overTextureSize) {
+	    calculateMaxTextureSizeInSampleSize(options);
+      }
     }
     InputStream is = assetManager.open(filePath);
     try {
