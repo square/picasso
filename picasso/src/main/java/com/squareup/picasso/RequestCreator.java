@@ -212,7 +212,7 @@ public class RequestCreator {
     }
 
     Request finalData = picasso.transformRequest(data.build());
-    String key = Utils.createKey(finalData);
+    String key = createKey(finalData);
 
     Action action = new GetAction(picasso, finalData, skipMemoryCache, key);
     return forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache, picasso.stats,
@@ -229,7 +229,7 @@ public class RequestCreator {
     }
     if (data.hasImage()) {
       Request finalData = picasso.transformRequest(data.build());
-      String key = Utils.createKey(finalData);
+      String key = createKey(finalData);
 
       Action action = new FetchAction(picasso, finalData, skipMemoryCache, key);
       picasso.enqueueAndSubmit(action);
