@@ -93,13 +93,12 @@ class NetworkBitmapHunter extends BitmapHunter {
         options.inJustDecodeBounds = true;
 
         BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
-        
+
         if (data.hasSize()) {
-    	  calculateInSampleSize(data.targetWidth, data.targetHeight, options);
+          calculateInSampleSize(data.targetWidth, data.targetHeight, options);
         }
-        
         if (!data.overTextureSize) {
-    	  calculateMaxTextureSizeInSampleSize(options);
+          calculateMaxTextureSizeInSampleSize(options);
         }
       }
       return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
@@ -111,13 +110,11 @@ class NetworkBitmapHunter extends BitmapHunter {
 
         BitmapFactory.decodeStream(stream, null, options);
         if (data.hasSize()) {
-      	  calculateInSampleSize(data.targetWidth, data.targetHeight, options);
+          calculateInSampleSize(data.targetWidth, data.targetHeight, options);
         }
-          
         if (!data.overTextureSize) {
-      	  calculateMaxTextureSizeInSampleSize(options);
+          calculateMaxTextureSizeInSampleSize(options);
         }
-
         markStream.reset(mark);
       }
       return BitmapFactory.decodeStream(stream, null, options);

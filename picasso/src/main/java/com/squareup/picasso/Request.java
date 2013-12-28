@@ -66,7 +66,8 @@ public final class Request {
 
   private Request(Uri uri, int resourceId, List<Transformation> transformations, int targetWidth,
       int targetHeight, boolean centerCrop, boolean centerInside, float rotationDegrees,
-      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot, boolean overTextureSize) {
+      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot,
+      boolean overTextureSize) {
     this.uri = uri;
     this.resourceId = resourceId;
     if (transformations == null) {
@@ -95,9 +96,9 @@ public final class Request {
   public boolean hasSize() {
     return targetWidth != 0;
   }
-  
+
   public boolean needInSampleSize() {
-	  return hasSize() || !overTextureSize;
+    return hasSize() || !overTextureSize;
   }
 
   boolean needsTransformation() {
@@ -297,16 +298,16 @@ public final class Request {
       transformations.add(transformation);
       return this;
     }
-    
+
     /** Bitmap size can exceed OpenGL texture size **/
     public Builder overTextureSize() {
-    	overTextureSize = true;
-    	return this;
+      overTextureSize = true;
+      return this;
     }
-    
+
     /** Clear the overTextureSize flag, if set. */
     public Builder clearOverTextureSize() {
-	  overTextureSize = false;
+      overTextureSize = false;
       return this;
     }
 
@@ -322,7 +323,8 @@ public final class Request {
         throw new IllegalStateException("Center inside requires calling resize.");
       }
       return new Request(uri, resourceId, transformations, targetWidth, targetHeight, centerCrop,
-          centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot, overTextureSize);
+          centerInside, rotationDegrees, rotationPivotX, rotationPivotY,
+          hasRotationPivot, overTextureSize);
     }
   }
 }
