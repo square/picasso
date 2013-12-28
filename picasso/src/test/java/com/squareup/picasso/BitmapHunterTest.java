@@ -17,8 +17,11 @@ package com.squareup.picasso;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
+import android.opengl.GLES10;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.FutureTask;
@@ -410,6 +413,25 @@ public class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, 0);
     assertThat(result).isSameAs(source).isNotRecycled();
+  }
+  
+  @Test public void underTextureSize() {
+    int[] maxTextureSize = new int[1];
+	GLES10.glGetIntegerv(GLES10.GL_MAX_TEXTURE_SIZE, maxTextureSize, 0);
+	int maxSize = Math.max(maxTextureSize[0], 2048);
+	
+	final int inSampleSize = 2;
+	
+	final int width = maxSize * inSampleSize;
+	final int height = maxSize * inSampleSize;
+	
+	BitmapFactory.Options options = new BitmapFactory.Options();
+	options.outWidth = width;
+	options.outHeight = height;
+	
+	BitmapHunter.calculateMaxTextureSizeInSampleSize(options);
+	
+	assertThat(options.inSampleSize).isEqualTo(inSampleSize);
   }
 
   private static class TestableBitmapHunter extends BitmapHunter {
