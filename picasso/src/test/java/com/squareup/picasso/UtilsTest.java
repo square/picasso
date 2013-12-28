@@ -84,4 +84,15 @@ public class UtilsTest {
     assertThat(Utils.isWebPFile(new ByteArrayInputStream("RIFFxxxxABCD".getBytes("US-ASCII")))).isFalse();
     assertThat(Utils.isWebPFile(new ByteArrayInputStream("RIFFxxWEBP".getBytes("US-ASCII")))).isFalse();
   }
+  
+  @Test public void calculateValidInSampleSize() {
+    assertThat(Utils.calculateValidInSampleSize(0)).isEqualTo(1);
+    assertThat(Utils.calculateValidInSampleSize(1)).isEqualTo(1);
+    assertThat(Utils.calculateValidInSampleSize(2)).isEqualTo(2);
+    assertThat(Utils.calculateValidInSampleSize(3)).isEqualTo(2);
+    assertThat(Utils.calculateValidInSampleSize(4)).isEqualTo(4);
+    assertThat(Utils.calculateValidInSampleSize(5)).isEqualTo(4);
+    assertThat(Utils.calculateValidInSampleSize(15)).isEqualTo(8);
+    assertThat(Utils.calculateValidInSampleSize(17)).isEqualTo(16);
+  }
 }

@@ -231,7 +231,7 @@ abstract class BitmapHunter implements Runnable {
   static void calculateMaxTextureSizeInSampleSize(BitmapFactory.Options options) {
     final int height = options.outHeight;
     final int width = options.outWidth;
-    int sampleSize = options.inSampleSize > 0 ? options.inSampleSize : 1;
+    int sampleSize = Utils.calculateValidInSampleSize(options.inSampleSize);
 
     final int scaledHeight = height / sampleSize;
     final int scaledWidth = width / sampleSize;

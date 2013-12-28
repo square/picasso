@@ -229,6 +229,16 @@ final class Utils {
     return isWebPFile;
   }
 
+  /** Calculate valid inSampleSize because the decoder uses a final value based on powers of 2,
+   * any other value will be rounded down to the nearest power of 2. **/
+  static int calculateValidInSampleSize(int inSampleSize) {
+    if (inSampleSize < 2) {
+      return 1;
+    } else {
+      return (int) Math.pow(2, Math.floor(Math.log(inSampleSize) / Math.log(2)));
+    }
+  }
+
   @TargetApi(Build.VERSION_CODES.HONEYCOMB)
   private static class ActivityManagerHoneycomb {
     static int getLargeMemoryClass(ActivityManager activityManager) {
