@@ -221,6 +221,7 @@ abstract class BitmapHunter implements Runnable {
     if (!data.ignoreTextureSizeLimit) {
       calculateTargetSizeInSampleSize(MAX_TEXTURE_SIZE, MAX_TEXTURE_SIZE, options);
     }
+    options.inJustDecodeBounds = false;
   }
 
   static void calculateTargetSizeInSampleSize(int reqWidth, int reqHeight,
@@ -232,10 +233,8 @@ abstract class BitmapHunter implements Runnable {
       final int heightRatio = Math.round((float) height / (float) reqHeight);
       final int widthRatio = Math.round((float) width / (float) reqWidth);
       sampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+      options.inSampleSize = sampleSize;
     }
-
-    options.inSampleSize = sampleSize;
-    options.inJustDecodeBounds = false;
   }
 
   static Bitmap applyCustomTransformations(List<Transformation> transformations, Bitmap result) {
