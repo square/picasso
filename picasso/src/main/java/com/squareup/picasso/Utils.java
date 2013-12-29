@@ -21,7 +21,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.os.Build;
 import android.os.Looper;
 import android.os.Process;
 import android.os.StatFs;
@@ -36,6 +35,7 @@ import java.util.concurrent.ThreadFactory;
 import static android.content.Context.ACTIVITY_SERVICE;
 import static android.content.pm.ApplicationInfo.FLAG_LARGE_HEAP;
 import static android.os.Build.VERSION.SDK_INT;
+import static android.os.Build.VERSION_CODES.HONEYCOMB;
 import static android.os.Build.VERSION_CODES.HONEYCOMB_MR1;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static android.provider.Settings.System.AIRPLANE_MODE_ON;
@@ -192,7 +192,7 @@ final class Utils {
     ActivityManager am = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
     boolean largeHeap = (context.getApplicationInfo().flags & FLAG_LARGE_HEAP) != 0;
     int memoryClass = am.getMemoryClass();
-    if (largeHeap && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+    if (largeHeap && SDK_INT >= HONEYCOMB) {
       memoryClass = ActivityManagerHoneycomb.getLargeMemoryClass(am);
     }
     // Target ~15% of the available heap.
@@ -229,7 +229,7 @@ final class Utils {
     return isWebPFile;
   }
 
-  @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+  @TargetApi(HONEYCOMB)
   private static class ActivityManagerHoneycomb {
     static int getLargeMemoryClass(ActivityManager activityManager) {
       return activityManager.getLargeMemoryClass();
@@ -254,7 +254,7 @@ final class Utils {
     }
   }
 
-  @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
+  @TargetApi(HONEYCOMB_MR1)
   private static class BitmapHoneycombMR1 {
     static int getByteCount(Bitmap bitmap) {
       return bitmap.getByteCount();

@@ -21,11 +21,13 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Build;
 import android.provider.ContactsContract;
+
 import java.io.IOException;
 import java.io.InputStream;
 
+import static android.os.Build.VERSION.SDK_INT;
+import static android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH;
 import static android.provider.ContactsContract.Contacts.openContactPhotoInputStream;
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 
@@ -62,7 +64,7 @@ class ContactsPhotoBitmapHunter extends BitmapHunter {
         return null;
       }
     }
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+    if (SDK_INT < ICE_CREAM_SANDWICH) {
       return openContactPhotoInputStream(contentResolver, uri);
     } else {
       return ContactPhotoStreamIcs.get(contentResolver, uri);
@@ -88,7 +90,7 @@ class ContactsPhotoBitmapHunter extends BitmapHunter {
     return BitmapFactory.decodeStream(stream, null, options);
   }
 
-  @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+  @TargetApi(ICE_CREAM_SANDWICH)
   private static class ContactPhotoStreamIcs {
     static InputStream get(ContentResolver contentResolver, Uri uri) {
       return openContactPhotoInputStream(contentResolver, uri, true);
