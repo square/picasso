@@ -202,8 +202,8 @@ public class RequestCreator {
   }
 
   /** Disable resizing for texture size limitation **/
-  public RequestCreator overTextureSize() {
-    data.overTextureSize();
+  public RequestCreator ignoreTextureSizeLimit() {
+    data.ignoreTextureSizeLimit();
     return this;
   }
 
