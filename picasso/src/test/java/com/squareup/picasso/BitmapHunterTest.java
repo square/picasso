@@ -429,7 +429,7 @@ public class BitmapHunterTest {
     options.outWidth = width;
     options.outHeight = height;
 	
-    BitmapHunter.calculateMaxTextureSizeInSampleSize(options);
+    BitmapHunter.calculateTargetSizeInSampleSize(maxSize, maxSize, options);
 	
     assertThat(options.inSampleSize).isEqualTo(inSampleSize);
   }

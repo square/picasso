@@ -218,8 +218,8 @@ abstract class BitmapHunter implements Runnable {
     if (data.hasSize()) {
       calculateTargetSizeInSampleSize(data.targetWidth, data.targetHeight, options);
     }
-    if (!data.overTextureSize) {
-      calculateMaxTextureSizeInSampleSize(options);
+    if (!data.ignoreTextureSizeLimit) {
+      calculateTargetSizeInSampleSize(MAX_TEXTURE_SIZE, MAX_TEXTURE_SIZE, options);
     }
   }
 
@@ -227,27 +227,10 @@ abstract class BitmapHunter implements Runnable {
       BitmapFactory.Options options) {
     final int height = options.outHeight;
     final int width = options.outWidth;
-    int sampleSize = 1;
+    int sampleSize = Utils.calculateValidInSampleSize(options.inSampleSize);
     if (height > reqHeight || width > reqWidth) {
       final int heightRatio = Math.round((float) height / (float) reqHeight);
       final int widthRatio = Math.round((float) width / (float) reqWidth);
-      sampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
-    }
-
-    options.inSampleSize = sampleSize;
-    options.inJustDecodeBounds = false;
-  }
-
-  static void calculateMaxTextureSizeInSampleSize(BitmapFactory.Options options) {
-    final int height = options.outHeight;
-    final int width = options.outWidth;
-    int sampleSize = Utils.calculateValidInSampleSize(options.inSampleSize);
-
-    final int scaledHeight = height / sampleSize;
-    final int scaledWidth = width / sampleSize;
-    if (scaledHeight > MAX_TEXTURE_SIZE || scaledWidth > MAX_TEXTURE_SIZE) {
-      final int heightRatio = Math.round((float) scaledHeight / (float) MAX_TEXTURE_SIZE);
-      final int widthRatio = Math.round((float) scaledWidth / (float) MAX_TEXTURE_SIZE);
       sampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
     }
 
