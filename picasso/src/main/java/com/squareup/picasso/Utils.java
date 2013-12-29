@@ -21,6 +21,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.opengl.GLES10;
 import android.os.Build;
 import android.os.Looper;
 import android.os.Process;
@@ -64,6 +65,15 @@ final class Utils {
   private static final int WEBP_FILE_HEADER_SIZE = 12;
   private static final String WEBP_FILE_HEADER_RIFF = "RIFF";
   private static final String WEBP_FILE_HEADER_WEBP = "WEBP";
+
+  private static final int DEFAULT_MAX_BITMAP_DIMENSION = 2048;
+  static {
+    int[] maxTextureSize = new int[1];
+    GLES10.glGetIntegerv(GLES10.GL_MAX_TEXTURE_SIZE, maxTextureSize, 0);
+    MAX_TEXTURE_SIZE = Math.max(maxTextureSize[0], DEFAULT_MAX_BITMAP_DIMENSION);
+  }
+  static final int MAX_TEXTURE_SIZE;
+
 
   private Utils() {
     // No instances.

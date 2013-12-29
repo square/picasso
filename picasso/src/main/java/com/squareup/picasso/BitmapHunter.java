@@ -31,7 +31,7 @@ import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentResolver.SCHEME_FILE;
 import static android.provider.ContactsContract.Contacts;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
-import android.opengl.GLES10;
+import static com.squareup.picasso.Utils.MAX_TEXTURE_SIZE;
 
 abstract class BitmapHunter implements Runnable {
 
@@ -44,8 +44,6 @@ abstract class BitmapHunter implements Runnable {
   private static final String ANDROID_ASSET = "android_asset";
   protected static final int ASSET_PREFIX_LENGTH =
       (SCHEME_FILE + ":///" + ANDROID_ASSET + "/").length();
-  private static final int DEFAULT_MAX_BITMAP_DIMENSION = 2048;
-  private static final int MAX_TEXTURE_SIZE;
 
   final Picasso picasso;
   final Dispatcher dispatcher;
@@ -61,12 +59,6 @@ abstract class BitmapHunter implements Runnable {
   Picasso.LoadedFrom loadedFrom;
   Exception exception;
   int exifRotation; // Determined during decoding of original resource.
-
-  static {
-    int[] maxTextureSize = new int[1];
-    GLES10.glGetIntegerv(GLES10.GL_MAX_TEXTURE_SIZE, maxTextureSize, 0);
-    MAX_TEXTURE_SIZE = Math.max(maxTextureSize[0], DEFAULT_MAX_BITMAP_DIMENSION);
-  }
 
   BitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats, Action action) {
     this.picasso = picasso;
@@ -217,8 +209,7 @@ abstract class BitmapHunter implements Runnable {
   static void calculateInSampleSize(Request data, BitmapFactory.Options options) {
     if (data.hasSize()) {
       calculateTargetSizeInSampleSize(data.targetWidth, data.targetHeight, options);
-    }
-    if (!data.ignoreTextureSizeLimit) {
+    } else if (!data.ignoreTextureSizeLimit) {
       calculateTargetSizeInSampleSize(MAX_TEXTURE_SIZE, MAX_TEXTURE_SIZE, options);
     }
     options.inJustDecodeBounds = false;
