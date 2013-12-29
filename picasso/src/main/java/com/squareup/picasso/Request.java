@@ -335,8 +335,8 @@ public final class Request {
       int largestSize = (int) Math.max(targetWidth, targetHeight);
       if (largestSize > MAX_TEXTURE_SIZE) {
         float scale = (float) largestSize / MAX_TEXTURE_SIZE;
-        targetWidth = (int) (scale * targetWidth);
-        targetHeight = (int) (scale * targetHeight);
+        targetWidth = (int) (targetWidth / scale);
+        targetHeight = (int) (targetHeight / scale);
       }
     }
   }
