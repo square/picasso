@@ -225,9 +225,9 @@ abstract class BitmapHunter implements Runnable {
 
   static void calculateTargetSizeInSampleSize(int reqWidth, int reqHeight,
       BitmapFactory.Options options) {
-    final int height = options.outHeight;
-    final int width = options.outWidth;
     int sampleSize = Utils.calculateValidInSampleSize(options.inSampleSize);
+    final int height = options.outHeight / sampleSize;
+    final int width = options.outWidth / sampleSize;
     if (height > reqHeight || width > reqWidth) {
       final int heightRatio = Math.round((float) height / (float) reqHeight);
       final int widthRatio = Math.round((float) width / (float) reqWidth);
