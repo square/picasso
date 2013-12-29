@@ -39,12 +39,7 @@ class AssetBitmapHunter extends BitmapHunter {
       } finally {
         Utils.closeQuietly(is);
       }
-      if (data.hasSize()) {
-        calculateInSampleSize(data.targetWidth, data.targetHeight, options);
-      }
-      if (!data.overTextureSize) {
-        calculateMaxTextureSizeInSampleSize(options);
-      }
+      calculateInSampleSize(data, options);
     }
     InputStream is = assetManager.open(filePath);
     try {

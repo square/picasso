@@ -214,7 +214,17 @@ abstract class BitmapHunter implements Runnable {
     }
   }
 
-  static void calculateInSampleSize(int reqWidth, int reqHeight, BitmapFactory.Options options) {
+  static void calculateInSampleSize(Request data, BitmapFactory.Options options) {
+    if (data.hasSize()) {
+      calculateTargetSizeInSampleSize(data.targetWidth, data.targetHeight, options);
+    }
+    if (!data.overTextureSize) {
+      calculateMaxTextureSizeInSampleSize(options);
+    }
+  }
+
+  static void calculateTargetSizeInSampleSize(int reqWidth, int reqHeight,
+      BitmapFactory.Options options) {
     final int height = options.outHeight;
     final int width = options.outWidth;
     int sampleSize = 1;
