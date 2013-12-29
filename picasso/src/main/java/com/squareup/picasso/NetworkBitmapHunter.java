@@ -88,23 +88,23 @@ class NetworkBitmapHunter extends BitmapHunter {
     if (isWebPFile) {
       byte[] bytes = Utils.toByteArray(stream);
       BitmapFactory.Options options = null;
-      if (data.hasSize()) {
+      if (data.needInSampleSize()) {
         options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
 
         BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
-        calculateInSampleSize(data.targetWidth, data.targetHeight, options);
+
+        calculateInSampleSize(data, options);
       }
       return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
     } else {
       BitmapFactory.Options options = null;
-      if (data.hasSize()) {
+      if (data.needInSampleSize()) {
         options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
 
         BitmapFactory.decodeStream(stream, null, options);
-        calculateInSampleSize(data.targetWidth, data.targetHeight, options);
-
+        calculateInSampleSize(data, options);
         markStream.reset(mark);
       }
       return BitmapFactory.decodeStream(stream, null, options);

@@ -45,7 +45,7 @@ class ContentStreamBitmapHunter extends BitmapHunter {
   protected Bitmap decodeContentStream(Request data) throws IOException {
     ContentResolver contentResolver = context.getContentResolver();
     BitmapFactory.Options options = null;
-    if (data.hasSize()) {
+    if (data.needInSampleSize()) {
       options = new BitmapFactory.Options();
       options.inJustDecodeBounds = true;
       InputStream is = null;
@@ -55,7 +55,7 @@ class ContentStreamBitmapHunter extends BitmapHunter {
       } finally {
         Utils.closeQuietly(is);
       }
-      calculateInSampleSize(data.targetWidth, data.targetHeight, options);
+      calculateInSampleSize(data, options);
     }
     InputStream is = contentResolver.openInputStream(data.uri);
     try {

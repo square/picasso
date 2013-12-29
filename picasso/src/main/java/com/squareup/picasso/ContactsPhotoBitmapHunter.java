@@ -74,7 +74,7 @@ class ContactsPhotoBitmapHunter extends BitmapHunter {
       return null;
     }
     BitmapFactory.Options options = null;
-    if (data.hasSize()) {
+    if (data.needInSampleSize()) {
       options = new BitmapFactory.Options();
       options.inJustDecodeBounds = true;
       InputStream is = getInputStream();
@@ -83,7 +83,7 @@ class ContactsPhotoBitmapHunter extends BitmapHunter {
       } finally {
         Utils.closeQuietly(is);
       }
-      calculateInSampleSize(data.targetWidth, data.targetHeight, options);
+      calculateInSampleSize(data, options);
     }
     return BitmapFactory.decodeStream(stream, null, options);
   }

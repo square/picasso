@@ -201,6 +201,12 @@ public class RequestCreator {
     return this;
   }
 
+  /** Disable resizing for texture size limitation **/
+  public RequestCreator ignoreTextureSizeLimit() {
+    data.ignoreTextureSizeLimit();
+    return this;
+  }
+
   /** Synchronously fulfill this request. Must not be called from the main thread. */
   public Bitmap get() throws IOException {
     checkNotMain();
