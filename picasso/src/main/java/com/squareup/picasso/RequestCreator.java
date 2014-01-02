@@ -218,7 +218,7 @@ public class RequestCreator {
     BitmapHunter hunter = forRequest(picasso.context, picasso, picasso.dispatcher,
         picasso.cache, picasso.stats, action, picasso.dispatcher.downloader);
     Bitmap bitmap = hunter.hunt();
-    picasso.cache.set(action.getKey(), bitmap);
+    picasso.cache.set(key, bitmap);
     return bitmap;
   }
 
