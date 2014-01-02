@@ -214,9 +214,12 @@ public class RequestCreator {
     Request finalData = picasso.transformRequest(data.build());
     String key = createKey(finalData);
 
-    Action action = new GetAction(picasso, finalData, skipMemoryCache, key);
-    return forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache, picasso.stats,
-        action, picasso.dispatcher.downloader).hunt();
+    Action<Void> action = new GetAction(picasso, finalData, skipMemoryCache, key);
+    BitmapHunter hunter = forRequest(picasso.context, picasso, picasso.dispatcher,
+        picasso.cache, picasso.stats, action, picasso.dispatcher.downloader);
+    Bitmap bitmap = hunter.hunt();
+    picasso.cache.set(action.getKey(), bitmap);
+    return bitmap;
   }
 
   /**
