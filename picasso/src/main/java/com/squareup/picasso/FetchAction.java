@@ -18,13 +18,24 @@ package com.squareup.picasso;
 import android.graphics.Bitmap;
 
 class FetchAction extends Action<Void> {
-  FetchAction(Picasso picasso, Request data, boolean skipCache, String key) {
+
+  private Callback callback;
+
+  FetchAction(Picasso picasso, Request data, boolean skipCache, String key,
+      Callback callback) {
     super(picasso, null, data, skipCache, false, 0, null, key);
+    this.callback = callback;
   }
 
   @Override void complete(Bitmap result, Picasso.LoadedFrom from) {
+    if (callback != null) {
+      callback.onSuccess();
+    }
   }
 
   @Override public void error() {
+    if (callback != null) {
+      callback.onError();
+    }
   }
 }
