@@ -354,7 +354,7 @@ public class RequestCreator {
       }
       int measuredWidth = target.getMeasuredWidth();
       int measuredHeight = target.getMeasuredHeight();
-      if (measuredWidth == 0 && measuredHeight == 0) {
+      if (measuredWidth == 0 || measuredHeight == 0) {
         PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable);
         picasso.defer(target, new DeferredRequestCreator(this, target, callback));
         return;
