@@ -224,6 +224,15 @@ public class RequestCreator {
    * useful when you want to warm up the cache with an image.
    */
   public void fetch() {
+    fetch(null);
+  }
+
+  /**
+   * Asynchronously fulfills the request without a {@link ImageView} or {@link Target}
+   * and invokes the target {@link Callback} if it's not {@code null}.
+   * This is useful when you want to warm up the cache with an image.
+   */
+  public void fetch(Callback callback) {
     if (deferred) {
       throw new IllegalStateException("Fit cannot be used with fetch.");
     }
@@ -231,7 +240,7 @@ public class RequestCreator {
       Request finalData = picasso.transformRequest(data.build());
       String key = createKey(finalData);
 
-      Action action = new FetchAction(picasso, finalData, skipMemoryCache, key);
+      Action action = new FetchAction(picasso, finalData, skipMemoryCache, key, callback);
       picasso.enqueueAndSubmit(action);
     }
   }
