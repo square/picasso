@@ -19,6 +19,7 @@ import android.net.Uri;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.squareup.picasso.Utils.MAX_TEXTURE_SIZE;
 import static java.util.Collections.unmodifiableList;
 
 /** Immutable data about an image and the transformations that will be applied to it. */
@@ -322,9 +323,21 @@ public final class Request {
       if (centerInside && targetWidth == 0) {
         throw new IllegalStateException("Center inside requires calling resize.");
       }
+      if (hasSize() && !ignoreTextureSizeLimit) {
+        clampSizeToTextureSize();
+      }
       return new Request(uri, resourceId, transformations, targetWidth, targetHeight, centerCrop,
           centerInside, rotationDegrees, rotationPivotX, rotationPivotY,
           hasRotationPivot, ignoreTextureSizeLimit);
+    }
+
+    void clampSizeToTextureSize() {
+      int largestSize = (int) Math.max(targetWidth, targetHeight);
+      if (largestSize > MAX_TEXTURE_SIZE) {
+        float scale = (float) largestSize / MAX_TEXTURE_SIZE;
+        targetWidth = (int) (targetWidth / scale);
+        targetHeight = (int) (targetHeight / scale);
+      }
     }
   }
 }
