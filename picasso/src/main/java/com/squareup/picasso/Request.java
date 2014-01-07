@@ -300,13 +300,16 @@ public final class Request {
       return this;
     }
 
-    /** Bitmap size can exceed OpenGL texture size **/
+    /** Bitmap can be bigger than OpenGL texture size limitation
+     * <p/>
+     * If set, Bitmap could not be drawn because it is too large to be uploaded into a texture.
+     */
     public Builder ignoreTextureSizeLimit() {
       ignoreTextureSizeLimit = true;
       return this;
     }
 
-    /** Clear the overTextureSize flag, if set. */
+    /** Clear the ignoreTextureSizeLimit flag, if set. */
     public Builder clearIgnoreTextureSizeLimit() {
       ignoreTextureSizeLimit = false;
       return this;
