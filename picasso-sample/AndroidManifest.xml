@@ -34,6 +34,7 @@
       </intent-filter>
     </activity>
 
+    <activity android:name=".SampleGridViewWithEffectsActivity"/>
     <activity android:name=".SampleContactsActivity"/>
     <activity android:name=".SampleGalleryActivity"/>
     <activity android:name=".SampleListDetailActivity"/>

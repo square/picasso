@@ -1,10 +1,15 @@
 package com.example.picasso;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.RequestCreator;
+import com.squareup.picasso.TargetTransformation;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -14,9 +19,11 @@ import static android.widget.ImageView.ScaleType.CENTER_CROP;
 final class SampleGridViewAdapter extends BaseAdapter {
   private final Context context;
   private final List<String> urls = new ArrayList<String>();
+  private boolean useShaderEffects = false;
 
-  public SampleGridViewAdapter(Context context) {
+  public SampleGridViewAdapter(Context context, boolean useShaderEffects) {
     this.context = context;
+    this.useShaderEffects = useShaderEffects;
 
     // Ensure we get a different ordering of images on each run.
     Collections.addAll(urls, Data.URLS);
@@ -39,12 +46,20 @@ final class SampleGridViewAdapter extends BaseAdapter {
     String url = getItem(position);
 
     // Trigger the download of the URL asynchronously into the image view.
-    Picasso.with(context) //
-        .load(url) //
-        .placeholder(R.drawable.placeholder) //
-        .error(R.drawable.error) //
-        .fit() //
-        .into(view);
+    RequestCreator creator = Picasso.with(context) //
+            .load(url) //
+            .placeholder(R.drawable.placeholder) //
+            .error(R.drawable.error) //
+            .fit();
+    if (useShaderEffects) {
+      creator.transformTarget(new TargetTransformation() {
+            @Override
+            public Drawable transform(Bitmap source) {
+              return new ShaderEffectsDrawable(source);
+            }
+        });
+      }
+    creator.into(view);
 
     return view;
   }

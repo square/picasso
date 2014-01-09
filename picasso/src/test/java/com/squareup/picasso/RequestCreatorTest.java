@@ -479,6 +479,11 @@ public class RequestCreatorTest {
     new RequestCreator().transform(null);
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void nullTargetTransformationInvalid() throws Exception {
+      new RequestCreator().transformTarget(null);
+  }
+
   @Test public void nullTargetsInvalid() throws Exception {
     try {
       new RequestCreator().into((ImageView) null);
