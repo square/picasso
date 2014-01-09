@@ -1,6 +1,19 @@
 package com.example.picasso;
 
-import android.graphics.*;
+import android.graphics.Bitmap;
+import android.graphics.Paint;
+import android.graphics.RadialGradient;
+import android.graphics.Shader;
+import android.graphics.Matrix;
+import android.graphics.ComposeShader;
+import android.graphics.BitmapShader;
+import android.graphics.PorterDuff;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Canvas;
+import android.graphics.Rect;
+import android.graphics.ColorFilter;
+import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 
 public class ShaderEffectsDrawable extends Drawable {
@@ -16,12 +29,13 @@ public class ShaderEffectsDrawable extends Drawable {
 
     int radius = bitmap.getWidth() / 2;
 
-    RadialGradient vignette = new RadialGradient( radius, radius, radius, new int[] { 0, 0, 0x7f000000 },
-            new float[] { 0.0f, 0.8f, 1.0f }, Shader.TileMode.CLAMP);
+    RadialGradient vignette = new RadialGradient(radius, radius, radius,
+        new int[] {0, 0, 0x7f000000}, new float[] {0.0f, 0.8f, 1.0f}, Shader.TileMode.CLAMP);
     Matrix oval = new Matrix(); oval.setScale(1.0f, 0.8f); vignette.setLocalMatrix(oval);
 
     // We can use shaders for adding effects
-    bitmapPaint.setShader(new ComposeShader(new BitmapShader(this.bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP), vignette, PorterDuff.Mode.SRC_OVER));
+    bitmapPaint.setShader(new ComposeShader(new BitmapShader(this.bitmap, Shader.TileMode.CLAMP,
+        Shader.TileMode.CLAMP), vignette, PorterDuff.Mode.SRC_OVER));
 
     // We can add a little sepia effect to the Paint using color filters.
     ColorMatrix m1 = new ColorMatrix();
@@ -57,8 +71,8 @@ public class ShaderEffectsDrawable extends Drawable {
   @Override
   public int getOpacity() {
     Bitmap bm = bitmap;
-    return (bm == null || bm.hasAlpha() || bitmapPaint.getAlpha() < 255) ?
-            PixelFormat.TRANSLUCENT : PixelFormat.OPAQUE;
+    return (bm == null || bm.hasAlpha() || bitmapPaint.getAlpha() < 255)
+        ? PixelFormat.TRANSLUCENT : PixelFormat.OPAQUE;
   }
 
   @Override

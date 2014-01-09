@@ -66,7 +66,8 @@ public final class Request {
   /** Target image config for decoding. */
   public final Bitmap.Config config;
 
-  private Request(Uri uri, int resourceId, List<Transformation> transformations, TargetTransformation targetTransformation, int targetWidth,
+  private Request(Uri uri, int resourceId, List<Transformation> transformations,
+      TargetTransformation targetTransformation, int targetWidth,
       int targetHeight, boolean centerCrop, boolean centerInside, float rotationDegrees,
       float rotationPivotX, float rotationPivotY, boolean hasRotationPivot, Bitmap.Config config) {
     this.uri = uri;
@@ -328,8 +329,9 @@ public final class Request {
       if (centerInside && targetWidth == 0) {
         throw new IllegalStateException("Center inside requires calling resize.");
       }
-      return new Request(uri, resourceId, transformations, targetTransformation, targetWidth, targetHeight, centerCrop,
-          centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot, config);
+      return new Request(uri, resourceId, transformations, targetTransformation, targetWidth,
+          targetHeight, centerCrop, centerInside, rotationDegrees, rotationPivotX,
+          rotationPivotY, hasRotationPivot, config);
     }
   }
 }
