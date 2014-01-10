@@ -19,12 +19,10 @@ import static android.widget.ImageView.ScaleType.CENTER_CROP;
 final class SampleGridViewAdapter extends BaseAdapter {
   private final Context context;
   private final List<String> urls = new ArrayList<String>();
-  private final boolean useShaderEffects;
   private final DrawableFactory drawableFactory;
 
   public SampleGridViewAdapter(Context context, boolean useShaderEffects) {
     this.context = context;
-    this.useShaderEffects = useShaderEffects;
 
     // Ensure we get a different ordering of images on each run.
     Collections.addAll(urls, Data.URLS);
@@ -35,12 +33,16 @@ final class SampleGridViewAdapter extends BaseAdapter {
     urls.addAll(copy);
     urls.addAll(copy);
 
-    drawableFactory = new DrawableFactory() {
-      @Override
-      public Drawable createDrawable(Bitmap source) {
-        return new ShaderEffectsDrawable(source);
-      }
-    };
+    if (useShaderEffects) {
+      drawableFactory = new DrawableFactory() {
+        @Override
+        public Drawable createDrawable(Bitmap source) {
+          return new ShaderEffectsDrawable(source);
+        }
+      };
+    } else {
+      drawableFactory = null;
+    }
   }
 
   @Override public View getView(int position, View convertView, ViewGroup parent) {
@@ -59,7 +61,7 @@ final class SampleGridViewAdapter extends BaseAdapter {
         .placeholder(R.drawable.placeholder) //
         .error(R.drawable.error) //
         .fit();
-    if (useShaderEffects) {
+    if (drawableFactory != null) {
       creator.drawableFactory(drawableFactory);
     }
     creator.into(view);
