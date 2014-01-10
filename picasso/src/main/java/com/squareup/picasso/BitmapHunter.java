@@ -221,11 +221,11 @@ abstract class BitmapHunter implements Runnable {
 
   static Bitmap applyCustomTransformations(List<Transformation> transformations, Bitmap result) {
     for (int i = 0, count = transformations.size(); i < count; i++) {
-      Transformation transformation = transformations.get(i);
+      final Transformation transformation = transformations.get(i);
       Bitmap newResult = transformation.transform(result);
 
       if (newResult == null) {
-        StringBuilder builder = new StringBuilder() //
+        final StringBuilder builder = new StringBuilder() //
             .append("Transformation ")
             .append(transformation.key())
             .append(" returned null after ")
@@ -234,20 +234,36 @@ abstract class BitmapHunter implements Runnable {
         for (Transformation t : transformations) {
           builder.append(t.key()).append('\n');
         }
-        throw new NullPointerException(builder.toString());
+        Picasso.HANDLER.post(new Runnable() {
+          @Override public void run() {
+            throw new NullPointerException(builder.toString());
+          }
+        });
+        return null;
       }
 
       if (newResult == result && result.isRecycled()) {
-        throw new IllegalStateException(
-            "Transformation " + transformation.key() + " returned input Bitmap but recycled it.");
+        Picasso.HANDLER.post(new Runnable() {
+          @Override public void run() {
+            throw new IllegalStateException(
+                "Transformation " + transformation.key() + " returned input Bitmap but recycled it.");
+          }
+        });
+        return null;
       }
 
       // If the transformation returned a new bitmap ensure they recycled the original.
       if (newResult != result && !result.isRecycled()) {
-        throw new IllegalStateException("Transformation "
-            + transformation.key()
-            + " mutated input Bitmap but failed to recycle the original.");
+        Picasso.HANDLER.post(new Runnable() {
+          @Override public void run() {
+            throw new IllegalStateException("Transformation "
+                + transformation.key()
+                + " mutated input Bitmap but failed to recycle the original.");
+          }
+        });
+        return null;
       }
+
       result = newResult;
     }
     return result;

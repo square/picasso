@@ -405,7 +405,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
   }
 
-  @Test public void reusedBitmapIsNotRecycled() {
+  @Test public void reusedBitmapIsNotRecycled() throws Exception {
     Request data = new Request.Builder(URI_1).build();
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, 0);
