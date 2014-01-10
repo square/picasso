@@ -6,9 +6,9 @@ import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import com.squareup.picasso.DrawableFactory;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
-import com.squareup.picasso.TargetTransformation;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,7 +19,8 @@ import static android.widget.ImageView.ScaleType.CENTER_CROP;
 final class SampleGridViewAdapter extends BaseAdapter {
   private final Context context;
   private final List<String> urls = new ArrayList<String>();
-  private boolean useShaderEffects = false;
+  private final boolean useShaderEffects;
+  private final DrawableFactory drawableFactory;
 
   public SampleGridViewAdapter(Context context, boolean useShaderEffects) {
     this.context = context;
@@ -33,6 +34,13 @@ final class SampleGridViewAdapter extends BaseAdapter {
     ArrayList<String> copy = new ArrayList<String>(urls);
     urls.addAll(copy);
     urls.addAll(copy);
+
+    drawableFactory = new DrawableFactory() {
+      @Override
+      public Drawable createDrawable(Bitmap source) {
+        return new ShaderEffectsDrawable(source);
+      }
+    };
   }
 
   @Override public View getView(int position, View convertView, ViewGroup parent) {
@@ -47,18 +55,13 @@ final class SampleGridViewAdapter extends BaseAdapter {
 
     // Trigger the download of the URL asynchronously into the image view.
     RequestCreator creator = Picasso.with(context) //
-            .load(url) //
-            .placeholder(R.drawable.placeholder) //
-            .error(R.drawable.error) //
-            .fit();
+        .load(url) //
+        .placeholder(R.drawable.placeholder) //
+        .error(R.drawable.error) //
+        .fit();
     if (useShaderEffects) {
-      creator.transformTarget(new TargetTransformation() {
-            @Override
-            public Drawable transform(Bitmap source) {
-              return new ShaderEffectsDrawable(source);
-            }
-        });
-      }
+      creator.drawableFactory(drawableFactory);
+    }
     creator.into(view);
 
     return view;

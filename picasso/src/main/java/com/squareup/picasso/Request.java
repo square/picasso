@@ -38,7 +38,7 @@ public final class Request {
   public final int resourceId;
   /** List of custom transformations to be applied after the built-in transformations. */
   public final List<Transformation> transformations;
-  public final TargetTransformation targetTransformation;
+  public final DrawableFactory drawableFactory;
   /** Target image width for resizing. */
   public final int targetWidth;
   /** Target image height for resizing. */
@@ -67,7 +67,7 @@ public final class Request {
   public final Bitmap.Config config;
 
   private Request(Uri uri, int resourceId, List<Transformation> transformations,
-      TargetTransformation targetTransformation, int targetWidth,
+      DrawableFactory drawableFactory, int targetWidth,
       int targetHeight, boolean centerCrop, boolean centerInside, float rotationDegrees,
       float rotationPivotX, float rotationPivotY, boolean hasRotationPivot, Bitmap.Config config) {
     this.uri = uri;
@@ -77,7 +77,7 @@ public final class Request {
     } else {
       this.transformations = unmodifiableList(transformations);
     }
-    this.targetTransformation = targetTransformation;
+    this.drawableFactory = drawableFactory;
     this.targetWidth = targetWidth;
     this.targetHeight = targetHeight;
     this.centerCrop = centerCrop;
@@ -130,7 +130,7 @@ public final class Request {
     private boolean hasRotationPivot;
     private List<Transformation> transformations;
     private Bitmap.Config config;
-    private TargetTransformation targetTransformation;
+    private DrawableFactory drawableFactory;
 
     /** Start building a request using the specified {@link Uri}. */
     public Builder(Uri uri) {
@@ -158,7 +158,7 @@ public final class Request {
       rotationPivotX = request.rotationPivotX;
       rotationPivotY = request.rotationPivotY;
       hasRotationPivot = request.hasRotationPivot;
-      targetTransformation = request.targetTransformation;
+      drawableFactory = request.drawableFactory;
       if (request.transformations != null) {
         transformations = new ArrayList<Transformation>(request.transformations);
       }
@@ -267,14 +267,15 @@ public final class Request {
     }
 
     /**
-     * Transform the target Drawable the final bitmap will be wrapped into. This allows modifying
-     * underlying drawable and creating more advanced effect without need to create another bitmap.
+     * Factory for creating a custom Drawable the final bitmap will be wrapped into.
+     * This allows modifying underlying drawable and creating more advanced effects
+     * without need to create another bitmap.
      */
-    public Builder targetTransform(TargetTransformation targetTransformation) {
-      if (targetTransformation == null) {
-          throw new IllegalArgumentException("TargetTransformation must not be null.");
+    public Builder drawableFactory(DrawableFactory drawableFactory) {
+      if (drawableFactory == null) {
+        throw new IllegalArgumentException("DrawableFactory must not be null.");
       }
-      this.targetTransformation = targetTransformation;
+      this.drawableFactory = drawableFactory;
       return this;
     }
 
@@ -329,7 +330,7 @@ public final class Request {
       if (centerInside && targetWidth == 0) {
         throw new IllegalStateException("Center inside requires calling resize.");
       }
-      return new Request(uri, resourceId, transformations, targetTransformation, targetWidth,
+      return new Request(uri, resourceId, transformations, drawableFactory, targetWidth,
           targetHeight, centerCrop, centerInside, rotationDegrees, rotationPivotX,
           rotationPivotY, hasRotationPivot, config);
     }

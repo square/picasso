@@ -18,20 +18,23 @@ import android.graphics.drawable.Drawable;
 
 public class ShaderEffectsDrawable extends Drawable {
 
-  private Bitmap bitmap;
-  private Paint bitmapPaint;
+  private final Bitmap bitmap;
+  private final Paint bitmapPaint;
 
   public ShaderEffectsDrawable(Bitmap bitmap) {
     this.bitmap = bitmap;
+    if (bitmap == null) {
+      throw new NullPointerException("Bitmap cannot be null.");
+    }
 
-    bitmapPaint = new Paint();
-    bitmapPaint.setAntiAlias(true);
+    bitmapPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     int radius = bitmap.getWidth() / 2;
-
     RadialGradient vignette = new RadialGradient(radius, radius, radius,
-        new int[] {0, 0, 0x7f000000}, new float[] {0.0f, 0.8f, 1.0f}, Shader.TileMode.CLAMP);
-    Matrix oval = new Matrix(); oval.setScale(1.0f, 0.8f); vignette.setLocalMatrix(oval);
+        new int[]{0, 0, 0x7f000000}, new float[]{0.0f, 0.8f, 1.0f}, Shader.TileMode.CLAMP);
+    Matrix oval = new Matrix();
+    oval.setScale(1.0f, 0.8f);
+    vignette.setLocalMatrix(oval);
 
     // We can use shaders for adding effects
     bitmapPaint.setShader(new ComposeShader(new BitmapShader(this.bitmap, Shader.TileMode.CLAMP,
@@ -46,42 +49,34 @@ public class ShaderEffectsDrawable extends Drawable {
     bitmapPaint.setColorFilter(new ColorMatrixColorFilter(m1));
   }
 
-  @Override
-  public void draw(Canvas canvas) {
+  @Override public void draw(Canvas canvas) {
     final Rect bounds = getBounds();
     canvas.translate(bounds.left, bounds.top);
     final long centerX = bounds.width() / 2;
     final long centerY = bounds.height() / 2;
     final long radius = Math.min(bounds.width(), bounds.height()) / 2;
-
-    // Image
     canvas.drawCircle(centerX, centerY, radius, bitmapPaint);
   }
 
-  @Override
-  public void setAlpha(int alpha) {
+  @Override public void setAlpha(int alpha) {
     bitmapPaint.setAlpha(alpha);
   }
 
-  @Override
-  public void setColorFilter(ColorFilter cf) {
-    bitmapPaint.setColorFilter(cf);
+  @Override public void setColorFilter(ColorFilter cf) {
+    throw new UnsupportedOperationException("Custom ColorFilters not supported");
   }
 
-  @Override
-  public int getOpacity() {
+  @Override public int getOpacity() {
     Bitmap bm = bitmap;
-    return (bm == null || bm.hasAlpha() || bitmapPaint.getAlpha() < 255)
+    return (bm.hasAlpha() || bitmapPaint.getAlpha() < 255)
         ? PixelFormat.TRANSLUCENT : PixelFormat.OPAQUE;
   }
 
-  @Override
-  public int getIntrinsicHeight() {
+  @Override public int getIntrinsicHeight() {
     return bitmap.getHeight();
   }
 
-  @Override
-  public int getIntrinsicWidth() {
+  @Override public int getIntrinsicWidth() {
     return bitmap.getWidth();
   }
 

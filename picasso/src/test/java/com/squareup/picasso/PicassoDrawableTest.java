@@ -26,7 +26,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import static android.graphics.Bitmap.Config.ARGB_8888;
 import static android.graphics.Color.RED;
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
@@ -60,17 +59,16 @@ public class PicassoDrawableTest {
     assertThat(pd.animating).isFalse();
   }
 
-  @Test public void createWithTargetTransformerDrawable() {
+  @Test public void createWithDrawableFactory() {
     final BitmapDrawable bitmapDrawable = new BitmapDrawable(context.getResources(), BITMAP_1);
 
-    TargetTransformation targetTransformation = new TargetTransformation() {
-        @Override
-        public Drawable transform(Bitmap source) {
-            return bitmapDrawable;
-        }
+    DrawableFactory drawableFactory = new DrawableFactory() {
+      @Override public Drawable createDrawable(Bitmap source) {
+        return bitmapDrawable;
+      }
     };
 
-    PicassoDrawable pd = new PicassoDrawable(context, null, BITMAP_1, DISK, false, false, targetTransformation);
+    PicassoDrawable pd = new PicassoDrawable(context, null, BITMAP_1, DISK, false, false, drawableFactory);
     assertThat(pd.image).isSameAs(bitmapDrawable);
     assertThat(((BitmapDrawable) pd.image).getBitmap()).isSameAs(BITMAP_1);
     assertThat(pd.placeholder).isNull();

@@ -18,12 +18,12 @@ package com.squareup.picasso;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 
-/** Target Drawable transformation. */
-public interface TargetTransformation {
+/** Factory for creating a custom Drawable the final bitmap will be wrapped into. . */
+public interface DrawableFactory {
 
   /**
-   * Transform the target drawable the bitmap will be wrapped into.
+   * Create a custom drawable the bitmap will be wrapped into.
    */
-  Drawable transform(Bitmap source);
+  Drawable createDrawable(Bitmap source);
 
 }
