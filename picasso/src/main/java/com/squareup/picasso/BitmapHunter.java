@@ -245,8 +245,9 @@ abstract class BitmapHunter implements Runnable {
       if (newResult == result && result.isRecycled()) {
         Picasso.HANDLER.post(new Runnable() {
           @Override public void run() {
-            throw new IllegalStateException(
-                "Transformation " + transformation.key() + " returned input Bitmap but recycled it.");
+            throw new IllegalStateException("Transformation "
+                + transformation.key()
+                + " returned input Bitmap but recycled it.");
           }
         });
         return null;
