@@ -98,6 +98,23 @@ public class BitmapHunterTest {
     verify(dispatcher).dispatchFailed(hunter);
   }
 
+  @Test public void outOfMemoryDispatchFailed() throws Exception {
+    when(stats.createSnapshot()).thenReturn(mock(StatsSnapshot.class));
+
+    Action action = mockAction(URI_KEY_1, URI_1);
+    BitmapHunter hunter = new OOMBitmapHunter(picasso, dispatcher, cache, stats, action);
+    try {
+      hunter.run();
+    } catch (Throwable t) {
+      Exception exception = hunter.getException();
+      verify(dispatcher).dispatchFailed(hunter);
+      verify(stats).createSnapshot();
+      assertThat(hunter.getResult()).isNull();
+      assertThat(exception).isNotNull();
+      assertThat(exception.getCause()).isInstanceOf(OutOfMemoryError.class);
+    }
+  }
+
   @Test public void runWithIoExceptionDispatchRetry() throws Exception {
     Action action = mockAction(URI_KEY_1, URI_1);
     BitmapHunter hunter =
@@ -442,6 +459,18 @@ public class BitmapHunterTest {
 
     @Override Picasso.LoadedFrom getLoadedFrom() {
       return MEMORY;
+    }
+  }
+
+  private static class OOMBitmapHunter extends TestableBitmapHunter {
+
+    OOMBitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats,
+        Action action) {
+      super(picasso, dispatcher, cache, stats, action);
+    }
+
+    @Override Bitmap decode(Request data) throws IOException {
+      throw new OutOfMemoryError();
     }
   }
 }
