@@ -119,8 +119,7 @@ class Stats {
       statsRef = new WeakReference<Stats>(stats);
     }
 
-    @Override
-    public void handleMessage(final Message msg) {
+    @Override public void handleMessage(final Message msg) {
       Stats stats = statsRef.get();
       if (stats == null) {
         return;
@@ -144,8 +143,7 @@ class Stats {
           default :
             Handler mainHandler = new Handler(Looper.getMainLooper());
             mainHandler.post(new Runnable() {
-              @Override
-              public void run() {
+              @Override public void run() {
                 throw new AssertionError("Unhandled stats message." + msg.what);
               }
             });
