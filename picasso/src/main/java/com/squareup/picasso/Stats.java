@@ -16,6 +16,7 @@
 package com.squareup.picasso;
 
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -69,7 +70,11 @@ class Stats {
   }
 
   void shutdown() {
-    statsThread.quit();
+    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2) {
+      statsThread.quitSafely();
+    } else {
+      statsThread.quit();
+    }
   }
 
   void performCacheHit() {
