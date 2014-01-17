@@ -44,6 +44,8 @@ import static com.squareup.picasso.TestUtils.CONTENT_1_URL;
 import static com.squareup.picasso.TestUtils.CONTENT_KEY_1;
 import static com.squareup.picasso.TestUtils.FILE_1_URL;
 import static com.squareup.picasso.TestUtils.FILE_KEY_1;
+import static com.squareup.picasso.TestUtils.MEDIA_STORE_CONTENT_1_URL;
+import static com.squareup.picasso.TestUtils.MEDIA_STORE_CONTENT_KEY_1;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_1;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_KEY_1;
 import static com.squareup.picasso.TestUtils.URI_1;
@@ -179,7 +181,14 @@ public class BitmapHunterTest {
     Action action = mockAction(CONTENT_KEY_1, CONTENT_1_URL);
     BitmapHunter hunter =
         forRequest(context, picasso, dispatcher, cache, stats, action, downloader);
-    assertThat(hunter).isInstanceOf(ContentProviderBitmapHunter.class);
+    assertThat(hunter).isInstanceOf(ContentStreamBitmapHunter.class);
+  }
+
+  @Test public void forMediaStoreRequest() throws Exception {
+    Action action = mockAction(MEDIA_STORE_CONTENT_KEY_1, MEDIA_STORE_CONTENT_1_URL);
+    BitmapHunter hunter =
+        forRequest(context, picasso, dispatcher, cache, stats, action, downloader);
+    assertThat(hunter).isInstanceOf(MediaStoreBitmapHunter.class);
   }
 
   @Test public void forContactsPhotoRequest() throws Exception {
