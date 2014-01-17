@@ -24,11 +24,10 @@ import android.os.Message;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 
 class Stats {
-  private static final int REQUESTED_COMPLETED = 0;
-  private static final int CACHE_HIT = 1;
-  private static final int CACHE_MISS = 2;
-  private static final int BITMAP_DECODE_FINISHED = 3;
-  private static final int BITMAP_TRANSFORMED_FINISHED = 4;
+  private static final int CACHE_HIT = 0;
+  private static final int CACHE_MISS = 1;
+  private static final int BITMAP_DECODE_FINISHED = 2;
+  private static final int BITMAP_TRANSFORMED_FINISHED = 3;
 
   private static final String STATS_THREAD_NAME = Utils.THREAD_PREFIX + "Stats";
 
@@ -49,7 +48,7 @@ class Stats {
     this.cache = cache;
     this.statsThread = new HandlerThread(STATS_THREAD_NAME, THREAD_PRIORITY_BACKGROUND);
     this.statsThread.start();
-    this.handler = new StatsHandler(statsThread.getLooper());
+    this.handler = new StatsHandler(statsThread.getLooper(), this);
   }
 
   void dispatchBitmapDecoded(Bitmap bitmap) {
@@ -89,8 +88,7 @@ class Stats {
   void performBitmapTransformed(long size) {
     transformedBitmapCount++;
     totalTransformedBitmapSize += size;
-    averageTransformedBitmapSize =
-        getAverage(originalBitmapCount, totalTransformedBitmapSize);
+    averageTransformedBitmapSize = getAverage(originalBitmapCount, totalTransformedBitmapSize);
   }
 
   synchronized StatsSnapshot createSnapshot() {
@@ -110,37 +108,35 @@ class Stats {
     return totalSize / count;
   }
 
-  private class StatsHandler extends Handler {
+  private static class StatsHandler extends Handler {
 
-    public StatsHandler(Looper looper) {
+    private final Stats stats;
+
+    public StatsHandler(Looper looper, Stats stats) {
       super(looper);
+      this.stats = stats;
     }
 
     @Override public void handleMessage(final Message msg) {
-      synchronized (Stats.this) {
-        switch (msg.what) {
-          case CACHE_HIT:
-            performCacheHit();
-            break;
-          case CACHE_MISS:
-            performCacheMiss();
-            break;
-          case BITMAP_DECODE_FINISHED:
-            performBitmapDecoded(msg.arg1);
-            break;
-          case BITMAP_TRANSFORMED_FINISHED:
-            performBitmapTransformed(msg.arg1);
-            break;
-          case REQUESTED_COMPLETED:
-            break;
-          default:
-            Handler mainHandler = new Handler(Looper.getMainLooper());
-            mainHandler.post(new Runnable() {
-              @Override public void run() {
-                throw new AssertionError("Unhandled stats message." + msg.what);
-              }
-            });
-        }
+      switch (msg.what) {
+        case CACHE_HIT:
+          stats.performCacheHit();
+          break;
+        case CACHE_MISS:
+          stats.performCacheMiss();
+          break;
+        case BITMAP_DECODE_FINISHED:
+          stats.performBitmapDecoded(msg.arg1);
+          break;
+        case BITMAP_TRANSFORMED_FINISHED:
+          stats.performBitmapTransformed(msg.arg1);
+          break;
+        default:
+          Picasso.HANDLER.post(new Runnable() {
+            @Override public void run() {
+              throw new AssertionError("Unhandled stats message." + msg.what);
+            }
+          });
       }
     }
   }

@@ -80,7 +80,7 @@ class Dispatcher {
     this.context = context;
     this.service = service;
     this.hunterMap = new LinkedHashMap<String, BitmapHunter>();
-    this.handler = new DispatcherHandler(dispatcherThread.getLooper());
+    this.handler = new DispatcherHandler(dispatcherThread.getLooper(), this);
     this.downloader = downloader;
     this.mainThreadHandler = mainThreadHandler;
     this.cache = cache;
@@ -208,53 +208,60 @@ class Dispatcher {
     }
   }
 
-  private class DispatcherHandler extends Handler {
-    public DispatcherHandler(Looper looper) {
+  private static class DispatcherHandler extends Handler {
+    private final Dispatcher dispatcher;
+
+    public DispatcherHandler(Looper looper, Dispatcher dispatcher) {
       super(looper);
+      this.dispatcher = dispatcher;
     }
 
-    @Override public void handleMessage(Message msg) {
+    @Override public void handleMessage(final Message msg) {
       switch (msg.what) {
         case REQUEST_SUBMIT: {
           Action action = (Action) msg.obj;
-          performSubmit(action);
+          dispatcher.performSubmit(action);
           break;
         }
         case REQUEST_CANCEL: {
           Action action = (Action) msg.obj;
-          performCancel(action);
+          dispatcher.performCancel(action);
           break;
         }
         case HUNTER_COMPLETE: {
           BitmapHunter hunter = (BitmapHunter) msg.obj;
-          performComplete(hunter);
+          dispatcher.performComplete(hunter);
           break;
         }
         case HUNTER_RETRY: {
           BitmapHunter hunter = (BitmapHunter) msg.obj;
-          performRetry(hunter);
+          dispatcher.performRetry(hunter);
           break;
         }
         case HUNTER_DECODE_FAILED: {
           BitmapHunter hunter = (BitmapHunter) msg.obj;
-          performError(hunter);
+          dispatcher.performError(hunter);
           break;
         }
         case HUNTER_DELAY_NEXT_BATCH: {
-          performBatchComplete();
+          dispatcher.performBatchComplete();
           break;
         }
         case NETWORK_STATE_CHANGE: {
           NetworkInfo info = (NetworkInfo) msg.obj;
-          performNetworkStateChange(info);
+          dispatcher.performNetworkStateChange(info);
           break;
         }
         case AIRPLANE_MODE_CHANGE: {
-          performAirplaneModeChange(msg.arg1 == AIRPLANE_MODE_ON);
+          dispatcher.performAirplaneModeChange(msg.arg1 == AIRPLANE_MODE_ON);
           break;
         }
         default:
-          throw new AssertionError("Unknown handler message received: " + msg.what);
+          Picasso.HANDLER.post(new Runnable() {
+            @Override public void run() {
+              throw new AssertionError("Unknown handler message received: " + msg.what);
+            }
+          });
       }
     }
   }
