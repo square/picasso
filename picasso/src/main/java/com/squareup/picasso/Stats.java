@@ -15,6 +15,8 @@
  */
 package com.squareup.picasso;
 
+import java.lang.ref.WeakReference;
+
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -49,7 +51,7 @@ class Stats {
     this.cache = cache;
     this.statsThread = new HandlerThread(STATS_THREAD_NAME, THREAD_PRIORITY_BACKGROUND);
     this.statsThread.start();
-    this.handler = new StatsHandler(statsThread.getLooper());
+    this.handler = new StatsHandler(statsThread.getLooper(), this);
   }
 
   void dispatchBitmapDecoded(Bitmap bitmap) {
@@ -110,30 +112,35 @@ class Stats {
     return totalSize / count;
   }
 
-  private class StatsHandler extends Handler {
-
-    public StatsHandler(Looper looper) {
+  private static class StatsHandler extends Handler {
+    private final WeakReference<Stats> statsRef;
+    public StatsHandler(Looper looper, Stats stats) {
       super(looper);
+      statsRef = new WeakReference<Stats>(stats);
     }
 
     @Override public void handleMessage(final Message msg) {
-      synchronized (Stats.this) {
+      Stats stats = statsRef.get();
+      if (stats == null) {
+        return;
+      }
+      synchronized (StatsHandler.class) {
         switch (msg.what) {
-          case CACHE_HIT:
-            performCacheHit();
+          case CACHE_HIT :
+            stats.performCacheHit();
             break;
-          case CACHE_MISS:
-            performCacheMiss();
+          case CACHE_MISS :
+            stats.performCacheMiss();
             break;
-          case BITMAP_DECODE_FINISHED:
-            performBitmapDecoded(msg.arg1);
+          case BITMAP_DECODE_FINISHED :
+            stats.performBitmapDecoded(msg.arg1);
             break;
-          case BITMAP_TRANSFORMED_FINISHED:
-            performBitmapTransformed(msg.arg1);
+          case BITMAP_TRANSFORMED_FINISHED :
+            stats.performBitmapTransformed(msg.arg1);
             break;
-          case REQUESTED_COMPLETED:
+          case REQUESTED_COMPLETED :
             break;
-          default:
+          default :
             Handler mainHandler = new Handler(Looper.getMainLooper());
             mainHandler.post(new Runnable() {
               @Override public void run() {
