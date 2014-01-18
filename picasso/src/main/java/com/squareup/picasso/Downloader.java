@@ -35,7 +35,7 @@ public interface Downloader {
    */
   Response load(Uri uri, boolean localCacheOnly) throws IOException;
 
-  /** Thrown for non 200 responses. */
+  /** Thrown for non-2XX responses. */
   class ResponseException extends IOException {
     public ResponseException(String message) {
       super(message);
