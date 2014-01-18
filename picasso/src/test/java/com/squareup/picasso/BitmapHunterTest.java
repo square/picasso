@@ -100,6 +100,14 @@ public class BitmapHunterTest {
     verify(dispatcher).dispatchFailed(hunter);
   }
 
+  @Test public void responseExcpetionDispatchFailed() throws Exception {
+    Action action = mockAction(URI_KEY_1, URI_1);
+    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, null,
+        new Downloader.ResponseException("Test"));
+    hunter.run();
+    verify(dispatcher).dispatchFailed(hunter);
+  }
+
   @Test public void outOfMemoryDispatchFailed() throws Exception {
     when(stats.createSnapshot()).thenReturn(mock(StatsSnapshot.class));
 
@@ -119,8 +127,8 @@ public class BitmapHunterTest {
 
   @Test public void runWithIoExceptionDispatchRetry() throws Exception {
     Action action = mockAction(URI_KEY_1, URI_1);
-    BitmapHunter hunter =
-        new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, null, true);
+    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, null,
+        new IOException());
     hunter.run();
     verify(dispatcher).dispatchRetry(hunter);
   }
@@ -440,7 +448,7 @@ public class BitmapHunterTest {
 
   private static class TestableBitmapHunter extends BitmapHunter {
     private final Bitmap result;
-    private final boolean throwException;
+    private final IOException exception;
 
     TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats,
         Action action) {
@@ -449,19 +457,19 @@ public class BitmapHunterTest {
 
     TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats,
         Action action, Bitmap result) {
-      this(picasso, dispatcher, cache, stats, action, result, false);
+      this(picasso, dispatcher, cache, stats, action, result, null);
     }
 
     TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats,
-        Action action, Bitmap result, boolean throwException) {
+        Action action, Bitmap result, IOException exception) {
       super(picasso, dispatcher, cache, stats, action);
       this.result = result;
-      this.throwException = throwException;
+      this.exception = exception;
     }
 
     @Override Bitmap decode(Request data) throws IOException {
-      if (throwException) {
-        throw new IOException("Failed.");
+      if (exception != null) {
+        throw exception;
       }
       return result;
     }

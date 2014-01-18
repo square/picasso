@@ -25,7 +25,6 @@ import android.os.Looper;
 import android.os.Process;
 import android.os.StatFs;
 import android.provider.Settings;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;

@@ -33,6 +33,7 @@ import org.robolectric.annotation.Config;
 import static com.squareup.picasso.OkHttpDownloader.RESPONSE_SOURCE_ANDROID;
 import static com.squareup.picasso.OkHttpDownloader.RESPONSE_SOURCE_OKHTTP;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -56,16 +57,6 @@ public class OkHttpDownloaderTest {
 
   @After public void tearDown() throws Exception {
     server.shutdown();
-  }
-
-  @Test public void nonTwoHundredReturnsNull() throws Exception {
-    server.enqueue(new MockResponse().setResponseCode(302));
-    server.enqueue(new MockResponse().setResponseCode(404));
-    server.enqueue(new MockResponse().setResponseCode(500));
-
-    assertThat(loader.load(URL, false)).isNull();
-    assertThat(loader.load(URL, false)).isNull();
-    assertThat(loader.load(URL, false)).isNull();
   }
 
   @Test public void allowExpiredSetsCacheControl() throws Exception {
@@ -93,5 +84,15 @@ public class OkHttpDownloaderTest {
     server.enqueue(new MockResponse().addHeader(RESPONSE_SOURCE_OKHTTP, "CACHE 200"));
     Downloader.Response response3 = loader.load(URL, true);
     assertThat(response3.cached).isTrue();
+  }
+
+  @Test public void throwsResponseException() throws Exception {
+    server.enqueue(new MockResponse().setStatus("HTTP/1.1 401 Not Authorized"));
+    try {
+      loader.load(URL, false);
+      fail("Expected ResponseException.");
+    } catch (Downloader.ResponseException e) {
+      assertThat(e).hasMessage("401 Not Authorized");
+    }
   }
 }
