@@ -35,6 +35,13 @@ public interface Downloader {
    */
   Response load(Uri uri, boolean localCacheOnly) throws IOException;
 
+  /** Thrown for non 200 responses. */
+  class ResponseException extends IOException {
+    public ResponseException(String message) {
+      super(message);
+    }
+  }
+
   /** Response stream or bitmap and info. */
   class Response {
     final InputStream stream;

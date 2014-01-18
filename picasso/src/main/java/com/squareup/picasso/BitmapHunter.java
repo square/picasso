@@ -89,6 +89,9 @@ abstract class BitmapHunter implements Runnable {
       } else {
         dispatcher.dispatchComplete(this);
       }
+    } catch (Downloader.ResponseException e) {
+      exception = e;
+      dispatcher.dispatchFailed(this);
     } catch (IOException e) {
       exception = e;
       dispatcher.dispatchRetry(this);

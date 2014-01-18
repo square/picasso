@@ -34,6 +34,7 @@ import static android.os.Build.VERSION_CODES.GINGERBREAD;
 import static android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH;
 import static com.squareup.picasso.UrlConnectionDownloader.RESPONSE_SOURCE;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -57,16 +58,6 @@ public class UrlConnectionDownloaderTest {
 
   @After public void tearDown() throws Exception {
     server.shutdown();
-  }
-
-  @Test public void nonTwoHundredReturnsNull() throws Exception {
-    server.enqueue(new MockResponse().setResponseCode(302));
-    server.enqueue(new MockResponse().setResponseCode(404));
-    server.enqueue(new MockResponse().setResponseCode(500));
-
-    assertThat(loader.load(URL, false)).isNull();
-    assertThat(loader.load(URL, false)).isNull();
-    assertThat(loader.load(URL, false)).isNull();
   }
 
   @Config(reportSdk = ICE_CREAM_SANDWICH)
@@ -116,5 +107,15 @@ public class UrlConnectionDownloaderTest {
     server.enqueue(new MockResponse().addHeader(RESPONSE_SOURCE, "CACHE 200"));
     Downloader.Response response2 = loader.load(URL, true);
     assertThat(response2.cached).isTrue();
+  }
+
+  @Test public void throwsResponseException() throws Exception {
+    server.enqueue(new MockResponse().setStatus("HTTP/1.1 401 Not Authorized"));
+    try {
+      loader.load(URL, false);
+      fail("Expected ResponseException.");
+    } catch (Downloader.ResponseException e) {
+      assertThat(e).hasMessage("401 Not Authorized");
+    }
   }
 }
