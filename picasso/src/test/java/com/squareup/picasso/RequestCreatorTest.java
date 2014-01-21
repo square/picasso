@@ -238,7 +238,7 @@ public class RequestCreatorTest {
   }
 
   @Test
-  public void intoImageViewWithFitAndNoDimensionsQueuesDeferredImageViewRequest() throws Exception {
+  public void intoImageViewWithFitAndNoViewDimensionsQueuesDeferredImageViewRequest() throws Exception {
     ImageView target = mockFitImageViewTarget(true);
     when(target.getWidth()).thenReturn(0);
     when(target.getHeight()).thenReturn(0);
@@ -248,11 +248,32 @@ public class RequestCreatorTest {
   }
 
   @Test
-  public void intoImageViewWithFitAndDimensionsQueuesImageViewRequest() throws Exception {
+  public void intoImageViewWithFitAndViewDimensionsQueuesImageViewRequest() throws Exception {
     ImageView target = mockFitImageViewTarget(true);
     when(target.getMeasuredWidth()).thenReturn(100);
     when(target.getMeasuredHeight()).thenReturn(100);
     new RequestCreator(picasso, URI_1, 0).fit().into(target);
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue()).isInstanceOf(ImageViewAction.class);
+  }
+
+  @Test
+  public void intoImageViewWithFitAndWidthAndNoViewDimensionsQueuesDeferredImageViewRequest()
+      throws Exception {
+    ImageView target = mockFitImageViewTarget(true);
+    when(target.getMeasuredWidth()).thenReturn(0);
+    when(target.getMeasuredHeight()).thenReturn(0);
+    new RequestCreator(picasso, URI_1, 0).width(100).fit().into(target);
+    verify(picasso, never()).enqueueAndSubmit(any(Action.class));
+    verify(picasso).defer(eq(target), any(DeferredRequestCreator.class));
+  }
+
+  @Test
+  public void intoImageViewWithFitAndWidthAndViewDimensionQueuesImageViewRequest() throws Exception {
+    ImageView target = mockFitImageViewTarget(true);
+    when(target.getMeasuredWidth()).thenReturn(0);
+    when(target.getMeasuredHeight()).thenReturn(100);
+    new RequestCreator(picasso, URI_1, 0).width(100).fit().into(target);
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue()).isInstanceOf(ImageViewAction.class);
   }
@@ -274,6 +295,54 @@ public class RequestCreatorTest {
     }
   }
 
+  @Test
+  public void intoImageViewWithFitAndWidthAndHeightThrows() throws Exception {
+    try {
+      ImageView target = mockImageViewTarget();
+      new RequestCreator(picasso, URI_1, 0).fit().width(10).height(10).into(target);
+      fail("Calling into() ImageView with fit(), width() and height() should throw exception");
+    } catch (IllegalStateException expected) {
+    }
+  }
+
+  @Test
+  public void intoImageViewWithFitAndWidthMaintainsWidth() throws Exception {
+    Picasso picasso = mock(Picasso.class);
+    when(picasso.transformRequest(any(Request.class))).thenAnswer(TRANSFORM_REQUEST_ANSWER);
+
+    ImageView target = mockFitImageViewTarget(true);
+    when(target.getMeasuredWidth()).thenReturn(0);
+    when(target.getMeasuredHeight()).thenReturn(100);
+
+    new RequestCreator(picasso, URI_1, 0).fit().width(50).into(target);
+
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+
+    Action value = actionCaptor.getValue();
+    assertThat(value).isInstanceOf(ImageViewAction.class);
+    assertThat(value.getData().targetWidth).isEqualTo(50);
+    assertThat(value.getData().targetHeight).isEqualTo(100);
+  }
+
+  @Test
+  public void intoImageViewWithFitAndHeightMaintainsHeight() throws Exception {
+    Picasso picasso = mock(Picasso.class);
+    when(picasso.transformRequest(any(Request.class))).thenAnswer(TRANSFORM_REQUEST_ANSWER);
+
+    ImageView target = mockFitImageViewTarget(true);
+    when(target.getMeasuredWidth()).thenReturn(100);
+    when(target.getMeasuredHeight()).thenReturn(0);
+
+    new RequestCreator(picasso, URI_1, 0).fit().height(50).into(target);
+
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+
+    Action value = actionCaptor.getValue();
+    assertThat(value).isInstanceOf(ImageViewAction.class);
+    assertThat(value.getData().targetWidth).isEqualTo(100);
+    assertThat(value.getData().targetHeight).isEqualTo(50);
+  }
+
   @Test public void invalidResize() throws Exception {
     try {
       new RequestCreator().resize(-1, 10);
@@ -292,6 +361,32 @@ public class RequestCreatorTest {
     }
     try {
       new RequestCreator().resize(10, 0);
+      fail("Zero height should throw exception.");
+    } catch (IllegalArgumentException expected) {
+    }
+  }
+
+  @Test public void invalidWidth() throws Exception {
+    try {
+      new RequestCreator().width(-1);
+      fail("Negative width should throw exception.");
+    } catch (IllegalArgumentException expected) {
+    }
+    try {
+      new RequestCreator().width(0);
+      fail("Zero width should throw exception.");
+    } catch (IllegalArgumentException expected) {
+    }
+  }
+
+  @Test public void invalidHeight() throws Exception {
+    try {
+      new RequestCreator().height(-1);
+      fail("Negative height should throw exception.");
+    } catch (IllegalArgumentException expected) {
+    }
+    try {
+      new RequestCreator().height(0);
       fail("Zero height should throw exception.");
     } catch (IllegalArgumentException expected) {
     }

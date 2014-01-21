@@ -99,7 +99,7 @@ public class DeferredRequestCreatorTest {
     verifyZeroInteractions(creator);
   }
 
-  @Test public void waitsForAnotherLayoutIfWidthOrHeightIsZero() throws Exception {
+  @Test public void waitsForAnotherLayoutIfWidthAndHeightAreZero() throws Exception {
     ImageView target = mockFitImageViewTarget(true);
     when(target.getMeasuredWidth()).thenReturn(0);
     when(target.getMeasuredHeight()).thenReturn(0);

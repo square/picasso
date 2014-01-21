@@ -137,9 +137,52 @@ public class RequestCreator {
     return resize(targetWidth, targetHeight);
   }
 
+  /**
+   * Internal use only.
+   * Resizes each dimension of the image to the specified size unless the size is invalid or the
+   * dimension's size is already set.
+   */
+  RequestCreator resizeMeasure(int measuredWidth, int measuredHeight) {
+    if (measuredWidth > 0 && !data.hasWidth()) {
+      data.width(measuredWidth);
+    }
+    if (measuredHeight > 0 && !data.hasHeight()) {
+      data.height(measuredHeight);
+    }
+    return this;
+  }
+
   /** Resize the image to the specified size in pixels. */
   public RequestCreator resize(int targetWidth, int targetHeight) {
     data.resize(targetWidth, targetHeight);
+    return this;
+  }
+
+  /** Resize the image width to the specified dimension size. */
+  public RequestCreator widthDimen(int targetWidthResId) {
+    Resources resources = picasso.context.getResources();
+    int targetWidth = resources.getDimensionPixelSize(targetWidthResId);
+    data.width(targetWidth);
+    return this;
+  }
+
+  /** Resize the image width to the specified size in pixels. */
+  public RequestCreator width(int targetWidth) {
+    data.width(targetWidth);
+    return this;
+  }
+
+  /** Resize the image height to the specified dimension size. */
+  public RequestCreator heightDimen(int targetHeightResId) {
+    Resources resources = picasso.context.getResources();
+    int targetHeight = resources.getDimensionPixelSize(targetHeightResId);
+    data.height(targetHeight);
+    return this;
+  }
+
+  /** Resize the image height to the specified size in pixels. */
+  public RequestCreator height(int targetHeight) {
+    data.height(targetHeight);
     return this;
   }
 
@@ -340,17 +383,17 @@ public class RequestCreator {
     }
 
     if (deferred) {
-      if (data.hasSize()) {
-        throw new IllegalStateException("Fit cannot be used with resize.");
+      if (data.hasWidth() && data.hasHeight()) {
+        throw new IllegalStateException("Fit cannot be used with both width and height specified.");
       }
       int measuredWidth = target.getMeasuredWidth();
       int measuredHeight = target.getMeasuredHeight();
-      if (measuredWidth == 0 || measuredHeight == 0) {
+      if (measuredWidth == 0 && measuredHeight == 0) {
         PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable);
         picasso.defer(target, new DeferredRequestCreator(this, target, callback));
         return;
       }
-      data.resize(measuredWidth, measuredHeight);
+      resizeMeasure(measuredWidth, measuredHeight);
     }
 
     Request finalData = picasso.transformRequest(data.build());
