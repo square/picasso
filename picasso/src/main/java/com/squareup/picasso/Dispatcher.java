@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -93,7 +94,11 @@ class Dispatcher {
 
   void shutdown() {
     service.shutdown();
-    dispatcherThread.quit();
+    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2) {
+      dispatcherThread.quitSafely();
+    } else {
+      dispatcherThread.quit();
+    }
     receiver.unregister();
   }
 
