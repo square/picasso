@@ -104,7 +104,7 @@ class ContactsPhotoBitmapHunter extends BitmapHunter {
       case ID_DISPLAY_PHOTO:
         return contentResolver.openInputStream(uri);
       default:
-        throw new IllegalStateException ("Invalid uri: " + uri);
+        throw new IllegalStateException("Invalid uri: " + uri);
     }
   }
 
