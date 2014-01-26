@@ -18,10 +18,12 @@ package com.squareup.picasso;
 import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.UriMatcher;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.ContactsContract;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -31,6 +33,34 @@ import static android.provider.ContactsContract.Contacts.openContactPhotoInputSt
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 
 class ContactsPhotoBitmapHunter extends BitmapHunter {
+  /**
+   a lookup uri (e.g. content://com.android.contacts/contacts/lookup/3570i61d948d30808e537 )
+  */
+  private static final int ID_LOOKUP = 1;
+  /**
+   a contact thumbnail uri (e.g. content://com.android.contacts/contacts/38/photo)
+   */
+  private static final int ID_THUMBNAIL = 2;
+  /**
+   a contact uri (e.g. content://com.android.contacts/contacts/38)
+   */
+  private static final int ID_CONTACT = 3;
+  /**
+   a contact display photo (high resolution) uri
+   (e.g. content://com.android.contacts/display_photo/5)
+   */
+  private static final int ID_DISPLAY_PHOTO = 4;
+
+  static final UriMatcher matcher;
+
+  static {
+    matcher = new UriMatcher(UriMatcher.NO_MATCH);
+    matcher.addURI(ContactsContract.AUTHORITY, "contacts/lookup/*", ID_LOOKUP);
+    matcher.addURI(ContactsContract.AUTHORITY, "contacts/#/photo", ID_THUMBNAIL);
+    matcher.addURI(ContactsContract.AUTHORITY, "contacts/#", ID_CONTACT);
+    matcher.addURI(ContactsContract.AUTHORITY, "display_photo/#", ID_DISPLAY_PHOTO);
+  }
+
   final Context context;
 
   ContactsPhotoBitmapHunter(Context context, Picasso picasso, Dispatcher dispatcher, Cache cache,
@@ -57,16 +87,24 @@ class ContactsPhotoBitmapHunter extends BitmapHunter {
   private InputStream getInputStream() throws IOException {
     ContentResolver contentResolver = context.getContentResolver();
     Uri uri = getData().uri;
-    if (uri.toString().startsWith(ContactsContract.Contacts.CONTENT_LOOKUP_URI.toString())) {
-      uri = ContactsContract.Contacts.lookupContact(contentResolver, uri);
-      if (uri == null) {
-        return null;
-      }
-    }
-    if (SDK_INT < ICE_CREAM_SANDWICH) {
-      return openContactPhotoInputStream(contentResolver, uri);
-    } else {
-      return ContactPhotoStreamIcs.get(contentResolver, uri);
+    switch (matcher.match(uri)) {
+      case ID_LOOKUP:
+        uri = ContactsContract.Contacts.lookupContact(contentResolver, uri);
+        if (null == uri) {
+          return null;
+        }
+        // Resolved the uri to a contact uri, intentionally fall through to process the resolved uri
+      case ID_CONTACT:
+        if (SDK_INT < ICE_CREAM_SANDWICH) {
+          return openContactPhotoInputStream(contentResolver, uri);
+        } else {
+          return ContactPhotoStreamIcs.get(contentResolver, uri);
+        }
+      case ID_THUMBNAIL:
+      case ID_DISPLAY_PHOTO:
+        return contentResolver.openInputStream(uri);
+      default:
+        throw new IllegalStateException("Invalid uri: " + uri);
     }
   }
 
