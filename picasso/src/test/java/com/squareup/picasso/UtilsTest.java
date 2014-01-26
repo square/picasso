@@ -23,13 +23,15 @@ import java.io.ByteArrayInputStream;
 
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.Utils.createKey;
+import static com.squareup.picasso.Utils.isWebPFile;
 import static com.squareup.picasso.Utils.parseResponseSourceHeader;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-@RunWith(RobolectricTestRunner.class) @Config(manifest = Config.NONE)
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class UtilsTest {
 
-  @Test public void matchingRequestsHaveSameKey() {
+  @Test public void matchingRequestsHaveSameKey() throws Exception {
     Request request = new Request.Builder(URI_1).build();
     String key1 = createKey(request);
     String key2 = createKey(request);
@@ -66,7 +68,7 @@ public class UtilsTest {
     assertThat(order1).isNotEqualTo(order2);
   }
 
-  @Test public void loadedFromCache() {
+  @Test public void loadedFromCache() throws Exception {
     assertThat(parseResponseSourceHeader(null)).isFalse();
     assertThat(parseResponseSourceHeader("CACHE 200")).isTrue();
     assertThat(parseResponseSourceHeader("STREAM 200")).isFalse();
@@ -78,10 +80,11 @@ public class UtilsTest {
   }
 
   @Test public void detectedWebPFile() throws Exception {
-    assertThat(Utils.isWebPFile(new ByteArrayInputStream("RIFFxxxxWEBP".getBytes("US-ASCII")))).isTrue();
-    assertThat(Utils.isWebPFile(new ByteArrayInputStream("RIFFxxxxxWEBP".getBytes("US-ASCII")))).isFalse();
-    assertThat(Utils.isWebPFile(new ByteArrayInputStream("ABCDxxxxWEBP".getBytes("US-ASCII")))).isFalse();
-    assertThat(Utils.isWebPFile(new ByteArrayInputStream("RIFFxxxxABCD".getBytes("US-ASCII")))).isFalse();
-    assertThat(Utils.isWebPFile(new ByteArrayInputStream("RIFFxxWEBP".getBytes("US-ASCII")))).isFalse();
+    assertThat(isWebPFile(new ByteArrayInputStream("RIFFxxxxWEBP".getBytes("US-ASCII")))).isTrue();
+    assertThat(
+        isWebPFile(new ByteArrayInputStream("RIFFxxxxxWEBP".getBytes("US-ASCII")))).isFalse();
+    assertThat(isWebPFile(new ByteArrayInputStream("ABCDxxxxWEBP".getBytes("US-ASCII")))).isFalse();
+    assertThat(isWebPFile(new ByteArrayInputStream("RIFFxxxxABCD".getBytes("US-ASCII")))).isFalse();
+    assertThat(isWebPFile(new ByteArrayInputStream("RIFFxxWEBP".getBytes("US-ASCII")))).isFalse();
   }
 }

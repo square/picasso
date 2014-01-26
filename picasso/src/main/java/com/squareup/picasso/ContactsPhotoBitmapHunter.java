@@ -33,28 +33,23 @@ import static android.provider.ContactsContract.Contacts.openContactPhotoInputSt
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 
 class ContactsPhotoBitmapHunter extends BitmapHunter {
-  /**
-   a lookup uri (e.g. content://com.android.contacts/contacts/lookup/3570i61d948d30808e537 )
-  */
+  /** A lookup uri (e.g. content://com.android.contacts/contacts/lookup/3570i61d948d30808e537) */
   private static final int ID_LOOKUP = 1;
-  /**
-   a contact thumbnail uri (e.g. content://com.android.contacts/contacts/38/photo)
-   */
+  /** A contact thumbnail uri (e.g. content://com.android.contacts/contacts/38/photo) */
   private static final int ID_THUMBNAIL = 2;
-  /**
-   a contact uri (e.g. content://com.android.contacts/contacts/38)
-   */
+  /** A contact uri (e.g. content://com.android.contacts/contacts/38) */
   private static final int ID_CONTACT = 3;
   /**
-   a contact display photo (high resolution) uri
-   (e.g. content://com.android.contacts/display_photo/5)
+   * A contact display photo (high resolution) uri
+   * (e.g. content://com.android.contacts/display_photo/5)
    */
   private static final int ID_DISPLAY_PHOTO = 4;
 
-  static final UriMatcher matcher;
+  private static final UriMatcher matcher;
 
   static {
     matcher = new UriMatcher(UriMatcher.NO_MATCH);
+    matcher.addURI(ContactsContract.AUTHORITY, "contacts/lookup/*/#", ID_LOOKUP);
     matcher.addURI(ContactsContract.AUTHORITY, "contacts/lookup/*", ID_LOOKUP);
     matcher.addURI(ContactsContract.AUTHORITY, "contacts/#/photo", ID_THUMBNAIL);
     matcher.addURI(ContactsContract.AUTHORITY, "contacts/#", ID_CONTACT);
@@ -69,8 +64,7 @@ class ContactsPhotoBitmapHunter extends BitmapHunter {
     this.context = context;
   }
 
-  @Override Bitmap decode(Request data)
-      throws IOException {
+  @Override Bitmap decode(Request data) throws IOException {
     InputStream is = null;
     try {
       is = getInputStream();
@@ -90,7 +84,7 @@ class ContactsPhotoBitmapHunter extends BitmapHunter {
     switch (matcher.match(uri)) {
       case ID_LOOKUP:
         uri = ContactsContract.Contacts.lookupContact(contentResolver, uri);
-        if (null == uri) {
+        if (uri == null) {
           return null;
         }
         // Resolved the uri to a contact uri, intentionally fall through to process the resolved uri
