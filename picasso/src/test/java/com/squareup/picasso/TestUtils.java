@@ -15,6 +15,9 @@
 */
 package com.squareup.picasso;
 
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -24,9 +27,11 @@ import java.io.File;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static android.provider.ContactsContract.Contacts.CONTENT_URI;
 import static android.provider.ContactsContract.Contacts.Photo.CONTENT_DIRECTORY;
 import static com.squareup.picasso.Utils.createKey;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -55,11 +60,42 @@ class TestUtils {
   static final String CONTACT_KEY_1 = createKey(new Request.Builder(CONTACT_URI_1).build());
   static final Uri CONTACT_PHOTO_URI_1 =
       CONTENT_URI.buildUpon().path("1234").path(CONTENT_DIRECTORY).build();
-  static final String CONTACT_PHOTO_KEY_1 = createKey(new Request.Builder(CONTACT_PHOTO_URI_1).build());
+  static final String CONTACT_PHOTO_KEY_1 =
+      createKey(new Request.Builder(CONTACT_PHOTO_URI_1).build());
   static final int RESOURCE_ID_1 = 1;
   static final String RESOURCE_ID_KEY_1 = createKey(new Request.Builder(RESOURCE_ID_1).build());
   static final Uri ASSET_URI_1 = Uri.parse("file:///android_asset/foo/bar.png");
   static final String ASSET_KEY_1 = createKey(new Request.Builder(ASSET_URI_1).build());
+  static final String RESOURCE_PACKAGE = "com.squareup.picasso";
+  static final String RESOURCE_TYPE = "drawable";
+  static final String RESOURCE_NAME = "foo";
+  static final Uri RESOURCE_ID_URI = new Uri.Builder().scheme(SCHEME_ANDROID_RESOURCE)
+      .authority(RESOURCE_PACKAGE)
+      .appendPath(Integer.toString(RESOURCE_ID_1))
+      .build();
+  static final String RESOURCE_ID_URI_KEY = createKey(new Request.Builder(RESOURCE_ID_URI).build());
+  static final Uri RESOURCE_TYPE_URI = new Uri.Builder().scheme(SCHEME_ANDROID_RESOURCE)
+      .authority(RESOURCE_PACKAGE)
+      .appendPath(RESOURCE_TYPE)
+      .appendPath(RESOURCE_NAME)
+      .build();
+  static final String RESOURCE_TYPE_URI_KEY =
+      createKey(new Request.Builder(RESOURCE_TYPE_URI).build());
+
+  static Context mockPackageResourceContext() {
+    Context context = mock(Context.class);
+    PackageManager pm = mock(PackageManager.class);
+    Resources res = mock(Resources.class);
+
+    doReturn(pm).when(context).getPackageManager();
+    try {
+      doReturn(res).when(pm).getResourcesForApplication(RESOURCE_PACKAGE);
+    } catch (PackageManager.NameNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+    doReturn(RESOURCE_ID_1).when(res).getIdentifier(RESOURCE_NAME, RESOURCE_TYPE, RESOURCE_PACKAGE);
+    return context;
+  }
 
   static Action mockAction(String key, Uri uri) {
     return mockAction(key, uri, null, 0);

@@ -48,6 +48,10 @@ import static com.squareup.picasso.TestUtils.MEDIA_STORE_CONTENT_1_URL;
 import static com.squareup.picasso.TestUtils.MEDIA_STORE_CONTENT_KEY_1;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_1;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_KEY_1;
+import static com.squareup.picasso.TestUtils.RESOURCE_ID_URI;
+import static com.squareup.picasso.TestUtils.RESOURCE_TYPE_URI;
+import static com.squareup.picasso.TestUtils.RESOURCE_ID_URI_KEY;
+import static com.squareup.picasso.TestUtils.RESOURCE_TYPE_URI_KEY;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.mockAction;
@@ -222,6 +226,20 @@ public class BitmapHunterTest {
 
   @Test public void forAndroidResourceRequest() throws Exception {
     Action action = mockAction(RESOURCE_ID_KEY_1, null, null, RESOURCE_ID_1);
+    BitmapHunter hunter =
+        forRequest(context, picasso, dispatcher, cache, stats, action, downloader);
+    assertThat(hunter).isInstanceOf(ResourceBitmapHunter.class);
+  }
+
+  @Test public void forAndroidResourceUriWithId() throws Exception {
+    Action action = mockAction(RESOURCE_ID_URI_KEY, RESOURCE_ID_URI);
+    BitmapHunter hunter =
+        forRequest(context, picasso, dispatcher, cache, stats, action, downloader);
+    assertThat(hunter).isInstanceOf(ResourceBitmapHunter.class);
+  }
+
+  @Test public void forAndroidResourceUriWithType() throws Exception {
+    Action action = mockAction(RESOURCE_TYPE_URI_KEY, RESOURCE_TYPE_URI);
     BitmapHunter hunter =
         forRequest(context, picasso, dispatcher, cache, stats, action, downloader);
     assertThat(hunter).isInstanceOf(ResourceBitmapHunter.class);
