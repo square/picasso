@@ -219,7 +219,7 @@ public class RequestCreator {
     }
 
     Request finalData = picasso.transformRequest(data.build());
-    String key = createKey(finalData);
+    String key = createKey(finalData, new StringBuilder());
 
     Action action = new GetAction(picasso, finalData, skipMemoryCache, key);
     return forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache, picasso.stats,

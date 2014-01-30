@@ -52,6 +52,9 @@ final class Utils {
   private static final int MIN_DISK_CACHE_SIZE = 5 * 1024 * 1024; // 5MB
   private static final int MAX_DISK_CACHE_SIZE = 50 * 1024 * 1024; // 50MB
 
+  /** Thread confined to main thread for key creation. */
+  static final StringBuilder MAIN_THREAD_KEY_BUILDER = new StringBuilder();
+
   /* WebP file header
      0                   1                   2                   3
      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -91,14 +94,18 @@ final class Utils {
   }
 
   static String createKey(Request data) {
-    StringBuilder builder;
+    String result = createKey(data, MAIN_THREAD_KEY_BUILDER);
+    MAIN_THREAD_KEY_BUILDER.setLength(0);
+    return result;
+  }
 
+  static String createKey(Request data, StringBuilder builder) {
     if (data.uri != null) {
       String path = data.uri.toString();
-      builder = new StringBuilder(path.length() + KEY_PADDING);
+      builder.ensureCapacity(path.length() + KEY_PADDING);
       builder.append(path);
     } else {
-      builder = new StringBuilder(KEY_PADDING);
+      builder.ensureCapacity(KEY_PADDING);
       builder.append(data.resourceId);
     }
     builder.append('\n');
@@ -213,7 +220,7 @@ final class Utils {
   static byte[] toByteArray(InputStream input) throws IOException {
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
     byte[] buffer = new byte[1024 * 4];
-    int n = 0;
+    int n;
     while (-1 != (n = input.read(buffer))) {
       byteArrayOutputStream.write(buffer, 0, n);
     }

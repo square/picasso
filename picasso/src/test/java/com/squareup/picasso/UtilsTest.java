@@ -95,6 +95,15 @@ public class UtilsTest {
     assertThat(isWebPFile(new ByteArrayInputStream("RIFFxxWEBP".getBytes("US-ASCII")))).isFalse();
   }
 
+  @Test public void ensureBuilderIsCleared() throws Exception {
+    Request request1 = new Request.Builder(RESOURCE_ID_URI).build();
+    Request request2 = new Request.Builder(URI_1).build();
+    Utils.createKey(request1);
+    assertThat(Utils.MAIN_THREAD_KEY_BUILDER.length()).isEqualTo(0);
+    Utils.createKey(request2);
+    assertThat(Utils.MAIN_THREAD_KEY_BUILDER.length()).isEqualTo(0);
+  }
+
   @Test public void getResourceById() throws IOException {
     Request request = new Request.Builder(RESOURCE_ID_URI).build();
     Resources resources = Utils.getResources(mockPackageResourceContext(), request);
