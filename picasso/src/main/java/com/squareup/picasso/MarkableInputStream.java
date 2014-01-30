@@ -25,17 +25,22 @@ import java.io.InputStream;
  * responsibility to keep track of these.
  */
 final class MarkableInputStream extends InputStream {
+  private static final int DEFAULT_BUFFER_SIZE = 4096;
+
   private final InputStream in;
 
   private long offset;
   private long reset;
   private long limit;
-
   private long defaultMark = -1;
 
   public MarkableInputStream(InputStream in) {
+    this(in, DEFAULT_BUFFER_SIZE);
+  }
+
+  public MarkableInputStream(InputStream in, int size) {
     if (!in.markSupported()) {
-      in = new BufferedInputStream(in);
+      in = new BufferedInputStream(in, size);
     }
     this.in = in;
   }
