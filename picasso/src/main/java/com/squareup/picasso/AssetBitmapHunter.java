@@ -7,9 +7,14 @@ import android.graphics.BitmapFactory;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static android.content.ContentResolver.SCHEME_FILE;
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 
 class AssetBitmapHunter extends BitmapHunter {
+  protected static final String ANDROID_ASSET = "android_asset";
+  private static final int ASSET_PREFIX_LENGTH =
+      (SCHEME_FILE + ":///" + ANDROID_ASSET + "/").length();
+
   private AssetManager assetManager;
 
   public AssetBitmapHunter(Context context, Picasso picasso, Dispatcher dispatcher, Cache cache,

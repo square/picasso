@@ -33,6 +33,7 @@ import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentResolver.SCHEME_FILE;
 import static android.provider.ContactsContract.Contacts;
+import static com.squareup.picasso.AssetBitmapHunter.ANDROID_ASSET;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 
 abstract class BitmapHunter implements Runnable {
@@ -43,9 +44,6 @@ abstract class BitmapHunter implements Runnable {
    * well as potential OOMs. Shamelessly stolen from Volley.
    */
   private static final Object DECODE_LOCK = new Object();
-  private static final String ANDROID_ASSET = "android_asset";
-  protected static final int ASSET_PREFIX_LENGTH =
-      (SCHEME_FILE + ":///" + ANDROID_ASSET + "/").length();
 
   final Picasso picasso;
   final Dispatcher dispatcher;
