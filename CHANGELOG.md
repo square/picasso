@@ -10,6 +10,7 @@ Version 2.2.0 *(2014-01-31)*
  * Add API to supply custom `Bitmap.Config` for decoding.
  * Performance: Reduce GC by reusing same `StringBuilder` instance on main thread for key creation.
  * Performance: Reduce default buffer allocation to 4k for `MarkableInputStream`.
+ * Fix: Detect and decode WebP streams from byte array.
  * Fix: Non-200 HTTP responses will now display error drawable if supplied.
  * Fix: All exceptions during decode will now dispatch a failure.
  * Fix: Catch `OutOfMemory` errors, dispatch a failure, and output stats in logcat.
