@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-Version 2.2 *(2014-01-31)*
+Version 2.2.0 *(2014-01-31)*
 ----------------------------
 
  * Add support decoding various contact photo URIs. 
