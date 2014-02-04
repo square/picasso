@@ -45,6 +45,12 @@ abstract class BitmapHunter implements Runnable {
    */
   private static final Object DECODE_LOCK = new Object();
 
+  private static final ThreadLocal<StringBuilder> NAME_BUILDER = new ThreadLocal<StringBuilder>() {
+    @Override protected StringBuilder initialValue() {
+      return new StringBuilder(Utils.THREAD_PREFIX);
+    }
+  };
+
   final Picasso picasso;
   final Dispatcher dispatcher;
   final Cache cache;
@@ -78,7 +84,7 @@ abstract class BitmapHunter implements Runnable {
 
   @Override public void run() {
     try {
-      Thread.currentThread().setName(Utils.THREAD_PREFIX + data.getName());
+      updateThreadName(data);
 
       result = hunt();
 
@@ -186,6 +192,16 @@ abstract class BitmapHunter implements Runnable {
 
   Picasso.LoadedFrom getLoadedFrom() {
     return loadedFrom;
+  }
+
+  static void updateThreadName(Request data) {
+    String name = data.getName();
+
+    StringBuilder builder = NAME_BUILDER.get();
+    builder.ensureCapacity(Utils.THREAD_PREFIX.length() + name.length());
+    builder.replace(Utils.THREAD_PREFIX.length(), builder.length(), name);
+
+    Thread.currentThread().setName(builder.toString());
   }
 
   static BitmapHunter forRequest(Context context, Picasso picasso, Dispatcher dispatcher,
