@@ -26,6 +26,7 @@ import java.io.IOException;
 
 import static com.squareup.picasso.BitmapHunter.forRequest;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
+import static com.squareup.picasso.Utils.checkMain;
 import static com.squareup.picasso.Utils.checkNotMain;
 import static com.squareup.picasso.Utils.createKey;
 
@@ -231,6 +232,7 @@ public class RequestCreator {
    * useful when you want to warm up the cache with an image.
    */
   public void fetch() {
+    checkMain();
     if (deferred) {
       throw new IllegalStateException("Fit cannot be used with fetch.");
     }
@@ -281,6 +283,7 @@ public class RequestCreator {
    * image is loaded use {@link #into(android.widget.ImageView, Callback)}.
    */
   public void into(Target target) {
+    checkMain();
     if (target == null) {
       throw new IllegalArgumentException("Target must not be null.");
     }
@@ -336,6 +339,7 @@ public class RequestCreator {
    * {@link Picasso#cancelRequest(android.widget.ImageView)} call to prevent temporary leaking.
    */
   public void into(ImageView target, Callback callback) {
+    checkMain();
     if (target == null) {
       throw new IllegalArgumentException("Target must not be null.");
     }
