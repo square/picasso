@@ -300,7 +300,9 @@ public class Picasso {
     Bitmap result = hunter.getResult();
     LoadedFrom from = hunter.getLoadedFrom();
 
-    for (Action join : joined) {
+    //noinspection ForLoopReplaceableByForEach
+    for (int i = 0, n = joined.size(); i < n; i++) {
+      Action join = joined.get(i);
       if (join.isCancelled()) {
         continue;
       }

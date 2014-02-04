@@ -39,8 +39,8 @@ public class RequestCreator {
   private boolean noFade;
   private boolean deferred;
   private int placeholderResId;
-  private Drawable placeholderDrawable;
   private int errorResId;
+  private Drawable placeholderDrawable;
   private Drawable errorDrawable;
 
   RequestCreator(Picasso picasso, Uri uri, int resourceId) {
@@ -258,6 +258,10 @@ public class RequestCreator {
    *   {@literal @}Override public void onBitmapFailed() {
    *     setBackgroundResource(R.drawable.profile_error);
    *   }
+   *
+   *   {@literal @}Override public void onPrepareLoad(Drawable placeHolderDrawable) {
+   *     frame.setBackgroundDrawable(placeHolderDrawable);
+   *   }
    * }
    * </pre></blockquote>
    * Implementing on a view holder object for use inside of an adapter:
@@ -272,6 +276,10 @@ public class RequestCreator {
    *
    *   {@literal @}Override public void onBitmapFailed() {
    *     frame.setBackgroundResource(R.drawable.profile_error);
+   *   }
+   *
+   *   {@literal @}Override public void onPrepareLoad(Drawable placeHolderDrawable) {
+   *     frame.setBackgroundDrawable(placeHolderDrawable);
    *   }
    * }
    * </pre></blockquote>
