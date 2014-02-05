@@ -37,14 +37,14 @@ public class TargetActionTest {
   @Test(expected = AssertionError.class)
   public void throwsErrorWithNullResult() throws Exception {
     TargetAction request =
-        new TargetAction(mock(Picasso.class), mockTarget(), null, false, URI_KEY_1);
+        new TargetAction(mock(Picasso.class), mockTarget(), null, false, false, URI_KEY_1);
     request.complete(null, MEMORY);
   }
 
   @Test
   public void invokesSuccessIfTargetIsNotNull() throws Exception {
     Target target = mockTarget();
-    TargetAction request = new TargetAction(mock(Picasso.class), target, null, false, URI_KEY_1);
+    TargetAction request = new TargetAction(mock(Picasso.class), target, null, false, false, URI_KEY_1);
     request.complete(BITMAP_1, MEMORY);
     verify(target).onBitmapLoaded(BITMAP_1, MEMORY);
   }
@@ -52,7 +52,7 @@ public class TargetActionTest {
   @Test
   public void invokesErrorIfTargetIsNotNull() throws Exception {
     Target target = mockTarget();
-    TargetAction request = new TargetAction(mock(Picasso.class), target, null, false, URI_KEY_1);
+    TargetAction request = new TargetAction(mock(Picasso.class), target, null, false, false, URI_KEY_1);
     request.error();
     verify(target).onBitmapFailed(null);
   }
@@ -72,8 +72,7 @@ public class TargetActionTest {
       }
     };
     Picasso picasso = mock(Picasso.class);
-
-    TargetAction tr = new TargetAction(picasso, bad, null, false, URI_KEY_1);
+    TargetAction tr = new TargetAction(picasso, bad, null, false, false, URI_KEY_1);
     try {
       tr.complete(BITMAP_1, MEMORY);
       fail();

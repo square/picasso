@@ -59,6 +59,7 @@ abstract class BitmapHunter implements Runnable {
   final Request data;
   final List<Action> actions;
   final boolean skipMemoryCache;
+  final boolean localOnly;
 
   Bitmap result;
   Future<?> future;
@@ -74,6 +75,7 @@ abstract class BitmapHunter implements Runnable {
     this.key = action.getKey();
     this.data = action.getData();
     this.skipMemoryCache = action.skipCache;
+    this.localOnly = action.localOnly;
     this.actions = new ArrayList<Action>(4);
     attach(action);
   }

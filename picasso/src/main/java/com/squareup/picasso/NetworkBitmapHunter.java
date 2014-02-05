@@ -41,7 +41,7 @@ class NetworkBitmapHunter extends BitmapHunter {
   }
 
   @Override Bitmap decode(Request data) throws IOException {
-    boolean loadFromLocalCacheOnly = retryCount == 0;
+    boolean loadFromLocalCacheOnly = localOnly || retryCount == 0;
 
     Response response = downloader.load(data.uri, loadFromLocalCacheOnly);
     if (response == null) {

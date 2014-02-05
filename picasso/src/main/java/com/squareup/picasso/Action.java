@@ -34,6 +34,7 @@ abstract class Action<T> {
   final Request data;
   final WeakReference<T> target;
   final boolean skipCache;
+  final boolean localOnly;
   final boolean noFade;
   final int errorResId;
   final Drawable errorDrawable;
@@ -41,12 +42,13 @@ abstract class Action<T> {
 
   boolean cancelled;
 
-  Action(Picasso picasso, T target, Request data, boolean skipCache, boolean noFade,
-      int errorResId, Drawable errorDrawable, String key) {
+  Action(Picasso picasso, T target, Request data, boolean skipCache, boolean localOnly,
+      boolean noFade, int errorResId, Drawable errorDrawable, String key) {
     this.picasso = picasso;
     this.data = data;
     this.target = new RequestWeakReference<T>(this, target, picasso.referenceQueue);
     this.skipCache = skipCache;
+    this.localOnly = localOnly;
     this.noFade = noFade;
     this.errorResId = errorResId;
     this.errorDrawable = errorDrawable;
