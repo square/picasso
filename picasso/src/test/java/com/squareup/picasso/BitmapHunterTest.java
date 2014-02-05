@@ -352,18 +352,22 @@ public class BitmapHunterTest {
     assertThat(requiresInSampleSize(justBounds)).isTrue();
   }
 
-  @Test public void bitmapOptionsCreation() {
+  @Test public void nullBitmapOptionsIfNoResizing() {
     // No resize must return no bitmap options
     final Request noResize = new Request.Builder(URI_1).build();
     final BitmapFactory.Options noResizeOptions = createBitmapOptions(noResize);
     assertThat(noResizeOptions).isNull();
+  }
 
+  @Test public void inJustDecodeBoundsIfResizing() {
     // Resize must return bitmap options with inJustDecodeBounds = true
     final Request requiresResize = new Request.Builder(URI_1).resize(20, 15).build();
     final BitmapFactory.Options resizeOptions = createBitmapOptions(requiresResize);
     assertThat(resizeOptions).isNotNull();
     assertThat(resizeOptions.inJustDecodeBounds).isTrue();
+  }
 
+  @Test public void createWithConfigAndNotInJustDecodeBounds() {
     // Given a config must return bitmap options and false inJustDecodeBounds
     final Request config = new Request.Builder(URI_1).config(RGB_565).build();
     final BitmapFactory.Options configOptions = createBitmapOptions(config);
