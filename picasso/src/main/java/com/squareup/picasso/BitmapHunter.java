@@ -232,12 +232,30 @@ abstract class BitmapHunter implements Runnable {
     }
   }
 
+  /**
+   * Lazily create {@link android.graphics.BitmapFactory.Options}
+   *  based in given {@link com.squareup.picasso.Request}
+   *
+   * @param data
+   */
   static BitmapFactory.Options createBitmapOptions(Request data) {
-    BitmapFactory.Options options = new BitmapFactory.Options();
-    if (data.config != null) {
+    final boolean justBounds = data.hasSize();
+    final boolean hasConfig = data.config != null;
+    final boolean instantiate = hasConfig || justBounds;
+    // Only instantiate if we need it
+    final BitmapFactory.Options options = instantiate ? new BitmapFactory.Options() : null;
+    if (justBounds) {
+      options.inJustDecodeBounds = true;
+    }
+
+    if (hasConfig) {
       options.inPreferredConfig = data.config;
     }
     return options;
+  }
+
+  static boolean requiresInSampleSize(BitmapFactory.Options options) {
+    return options != null && options.inJustDecodeBounds;
   }
 
   static void calculateInSampleSize(int reqWidth, int reqHeight, BitmapFactory.Options options) {

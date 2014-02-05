@@ -43,12 +43,11 @@ class ResourceBitmapHunter extends BitmapHunter {
   }
 
   private Bitmap decodeResource(Resources resources, int id, Request data) {
-    BitmapFactory.Options bitmapOptions = createBitmapOptions(data);
-    if (data.hasSize()) {
-      bitmapOptions.inJustDecodeBounds = true;
-      BitmapFactory.decodeResource(resources, id, bitmapOptions);
-      calculateInSampleSize(data.targetWidth, data.targetHeight, bitmapOptions);
+    final BitmapFactory.Options options = createBitmapOptions(data);
+    if (requiresInSampleSize(options)) {
+      BitmapFactory.decodeResource(resources, id, options);
+      calculateInSampleSize(data.targetWidth, data.targetHeight, options);
     }
-    return BitmapFactory.decodeResource(resources, id, bitmapOptions);
+    return BitmapFactory.decodeResource(resources, id, options);
   }
 }

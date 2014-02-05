@@ -81,25 +81,22 @@ class NetworkBitmapHunter extends BitmapHunter {
 
     long mark = markStream.savePosition(MARKER);
 
+    final BitmapFactory.Options options = createBitmapOptions(data);
+    final boolean calculateSize = requiresInSampleSize(options);
+
     boolean isWebPFile = Utils.isWebPFile(stream);
     markStream.reset(mark);
     // When decode WebP network stream, BitmapFactory throw JNI Exception and make app crash.
     // Decode byte array instead
     if (isWebPFile) {
       byte[] bytes = Utils.toByteArray(stream);
-      BitmapFactory.Options options = createBitmapOptions(data);
-      if (data.hasSize()) {
-        options.inJustDecodeBounds = true;
-
+      if (calculateSize) {
         BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
         calculateInSampleSize(data.targetWidth, data.targetHeight, options);
       }
       return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
     } else {
-      BitmapFactory.Options options = createBitmapOptions(data);
-      if (data.hasSize()) {
-        options.inJustDecodeBounds = true;
-
+      if (calculateSize) {
         BitmapFactory.decodeStream(stream, null, options);
         calculateInSampleSize(data.targetWidth, data.targetHeight, options);
 

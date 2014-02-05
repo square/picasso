@@ -44,9 +44,8 @@ class ContentStreamBitmapHunter extends BitmapHunter {
 
   protected Bitmap decodeContentStream(Request data) throws IOException {
     ContentResolver contentResolver = context.getContentResolver();
-    BitmapFactory.Options options = createBitmapOptions(data);
-    if (data.hasSize()) {
-      options.inJustDecodeBounds = true;
+    final BitmapFactory.Options options = createBitmapOptions(data);
+    if (requiresInSampleSize(options)) {
       InputStream is = null;
       try {
         is = contentResolver.openInputStream(data.uri);

@@ -17,11 +17,9 @@ package com.squareup.picasso;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.FutureTask;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,9 +29,15 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowBitmap;
 import org.robolectric.shadows.ShadowMatrix;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.FutureTask;
+
 import static android.graphics.Bitmap.Config.ARGB_8888;
+import static android.graphics.Bitmap.Config.RGB_565;
 import static com.squareup.picasso.BitmapHunter.createBitmapOptions;
 import static com.squareup.picasso.BitmapHunter.forRequest;
+import static com.squareup.picasso.BitmapHunter.requiresInSampleSize;
 import static com.squareup.picasso.BitmapHunter.transformResult;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.TestUtils.ASSET_KEY_1;
@@ -50,8 +54,8 @@ import static com.squareup.picasso.TestUtils.MEDIA_STORE_CONTENT_KEY_1;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_1;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_KEY_1;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_URI;
-import static com.squareup.picasso.TestUtils.RESOURCE_TYPE_URI;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_URI_KEY;
+import static com.squareup.picasso.TestUtils.RESOURCE_TYPE_URI;
 import static com.squareup.picasso.TestUtils.RESOURCE_TYPE_URI_KEY;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
@@ -337,6 +341,34 @@ public class BitmapHunterTest {
       assertThat(createBitmapOptions(data).inPreferredConfig).isSameAs(config);
       assertThat(createBitmapOptions(copy).inPreferredConfig).isSameAs(config);
     }
+  }
+
+  @Test public void requiresComputeInSampleSize() {
+    assertThat(requiresInSampleSize(null)).isFalse();
+    final BitmapFactory.Options defaultOptions = new BitmapFactory.Options();
+    assertThat(requiresInSampleSize(defaultOptions)).isFalse();
+    final BitmapFactory.Options justBounds = new BitmapFactory.Options();
+    justBounds.inJustDecodeBounds = true;
+    assertThat(requiresInSampleSize(justBounds)).isTrue();
+  }
+
+  @Test public void bitmapOptionsCreation() {
+    // No resize must return no bitmap options
+    final Request noResize = new Request.Builder(URI_1).build();
+    final BitmapFactory.Options noResizeOptions = createBitmapOptions(noResize);
+    assertThat(noResizeOptions).isNull();
+
+    // Resize must return bitmap options with inJustDecodeBounds = true
+    final Request requiresResize = new Request.Builder(URI_1).resize(20, 15).build();
+    final BitmapFactory.Options resizeOptions = createBitmapOptions(requiresResize);
+    assertThat(resizeOptions).isNotNull();
+    assertThat(resizeOptions.inJustDecodeBounds).isTrue();
+
+    // Given a config must return bitmap options and false inJustDecodeBounds
+    final Request config = new Request.Builder(URI_1).config(RGB_565).build();
+    final BitmapFactory.Options configOptions = createBitmapOptions(config);
+    assertThat(configOptions).isNotNull();
+    assertThat(configOptions.inJustDecodeBounds).isFalse();
   }
 
   @Test public void centerCropTallTooSmall() throws Exception {

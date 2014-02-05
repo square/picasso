@@ -106,9 +106,8 @@ class ContactsPhotoBitmapHunter extends BitmapHunter {
     if (stream == null) {
       return null;
     }
-    BitmapFactory.Options options = createBitmapOptions(data);
-    if (data.hasSize()) {
-      options.inJustDecodeBounds = true;
+    final BitmapFactory.Options options = createBitmapOptions(data);
+    if (requiresInSampleSize(options)) {
       InputStream is = getInputStream();
       try {
         BitmapFactory.decodeStream(is, null, options);
