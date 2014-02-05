@@ -2,4 +2,7 @@
 <resources>
   <dimen name="faux_action_bar_size">48dp</dimen>
   <dimen name="list_detail_image_size">60dp</dimen>
+  <dimen name="widget_min_width">110dp</dimen>
+  <dimen name="widget_min_height">110dp</dimen>
+  <dimen name="notification_icon_width_height">64dp</dimen>
 </resources>

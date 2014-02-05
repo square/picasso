@@ -15,6 +15,7 @@
 */
 package com.squareup.picasso;
 
+import android.app.Notification;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
@@ -23,6 +24,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
+import android.widget.RemoteViews;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -127,6 +129,14 @@ class TestUtils {
 
   static ImageView mockImageViewTarget() {
     return mock(ImageView.class);
+  }
+
+  static RemoteViews mockRemoteViews() {
+    return mock(RemoteViews.class);
+  }
+
+  static Notification mockNotification() {
+    return mock(Notification.class);
   }
 
   static ImageView mockFitImageViewTarget(boolean alive) {

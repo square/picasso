@@ -126,6 +126,15 @@ public class LruCacheTest {
     assertSnapshot(cache, "b", B);
   }
 
+  @Test public void throwsWithNullKey() {
+    LruCache cache = new LruCache(1);
+    try {
+      cache.get(null);
+      fail("Expected NullPointerException");
+    } catch (NullPointerException e) {
+    }
+  }
+
   /**
    * Replacing the value for a key doesn't cause an eviction but it does bring the replaced entry to
    * the front of the queue.
