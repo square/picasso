@@ -24,6 +24,8 @@ import android.net.Uri;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -148,6 +150,10 @@ class TestUtils {
 
   static NetworkInfo mockNetworkInfo() {
     return mock(NetworkInfo.class);
+  }
+
+  static InputStream mockInputStream() throws IOException {
+    return mock(InputStream.class);
   }
 
   static BitmapHunter mockHunter(String key, Bitmap result, boolean skipCache) {

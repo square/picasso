@@ -27,34 +27,40 @@ public class StatsSnapshot {
   public final int size;
   public final long cacheHits;
   public final long cacheMisses;
+  public final long totalDownloadSize;
   public final long totalOriginalBitmapSize;
   public final long totalTransformedBitmapSize;
+  public final long averageDownloadSize;
   public final long averageOriginalBitmapSize;
   public final long averageTransformedBitmapSize;
+  public final int downloadCount;
   public final int originalBitmapCount;
   public final int transformedBitmapCount;
 
   public final long timeStamp;
 
   public StatsSnapshot(int maxSize, int size, long cacheHits, long cacheMisses,
-      long totalOriginalBitmapSize, long totalTransformedBitmapSize, long averageOriginalBitmapSize,
-      long averageTransformedBitmapSize, int originalBitmapCount, int transformedBitmapCount,
-      long timeStamp) {
+      long totalDownloadSize, long totalOriginalBitmapSize, long totalTransformedBitmapSize,
+      long averageDownloadSize, long averageOriginalBitmapSize, long averageTransformedBitmapSize,
+      int downloadCount, int originalBitmapCount, int transformedBitmapCount, long timeStamp) {
     this.maxSize = maxSize;
     this.size = size;
     this.cacheHits = cacheHits;
     this.cacheMisses = cacheMisses;
+    this.totalDownloadSize = totalDownloadSize;
     this.totalOriginalBitmapSize = totalOriginalBitmapSize;
     this.totalTransformedBitmapSize = totalTransformedBitmapSize;
+    this.averageDownloadSize = averageDownloadSize;
     this.averageOriginalBitmapSize = averageOriginalBitmapSize;
     this.averageTransformedBitmapSize = averageTransformedBitmapSize;
+    this.downloadCount = downloadCount;
     this.originalBitmapCount = originalBitmapCount;
     this.transformedBitmapCount = transformedBitmapCount;
     this.timeStamp = timeStamp;
   }
 
   /** Prints out this {@link StatsSnapshot} into log. */
-  public void dump() {
+  @SuppressWarnings("UnusedDeclaration") public void dump() {
     StringWriter logWriter = new StringWriter();
     dump(new PrintWriter(logWriter));
     Log.i(TAG, logWriter.toString());
@@ -74,6 +80,13 @@ public class StatsSnapshot {
     writer.println(cacheHits);
     writer.print("  Cache Misses: ");
     writer.println(cacheMisses);
+    writer.println("Network Stats");
+    writer.print("  Download Count: ");
+    writer.println(downloadCount);
+    writer.print("  Total Download Size: ");
+    writer.println(totalDownloadSize);
+    writer.print("  Average Download Size: ");
+    writer.println(averageDownloadSize);
     writer.println("Bitmap Stats");
     writer.print("  Total Bitmaps Decoded: ");
     writer.println(originalBitmapCount);
@@ -101,6 +114,12 @@ public class StatsSnapshot {
         + cacheHits
         + ", cacheMisses="
         + cacheMisses
+        + ", downloadCount="
+        + downloadCount
+        + ", totalDownloadSize="
+        + totalDownloadSize
+        + ", averageDownloadSize="
+        + averageDownloadSize
         + ", totalOriginalBitmapSize="
         + totalOriginalBitmapSize
         + ", totalTransformedBitmapSize="

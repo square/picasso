@@ -28,6 +28,7 @@ class Stats {
   private static final int CACHE_MISS = 1;
   private static final int BITMAP_DECODE_FINISHED = 2;
   private static final int BITMAP_TRANSFORMED_FINISHED = 3;
+  private static final int DOWNLOAD_FINISHED = 4;
 
   private static final String STATS_THREAD_NAME = Utils.THREAD_PREFIX + "Stats";
 
@@ -37,10 +38,13 @@ class Stats {
 
   long cacheHits;
   long cacheMisses;
+  long totalDownloadSize;
   long totalOriginalBitmapSize;
   long totalTransformedBitmapSize;
+  long averageDownloadSize;
   long averageOriginalBitmapSize;
   long averageTransformedBitmapSize;
+  int downloadCount;
   int originalBitmapCount;
   int transformedBitmapCount;
 
@@ -57,6 +61,10 @@ class Stats {
 
   void dispatchBitmapTransformed(Bitmap bitmap) {
     processBitmap(bitmap, BITMAP_TRANSFORMED_FINISHED);
+  }
+
+  void dispatchDownloadFinished(long size) {
+    handler.sendMessage(handler.obtainMessage(DOWNLOAD_FINISHED, size));
   }
 
   void dispatchCacheHit() {
@@ -79,6 +87,12 @@ class Stats {
     cacheMisses++;
   }
 
+  void performDownloadFinished(Long size) {
+    downloadCount++;
+    totalDownloadSize += size;
+    averageDownloadSize = getAverage(downloadCount, totalDownloadSize);
+  }
+
   void performBitmapDecoded(long size) {
     originalBitmapCount++;
     totalOriginalBitmapSize += size;
@@ -91,11 +105,11 @@ class Stats {
     averageTransformedBitmapSize = getAverage(originalBitmapCount, totalTransformedBitmapSize);
   }
 
-  synchronized StatsSnapshot createSnapshot() {
+  StatsSnapshot createSnapshot() {
     return new StatsSnapshot(cache.maxSize(), cache.size(), cacheHits, cacheMisses,
-        totalOriginalBitmapSize, totalTransformedBitmapSize, averageOriginalBitmapSize,
-        averageTransformedBitmapSize, originalBitmapCount, transformedBitmapCount,
-        System.currentTimeMillis());
+        totalDownloadSize, totalOriginalBitmapSize, totalTransformedBitmapSize, averageDownloadSize,
+        averageOriginalBitmapSize, averageTransformedBitmapSize, downloadCount, originalBitmapCount,
+        transformedBitmapCount, System.currentTimeMillis());
   }
 
   private void processBitmap(Bitmap bitmap, int what) {
@@ -130,6 +144,9 @@ class Stats {
           break;
         case BITMAP_TRANSFORMED_FINISHED:
           stats.performBitmapTransformed(msg.arg1);
+          break;
+        case DOWNLOAD_FINISHED:
+          stats.performDownloadFinished((Long) msg.obj);
           break;
         default:
           Picasso.HANDLER.post(new Runnable() {

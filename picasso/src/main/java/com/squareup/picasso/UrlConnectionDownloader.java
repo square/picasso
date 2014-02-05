@@ -67,9 +67,10 @@ public class UrlConnectionDownloader implements Downloader {
       throw new ResponseException(responseCode + " " + connection.getResponseMessage());
     }
 
+    long contentLength = connection.getHeaderFieldInt("Content-Length", 0);
     boolean fromCache = parseResponseSourceHeader(connection.getHeaderField(RESPONSE_SOURCE));
 
-    return new Response(connection.getInputStream(), fromCache);
+    return new Response(connection.getInputStream(), fromCache, contentLength);
   }
 
   private static void installCacheIfNeeded(Context context) {

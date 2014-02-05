@@ -30,12 +30,14 @@ import org.robolectric.annotation.Config;
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
+import static com.squareup.picasso.TestUtils.mockInputStream;
 import static com.squareup.picasso.TestUtils.mockNetworkInfo;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -109,11 +111,41 @@ public class NetworkBitmapHunterTest {
     assertThat(hunter.shouldRetry(true, info)).isFalse();
   }
 
+  @Test public void noCacheAndKnownContentLengthDispatchToStats() throws Exception {
+    Downloader.Response response = new Downloader.Response(mockInputStream(), false, 1024);
+    when(downloader.load(any(Uri.class), anyBoolean())).thenReturn(response);
+    Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
+    NetworkBitmapHunter hunter =
+        new NetworkBitmapHunter(picasso, dispatcher, cache, stats, action, downloader);
+    hunter.decode(action.getData());
+    verify(stats).dispatchDownloadFinished(response.contentLength);
+  }
+
+  @Test public void unknownContentLengthDoesNotDispatchToStats() throws Exception {
+    Downloader.Response response = new Downloader.Response(mockInputStream(), false, 0);
+    when(downloader.load(any(Uri.class), anyBoolean())).thenReturn(response);
+    Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
+    NetworkBitmapHunter hunter =
+        new NetworkBitmapHunter(picasso, dispatcher, cache, stats, action, downloader);
+    hunter.decode(action.getData());
+    verifyZeroInteractions(stats);
+  }
+
+  @Test public void cachedResponseDoesNotDispatchToStats() throws Exception {
+    Downloader.Response response = new Downloader.Response(mockInputStream(), true, 1024);
+    when(downloader.load(any(Uri.class), anyBoolean())).thenReturn(response);
+    Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
+    NetworkBitmapHunter hunter =
+        new NetworkBitmapHunter(picasso, dispatcher, cache, stats, action, downloader);
+    hunter.decode(action.getData());
+    verifyZeroInteractions(stats);
+  }
+
   @Test public void downloaderCanReturnBitmapDirectly() throws Exception {
     final Bitmap expected = Bitmap.createBitmap(10, 10, ARGB_8888);
     Downloader bitmapDownloader = new Downloader() {
       @Override public Response load(Uri uri, boolean localCacheOnly) throws IOException {
-        return new Response(expected, false);
+        return new Response(expected, false, 0);
       }
     };
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);

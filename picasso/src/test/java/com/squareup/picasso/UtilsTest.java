@@ -15,14 +15,13 @@
  */
 package com.squareup.picasso;
 
-import java.io.IOException;
-
 import android.content.res.Resources;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
-import java.io.ByteArrayInputStream;
 
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_1;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_URI;

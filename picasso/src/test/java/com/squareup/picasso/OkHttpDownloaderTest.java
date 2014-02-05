@@ -86,6 +86,12 @@ public class OkHttpDownloaderTest {
     assertThat(response3.cached).isTrue();
   }
 
+  @Test public void readsContentLengthHeader() throws Exception {
+    server.enqueue(new MockResponse().addHeader("Content-Length", 1024));
+    Downloader.Response response = loader.load(URL, true);
+    assertThat(response.contentLength).isEqualTo(1024);
+  }
+
   @Test public void throwsResponseException() throws Exception {
     server.enqueue(new MockResponse().setStatus("HTTP/1.1 401 Not Authorized"));
     try {
