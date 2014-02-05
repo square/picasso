@@ -56,6 +56,12 @@ class NetworkBitmapHunter extends BitmapHunter {
     }
 
     InputStream is = response.getInputStream();
+    if (is == null) {
+      return null;
+    }
+    if (loadedFrom == NETWORK && response.getContentLength() > 0) {
+      stats.dispatchDownloadFinished(response.getContentLength());
+    }
     try {
       return decodeStream(is, data);
     } finally {
@@ -73,9 +79,6 @@ class NetworkBitmapHunter extends BitmapHunter {
   }
 
   private Bitmap decodeStream(InputStream stream, Request data) throws IOException {
-    if (stream == null) {
-      return null;
-    }
     MarkableInputStream markStream = new MarkableInputStream(stream);
     stream = markStream;
 
