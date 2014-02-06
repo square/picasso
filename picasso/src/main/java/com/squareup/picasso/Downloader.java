@@ -35,25 +35,30 @@ public interface Downloader {
    */
   Response load(Uri uri, boolean localCacheOnly) throws IOException;
 
+  /** Thrown for non-2XX responses. */
+  class ResponseException extends IOException {
+    public ResponseException(String message) {
+      super(message);
+    }
+  }
+
   /** Response stream or bitmap and info. */
   class Response {
     final InputStream stream;
     final Bitmap bitmap;
     final boolean cached;
+    final long contentLength;
 
     /**
      * Response image and info.
      *
      * @param bitmap Image.
      * @param loadedFromCache {@code true} if the source of the image is from a local disk cache.
+     * @deprecated Use {@link Response#Response(android.graphics.Bitmap, boolean, long)} instead.
      */
+    @Deprecated @SuppressWarnings("UnusedDeclaration")
     public Response(Bitmap bitmap, boolean loadedFromCache) {
-      if (bitmap == null) {
-        throw new IllegalArgumentException("Bitmap may not be null.");
-      }
-      this.stream = null;
-      this.bitmap = bitmap;
-      this.cached = loadedFromCache;
+      this(bitmap, loadedFromCache, 0);
     }
 
     /**
@@ -61,14 +66,47 @@ public interface Downloader {
      *
      * @param stream Image data stream.
      * @param loadedFromCache {@code true} if the source of the stream is from a local disk cache.
+     * @deprecated Use {@link Response#Response(java.io.InputStream, boolean, long)} instead.
      */
+    @Deprecated @SuppressWarnings("UnusedDeclaration")
     public Response(InputStream stream, boolean loadedFromCache) {
+      this(stream, loadedFromCache, 0);
+    }
+
+    /**
+     * Response image and info.
+     *
+     * @param bitmap Image.
+     * @param loadedFromCache {@code true} if the source of the image is from a local disk cache.
+     * @param contentLength The content length of the response, typically derived by the
+     * {@code Content-Length} HTTP header.
+     */
+    public Response(Bitmap bitmap, boolean loadedFromCache, long contentLength) {
+      if (bitmap == null) {
+        throw new IllegalArgumentException("Bitmap may not be null.");
+      }
+      this.stream = null;
+      this.bitmap = bitmap;
+      this.cached = loadedFromCache;
+      this.contentLength = contentLength;
+    }
+
+    /**
+     * Response stream and info.
+     *
+     * @param stream Image data stream.
+     * @param loadedFromCache {@code true} if the source of the stream is from a local disk cache.
+     * @param contentLength The content length of the response, typically derived by the
+     * {@code Content-Length} HTTP header.
+     */
+    public Response(InputStream stream, boolean loadedFromCache, long contentLength) {
       if (stream == null) {
         throw new IllegalArgumentException("Stream may not be null.");
       }
       this.stream = stream;
       this.bitmap = null;
       this.cached = loadedFromCache;
+      this.contentLength = contentLength;
     }
 
     /**
@@ -87,6 +125,11 @@ public interface Downloader {
      */
     public Bitmap getBitmap() {
       return bitmap;
+    }
+
+    /** Content length of the response. */
+    public long getContentLength() {
+      return contentLength;
     }
   }
 }

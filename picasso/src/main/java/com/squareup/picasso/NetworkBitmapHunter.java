@@ -56,6 +56,12 @@ class NetworkBitmapHunter extends BitmapHunter {
     }
 
     InputStream is = response.getInputStream();
+    if (is == null) {
+      return null;
+    }
+    if (loadedFrom == NETWORK && response.getContentLength() > 0) {
+      stats.dispatchDownloadFinished(response.getContentLength());
+    }
     try {
       return decodeStream(is, data);
     } finally {
@@ -73,13 +79,13 @@ class NetworkBitmapHunter extends BitmapHunter {
   }
 
   private Bitmap decodeStream(InputStream stream, Request data) throws IOException {
-    if (stream == null) {
-      return null;
-    }
     MarkableInputStream markStream = new MarkableInputStream(stream);
     stream = markStream;
 
     long mark = markStream.savePosition(MARKER);
+
+    final BitmapFactory.Options options = createBitmapOptions(data);
+    final boolean calculateSize = requiresInSampleSize(options);
 
     boolean isWebPFile = Utils.isWebPFile(stream);
     markStream.reset(mark);
@@ -87,21 +93,13 @@ class NetworkBitmapHunter extends BitmapHunter {
     // Decode byte array instead
     if (isWebPFile) {
       byte[] bytes = Utils.toByteArray(stream);
-      BitmapFactory.Options options = null;
-      if (data.hasSize()) {
-        options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-
+      if (calculateSize) {
         BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
         calculateInSampleSize(data.targetWidth, data.targetHeight, options);
       }
       return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
     } else {
-      BitmapFactory.Options options = null;
-      if (data.hasSize()) {
-        options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-
+      if (calculateSize) {
         BitmapFactory.decodeStream(stream, null, options);
         calculateInSampleSize(data.targetWidth, data.targetHeight, options);
 

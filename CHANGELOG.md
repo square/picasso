@@ -1,6 +1,27 @@
 Change Log
 ==========
 
+Version 2.2.0 *(2014-01-31)*
+----------------------------
+
+ * Add support decoding various contact photo URIs. 
+ * Add support for loading `android.resource` URIs (e.g. load assets from other packages).
+ * Add support for MICRO/MINI thumbnails for media images.
+ * Add API to supply custom `Bitmap.Config` for decoding.
+ * Performance: Reduce GC by reusing same `StringBuilder` instance on main thread for key creation.
+ * Performance: Reduce default buffer allocation to 4k for `MarkableInputStream`.
+ * Fix: Detect and decode WebP streams from byte array.
+ * Fix: Non-200 HTTP responses will now display error drawable if supplied.
+ * Fix: All exceptions during decode will now dispatch a failure.
+ * Fix: Catch `OutOfMemory` errors, dispatch a failure, and output stats in logcat.
+ * Fix: `fit()` now handles cases where either width or height was not zero.
+ * Fix: Prevent crash from `null` intent on `NetworkBroadcastReceiver`.
+ * Fix: Honor exif orientation when no custom transformations supplied.
+ * Fix: Exceptions during transformations propagate to the main thread. 
+ * Fix: Correct skia decoding problem during underflow.
+ * Fix: Placeholder uses full bounds.
+
+
 Version 2.1.1 *(2013-10-04)*
 ----------------------------
 

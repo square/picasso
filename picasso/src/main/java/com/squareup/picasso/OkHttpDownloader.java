@@ -105,15 +105,17 @@ public class OkHttpDownloader implements Downloader {
     int responseCode = connection.getResponseCode();
     if (responseCode >= 300) {
       connection.disconnect();
-      return null;
+      throw new ResponseException(responseCode + " " + connection.getResponseMessage());
     }
 
     String responseSource = connection.getHeaderField(RESPONSE_SOURCE_OKHTTP);
     if (responseSource == null) {
       responseSource = connection.getHeaderField(RESPONSE_SOURCE_ANDROID);
     }
+
+    long contentLength = connection.getHeaderFieldInt("Content-Length", 0);
     boolean fromCache = parseResponseSourceHeader(responseSource);
 
-    return new Response(connection.getInputStream(), fromCache);
+    return new Response(connection.getInputStream(), fromCache, contentLength);
   }
 }

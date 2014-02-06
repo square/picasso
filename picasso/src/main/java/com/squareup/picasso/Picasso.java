@@ -32,9 +32,9 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
+import static com.squareup.picasso.Action.RequestWeakReference;
 import static com.squareup.picasso.Dispatcher.HUNTER_BATCH_COMPLETE;
 import static com.squareup.picasso.Dispatcher.REQUEST_GCED;
-import static com.squareup.picasso.Action.RequestWeakReference;
 import static com.squareup.picasso.Utils.THREAD_PREFIX;
 
 /**
@@ -85,7 +85,9 @@ public class Picasso {
       switch (msg.what) {
         case HUNTER_BATCH_COMPLETE: {
           @SuppressWarnings("unchecked") List<BitmapHunter> batch = (List<BitmapHunter>) msg.obj;
-          for (BitmapHunter hunter : batch) {
+          //noinspection ForLoopReplaceableByForEach
+          for (int i = 0, n = batch.size(); i < n; i++) {
+            BitmapHunter hunter = batch.get(i);
             hunter.picasso.complete(hunter);
           }
           break;
@@ -225,7 +227,11 @@ public class Picasso {
     this.debugging = debugging;
   }
 
-  /** Creates a {@link StatsSnapshot} of the current stats for this instance. */
+  /**
+   * Creates a {@link StatsSnapshot} of the current stats for this instance.
+   * <b>NOTE:</b> The snapshot may not always be completely up-to-date if requests are still in
+   * progress.
+   */
   @SuppressWarnings("UnusedDeclaration") public StatsSnapshot getSnapshot() {
     return stats.createSnapshot();
   }
@@ -298,7 +304,9 @@ public class Picasso {
     Bitmap result = hunter.getResult();
     LoadedFrom from = hunter.getLoadedFrom();
 
-    for (Action join : joined) {
+    //noinspection ForLoopReplaceableByForEach
+    for (int i = 0, n = joined.size(); i < n; i++) {
+      Action join = joined.get(i);
       if (join.isCancelled()) {
         continue;
       }

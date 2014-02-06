@@ -33,6 +33,7 @@ import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentResolver.SCHEME_FILE;
 import static android.provider.ContactsContract.Contacts;
+import static com.squareup.picasso.AssetBitmapHunter.ANDROID_ASSET;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 
 abstract class BitmapHunter implements Runnable {
@@ -43,9 +44,12 @@ abstract class BitmapHunter implements Runnable {
    * well as potential OOMs. Shamelessly stolen from Volley.
    */
   private static final Object DECODE_LOCK = new Object();
-  private static final String ANDROID_ASSET = "android_asset";
-  protected static final int ASSET_PREFIX_LENGTH =
-      (SCHEME_FILE + ":///" + ANDROID_ASSET + "/").length();
+
+  private static final ThreadLocal<StringBuilder> NAME_BUILDER = new ThreadLocal<StringBuilder>() {
+    @Override protected StringBuilder initialValue() {
+      return new StringBuilder(Utils.THREAD_PREFIX);
+    }
+  };
 
   final Picasso picasso;
   final Dispatcher dispatcher;
@@ -80,7 +84,7 @@ abstract class BitmapHunter implements Runnable {
 
   @Override public void run() {
     try {
-      Thread.currentThread().setName(Utils.THREAD_PREFIX + data.getName());
+      updateThreadName(data);
 
       result = hunt();
 
@@ -89,6 +93,9 @@ abstract class BitmapHunter implements Runnable {
       } else {
         dispatcher.dispatchComplete(this);
       }
+    } catch (Downloader.ResponseException e) {
+      exception = e;
+      dispatcher.dispatchFailed(this);
     } catch (IOException e) {
       exception = e;
       dispatcher.dispatchRetry(this);
@@ -187,6 +194,16 @@ abstract class BitmapHunter implements Runnable {
     return loadedFrom;
   }
 
+  static void updateThreadName(Request data) {
+    String name = data.getName();
+
+    StringBuilder builder = NAME_BUILDER.get();
+    builder.ensureCapacity(Utils.THREAD_PREFIX.length() + name.length());
+    builder.replace(Utils.THREAD_PREFIX.length(), builder.length(), name);
+
+    Thread.currentThread().setName(builder.toString());
+  }
+
   static BitmapHunter forRequest(Context context, Picasso picasso, Dispatcher dispatcher,
       Cache cache, Stats stats, Action action, Downloader downloader) {
     if (action.getData().resourceId != 0) {
@@ -215,6 +232,28 @@ abstract class BitmapHunter implements Runnable {
     }
   }
 
+  /**
+   * Lazily create {@link android.graphics.BitmapFactory.Options} based in given
+   * {@link com.squareup.picasso.Request}, only instantiating them if needed.
+   */
+  static BitmapFactory.Options createBitmapOptions(Request data) {
+    final boolean justBounds = data.hasSize();
+    final boolean hasConfig = data.config != null;
+    BitmapFactory.Options options = null;
+    if (justBounds || hasConfig) {
+      options = new BitmapFactory.Options();
+      options.inJustDecodeBounds = justBounds;
+      if (hasConfig) {
+        options.inPreferredConfig = data.config;
+      }
+    }
+    return options;
+  }
+
+  static boolean requiresInSampleSize(BitmapFactory.Options options) {
+    return options != null && options.inJustDecodeBounds;
+  }
+
   static void calculateInSampleSize(int reqWidth, int reqHeight, BitmapFactory.Options options) {
     calculateInSampleSize(reqWidth, reqHeight, options.outWidth, options.outHeight, options);
   }
@@ -227,7 +266,6 @@ abstract class BitmapHunter implements Runnable {
       final int widthRatio = Math.round((float) width / (float) reqWidth);
       sampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
     }
-
     options.inSampleSize = sampleSize;
     options.inJustDecodeBounds = false;
   }
