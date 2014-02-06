@@ -24,6 +24,7 @@ import org.robolectric.annotation.Config;
 
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.TestUtils.BITMAP_1;
+import static com.squareup.picasso.TestUtils.BITMAP_3;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.mockTarget;
 import static org.junit.Assert.fail;
@@ -45,8 +46,8 @@ public class TargetActionTest {
   public void invokesSuccessIfTargetIsNotNull() throws Exception {
     Target target = mockTarget();
     TargetAction request = new TargetAction(mock(Picasso.class), target, null, false, URI_KEY_1);
-    request.complete(BITMAP_1, MEMORY);
-    verify(target).onBitmapLoaded(BITMAP_1, MEMORY);
+    request.complete(BITMAP_3, MEMORY);
+    verify(target).onBitmapLoaded(BITMAP_3, MEMORY);
   }
 
   @Test
