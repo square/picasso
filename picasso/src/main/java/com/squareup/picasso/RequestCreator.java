@@ -141,16 +141,24 @@ public class RequestCreator {
   /**
    * Internal use only.
    * Resizes each dimension of the image to the specified size unless the size is invalid or the
-   * dimension's size is already set.
+   * dimension's size is already set. Returns true if the size is successfully set.
    */
-  RequestCreator resizeMeasure(int measuredWidth, int measuredHeight) {
-    if (measuredWidth > 0 && !data.hasWidth()) {
+  boolean fitToTarget(ImageView target) {
+    int measuredWidth = target.getMeasuredWidth();
+    int measuredHeight = target.getMeasuredHeight();
+    if (!data.hasWidth() && !data.hasHeight()) {
+      if (measuredWidth > 0 && measuredHeight > 0) {
+        data.resize(measuredWidth, measuredHeight);
+        return true;
+      }
+    } else if (!data.hasWidth() && measuredWidth > 0) {
       data.width(measuredWidth);
-    }
-    if (measuredHeight > 0 && !data.hasHeight()) {
+      return true;
+    } else if (!data.hasHeight() && measuredHeight > 0) {
       data.height(measuredHeight);
+      return true;
     }
-    return this;
+    return false;
   }
 
   /** Resize the image to the specified size in pixels. */
@@ -401,14 +409,11 @@ public class RequestCreator {
       if (data.hasWidth() && data.hasHeight()) {
         throw new IllegalStateException("Fit cannot be used with both width and height specified.");
       }
-      int measuredWidth = target.getMeasuredWidth();
-      int measuredHeight = target.getMeasuredHeight();
-      if (measuredWidth == 0 && measuredHeight == 0) {
+      if (!fitToTarget(target)) {
         PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable);
         picasso.defer(target, new DeferredRequestCreator(this, target, callback));
         return;
       }
-      resizeMeasure(measuredWidth, measuredHeight);
     }
 
     Request finalData = picasso.transformRequest(data.build());
