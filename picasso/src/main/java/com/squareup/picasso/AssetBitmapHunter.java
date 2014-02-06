@@ -33,9 +33,8 @@ class AssetBitmapHunter extends BitmapHunter {
   }
 
   Bitmap decodeAsset(String filePath) throws IOException {
-    BitmapFactory.Options options = createBitmapOptions(data);
-    if (data.hasSize()) {
-      options.inJustDecodeBounds = true;
+    final BitmapFactory.Options options = createBitmapOptions(data);
+    if (requiresInSampleSize(options)) {
       InputStream is = null;
       try {
         is = assetManager.open(filePath);
