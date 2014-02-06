@@ -49,6 +49,7 @@ class TestUtils {
   static final String URI_KEY_2 = createKey(new Request.Builder(URI_2).build());
   static final Bitmap BITMAP_1 = Bitmap.createBitmap(10, 10, null);
   static final Bitmap BITMAP_2 = Bitmap.createBitmap(15, 15, null);
+  static final Bitmap BITMAP_3 = Bitmap.createBitmap(20, 20, null);
   static final File FILE_1 = new File("C:\\windows\\system32\\logo.exe");
   static final String FILE_KEY_1 = createKey(new Request.Builder(Uri.fromFile(FILE_1)).build());
   static final Uri FILE_1_URL = Uri.parse("file:///" + FILE_1.getPath());
