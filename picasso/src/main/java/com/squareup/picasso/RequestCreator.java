@@ -17,6 +17,7 @@ package com.squareup.picasso;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.widget.ImageView;
@@ -175,7 +176,12 @@ public class RequestCreator {
     return this;
   }
 
-  /** Decode the image using the specified config. */
+  /**
+   * Attempt to decode the image using the specified config.
+   * <p>
+   * Note: This value may be ignored by {@link BitmapFactory}. See
+   * {@link BitmapFactory.Options#inPreferredConfig its documentation for more details.
+   */
   public RequestCreator config(Bitmap.Config config) {
     data.config(config);
     return this;
