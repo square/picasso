@@ -139,7 +139,9 @@ abstract class BitmapHunter implements Runnable {
             bitmap = applyCustomTransformations(data.transformations, bitmap);
           }
         }
-        stats.dispatchBitmapTransformed(bitmap);
+        if (bitmap != null) {
+          stats.dispatchBitmapTransformed(bitmap);
+        }
       }
     }
 
