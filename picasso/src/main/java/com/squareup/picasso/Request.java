@@ -164,8 +164,12 @@ public final class Request {
       return uri != null || resourceId != 0;
     }
 
-    boolean hasSize() {
+    boolean hasWidth() {
       return targetWidth != 0;
+    }
+
+    boolean hasHeight() {
+      return targetHeight != 0;
     }
 
     /**
@@ -198,15 +202,7 @@ public final class Request {
 
     /** Resize the image to the specified size in pixels. */
     public Builder resize(int targetWidth, int targetHeight) {
-      if (targetWidth <= 0) {
-        throw new IllegalArgumentException("Width must be positive number.");
-      }
-      if (targetHeight <= 0) {
-        throw new IllegalArgumentException("Height must be positive number.");
-      }
-      this.targetWidth = targetWidth;
-      this.targetHeight = targetHeight;
-      return this;
+      return width(targetWidth).height(targetHeight);
     }
 
     /** Clear the resize transformation, if any. This will also clear center crop/inside if set. */
@@ -215,6 +211,24 @@ public final class Request {
       targetHeight = 0;
       centerCrop = false;
       centerInside = false;
+      return this;
+    }
+
+    /** Resize the image width to the specified size in pixels. */
+    public Builder width(int targetWidth) {
+      if (targetWidth <= 0) {
+        throw new IllegalArgumentException("Width must be positive number.");
+      }
+      this.targetWidth = targetWidth;
+      return this;
+    }
+
+    /** Resize the image height to the specified size in pixels. */
+    public Builder height(int targetHeight) {
+      if (targetHeight <= 0) {
+        throw new IllegalArgumentException("Height must be positive number.");
+      }
+      this.targetHeight = targetHeight;
       return this;
     }
 

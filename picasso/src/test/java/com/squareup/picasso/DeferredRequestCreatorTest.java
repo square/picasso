@@ -99,15 +99,31 @@ public class DeferredRequestCreatorTest {
     verifyZeroInteractions(creator);
   }
 
-  @Test public void waitsForAnotherLayoutIfWidthOrHeightIsZero() throws Exception {
+  @Test public void waitsForAnotherLayoutIfTargetSizeZero() throws Exception {
+    Picasso picasso = mock(Picasso.class);
+    when(picasso.transformRequest(any(Request.class))).thenAnswer(TRANSFORM_REQUEST_ANSWER);
+
+    RequestCreator creator = new RequestCreator(picasso, URI_1, 0);
+
     ImageView target = mockFitImageViewTarget(true);
     when(target.getMeasuredWidth()).thenReturn(0);
     when(target.getMeasuredHeight()).thenReturn(0);
-    RequestCreator creator = mock(RequestCreator.class);
+
     DeferredRequestCreator request = new DeferredRequestCreator(creator, target);
     request.onPreDraw();
     verify(target.getViewTreeObserver(), never()).removeOnPreDrawListener(request);
-    verifyZeroInteractions(creator);
+  }
+
+  @Test public void waitsForAnotherLayoutIfWidthOrHeightIsZero() throws Exception {
+    RequestCreator creator = new RequestCreator();
+
+    ImageView target = mockFitImageViewTarget(true);
+    when(target.getMeasuredWidth()).thenReturn(0);
+    when(target.getMeasuredHeight()).thenReturn(0);
+
+    DeferredRequestCreator request = new DeferredRequestCreator(creator, target);
+    request.onPreDraw();
+    verify(target.getViewTreeObserver(), never()).removeOnPreDrawListener(request);
   }
 
   @Test public void cancelSkipsWithNullTarget() throws Exception {
@@ -127,7 +143,57 @@ public class DeferredRequestCreatorTest {
     verify(target.getViewTreeObserver(), never()).removeOnPreDrawListener(request);
   }
 
-  @Test public void onGlobalLayoutSubmitsRequestAndCleansUp() throws Exception {
+  @Test public void onPreDrawSubmitsWhenWidthSetAndHeightMeasureNotZero() throws Exception {
+    Picasso picasso = mock(Picasso.class);
+    when(picasso.transformRequest(any(Request.class))).thenAnswer(TRANSFORM_REQUEST_ANSWER);
+
+    RequestCreator creator = new RequestCreator(picasso, URI_1, 0);
+    creator.width(100);
+
+    ImageView target = mockFitImageViewTarget(true);
+    when(target.getMeasuredWidth()).thenReturn(0);
+    when(target.getMeasuredHeight()).thenReturn(100);
+
+    ViewTreeObserver observer = target.getViewTreeObserver();
+
+    DeferredRequestCreator request = new DeferredRequestCreator(creator, target);
+    request.onPreDraw();
+
+    verify(observer).removeOnPreDrawListener(request);
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+
+    Action value = actionCaptor.getValue();
+    assertThat(value).isInstanceOf(ImageViewAction.class);
+    assertThat(value.getData().targetWidth).isEqualTo(100);
+    assertThat(value.getData().targetHeight).isEqualTo(100);
+  }
+
+  @Test public void onPreDrawSubmitsWhenHeightSetAndWidthMeasureNotZero() throws Exception {
+    Picasso picasso = mock(Picasso.class);
+    when(picasso.transformRequest(any(Request.class))).thenAnswer(TRANSFORM_REQUEST_ANSWER);
+
+    RequestCreator creator = new RequestCreator(picasso, URI_1, 0);
+    creator.height(100);
+
+    ImageView target = mockFitImageViewTarget(true);
+    when(target.getMeasuredWidth()).thenReturn(100);
+    when(target.getMeasuredHeight()).thenReturn(0);
+
+    ViewTreeObserver observer = target.getViewTreeObserver();
+
+    DeferredRequestCreator request = new DeferredRequestCreator(creator, target);
+    request.onPreDraw();
+
+    verify(observer).removeOnPreDrawListener(request);
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+
+    Action value = actionCaptor.getValue();
+    assertThat(value).isInstanceOf(ImageViewAction.class);
+    assertThat(value.getData().targetWidth).isEqualTo(100);
+    assertThat(value.getData().targetHeight).isEqualTo(100);
+  }
+
+  @Test public void onPreDrawSubmitsRequestAndCleansUp() throws Exception {
     Picasso picasso = mock(Picasso.class);
     when(picasso.transformRequest(any(Request.class))).thenAnswer(TRANSFORM_REQUEST_ANSWER);
 
