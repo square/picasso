@@ -452,7 +452,8 @@ public class RequestCreator {
       }
     }
 
-    PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable);
+    if (!(placeholderDrawable == null && data.hasImage() && skipMemoryCache))
+        PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable);
 
     Action action =
         new ImageViewAction(picasso, target, finalData, skipMemoryCache, noFade, errorResId,
