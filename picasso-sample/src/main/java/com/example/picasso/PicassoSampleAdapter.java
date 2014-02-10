@@ -21,6 +21,7 @@ final class PicassoSampleAdapter extends BaseAdapter {
 
   enum Sample {
     GRID_VIEW("Image Grid View", SampleGridViewActivity.class),
+    GRID_VIEW_EFFECTS("Image Grid View With Effects", SampleGridViewWithEffectsActivity.class),
     GALLERY("Load from Gallery", SampleGalleryActivity.class),
     CONTACTS("Contact Photos", SampleContactsActivity.class),
     LIST_DETAIL("List / Detail View", SampleListDetailActivity.class),

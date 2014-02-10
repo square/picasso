@@ -202,6 +202,16 @@ public class RequestCreator {
   }
 
   /**
+   * Factory for creating a custom Drawable the final bitmap will be wrapped into.
+   * This allows modifying underlying drawable and creating more advanced effects
+   * without need to create another bitmap.
+   */
+  public RequestCreator drawableFactory(DrawableFactory drawableFactory) {
+    data.drawableFactory(drawableFactory);
+    return this;
+  }
+
+  /**
    * Indicate that this action should not use the memory cache for attempting to load or save the
    * image. This can be useful when you know an image will only ever be used once (e.g., loading
    * an image from the filesystem and uploading to a remote server).
@@ -444,7 +454,7 @@ public class RequestCreator {
       if (bitmap != null) {
         picasso.cancelRequest(target);
         PicassoDrawable.setBitmap(target, picasso.context, bitmap, MEMORY, noFade,
-            picasso.debugging);
+            picasso.debugging, finalData.drawableFactory);
         if (callback != null) {
           callback.onSuccess();
         }

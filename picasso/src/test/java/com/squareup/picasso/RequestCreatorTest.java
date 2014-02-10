@@ -479,6 +479,14 @@ public class RequestCreatorTest {
     new RequestCreator().transform(null);
   }
 
+  @Test public void nullTargetTransformationInvalid() throws Exception {
+    try {
+      new RequestCreator().drawableFactory(null);
+      fail("Null DrawableFactory should throw exception");
+    } catch (IllegalArgumentException e) {
+    }
+  }
+
   @Test public void nullTargetsInvalid() throws Exception {
     try {
       new RequestCreator().into((ImageView) null);
