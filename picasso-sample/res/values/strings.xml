@@ -3,6 +3,8 @@
   <string name="app_name">Picasso Samples</string>
   <string name="hide">HIDE</string>
   <string name="more">MORE</string>
+  <string name="sample_widget">Picasso Sample Widget</string>
+  <string name="sample_notification">Picasso Sample Notification</string>
   <string name="select_picture">Select Picture</string>
   <string name="disk_cache_description">On Ice Cream Sandwich and above, a disk cache is
     automatically used so that subsequent requests for the same URL do not re-download the

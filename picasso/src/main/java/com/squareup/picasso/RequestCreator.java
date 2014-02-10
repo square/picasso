@@ -15,18 +15,21 @@
  */
 package com.squareup.picasso;
 
+import android.app.Notification;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.widget.ImageView;
-import org.jetbrains.annotations.TestOnly;
-
+import android.widget.RemoteViews;
 import java.io.IOException;
+import org.jetbrains.annotations.TestOnly;
 
 import static com.squareup.picasso.BitmapHunter.forRequest;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
+import static com.squareup.picasso.RemoteViewsAction.AppWidgetAction;
+import static com.squareup.picasso.RemoteViewsAction.NotificationAction;
 import static com.squareup.picasso.Utils.checkNotMain;
 import static com.squareup.picasso.Utils.createKey;
 
@@ -331,6 +334,65 @@ public class RequestCreator {
   }
 
   /**
+   * Asynchronously fulfills the request into the specified {@link RemoteViews} object with the
+   * given {@code viewId}. This is used for loading bitmaps into a {@link Notification}.
+   */
+  public void into(RemoteViews remoteViews, int viewId, int notificationId,
+      Notification notification) {
+    if (remoteViews == null) {
+      throw new IllegalArgumentException("RemoteViews must not be null.");
+    }
+    if (notification == null) {
+      throw new IllegalArgumentException("Notification must not be null.");
+    }
+    if (deferred) {
+      throw new IllegalStateException("Fit cannot be used with RemoteViews.");
+    }
+    if (placeholderDrawable != null || errorDrawable != null) {
+      throw new IllegalArgumentException(
+          "Cannot use placeholder or error drawables with remote views.");
+    }
+
+    Request finalData = picasso.transformRequest(data.build());
+    String key = createKey(finalData);
+
+    RemoteViewsAction action =
+        new NotificationAction(picasso, finalData, remoteViews, viewId, notificationId,
+            notification, skipMemoryCache, errorResId, key);
+
+    performRemoteViewInto(action);
+  }
+
+  /**
+   * Asynchronously fulfills the request into the specified {@link RemoteViews} object with the
+   * given {@code viewId}. This is used for loading bitmaps into all instances of a widget.
+   */
+  public void into(RemoteViews remoteViews, int viewId, int[] appWidgetIds) {
+    if (remoteViews == null) {
+      throw new IllegalArgumentException("RemoteViews must not be null.");
+    }
+    if (appWidgetIds == null) {
+      throw new IllegalArgumentException("appWidgetIds must not be null.");
+    }
+    if (deferred) {
+      throw new IllegalStateException("Fit cannot be used with RemoteViews.");
+    }
+    if (placeholderDrawable != null || errorDrawable != null) {
+      throw new IllegalArgumentException(
+          "Cannot use placeholder or error drawables with remote views.");
+    }
+
+    Request finalData = picasso.transformRequest(data.build());
+    String key = createKey(finalData);
+
+    RemoteViewsAction action =
+        new AppWidgetAction(picasso, finalData, remoteViews, viewId, appWidgetIds, skipMemoryCache,
+            errorResId, key);
+
+    performRemoteViewInto(action);
+  }
+
+  /**
    * Asynchronously fulfills the request into the specified {@link ImageView}.
    * <p/>
    * <em>Note:</em> This method keeps a weak reference to the {@link ImageView} instance and will
@@ -395,6 +457,22 @@ public class RequestCreator {
     Action action =
         new ImageViewAction(picasso, target, finalData, skipMemoryCache, noFade, errorResId,
             errorDrawable, requestKey, callback);
+
+    picasso.enqueueAndSubmit(action);
+  }
+
+  private void performRemoteViewInto(RemoteViewsAction action) {
+    if (!skipMemoryCache) {
+      Bitmap bitmap = picasso.quickMemoryCacheCheck(action.getKey());
+      if (bitmap != null) {
+        action.complete(bitmap, MEMORY);
+        return;
+      }
+    }
+
+    if (placeholderResId != 0) {
+      action.setImageResource(placeholderResId);
+    }
 
     picasso.enqueueAndSubmit(action);
   }
