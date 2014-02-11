@@ -52,7 +52,8 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-@RunWith(RobolectricTestRunner.class) @Config(manifest = Config.NONE)
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class PicassoTest {
 
   @Mock Context context;
@@ -122,12 +123,49 @@ public class PicassoTest {
     verify(listener).onImageLoadFailed(picasso, URI_1, exception);
   }
 
-  @Test public void completeSkipsIfNoActions() throws Exception {
+  @Test public void completeDeliversToSingle() throws Exception {
+    Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
+    when(hunter.getLoadedFrom()).thenReturn(MEMORY);
+    when(hunter.getAction()).thenReturn(action);
     when(hunter.getActions()).thenReturn(Collections.<Action>emptyList());
     picasso.complete(hunter);
+    verify(action).complete(BITMAP_1, MEMORY);
+  }
+
+  @Test public void completeDeliversToSingleAndMultiple() throws Exception {
+    Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
+    Action action2 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
+    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
+    when(hunter.getLoadedFrom()).thenReturn(MEMORY);
+    when(hunter.getAction()).thenReturn(action);
+    when(hunter.getActions()).thenReturn(Arrays.asList(action2));
+    picasso.complete(hunter);
+    verify(action).complete(BITMAP_1, MEMORY);
+    verify(action2).complete(BITMAP_1, MEMORY);
+  }
+
+  @Test public void completeSkipsIfNoActions() throws Exception {
+    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
+    picasso.complete(hunter);
+    verify(hunter).getAction();
     verify(hunter).getActions();
     verifyNoMoreInteractions(hunter);
+  }
+
+  @Test public void loadedFromIsNullThrows() throws Exception {
+    Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
+    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
+    when(hunter.getAction()).thenReturn(action);
+    boolean caught = false;
+    try {
+      picasso.complete(hunter);
+    } catch (AssertionError error) {
+      caught = true;
+    }
+    if (!caught) {
+      fail("Calling complete() with null LoadedFrom should throw");
+    }
   }
 
   @Test public void cancelExistingRequestWithUnknownTarget() throws Exception {

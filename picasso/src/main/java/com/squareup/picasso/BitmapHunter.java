@@ -57,9 +57,10 @@ abstract class BitmapHunter implements Runnable {
   final Stats stats;
   final String key;
   final Request data;
-  final List<Action> actions;
   final boolean skipMemoryCache;
 
+  Action action;
+  List<Action> actions;
   Bitmap result;
   Future<?> future;
   Picasso.LoadedFrom loadedFrom;
@@ -74,8 +75,7 @@ abstract class BitmapHunter implements Runnable {
     this.key = action.getKey();
     this.data = action.getData();
     this.skipMemoryCache = action.skipCache;
-    this.actions = new ArrayList<Action>(4);
-    attach(action);
+    this.action = action;
   }
 
   protected void setExifRotation(int exifRotation) {
@@ -149,15 +149,29 @@ abstract class BitmapHunter implements Runnable {
   }
 
   void attach(Action action) {
+    if (this.action == null) {
+      this.action = action;
+      return;
+    }
+    if (actions == null) {
+      actions = new ArrayList<Action>(3);
+    }
     actions.add(action);
   }
 
   void detach(Action action) {
-    actions.remove(action);
+    if (this.action == action) {
+      this.action = null;
+    } else if (actions != null) {
+      actions.remove(action);
+    }
   }
 
   boolean cancel() {
-    return actions.isEmpty() && future != null && future.cancel(false);
+    return action == null
+        && (actions == null || actions.isEmpty())
+        && future != null
+        && future.cancel(false);
   }
 
   boolean isCancelled() {
@@ -182,6 +196,10 @@ abstract class BitmapHunter implements Runnable {
 
   Request getData() {
     return data;
+  }
+
+  Action getAction() {
+    return action;
   }
 
   List<Action> getActions() {

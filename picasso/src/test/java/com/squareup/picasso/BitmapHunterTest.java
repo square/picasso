@@ -163,33 +163,68 @@ public class BitmapHunterTest {
     assertThat(result).isEqualTo(BITMAP_1);
   }
 
-  @Test public void attachRequest() throws Exception {
+  @Test public void attachSingleRequest() throws Exception {
+    Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
+    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action1);
+    assertThat(hunter.action).isEqualTo(action1);
+    hunter.detach(action1);
+    hunter.attach(action1);
+    assertThat(hunter.action).isEqualTo(action1);
+    assertThat(hunter.actions).isNull();
+  }
+
+  @Test public void attachMultipleRequests() throws Exception {
     Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     Action action2 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action1);
-    assertThat(hunter.actions).hasSize(1);
+    assertThat(hunter.actions).isNull();
     hunter.attach(action2);
-    assertThat(hunter.actions).hasSize(2);
+    assertThat(hunter.actions).isNotNull().hasSize(1);
   }
 
-  @Test public void detachRequest() throws Exception {
+  @Test public void detachSingleRequest() throws Exception {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action);
-    assertThat(hunter.actions).hasSize(1);
+    assertThat(hunter.action).isNotNull();
     hunter.detach(action);
-    assertThat(hunter.actions).isEmpty();
+    assertThat(hunter.action).isNull();
   }
 
-  @Test public void cancelRequest() throws Exception {
+  @Test public void detachMutlipleRequests() throws Exception {
+    Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
+    Action action2 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
+    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action);
+    hunter.attach(action2);
+    hunter.detach(action2);
+    assertThat(hunter.action).isNotNull();
+    assertThat(hunter.actions).isNotNull().isEmpty();
+    hunter.detach(action);
+    assertThat(hunter.action).isNull();
+  }
+
+  @Test public void cancelSingleRequest() throws Exception {
+    Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
+    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action1);
+    hunter.future = new FutureTask<Object>(mock(Runnable.class), mock(Object.class));
+    assertThat(hunter.isCancelled()).isFalse();
+    assertThat(hunter.cancel()).isFalse();
+    hunter.detach(action1);
+    assertThat(hunter.cancel()).isTrue();
+    assertThat(hunter.isCancelled()).isTrue();
+  }
+
+  @Test public void cancelMultipleRequests() throws Exception {
     Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     Action action2 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action1);
     hunter.future = new FutureTask<Object>(mock(Runnable.class), mock(Object.class));
     hunter.attach(action2);
+    assertThat(hunter.isCancelled()).isFalse();
     assertThat(hunter.cancel()).isFalse();
     hunter.detach(action1);
     hunter.detach(action2);
     assertThat(hunter.cancel()).isTrue();
+    assertThat(hunter.isCancelled()).isTrue();
   }
 
   // ---------------------------------------

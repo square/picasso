@@ -15,6 +15,7 @@ lib
 target
 pom.xml.*
 release.properties
+coverage.ec
 
 # IntelliJ
 .idea
