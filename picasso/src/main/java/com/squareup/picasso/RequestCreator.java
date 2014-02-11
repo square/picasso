@@ -330,7 +330,7 @@ public class RequestCreator {
     target.onPrepareLoad(drawable);
 
     Action action = new TargetAction(picasso, target, finalData, skipMemoryCache, errorResId,
-            errorDrawable, requestKey);
+        errorDrawable, requestKey);
     picasso.enqueueAndSubmit(action);
   }
 

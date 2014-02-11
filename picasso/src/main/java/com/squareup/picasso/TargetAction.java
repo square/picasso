@@ -21,7 +21,7 @@ import android.graphics.drawable.Drawable;
 final class TargetAction extends Action<Target> {
 
   TargetAction(Picasso picasso, Target target, Request data, boolean skipCache,
-               int errorResId, Drawable errorDrawable, String key) {
+        int errorResId, Drawable errorDrawable, String key) {
     super(picasso, target, data, skipCache, false, errorResId, errorDrawable, key);
   }
 
@@ -44,11 +44,8 @@ final class TargetAction extends Action<Target> {
     if (target != null) {
       if (errorResId != 0) {
         target.onBitmapFailed(picasso.context.getResources().getDrawable(errorResId));
-      } else if (errorDrawable != null) {
-        target.onBitmapFailed(errorDrawable);
       } else {
-        // TODO what now??
-        target.onBitmapFailed(null);
+        target.onBitmapFailed(errorDrawable);
       }
     }
   }
