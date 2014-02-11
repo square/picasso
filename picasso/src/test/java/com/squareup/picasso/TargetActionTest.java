@@ -15,21 +15,25 @@
  */
 package com.squareup.picasso;
 
+import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.widget.ImageView;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
-import static com.squareup.picasso.TestUtils.BITMAP_1;
-import static com.squareup.picasso.TestUtils.BITMAP_3;
-import static com.squareup.picasso.TestUtils.URI_KEY_1;
-import static com.squareup.picasso.TestUtils.mockTarget;
+import static com.squareup.picasso.Picasso.RequestTransformer.IDENTITY;
+import static com.squareup.picasso.TestUtils.*;
+import static com.squareup.picasso.TestUtils.mockCallback;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -38,24 +42,42 @@ public class TargetActionTest {
   @Test(expected = AssertionError.class)
   public void throwsErrorWithNullResult() throws Exception {
     TargetAction request =
-        new TargetAction(mock(Picasso.class), mockTarget(), null, false, URI_KEY_1);
+        new TargetAction(mock(Picasso.class), mockTarget(), null, false, 0, null, URI_KEY_1);
     request.complete(null, MEMORY);
   }
 
   @Test
   public void invokesSuccessIfTargetIsNotNull() throws Exception {
     Target target = mockTarget();
-    TargetAction request = new TargetAction(mock(Picasso.class), target, null, false, URI_KEY_1);
+    TargetAction request = new TargetAction(mock(Picasso.class), target, null, false, 0, null, URI_KEY_1);
     request.complete(BITMAP_3, MEMORY);
     verify(target).onBitmapLoaded(BITMAP_3, MEMORY);
   }
 
   @Test
-  public void invokesErrorIfTargetIsNotNull() throws Exception {
+  public void invokesOnBitmapFailedIfTargetIsNotNullWithErrorDrawable() throws Exception {
+    Drawable errorDrawable = mock(Drawable.class);
     Target target = mockTarget();
-    TargetAction request = new TargetAction(mock(Picasso.class), target, null, false, URI_KEY_1);
+    TargetAction request = new TargetAction(mock(Picasso.class), target, null, false, 0, errorDrawable, URI_KEY_1);
     request.error();
-    verify(target).onBitmapFailed(null);
+    verify(target).onBitmapFailed(errorDrawable);
+  }
+
+  @Test
+  public void invokesOnBitmapFailedIfTargetIsNotNullWithErrorResourceId() throws Exception {
+    Drawable errorDrawable = mock(Drawable.class);
+    Target target = mockTarget();
+    Context context = mock(Context.class);
+    Picasso picasso =
+        new Picasso(context, mock(Dispatcher.class), Cache.NONE, null, IDENTITY,
+            mock(Stats.class), true);
+    Resources res = mock(Resources.class);
+    TargetAction request = new TargetAction(picasso, target, null, false, RESOURCE_ID_1, null, URI_KEY_1);
+
+    when(context.getResources()).thenReturn(res);
+    when(res.getDrawable(RESOURCE_ID_1)).thenReturn(errorDrawable);
+    request.error();
+    verify(target).onBitmapFailed(errorDrawable);
   }
 
   @Test public void recyclingInSuccessThrowsException() {
@@ -74,7 +96,7 @@ public class TargetActionTest {
     };
     Picasso picasso = mock(Picasso.class);
 
-    TargetAction tr = new TargetAction(picasso, bad, null, false, URI_KEY_1);
+    TargetAction tr = new TargetAction(picasso, bad, null, false, 0, null, URI_KEY_1);
     try {
       tr.complete(BITMAP_1, MEMORY);
       fail();
