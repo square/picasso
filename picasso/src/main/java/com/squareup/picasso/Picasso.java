@@ -117,11 +117,11 @@ public class Picasso {
   final Map<ImageView, DeferredRequestCreator> targetToDeferredRequestCreator;
   final ReferenceQueue<Object> referenceQueue;
 
-  boolean debugging;
+  boolean indicatorsEnabled;
   boolean shutdown;
 
   Picasso(Context context, Dispatcher dispatcher, Cache cache, Listener listener,
-      RequestTransformer requestTransformer, Stats stats, boolean debugging) {
+      RequestTransformer requestTransformer, Stats stats, boolean indicatorsEnabled) {
     this.context = context;
     this.dispatcher = dispatcher;
     this.cache = cache;
@@ -130,7 +130,7 @@ public class Picasso {
     this.stats = stats;
     this.targetToAction = new WeakHashMap<Object, Action>();
     this.targetToDeferredRequestCreator = new WeakHashMap<ImageView, DeferredRequestCreator>();
-    this.debugging = debugging;
+    this.indicatorsEnabled = indicatorsEnabled;
     this.referenceQueue = new ReferenceQueue<Object>();
     this.cleanupThread = new CleanupThread(referenceQueue, HANDLER);
     this.cleanupThread.start();
@@ -217,14 +217,30 @@ public class Picasso {
     return new RequestCreator(this, null, resourceId);
   }
 
-  /** {@code true} if debug display, logging, and statistics are enabled. */
-  @SuppressWarnings("UnusedDeclaration") public boolean isDebugging() {
-    return debugging;
+  /**
+   * @deprecated Use {@link #areIndicatorsEnabled()} instead.
+   * {@code true} if debug display, logging, and statistics are enabled.
+   */
+  @SuppressWarnings("UnusedDeclaration") @Deprecated public boolean isDebugging() {
+    return areIndicatorsEnabled();
   }
 
-  /** Toggle whether debug display, logging, and statistics are enabled. */
-  @SuppressWarnings("UnusedDeclaration") public void setDebugging(boolean debugging) {
-    this.debugging = debugging;
+  /**
+   * @deprecated Use {@link #setIndicatorsEnabled(boolean)} instead.
+   * Toggle whether debug display, logging, and statistics are enabled.
+   */
+  @SuppressWarnings("UnusedDeclaration") @Deprecated public void setDebugging(boolean debugging) {
+    setIndicatorsEnabled(debugging);
+  }
+
+  /** Toggle whether to display debug indicators on images. */
+  @SuppressWarnings("UnusedDeclaration") public void setIndicatorsEnabled(boolean enabled) {
+    indicatorsEnabled = enabled;
+  }
+
+  /** {@code true} if debug indicators should are displayed on images. */
+  @SuppressWarnings("UnusedDeclaration") public boolean areIndicatorsEnabled() {
+    return indicatorsEnabled;
   }
 
   /**
@@ -424,7 +440,8 @@ public class Picasso {
     private Cache cache;
     private Listener listener;
     private RequestTransformer transformer;
-    private boolean debugging;
+
+    private boolean indicatorsEnabled;
 
     /** Start building a new {@link Picasso} instance. */
     public Builder(Context context) {
@@ -499,9 +516,16 @@ public class Picasso {
       return this;
     }
 
-    /** Whether debugging is enabled or not. */
-    public Builder debugging(boolean debugging) {
-      this.debugging = debugging;
+    /**
+     * @deprecated Use {@link #indicatorsEnabled(boolean)} instead.
+     * Whether debugging is enabled or not.
+     */
+    @Deprecated public Builder debugging(boolean debugging) {
+      return indicatorsEnabled(debugging);
+    }
+
+    public Builder indicatorsEnabled(boolean enabled) {
+      this.indicatorsEnabled = enabled;
       return this;
     }
 
@@ -526,7 +550,8 @@ public class Picasso {
 
       Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, downloader, cache, stats);
 
-      return new Picasso(context, dispatcher, cache, listener, transformer, stats, debugging);
+      return new Picasso(context, dispatcher, cache, listener, transformer, stats,
+          indicatorsEnabled);
     }
   }
 
