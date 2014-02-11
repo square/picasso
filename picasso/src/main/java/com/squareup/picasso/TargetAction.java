@@ -16,11 +16,13 @@
 package com.squareup.picasso;
 
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 
 final class TargetAction extends Action<Target> {
 
-  TargetAction(Picasso picasso, Target target, Request data, boolean skipCache, String key) {
-    super(picasso, target, data, skipCache, false, 0, null, key);
+  TargetAction(Picasso picasso, Target target, Request data, boolean skipCache,
+        int errorResId, Drawable errorDrawable, String key) {
+    super(picasso, target, data, skipCache, false, errorResId, errorDrawable, key);
   }
 
   @Override void complete(Bitmap result, Picasso.LoadedFrom from) {
@@ -40,7 +42,11 @@ final class TargetAction extends Action<Target> {
   @Override void error() {
     Target target = getTarget();
     if (target != null) {
-      target.onBitmapFailed(errorDrawable);
+      if (errorResId != 0) {
+        target.onBitmapFailed(picasso.context.getResources().getDrawable(errorResId));
+      } else {
+        target.onBitmapFailed(errorDrawable);
+      }
     }
   }
 }

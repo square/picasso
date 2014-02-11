@@ -329,7 +329,8 @@ public class RequestCreator {
 
     target.onPrepareLoad(drawable);
 
-    Action action = new TargetAction(picasso, target, finalData, skipMemoryCache, requestKey);
+    Action action = new TargetAction(picasso, target, finalData, skipMemoryCache, errorResId,
+        errorDrawable, requestKey);
     picasso.enqueueAndSubmit(action);
   }
 
