@@ -16,7 +16,6 @@
 package com.squareup.picasso;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import org.junit.Test;
@@ -25,7 +24,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import static android.graphics.Bitmap.Config.ARGB_8888;
 import static android.graphics.Color.RED;
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
@@ -39,22 +37,22 @@ public class PicassoDrawableTest {
   private final Drawable placeholder = new ColorDrawable(RED);
 
   @Test public void createWithNoPlaceholderAnimation() {
-    PicassoDrawable pd = new PicassoDrawable(context, null, BITMAP_1, DISK, false, false);
-    assertThat(pd.image.getBitmap()).isSameAs(BITMAP_1);
+    PicassoDrawable pd = new PicassoDrawable(context, BITMAP_1, null, DISK, false, false);
+    assertThat(pd.getBitmap()).isSameAs(BITMAP_1);
     assertThat(pd.placeholder).isNull();
     assertThat(pd.animating).isTrue();
   }
 
   @Test public void createWithPlaceholderAnimation() {
-    PicassoDrawable pd = new PicassoDrawable(context, placeholder, BITMAP_1, DISK, false, false);
-    assertThat(pd.image.getBitmap()).isSameAs(BITMAP_1);
+    PicassoDrawable pd = new PicassoDrawable(context, BITMAP_1, placeholder, DISK, false, false);
+    assertThat(pd.getBitmap()).isSameAs(BITMAP_1);
     assertThat(pd.placeholder).isSameAs(placeholder);
     assertThat(pd.animating).isTrue();
   }
 
   @Test public void createWithBitmapCacheHit() {
-    PicassoDrawable pd = new PicassoDrawable(context, placeholder, BITMAP_1, MEMORY, false, false);
-    assertThat(pd.image.getBitmap()).isSameAs(BITMAP_1);
+    PicassoDrawable pd = new PicassoDrawable(context, BITMAP_1, placeholder, MEMORY, false, false);
+    assertThat(pd.getBitmap()).isSameAs(BITMAP_1);
     assertThat(pd.placeholder).isNull();
     assertThat(pd.animating).isFalse();
   }
