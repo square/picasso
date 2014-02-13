@@ -342,8 +342,9 @@ abstract class BitmapHunter implements Runnable {
   }
 
   static Bitmap transformResult(Request data, Bitmap result, int exifRotation) {
-    int inWidth = result.getWidth();
-    int inHeight = result.getHeight();
+    boolean swapDimens = exifRotation == 90 || exifRotation == 270;
+    int inWidth = swapDimens ? result.getHeight() : result.getWidth();
+    int inHeight = swapDimens ? result.getWidth() : result.getHeight();
 
     int drawX = 0;
     int drawY = 0;
@@ -401,7 +402,8 @@ abstract class BitmapHunter implements Runnable {
     }
 
     Bitmap newResult =
-        Bitmap.createBitmap(result, drawX, drawY, drawWidth, drawHeight, matrix, true);
+        Bitmap.createBitmap(result,  swapDimens ? drawY : drawX,  swapDimens ? drawX : drawY,
+            swapDimens ? drawHeight : drawWidth, swapDimens ? drawWidth : drawHeight, matrix, true);
     if (newResult != result) {
       result.recycle();
       result = newResult;
