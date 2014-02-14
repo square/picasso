@@ -539,6 +539,20 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
   }
 
+  @Test public void exif90SwapsDimensions() throws Exception {
+    Request data = new Request.Builder(URI_1).build();
+    Bitmap in = Bitmap.createBitmap(30, 40, null);
+    Bitmap out = transformResult(data, in, 90);
+    assertThat(out).hasWidth(40).hasHeight(30);
+  }
+
+  @Test public void exif270SwapsDimensions() throws Exception {
+    Request data = new Request.Builder(URI_1).build();
+    Bitmap in = Bitmap.createBitmap(30, 40, null);
+    Bitmap out = transformResult(data, in, 270);
+    assertThat(out).hasWidth(40).hasHeight(30);
+  }
+
   @Test public void reusedBitmapIsNotRecycled() throws Exception {
     Request data = new Request.Builder(URI_1).build();
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
