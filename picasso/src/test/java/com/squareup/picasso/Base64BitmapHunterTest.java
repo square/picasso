@@ -30,7 +30,7 @@ public class Base64BitmapHunterTest {
   }
 
   @Test public void truncatesFilePrefix() throws IOException {
-    Uri uri = Uri.parse(DATA_URI);
+    Uri uri = Uri.parse(TestUtils.DATA_URI);
     String base64 = DATA_URI.substring(22);
     Request request = new Request.Builder(uri).build();
     String key = createKey(request);
