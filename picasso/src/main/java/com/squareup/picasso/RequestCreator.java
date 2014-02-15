@@ -445,7 +445,7 @@ public class RequestCreator {
       if (bitmap != null) {
         picasso.cancelRequest(target);
         PicassoDrawable.setBitmap(target, picasso.context, bitmap, MEMORY, noFade,
-            picasso.debugging);
+            picasso.indicatorsEnabled);
         if (callback != null) {
           callback.onSuccess();
         }

@@ -263,10 +263,10 @@ public class PicassoTest {
     verify(stats).createSnapshot();
   }
 
-  @Test public void debuggingChangesFlag() throws Exception {
-    assertThat(picasso.isDebugging()).isFalse();
-    picasso.setDebugging(true);
-    assertThat(picasso.isDebugging()).isTrue();
+  @Test public void enableIndicators() throws Exception {
+    assertThat(picasso.areIndicatorsEnabled()).isFalse();
+    picasso.setIndicatorsEnabled(true);
+    assertThat(picasso.areIndicatorsEnabled()).isTrue();
   }
 
   @Test public void loadThrowsWithInvalidInput() throws Exception {
@@ -361,8 +361,8 @@ public class PicassoTest {
     }
   }
 
-  @Test public void builderWithDebugging() throws Exception {
-    Picasso picasso = new Picasso.Builder(Robolectric.application).debugging(true).build();
-    assertThat(picasso.isDebugging()).isTrue();
+  @Test public void builderWithDebugIndicators() throws Exception {
+    Picasso picasso = new Picasso.Builder(Robolectric.application).indicatorsEnabled(true).build();
+    assertThat(picasso.areIndicatorsEnabled()).isTrue();
   }
 }
