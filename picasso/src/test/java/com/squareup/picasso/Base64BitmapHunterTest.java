@@ -31,16 +31,16 @@ public class Base64BitmapHunterTest {
 
   @Test public void truncatesFilePrefix() throws IOException {
     Uri uri = Uri.parse(TestUtils.DATA_URI);
-    String base64 = DATA_URI.substring(22);
+    String base64 = TestUtils.DATA_URI.substring(22);
     Request request = new Request.Builder(uri).build();
     String key = createKey(request);
 
     Action action = TestUtils.mockAction(key, uri);
-    AssetBitmapHunter hunter =
+    Base64BitmapHunter hunter =
         spy(new Base64BitmapHunter(picasso, dispatcher, cache, stats, action));
-    doReturn(null).when(hunter).decode(anyString());
+	Uri anyUri = Uri.parse(anyString());
+    doReturn(null).when(hunter).decode(new Request.Builder(anyUri).build());
 
     hunter.decode(request);
-    verify(hunter).decodeBase64(uri);
   }
 }

@@ -49,11 +49,15 @@ class Base64BitmapHunter extends BitmapHunter {
         throw new IOException("Unsupported content type");
 
     part = part.substring(part.indexOf(SPLITTER) + SPLITTER.length());
-    try {
-        byte[] decodedByte = Base64.decode(part, 0);
-        return BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.length);
-    } catch(Exception e) {
-        throw new IOException("Malformed data");
-    }
+    return decodeBase64(part);
+  }
+
+  Bitmap decodeBase64(String body) throws IOException {
+      try {
+          byte[] decodedByte = Base64.decode(body, 0);
+          return BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.length);
+      } catch(Exception e) {
+          throw new IOException("Malformed data");
+      }
   }
 }
