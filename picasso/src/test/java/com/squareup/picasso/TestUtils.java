@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2013 Square, Inc.
+* Copyright (C) 2014 Square, Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -47,6 +47,8 @@ class TestUtils {
   };
   static final Uri URI_1 = Uri.parse("http://example.com/1.png");
   static final Uri URI_2 = Uri.parse("http://example.com/2.png");
+  static final String DATA_URI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAMFBMVEWmpqa3t7e0tLS5ubna2trS0tLc3Nzg4ODHx8e/v7/m5ubq6urOzs7///+oqKjW1tZ40BHiAAAADnRSTlP/////////////////AEXA3MgAAABYSURBVBjTfc/LDoAwCETR2wKltqL//7fu+jBRlidkGIjX8AMqvoFi+0aiR/gCmdosTzAAygADkujIOIBznL0lAz56KMDls1i2VklLU4/oG0SEoRu4lO9vH7gQCqDeY1zrAAAAAElFTkSuQmCC";
+  static final String DATA_URI_KEY = createKey(new Request.Builder(Uri.parse(DATA_URI)).build());
   static final String URI_KEY_1 = createKey(new Request.Builder(URI_1).build());
   static final String URI_KEY_2 = createKey(new Request.Builder(URI_2).build());
   static final Bitmap BITMAP_1 = Bitmap.createBitmap(10, 10, null);

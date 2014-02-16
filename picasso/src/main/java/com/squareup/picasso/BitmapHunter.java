@@ -34,6 +34,7 @@ import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentResolver.SCHEME_FILE;
 import static android.provider.ContactsContract.Contacts;
 import static com.squareup.picasso.AssetBitmapHunter.ANDROID_ASSET;
+import static com.squareup.picasso.Base64BitmapHunter.SCHEME_DATA;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 
 abstract class BitmapHunter implements Runnable {
@@ -247,6 +248,8 @@ abstract class BitmapHunter implements Runnable {
       return new FileBitmapHunter(context, picasso, dispatcher, cache, stats, action);
     } else if (SCHEME_ANDROID_RESOURCE.equals(scheme)) {
       return new ResourceBitmapHunter(context, picasso, dispatcher, cache, stats, action);
+    } else if (SCHEME_DATA.equals(scheme)) {
+      return new Base64BitmapHunter(picasso, dispatcher, cache, stats, action);
     } else {
       return new NetworkBitmapHunter(picasso, dispatcher, cache, stats, action, downloader);
     }
