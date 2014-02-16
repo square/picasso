@@ -89,9 +89,9 @@ public final class Request {
   String getName() {
     if (uri != null) {
       String path = uri.getPath();
-      return path == null ?
-        Integer.toHexString(uri.toString().hashCode()) :
-        path;
+      return path == null
+        ? Integer.toHexString(uri.toString().hashCode())
+        : path;
     }
     return Integer.toHexString(resourceId);
   }

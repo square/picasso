@@ -26,8 +26,8 @@ import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 class Base64BitmapHunter extends BitmapHunter {
   public static final String SCHEME_DATA = "data";
 
-  private final String MIME_PREFIX = "image/";
-  private final String SPLITTER = "base64,";
+  private static final String MIME_PREFIX = "image/";
+  private static final String SPLITTER = "base64,";
 
   Base64BitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache,
     Stats stats, Action action) {
@@ -43,12 +43,12 @@ class Base64BitmapHunter extends BitmapHunter {
     if (!part.startsWith(MIME_PREFIX)) {
       throw new IOException("Malformed data uri");
     }
-	
+
     part = part.substring(MIME_PREFIX.length());
     if (!part.matches("^(gif|jpe?g|png);base64,.[A-Za-z0-9+/=]*$")) {
       throw new IOException("Unsupported content type");
     }
-	
+
     part = part.substring(part.indexOf(SPLITTER) + SPLITTER.length());
     return decodeBase64(part);
   }
@@ -57,7 +57,7 @@ class Base64BitmapHunter extends BitmapHunter {
     try {
       byte[] decodedByte = Base64.decode(body, 0);
       return BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.length);
-    } catch(Exception e) {
+    } catch (Exception e) {
       throw new IOException("Malformed data");
     }
   }
