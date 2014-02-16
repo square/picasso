@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Square, Inc.
+ * Copyright (C) 2014 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,34 +30,35 @@ class Base64BitmapHunter extends BitmapHunter {
   private final String SPLITTER = "base64,";
 
   Base64BitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache,
-                     Stats stats, Action action) {
+    Stats stats, Action action) {
     super(picasso, dispatcher, cache, stats, action);
   }
 
   @Override Picasso.LoadedFrom getLoadedFrom() {
-        return MEMORY;
-    }
+    return MEMORY;
+  }
 
   @Override Bitmap decode(Request data) throws IOException {
-
     String part = data.uri.getSchemeSpecificPart();
-    if(!part.startsWith(MIME_PREFIX))
-        throw new IOException("Malformed data uri");
-
+    if (!part.startsWith(MIME_PREFIX)) {
+      throw new IOException("Malformed data uri");
+    }
+	
     part = part.substring(MIME_PREFIX.length());
-    if(!part.matches("^(gif|jpe?g|png);base64,.[A-Za-z0-9+/=]*$"))
-        throw new IOException("Unsupported content type");
-
+    if (!part.matches("^(gif|jpe?g|png);base64,.[A-Za-z0-9+/=]*$")) {
+      throw new IOException("Unsupported content type");
+    }
+	
     part = part.substring(part.indexOf(SPLITTER) + SPLITTER.length());
     return decodeBase64(part);
   }
 
   Bitmap decodeBase64(String body) throws IOException {
-      try {
-          byte[] decodedByte = Base64.decode(body, 0);
-          return BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.length);
-      } catch(Exception e) {
-          throw new IOException("Malformed data");
-      }
+    try {
+      byte[] decodedByte = Base64.decode(body, 0);
+      return BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.length);
+    } catch(Exception e) {
+      throw new IOException("Malformed data");
+    }
   }
 }

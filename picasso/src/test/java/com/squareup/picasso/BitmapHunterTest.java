@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Square, Inc.
+ * Copyright (C) 2014 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,8 @@ import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.mockAction;
 import static com.squareup.picasso.TestUtils.mockImageViewTarget;
+import static com.squareup.picasso.TestUtils.DATA_URI;
+import static com.squareup.picasso.TestUtils.DATA_URI_KEY;
 import static org.fest.assertions.api.ANDROID.assertThat;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.api.Assertions.entry;
@@ -290,6 +292,13 @@ public class BitmapHunterTest {
     BitmapHunter hunter =
         forRequest(context, picasso, dispatcher, cache, stats, action, downloader);
     assertThat(hunter).isInstanceOf(AssetBitmapHunter.class);
+  }
+  
+  @Test public void forDataUri() throws Exception {
+    Action action = mockAction(DATA_URI_KEY, Uri.parse(DATA_URI));
+    BitmapHunter hunter =
+        forRequest(context, picasso, dispatcher, cache, stats, action, downloader);
+    assertThat(hunter).isInstanceOf(Base64BitmapHunter.class);
   }
 
   @Test public void forFileWithNoPathSegments() {
