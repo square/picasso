@@ -2,7 +2,7 @@ package com.squareup.picasso.pollexor;
 
 import android.net.Uri;
 import com.squareup.picasso.Request;
-import com.squareup.pollexor.Pollexor;
+import com.squareup.pollexor.Thumbor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -53,7 +53,7 @@ public class PollexorRequestTransformerTest {
     assertThat(output).isNotSameAs(input);
     assertThat(output.hasSize()).isFalse();
 
-    String expected = Pollexor.image(IMAGE).host(HOST).resize(50, 50).toUrl();
+    String expected = Thumbor.create(HOST).buildImage(IMAGE).resize(50, 50).toUrl();
     assertThat(output.uri.toString()).isEqualTo(expected);
   }
 
@@ -64,7 +64,7 @@ public class PollexorRequestTransformerTest {
     assertThat(output.hasSize()).isFalse();
     assertThat(output.centerInside).isFalse();
 
-    String expected = Pollexor.image(IMAGE).host(HOST).resize(50, 50).fitIn().toUrl();
+    String expected = Thumbor.create(HOST).buildImage(IMAGE).resize(50, 50).fitIn().toUrl();
     assertThat(output.uri.toString()).isEqualTo(expected);
   }
 
@@ -74,7 +74,7 @@ public class PollexorRequestTransformerTest {
     assertThat(output).isNotSameAs(input);
     assertThat(output.hasSize()).isFalse();
 
-    String expected = Pollexor.image(IMAGE).host(HOST).key(KEY).resize(50, 50).toUrl();
+    String expected = Thumbor.create(HOST, KEY).buildImage(IMAGE).resize(50, 50).toUrl();
     assertThat(output.uri.toString()).isEqualTo(expected);
   }
 
@@ -85,7 +85,7 @@ public class PollexorRequestTransformerTest {
     assertThat(output.hasSize()).isFalse();
     assertThat(output.centerInside).isFalse();
 
-    String expected = Pollexor.image(IMAGE).host(HOST).key(KEY).resize(50, 50).fitIn().toUrl();
+    String expected = Thumbor.create(HOST, KEY).buildImage(IMAGE).resize(50, 50).fitIn().toUrl();
     assertThat(output.uri.toString()).isEqualTo(expected);
   }
 }
