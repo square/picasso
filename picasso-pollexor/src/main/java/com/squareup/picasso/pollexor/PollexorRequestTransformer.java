@@ -2,27 +2,37 @@ package com.squareup.picasso.pollexor;
 
 import android.net.Uri;
 import com.squareup.picasso.Request;
-import com.squareup.pollexor.Pollexor;
+import com.squareup.pollexor.Thumbor;
+import com.squareup.pollexor.ThumborUrlBuilder;
 
 import static com.squareup.picasso.Picasso.RequestTransformer;
 
 /**
- * A {@link RequestTransformer} that changes requests to use Thumbor for some remote
+ * A {@link RequestTransformer} that changes requests to use {@link Thumbor} for some remote
  * transformations.
  */
 public class PollexorRequestTransformer implements RequestTransformer {
-  private final String host;
-  private final String key;
+  private final Thumbor thumbor;
 
-  /** Create a transformer for the specified Thumbor host. This will not use URL encryption. */
-  public PollexorRequestTransformer(String host) {
-    this(host, null);
+  /**
+   * @deprecated Use {@link #PollexorRequestTransformer(Thumbor)} instead.
+   * Create a transformer for the specified Thumbor host. This will not use URL encryption.
+   */
+  @Deprecated public PollexorRequestTransformer(String host) {
+    this(Thumbor.create(host));
   }
 
-  /** Create a transformer for the specified Thumbor host using the provided URL encryption key. */
-  public PollexorRequestTransformer(String host, String key) {
-    this.host = host;
-    this.key = key;
+  /**
+   * @deprecated Use {@link #PollexorRequestTransformer(Thumbor)} instead.
+   * Create a transformer for the specified Thumbor host using the provided URL encryption key.
+   */
+  @Deprecated public PollexorRequestTransformer(String host, String key) {
+    this(Thumbor.create(host, key));
+  }
+
+  /** Create a transformer for the specified {@link Thumbor}. */
+  public PollexorRequestTransformer(Thumbor thumbor) {
+    this.thumbor = thumbor;
   }
 
   @Override public Request transformRequest(Request request) {
@@ -44,24 +54,21 @@ public class PollexorRequestTransformer implements RequestTransformer {
     // Start building a new request for us to mutate.
     Request.Builder newRequest = request.buildUpon();
 
-    // Start creating the Thumbor URL with the image and host. Add the encryption key, if present.
-    Pollexor pollexor = Pollexor.image(uri.toString()).host(host);
-    if (key != null) {
-      pollexor.key(key);
-    }
+    // Create the url builder to use.
+    ThumborUrlBuilder urlBuilder = thumbor.buildImage(uri.toString());
 
     // Resize the image to the target size.
-    pollexor.resize(request.targetWidth, request.targetHeight);
+    urlBuilder.resize(request.targetWidth, request.targetHeight);
     newRequest.clearResize();
 
     // If the center inside flag is set, perform that with Thumbor as well.
     if (request.centerInside) {
-      pollexor.fitIn();
+      urlBuilder.fitIn();
       newRequest.clearCenterInside();
     }
 
     // Update the request with the completed Thumbor URL.
-    newRequest.setUri(Uri.parse(pollexor.toUrl()));
+    newRequest.setUri(Uri.parse(urlBuilder.toUrl()));
 
     return newRequest.build();
   }
