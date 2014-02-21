@@ -22,11 +22,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -272,7 +272,7 @@ class Dispatcher {
     }
   }
 
-  private class NetworkBroadcastReceiver extends BroadcastReceiver {
+  class NetworkBroadcastReceiver extends BroadcastReceiver {
     private static final String EXTRA_AIRPLANE_STATE = "state";
 
     private final ConnectivityManager connectivityManager;
@@ -297,16 +297,14 @@ class Dispatcher {
     }
 
     @Override public void onReceive(Context context, Intent intent) {
-      // On some versions of Android this may be called with a null Intent
-      if (null == intent) {
+      // On some versions of Android this may be called with a null Intent,
+      // also without extras (getExtras() == null), in such case we use defaults.
+      if (intent == null) {
         return;
       }
-
-      String action = intent.getAction();
-      Bundle extras = intent.getExtras();
-
+      final String action = intent.getAction();
       if (ACTION_AIRPLANE_MODE_CHANGED.equals(action)) {
-        dispatchAirplaneModeChange(extras.getBoolean(EXTRA_AIRPLANE_STATE, false));
+        dispatchAirplaneModeChange(intent.getBooleanExtra(EXTRA_AIRPLANE_STATE, false));
       } else if (CONNECTIVITY_ACTION.equals(action)) {
         dispatchNetworkStateChange(connectivityManager.getActiveNetworkInfo());
       }
