@@ -25,10 +25,11 @@ import android.provider.MediaStore;
 import java.io.IOException;
 
 import static android.content.ContentUris.parseId;
+import static android.provider.MediaStore.Images;
 import static android.provider.MediaStore.Images.Thumbnails.FULL_SCREEN_KIND;
 import static android.provider.MediaStore.Images.Thumbnails.MICRO_KIND;
 import static android.provider.MediaStore.Images.Thumbnails.MINI_KIND;
-import static android.provider.MediaStore.Images.Thumbnails.getThumbnail;
+import static android.provider.MediaStore.Video;
 import static com.squareup.picasso.MediaStoreBitmapHunter.PicassoKind.FULL;
 import static com.squareup.picasso.MediaStoreBitmapHunter.PicassoKind.MICRO;
 import static com.squareup.picasso.MediaStoreBitmapHunter.PicassoKind.MINI;
@@ -46,10 +47,13 @@ class MediaStoreBitmapHunter extends ContentStreamBitmapHunter {
   @Override Bitmap decode(Request data) throws IOException {
     ContentResolver contentResolver = context.getContentResolver();
     setExifRotation(getExitOrientation(contentResolver, data.uri));
+    String mimeType = contentResolver.getType(data.uri);
+    boolean isVideo = (mimeType != null && mimeType.startsWith("video/"));
 
     if (data.hasSize()) {
       PicassoKind picassoKind = getPicassoKind(data.targetWidth, data.targetHeight);
-      if (picassoKind == FULL) {
+      // This modified decode function can return the bitmap of a video thumbnail.
+      if (!isVideo && picassoKind == FULL) {
         return super.decode(data);
       }
 
@@ -61,7 +65,17 @@ class MediaStoreBitmapHunter extends ContentStreamBitmapHunter {
       calculateInSampleSize(data.targetWidth, data.targetHeight, picassoKind.width,
           picassoKind.height, options);
 
-      Bitmap result = getThumbnail(contentResolver, id, picassoKind.androidKind, options);
+      Bitmap result = null;
+
+      if (isVideo) {
+        // Since MediaStore doesn't provide the full screen kind thumbnail, we use the mini kind
+        // instead which is the largest thumbnail size can be fetched from MediaStore.
+        int kind = (picassoKind == FULL) ? Video.Thumbnails.MINI_KIND : picassoKind.androidKind;
+        result = Video.Thumbnails.getThumbnail(contentResolver, id, kind, options);
+      } else {
+        result = Images.Thumbnails.getThumbnail(contentResolver, id, picassoKind.androidKind,
+            options);
+      }
 
       if (result != null) {
         return result;
