@@ -38,6 +38,7 @@ import static android.content.Intent.ACTION_AIRPLANE_MODE_CHANGED;
 import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static com.squareup.picasso.BitmapHunter.forRequest;
+import static com.squareup.picasso.Utils.getService;
 
 class Dispatcher {
   private static final int RETRY_DELAY = 500;
@@ -87,7 +88,7 @@ class Dispatcher {
     this.stats = stats;
     this.batch = new ArrayList<BitmapHunter>(4);
     this.airplaneMode = Utils.isAirplaneModeOn(this.context);
-    this.receiver = new NetworkBroadcastReceiver(this.context);
+    this.receiver = new NetworkBroadcastReceiver(this);
     receiver.register();
   }
 
@@ -272,28 +273,28 @@ class Dispatcher {
     }
   }
 
-  class NetworkBroadcastReceiver extends BroadcastReceiver {
-    private static final String EXTRA_AIRPLANE_STATE = "state";
+  static class NetworkBroadcastReceiver extends BroadcastReceiver {
+    static final String EXTRA_AIRPLANE_STATE = "state";
 
-    private final ConnectivityManager connectivityManager;
+    private final Dispatcher dispatcher;
 
-    NetworkBroadcastReceiver(Context context) {
-      connectivityManager = (ConnectivityManager) context.getSystemService(CONNECTIVITY_SERVICE);
+    NetworkBroadcastReceiver(Dispatcher dispatcher) {
+      this.dispatcher = dispatcher;
     }
 
     void register() {
-      boolean shouldScanState = service instanceof PicassoExecutorService && //
-          Utils.hasPermission(context, Manifest.permission.ACCESS_NETWORK_STATE);
+      boolean shouldScanState = dispatcher.service instanceof PicassoExecutorService && //
+          Utils.hasPermission(dispatcher.context, Manifest.permission.ACCESS_NETWORK_STATE);
       IntentFilter filter = new IntentFilter();
       filter.addAction(ACTION_AIRPLANE_MODE_CHANGED);
       if (shouldScanState) {
         filter.addAction(CONNECTIVITY_ACTION);
       }
-      context.registerReceiver(this, filter);
+      dispatcher.context.registerReceiver(this, filter);
     }
 
     void unregister() {
-      context.unregisterReceiver(this);
+      dispatcher.context.unregisterReceiver(this);
     }
 
     @Override public void onReceive(Context context, Intent intent) {
@@ -304,9 +305,13 @@ class Dispatcher {
       }
       final String action = intent.getAction();
       if (ACTION_AIRPLANE_MODE_CHANGED.equals(action)) {
-        dispatchAirplaneModeChange(intent.getBooleanExtra(EXTRA_AIRPLANE_STATE, false));
+        if (!intent.hasExtra(EXTRA_AIRPLANE_STATE)) {
+          return; // No airplane state, ignore it. Should we query Utils.isAirplaneModeOn?
+        }
+        dispatcher.dispatchAirplaneModeChange(intent.getBooleanExtra(EXTRA_AIRPLANE_STATE, false));
       } else if (CONNECTIVITY_ACTION.equals(action)) {
-        dispatchNetworkStateChange(connectivityManager.getActiveNetworkInfo());
+        ConnectivityManager connectivityManager = getService(context, CONNECTIVITY_SERVICE);
+        dispatcher.dispatchNetworkStateChange(connectivityManager.getActiveNetworkInfo());
       }
     }
   }

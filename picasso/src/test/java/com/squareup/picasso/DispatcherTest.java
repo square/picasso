@@ -32,6 +32,8 @@ import java.util.concurrent.ExecutorService;
 import static android.content.Context.CONNECTIVITY_SERVICE;
 import static android.content.Intent.ACTION_AIRPLANE_MODE_CHANGED;
 import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
+import static com.squareup.picasso.Dispatcher.NetworkBroadcastReceiver;
+import static com.squareup.picasso.Dispatcher.NetworkBroadcastReceiver.EXTRA_AIRPLANE_STATE;
 import static com.squareup.picasso.TestUtils.BITMAP_1;
 import static com.squareup.picasso.TestUtils.BITMAP_2;
 import static com.squareup.picasso.TestUtils.URI_1;
@@ -263,7 +265,7 @@ public class DispatcherTest {
   public void performNetworkStateChangeWithConnectedInfoAndPicassoExecutorServiceAdjustsThreads()
       throws Exception {
     PicassoExecutorService service = mock(PicassoExecutorService.class);
-    Dispatcher dispatcher = mockMeOneNow(service);
+    Dispatcher dispatcher = new Dispatcher(context, service, mainThreadHandler, downloader, cache, stats);
     NetworkInfo info = mockNetworkInfo();
     when(info.isConnectedOrConnecting()).thenReturn(true);
     dispatcher.performNetworkStateChange(info);
@@ -271,23 +273,43 @@ public class DispatcherTest {
     verifyZeroInteractions(service);
   }
 
-  private Dispatcher mockMeOneNow(ExecutorService service) {
-    return new Dispatcher(context, service, mainThreadHandler, downloader, cache, stats);
-  }
-
-  @Test public void nullIntentOnReceiveDoNothing() {
-    dispatcher.receiver.onReceive(context, null);
+  @Test public void nullIntentOnReceiveDoesNothing() {
+    Dispatcher dispatcher = mock(Dispatcher.class);
+    NetworkBroadcastReceiver receiver = new NetworkBroadcastReceiver(dispatcher);
+    receiver.onReceive(context, null);
+    verifyZeroInteractions(dispatcher);
   }
 
   @Test public void nullExtrasOnReceiveConnectivityAreOk() {
     ConnectivityManager connectivityManager = mock(ConnectivityManager.class);
-    when(connectivityManager.getActiveNetworkInfo()).thenReturn(mockNetworkInfo());
+    NetworkInfo networkInfo = mockNetworkInfo();
+    when(connectivityManager.getActiveNetworkInfo()).thenReturn(networkInfo);
     when(context.getSystemService(CONNECTIVITY_SERVICE)).thenReturn(connectivityManager);
-    final Dispatcher dispatcher = mockMeOneNow(service);
-    dispatcher.receiver.onReceive(context, new Intent(CONNECTIVITY_ACTION));
+
+    Dispatcher dispatcher = mock(Dispatcher.class);
+    NetworkBroadcastReceiver receiver = new NetworkBroadcastReceiver(dispatcher);
+    receiver.onReceive(context, new Intent(CONNECTIVITY_ACTION));
+    verify(dispatcher).dispatchNetworkStateChange(networkInfo);
   }
 
-  @Test public void nullExtrasOnReceiveAirplaneAreOk() {
-    dispatcher.receiver.onReceive(context, new Intent(ACTION_AIRPLANE_MODE_CHANGED));
+  @Test public void nullExtrasOnReceiveAirplaneDoesNothing() {
+    Dispatcher dispatcher = mock(Dispatcher.class);
+    NetworkBroadcastReceiver receiver = new NetworkBroadcastReceiver(dispatcher);
+    receiver.onReceive(context, new Intent(ACTION_AIRPLANE_MODE_CHANGED));
+    verifyZeroInteractions(dispatcher);
+  }
+
+  @Test public void correctExtrasOnReceiveAirplaneDispatches() {
+    verifyAirplaneMode(false);
+    verifyAirplaneMode(true);
+  }
+
+  private void verifyAirplaneMode(boolean airplaneOn) {
+    Dispatcher dispatcher = mock(Dispatcher.class);
+    NetworkBroadcastReceiver receiver = new NetworkBroadcastReceiver(dispatcher);
+    final Intent intent = new Intent(ACTION_AIRPLANE_MODE_CHANGED);
+    intent.putExtra(EXTRA_AIRPLANE_STATE, airplaneOn);
+    receiver.onReceive(context, intent);
+    verify(dispatcher).dispatchAirplaneModeChange(airplaneOn);
   }
 }
