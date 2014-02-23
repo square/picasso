@@ -300,11 +300,11 @@ public class DispatcherTest {
   }
 
   @Test public void correctExtrasOnReceiveAirplaneDispatches() {
-    verifyAirplaneMode(false);
-    verifyAirplaneMode(true);
+    setAndVerifyAirplaneMode(false);
+    setAndVerifyAirplaneMode(true);
   }
 
-  private void verifyAirplaneMode(boolean airplaneOn) {
+  private void setAndVerifyAirplaneMode(boolean airplaneOn) {
     Dispatcher dispatcher = mock(Dispatcher.class);
     NetworkBroadcastReceiver receiver = new NetworkBroadcastReceiver(dispatcher);
     final Intent intent = new Intent(ACTION_AIRPLANE_MODE_CHANGED);
