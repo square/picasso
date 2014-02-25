@@ -191,6 +191,15 @@ public class RequestCreator {
   }
 
   /**
+   * Use this stableKey to generate the cache key if the URL may change in some case.
+   * See {@link com.squareup.picasso.Request#stableKey}
+   */
+  public RequestCreator stableKey(String stableKey) {
+    data.stableKey(stableKey);
+    return this;
+  }
+
+  /**
    * Add a custom transformation to be applied to the image.
    * <p/>
    * Custom transformations will always be run after the built-in transformations.

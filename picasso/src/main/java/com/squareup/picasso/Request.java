@@ -64,10 +64,21 @@ public final class Request {
   public final boolean hasRotationPivot;
   /** Target image config for decoding. */
   public final Bitmap.Config config;
+  /**
+   * Stable key for this Request.
+   * When the uri changed on every single request and the image are exactly the same.
+   * ex: http://cdn1/abc.jpg
+   *     http://cdn2/abc.jpg
+   * The above uri are changed base on the cdn prefix.
+   * In this case we may not use the uri for the cache key.
+   * When this value was set, we use this stableKey to generate the cache key.
+   */
+  public final String stableKey;
 
   private Request(Uri uri, int resourceId, List<Transformation> transformations, int targetWidth,
       int targetHeight, boolean centerCrop, boolean centerInside, float rotationDegrees,
-      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot, Bitmap.Config config) {
+      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot, Bitmap.Config config,
+      String stableKey) {
     this.uri = uri;
     this.resourceId = resourceId;
     if (transformations == null) {
@@ -84,6 +95,7 @@ public final class Request {
     this.rotationPivotY = rotationPivotY;
     this.hasRotationPivot = hasRotationPivot;
     this.config = config;
+    this.stableKey = stableKey;
   }
 
   String getName() {
@@ -127,6 +139,7 @@ public final class Request {
     private boolean hasRotationPivot;
     private List<Transformation> transformations;
     private Bitmap.Config config;
+    private String stableKey;
 
     /** Start building a request using the specified {@link Uri}. */
     public Builder(Uri uri) {
@@ -158,6 +171,7 @@ public final class Request {
         transformations = new ArrayList<Transformation>(request.transformations);
       }
       config = request.config;
+      stableKey = request.stableKey;
     }
 
     boolean hasImage() {
@@ -286,6 +300,15 @@ public final class Request {
     }
 
     /**
+     * Stable key for this Request.
+     * See {@link com.squareup.picasso.Request#stableKey}
+     */
+    public Builder stableKey(String stableKey) {
+      this.stableKey = stableKey;
+      return this;
+    }
+
+    /**
      * Add a custom transformation to be applied to the image.
      * <p/>
      * Custom transformations will always be run after the built-in transformations.
@@ -313,7 +336,8 @@ public final class Request {
         throw new IllegalStateException("Center inside requires calling resize.");
       }
       return new Request(uri, resourceId, transformations, targetWidth, targetHeight, centerCrop,
-          centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot, config);
+          centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot, config,
+          stableKey);
     }
   }
 }
