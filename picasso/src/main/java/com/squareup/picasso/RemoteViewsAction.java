@@ -18,9 +18,11 @@ package com.squareup.picasso;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.appwidget.AppWidgetManager;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.widget.RemoteViews;
+
+import static android.content.Context.NOTIFICATION_SERVICE;
+import static com.squareup.picasso.Utils.getService;
 
 abstract class RemoteViewsAction extends Action<Void> {
   final RemoteViews remoteViews;
@@ -79,8 +81,7 @@ abstract class RemoteViewsAction extends Action<Void> {
     }
 
     @Override void update() {
-      NotificationManager manager =
-          (NotificationManager) picasso.context.getSystemService(Context.NOTIFICATION_SERVICE);
+      NotificationManager manager = getService(picasso.context, NOTIFICATION_SERVICE);
       manager.notify(notificationId, notification);
     }
   }
