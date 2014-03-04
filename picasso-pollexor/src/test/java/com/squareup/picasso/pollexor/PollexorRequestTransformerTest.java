@@ -57,6 +57,17 @@ public class PollexorRequestTransformerTest {
     assertThat(output.uri.toString()).isEqualTo(expected);
   }
 
+  @Test public void simpleResizeWithCenterCrop() {
+    Request input = new Request.Builder(IMAGE_URI).resize(50, 50).centerCrop().build();
+    Request output = transformer.transformRequest(input);
+    assertThat(output).isNotSameAs(input);
+    assertThat(output.hasSize()).isFalse();
+    assertThat(output.centerCrop).isFalse();
+
+    String expected = Thumbor.create(HOST).buildImage(IMAGE).resize(50, 50).toUrl();
+    assertThat(output.uri.toString()).isEqualTo(expected);
+  }
+
   @Test public void simpleResizeWithCenterInside() {
     Request input = new Request.Builder(IMAGE_URI).resize(50, 50).centerInside().build();
     Request output = transformer.transformRequest(input);
