@@ -231,8 +231,14 @@ public class RequestCreator {
     String key = createKey(finalData, new StringBuilder());
 
     Action action = new GetAction(picasso, finalData, skipMemoryCache, key);
-    return forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache, picasso.stats,
-        action, picasso.dispatcher.downloader).hunt();
+    BitmapHunter hunter =
+        forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache, picasso.stats,
+            action, picasso.dispatcher.downloader);
+    Bitmap result = hunter.hunt();
+    if (result != null && !skipMemoryCache) {
+      picasso.cache.set(key, result);
+    }
+    return result;
   }
 
   /**
@@ -329,8 +335,9 @@ public class RequestCreator {
 
     target.onPrepareLoad(drawable);
 
-    Action action = new TargetAction(picasso, target, finalData, skipMemoryCache, errorResId,
-        errorDrawable, requestKey);
+    Action action =
+        new TargetAction(picasso, target, finalData, skipMemoryCache, errorResId, errorDrawable,
+            requestKey);
     picasso.enqueueAndSubmit(action);
   }
 
