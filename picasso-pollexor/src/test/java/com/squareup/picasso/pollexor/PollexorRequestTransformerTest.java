@@ -41,12 +41,6 @@ public class PollexorRequestTransformerTest {
     assertThat(output).isSameAs(input);
   }
 
-  @Test public void centerCropRequestsAreNotTransformed() {
-    Request input = new Request.Builder(IMAGE_URI).resize(50, 50).centerCrop().build();
-    Request output = transformer.transformRequest(input);
-    assertThat(output).isSameAs(input);
-  }
-
   @Test public void simpleResize() {
     Request input = new Request.Builder(IMAGE_URI).resize(50, 50).build();
     Request output = transformer.transformRequest(input);
