@@ -120,7 +120,7 @@ public class RequestCreator {
   /**
    * Attempt to resize the image to fit exactly into the target {@link ImageView}'s bounds. This
    * will result in delayed execution of the request until the {@link ImageView} has been measured.
-   * <p/>
+   * <p>
    * <em>Note:</em> This method works only when your target is an {@link ImageView}.
    */
   public RequestCreator fit() {
@@ -192,7 +192,7 @@ public class RequestCreator {
 
   /**
    * Add a custom transformation to be applied to the image.
-   * <p/>
+   * <p>
    * Custom transformations will always be run after the built-in transformations.
    */
   // TODO show example of calling resize after a transform in the javadoc
@@ -219,7 +219,7 @@ public class RequestCreator {
 
   /**
    * Synchronously fulfill this request. Must not be called from the main thread.
-   * <p/>
+   * <p>
    * <em>Note</em>: The result of this operation is not cached in memory because the underlying
    * {@link Cache} implementation is not guaranteed to be thread-safe.
    */
@@ -400,7 +400,7 @@ public class RequestCreator {
 
   /**
    * Asynchronously fulfills the request into the specified {@link ImageView}.
-   * <p/>
+   * <p>
    * <em>Note:</em> This method keeps a weak reference to the {@link ImageView} instance and will
    * automatically support object recycling.
    */
@@ -411,7 +411,7 @@ public class RequestCreator {
   /**
    * Asynchronously fulfills the request into the specified {@link ImageView} and invokes the
    * target {@link Callback} if it's not {@code null}.
-   * <p/>
+   * <p>
    * <em>Note:</em> The {@link Callback} param is a strong reference and will prevent your
    * {@link android.app.Activity} or {@link android.app.Fragment} from being garbage collected. If
    * you use this method, it is <b>strongly</b> recommended you invoke an adjacent

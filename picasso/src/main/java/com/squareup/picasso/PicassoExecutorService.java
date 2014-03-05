@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * The default {@link java.util.concurrent.ExecutorService} used for new {@link Picasso} instances.
- * <p/>
+ * <p>
  * Exists as a custom type so that we can differentiate the use of defaults versus a user-supplied
  * instance.
  */
