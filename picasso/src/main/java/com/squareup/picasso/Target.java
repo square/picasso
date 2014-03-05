@@ -22,24 +22,24 @@ import static com.squareup.picasso.Picasso.LoadedFrom;
 
 /**
  * Represents an arbitrary listener for image loading.
- * <p/>
+ * <p>
  * Objects implementing this class <strong>must</strong> have a working implementation of
- * {@link #equals(Object)} and {@link #hashCode()} for proper storage internally. Instances of this
- * interface will also be compared to determine if view recycling is occurring. It is recommended
- * that you add this interface directly on to a custom view type when using in an adapter to ensure
- * correct recycling behavior.
+ * {@link Object#equals(Object)} and {@link Object#hashCode()} for proper storage internally.
+ * Instances of this interface will also be compared to determine if view recycling is occurring.
+ * It is recommended that you add this interface directly on to a custom view type when using in an
+ * adapter to ensure correct recycling behavior.
  */
 public interface Target {
   /**
    * Callback when an image has been successfully loaded.
-   * <p/>
+   * <p>
    * <strong>Note:</strong> You must not recycle the bitmap.
    */
   void onBitmapLoaded(Bitmap bitmap, LoadedFrom from);
 
   /**
    * Callback indicating the image could not be successfully loaded.
-   * <p/>
+   * <p>
    * <strong>Note:</strong> The passed {@link Drawable} may be {@code null} if none has been
    * specified via {@link RequestCreator#error(android.graphics.drawable.Drawable)}
    * or {@link RequestCreator#error(int)}.
@@ -48,7 +48,7 @@ public interface Target {
 
   /**
    * Callback invoked right before your request is submitted.
-   * <p/>
+   * <p>
    * <strong>Note:</strong> The passed {@link Drawable} may be {@code null} if none has been
    * specified via {@link RequestCreator#placeholder(android.graphics.drawable.Drawable)}
    * or {@link RequestCreator#placeholder(int)}.

@@ -39,7 +39,7 @@ import static com.squareup.picasso.Utils.THREAD_PREFIX;
 
 /**
  * Image downloading, transformation, and caching manager.
- * <p/>
+ * <p>
  * Use {@link #with(android.content.Context)} for the global singleton instance or construct your
  * own instance with {@link Builder}.
  */
