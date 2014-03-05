@@ -217,7 +217,12 @@ public class RequestCreator {
     return this;
   }
 
-  /** Synchronously fulfill this request. Must not be called from the main thread. */
+  /**
+   * Synchronously fulfill this request. Must not be called from the main thread.
+   * <p/>
+   * <em>Note</em>: The result of this operation is not cached in memory because the underlying
+   * {@link Cache} implementation is not guaranteed to be thread-safe.
+   */
   public Bitmap get() throws IOException {
     checkNotMain();
     if (deferred) {
