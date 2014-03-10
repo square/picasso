@@ -198,7 +198,7 @@ final class Utils {
   }
 
   static int calculateMemoryCacheSize(Context context) {
-    ActivityManager am = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
+    ActivityManager am = getService(context, ACTIVITY_SERVICE);
     boolean largeHeap = (context.getApplicationInfo().flags & FLAG_LARGE_HEAP) != 0;
     int memoryClass = am.getMemoryClass();
     if (largeHeap && SDK_INT >= HONEYCOMB) {
@@ -211,6 +211,11 @@ final class Utils {
   static boolean isAirplaneModeOn(Context context) {
     ContentResolver contentResolver = context.getContentResolver();
     return Settings.System.getInt(contentResolver, AIRPLANE_MODE_ON, 0) != 0;
+  }
+
+  @SuppressWarnings("unchecked")
+  static <T> T getService(Context context, String service) {
+    return (T) context.getSystemService(service);
   }
 
   static boolean hasPermission(Context context, String permission) {

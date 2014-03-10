@@ -287,7 +287,7 @@ public final class Request {
 
     /**
      * Add a custom transformation to be applied to the image.
-     * <p/>
+     * <p>
      * Custom transformations will always be run after the built-in transformations.
      */
     public Builder transform(Transformation transformation) {
