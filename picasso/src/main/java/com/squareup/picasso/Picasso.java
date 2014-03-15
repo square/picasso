@@ -36,6 +36,7 @@ import static com.squareup.picasso.Action.RequestWeakReference;
 import static com.squareup.picasso.Dispatcher.HUNTER_BATCH_COMPLETE;
 import static com.squareup.picasso.Dispatcher.REQUEST_GCED;
 import static com.squareup.picasso.Utils.THREAD_PREFIX;
+import static com.squareup.picasso.Utils.checkMain;
 
 /**
  * Image downloading, transformation, and caching manager.
@@ -290,6 +291,7 @@ public class Picasso {
   }
 
   void enqueueAndSubmit(Action action) {
+    checkMain();
     Object target = action.getTarget();
     if (target != null) {
       cancelExistingRequest(target);
@@ -361,6 +363,7 @@ public class Picasso {
   }
 
   private void cancelExistingRequest(Object target) {
+    checkMain();
     Action action = targetToAction.remove(target);
     if (action != null) {
       action.cancel();
