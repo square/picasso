@@ -21,8 +21,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
-import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,6 +30,9 @@ import org.mockito.Mock;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+
+import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Picasso.RequestTransformer.IDENTITY;
@@ -52,6 +53,7 @@ import static org.fest.assertions.api.Assertions.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -115,7 +117,7 @@ public class RequestCreatorTest {
 
   @Test public void fetchSubmitsFetchRequest() throws Exception {
     new RequestCreator(picasso, URI_1, 0).fetch();
-    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    verify(picasso).submit(actionCaptor.capture());
     assertThat(actionCaptor.getValue()).isInstanceOf(FetchAction.class);
   }
 
@@ -239,6 +241,42 @@ public class RequestCreatorTest {
     verify(target).setImageResource(R.drawable.picture_frame);
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue()).isInstanceOf(ImageViewAction.class);
+  }
+
+  @Test
+  public void cancelNotOnMainThreadCrashes() throws Exception {
+    doCallRealMethod().when(picasso).cancelRequest(any(Target.class));
+    final CountDownLatch latch = new CountDownLatch(1);
+    new Thread(new Runnable() {
+      @Override public void run() {
+        try {
+          new RequestCreator(picasso, null, 0).into(mockTarget());
+          fail("Should have thrown IllegalStateException");
+        } catch (IllegalStateException ignored) {
+        } finally {
+          latch.countDown();
+        }
+      }
+    }).start();
+    latch.await();
+  }
+
+  @Test
+  public void intoNotOnMainThreadCrashes() throws Exception {
+    doCallRealMethod().when(picasso).enqueueAndSubmit(any(Action.class));
+    final CountDownLatch latch = new CountDownLatch(1);
+    new Thread(new Runnable() {
+      @Override public void run() {
+        try {
+          new RequestCreator(picasso, URI_1, 0).into(mockImageViewTarget());
+          fail("Should have thrown IllegalStateException");
+        } catch (IllegalStateException ignored) {
+        } finally {
+          latch.countDown();
+        }
+      }
+    }).start();
+    latch.await();
   }
 
   @Test
