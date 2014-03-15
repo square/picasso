@@ -93,12 +93,6 @@ final class Utils {
     }
   }
 
-  static void checkMain() {
-    if (Looper.getMainLooper().getThread() != Thread.currentThread()) {
-      throw new IllegalStateException("Method call should happen from the main thread.");
-    }
-  }
-
   static String createKey(Request data) {
     String result = createKey(data, MAIN_THREAD_KEY_BUILDER);
     MAIN_THREAD_KEY_BUILDER.setLength(0);
