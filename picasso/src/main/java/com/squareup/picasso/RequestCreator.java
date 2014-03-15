@@ -250,7 +250,7 @@ public class RequestCreator {
     }
     if (data.hasImage()) {
       Request finalData = picasso.transformRequest(data.build());
-      String key = createKey(finalData);
+      String key = createKey(finalData, new StringBuilder());
 
       Action action = new FetchAction(picasso, finalData, skipMemoryCache, key);
       picasso.enqueueAndSubmit(action);
