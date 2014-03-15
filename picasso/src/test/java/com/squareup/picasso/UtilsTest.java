@@ -98,9 +98,9 @@ public class UtilsTest {
     Request request1 = new Request.Builder(RESOURCE_ID_URI).build();
     Request request2 = new Request.Builder(URI_1).build();
     Utils.createKey(request1);
-    assertThat(Utils.MAIN_THREAD_KEY_BUILDER.length()).isEqualTo(0);
+    assertThat(Utils.KEY_BUILDER.length()).isEqualTo(0);
     Utils.createKey(request2);
-    assertThat(Utils.MAIN_THREAD_KEY_BUILDER.length()).isEqualTo(0);
+    assertThat(Utils.KEY_BUILDER.length()).isEqualTo(0);
   }
 
   @Test public void getResourceById() throws IOException {

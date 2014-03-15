@@ -52,8 +52,7 @@ final class Utils {
   private static final int MIN_DISK_CACHE_SIZE = 5 * 1024 * 1024; // 5MB
   private static final int MAX_DISK_CACHE_SIZE = 50 * 1024 * 1024; // 50MB
 
-  /** Thread confined to main thread for key creation. */
-  static final StringBuilder MAIN_THREAD_KEY_BUILDER = new StringBuilder();
+  static final StringBuilder KEY_BUILDER = new StringBuilder();
 
   /* WebP file header
      0                   1                   2                   3
@@ -93,13 +92,9 @@ final class Utils {
     }
   }
 
-  static String createKey(Request data) {
-    String result = createKey(data, MAIN_THREAD_KEY_BUILDER);
-    MAIN_THREAD_KEY_BUILDER.setLength(0);
-    return result;
-  }
+  static synchronized String createKey(Request data) {
+    StringBuilder builder = KEY_BUILDER;
 
-  static String createKey(Request data, StringBuilder builder) {
     if (data.uri != null) {
       String path = data.uri.toString();
       builder.ensureCapacity(path.length() + KEY_PADDING);
@@ -135,7 +130,9 @@ final class Utils {
       }
     }
 
-    return builder.toString();
+    String result =  builder.toString();
+    builder.setLength(0);
+    return result;
   }
 
   static void closeQuietly(InputStream is) {
