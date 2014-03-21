@@ -132,11 +132,10 @@ abstract class BitmapHunter implements Runnable {
       stats.dispatchBitmapDecoded(bitmap);
       if (data.needsTransformation() || exifRotation != 0) {
         synchronized (DECODE_LOCK) {
-          if (data.needsMatrixTransform() || exifRotation != 0) {
-            bitmap = transformResult(data, bitmap, exifRotation);
-          }
           if (data.hasCustomTransformations()) {
-            bitmap = applyCustomTransformations(data.transformations, bitmap);
+            bitmap = applyCustomTransformations(data, bitmap, exifRotation);
+          } else if (data.needsMatrixTransform() || exifRotation != 0) {
+            bitmap = transformResult(data, bitmap, exifRotation);
           }
         }
         if (bitmap != null) {
@@ -290,10 +289,11 @@ abstract class BitmapHunter implements Runnable {
     options.inJustDecodeBounds = false;
   }
 
-  static Bitmap applyCustomTransformations(List<Transformation> transformations, Bitmap result) {
+  static Bitmap applyCustomTransformations(Request data, Bitmap result, int exifRotation) {
+    final List<Transformation> transformations = data.transformations;
     for (int i = 0, count = transformations.size(); i < count; i++) {
       final Transformation transformation = transformations.get(i);
-      Bitmap newResult = transformation.transform(result);
+      Bitmap newResult = transformation.transform(data, result, exifRotation);
 
       if (newResult == null) {
         final StringBuilder builder = new StringBuilder() //

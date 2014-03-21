@@ -24,6 +24,7 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Request;
 import com.squareup.picasso.Transformation;
 import java.io.IOException;
 
@@ -39,7 +40,7 @@ public class GrayscaleTransformation implements Transformation {
     this.picasso = picasso;
   }
 
-  @Override public Bitmap transform(Bitmap source) {
+  @Override public Bitmap transform(Request data, Bitmap source, int exifRotation) {
     Bitmap result = createBitmap(source.getWidth(), source.getHeight(), source.getConfig());
     Bitmap noise;
     try {

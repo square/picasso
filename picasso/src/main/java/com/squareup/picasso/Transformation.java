@@ -24,7 +24,7 @@ public interface Transformation {
    * call {@link android.graphics.Bitmap#recycle()} on {@code source}. You may return the original
    * if no transformation is required.
    */
-  Bitmap transform(Bitmap source);
+  Bitmap transform(Request data, Bitmap source, int exifRotation);
 
   /**
    * Returns a unique key for the transformation, used for caching purposes. If the transformation
