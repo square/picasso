@@ -142,6 +142,17 @@ public class BitmapHunterTest {
     verify(dispatcher).dispatchRetry(hunter);
   }
 
+  @Test public void transformationOverrideTakesPrecedence() throws Exception {
+    Bitmap transformed =  Bitmap.createBitmap(3, 2, ARGB_8888);
+    TransformationOverride override = new TestTransformationOverride("override", transformed);
+    Request request = new Request.Builder(URI_1).resize(50, 50).overrideTransform(override).build();
+    Action action = mockAction(URI_KEY_1, request);
+    BitmapHunter hunter =
+        spy(new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, BITMAP_1));
+    Bitmap result = hunter.hunt();
+    assertThat(result).isSameAs(transformed);
+  }
+
   @Test public void huntDecodesWhenNotInCache() throws Exception {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter =

@@ -132,7 +132,9 @@ abstract class BitmapHunter implements Runnable {
       stats.dispatchBitmapDecoded(bitmap);
       if (data.needsTransformation() || exifRotation != 0) {
         synchronized (DECODE_LOCK) {
-          if (data.needsMatrixTransform() || exifRotation != 0) {
+          if (data.hasTransformationOverride()) {
+            bitmap = data.transformationOverride.transform(data, bitmap, exifRotation);
+          } else if (data.needsMatrixTransform() || exifRotation != 0) {
             bitmap = transformResult(data, bitmap, exifRotation);
           }
           if (data.hasCustomTransformations()) {

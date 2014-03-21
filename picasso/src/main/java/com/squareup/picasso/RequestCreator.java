@@ -202,6 +202,18 @@ public class RequestCreator {
   }
 
   /**
+   * Override default transformations. Parameters passed to {@link #resize(int, int)}
+   * are available but setting {@link #centerCrop()} or {@link #centerInside()} is illegal.
+   * <p>
+   * Will be run instead of the default transformation.
+   * Custom transformations, if provided, will be run afterwards.
+   */
+  public RequestCreator overrideTransform(TransformationOverride transformationOverride) {
+    data.overrideTransform(transformationOverride);
+    return this;
+  }
+
+  /**
    * Indicate that this action should not use the memory cache for attempting to load or save the
    * image. This can be useful when you know an image will only ever be used once (e.g., loading
    * an image from the filesystem and uploading to a remote server).
