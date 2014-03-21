@@ -30,7 +30,7 @@ class TestTransformation implements Transformation {
     this.result = result;
   }
 
-  @Override public Bitmap transform(Bitmap source) {
+  @Override public Bitmap transform(Request data, Bitmap source, int exifRotation) {
     source.recycle();
     return result;
   }
