@@ -19,7 +19,7 @@ import android.graphics.Bitmap;
 
 /**
  * A memory cache for storing the most recently used images.
- * <p/>
+ * <p>
  * <em>Note:</em> The {@link Cache} is accessed by multiple threads. You must ensure
  * your {@link Cache} implementation is thread safe when {@link Cache#get(String)} or {@link
  * Cache#set(String, android.graphics.Bitmap)} is called.

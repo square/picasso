@@ -47,9 +47,6 @@ public class PollexorRequestTransformer implements RequestTransformer {
     if (!request.hasSize()) {
       return request; // Thumbor only works with resizing images.
     }
-    if (request.centerCrop) {
-      return request; // Can't center crop yet. See: https://github.com/globocom/thumbor/issues/201
-    }
 
     // Start building a new request for us to mutate.
     Request.Builder newRequest = request.buildUpon();
