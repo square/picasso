@@ -3,8 +3,10 @@ package com.example.picasso;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,11 +31,18 @@ final class PicassoSampleAdapter extends BaseAdapter {
         RemoteViews remoteViews =
             new RemoteViews(activity.getPackageName(), R.layout.notification_view);
 
+        Intent intent = new Intent(activity, SampleGridViewActivity.class);
+
         NotificationCompat.Builder builder =
             new NotificationCompat.Builder(activity).setSmallIcon(R.drawable.icon)
+                .setContentIntent(PendingIntent.getActivity(activity, -1, intent, 0))
                 .setContent(remoteViews);
 
         Notification notification = builder.getNotification();
+        // Bug in NotificationCompat that does not set the content.
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1) {
+          notification.contentView = remoteViews;
+        }
 
         NotificationManager notificationManager =
             (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
