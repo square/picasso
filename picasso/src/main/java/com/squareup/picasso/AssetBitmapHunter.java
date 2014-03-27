@@ -15,7 +15,7 @@ class AssetBitmapHunter extends BitmapHunter {
   private static final int ASSET_PREFIX_LENGTH =
       (SCHEME_FILE + ":///" + ANDROID_ASSET + "/").length();
 
-  private AssetManager assetManager;
+  private final AssetManager assetManager;
 
   public AssetBitmapHunter(Context context, Picasso picasso, Dispatcher dispatcher, Cache cache,
       Stats stats, Action action) {
