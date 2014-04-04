@@ -19,11 +19,19 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static java.util.Collections.unmodifiableList;
 
 /** Immutable data about an image and the transformations that will be applied to it. */
 public final class Request {
+  private static final long TOO_LONG_LOG = TimeUnit.SECONDS.toNanos(5);
+
+  /** A unique ID for the request. */
+  int id;
+  /** The time that the request was first submitted (in nanos). */
+  long started;
+
   /**
    * The image URI.
    * <p>
@@ -84,6 +92,54 @@ public final class Request {
     this.rotationPivotY = rotationPivotY;
     this.hasRotationPivot = hasRotationPivot;
     this.config = config;
+  }
+
+  @Override public String toString() {
+    final StringBuilder sb = new StringBuilder("Request{");
+    if (resourceId > 0) {
+      sb.append(resourceId);
+    } else {
+      sb.append(uri);
+    }
+    if (transformations != null && !transformations.isEmpty()) {
+      for (Transformation transformation : transformations) {
+        sb.append(' ').append(transformation.key());
+      }
+    }
+    if (targetWidth > 0) {
+      sb.append(" resize(").append(targetWidth).append(',').append(targetHeight).append(')');
+    }
+    if (centerCrop) {
+      sb.append(" centerCrop");
+    }
+    if (centerInside) {
+      sb.append(" centerInside");
+    }
+    if (rotationDegrees != 0) {
+      sb.append(" rotation(").append(rotationDegrees);
+      if (hasRotationPivot) {
+        sb.append(" @ ").append(rotationPivotX).append(',').append(rotationPivotY);
+      }
+      sb.append(')');
+    }
+    if (config != null) {
+      sb.append(' ').append(config);
+    }
+    sb.append('}');
+
+    return sb.toString();
+  }
+
+  String logId() {
+    long delta = System.nanoTime() - started;
+    if (delta > TOO_LONG_LOG) {
+      return plainId() + '+' + TimeUnit.NANOSECONDS.toSeconds(delta) + 's';
+    }
+    return plainId() + '+' + TimeUnit.NANOSECONDS.toMillis(delta) + "ms";
+  }
+
+  String plainId() {
+    return "[R" + id + ']';
   }
 
   String getName() {

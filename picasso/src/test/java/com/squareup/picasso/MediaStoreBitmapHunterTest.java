@@ -45,7 +45,7 @@ public class MediaStoreBitmapHunterTest {
     Request request = new Request.Builder(MEDIA_STORE_CONTENT_1_URL, 0).resize(100, 100).build();
     Action action = mockAction(MEDIA_STORE_CONTENT_KEY_1, request);
     MediaStoreBitmapHunter hunter = create("video/", action);
-    Bitmap result = hunter.decode(action.getData());
+    Bitmap result = hunter.decode(action.getRequest());
     assertThat(result).isEqualTo(VIDEO_THUMBNAIL_1);
   }
 
@@ -53,7 +53,7 @@ public class MediaStoreBitmapHunterTest {
     Request request = new Request.Builder(MEDIA_STORE_CONTENT_1_URL, 0).resize(100, 100).build();
     Action action = mockAction(MEDIA_STORE_CONTENT_KEY_1, request);
     MediaStoreBitmapHunter hunter = create("image/png", action);
-    Bitmap result = hunter.decode(action.getData());
+    Bitmap result = hunter.decode(action.getRequest());
     assertThat(result).isEqualTo(IMAGE_THUMBNAIL_1);
   }
 

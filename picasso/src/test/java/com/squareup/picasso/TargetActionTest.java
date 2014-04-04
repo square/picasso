@@ -50,7 +50,8 @@ public class TargetActionTest {
   @Test
   public void invokesSuccessIfTargetIsNotNull() throws Exception {
     Target target = mockTarget();
-    TargetAction request = new TargetAction(mock(Picasso.class), target, null, false, 0, null, URI_KEY_1);
+    TargetAction request =
+        new TargetAction(mock(Picasso.class), target, null, false, 0, null, URI_KEY_1);
     request.complete(BITMAP_3, MEMORY);
     verify(target).onBitmapLoaded(BITMAP_3, MEMORY);
   }
@@ -59,7 +60,8 @@ public class TargetActionTest {
   public void invokesOnBitmapFailedIfTargetIsNotNullWithErrorDrawable() throws Exception {
     Drawable errorDrawable = mock(Drawable.class);
     Target target = mockTarget();
-    TargetAction request = new TargetAction(mock(Picasso.class), target, null, false, 0, errorDrawable, URI_KEY_1);
+    TargetAction request =
+        new TargetAction(mock(Picasso.class), target, null, false, 0, errorDrawable, URI_KEY_1);
     request.error();
     verify(target).onBitmapFailed(errorDrawable);
   }
@@ -70,10 +72,11 @@ public class TargetActionTest {
     Target target = mockTarget();
     Context context = mock(Context.class);
     Picasso picasso =
-        new Picasso(context, mock(Dispatcher.class), Cache.NONE, null, IDENTITY,
-            mock(Stats.class), true);
+        new Picasso(context, mock(Dispatcher.class), Cache.NONE, null, IDENTITY, mock(Stats.class),
+            false, false);
     Resources res = mock(Resources.class);
-    TargetAction request = new TargetAction(picasso, target, null, false, RESOURCE_ID_1, null, URI_KEY_1);
+    TargetAction request =
+        new TargetAction(picasso, target, null, false, RESOURCE_ID_1, null, URI_KEY_1);
 
     when(context.getResources()).thenReturn(res);
     when(res.getDrawable(RESOURCE_ID_1)).thenReturn(errorDrawable);

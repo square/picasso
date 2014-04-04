@@ -148,7 +148,7 @@ public class BitmapHunterTest {
         spy(new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, BITMAP_1));
     Bitmap result = hunter.hunt();
     verify(cache).get(URI_KEY_1);
-    verify(hunter).decode(action.getData());
+    verify(hunter).decode(action.getRequest());
     assertThat(result).isEqualTo(BITMAP_1);
   }
 
@@ -159,7 +159,7 @@ public class BitmapHunterTest {
         spy(new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, BITMAP_1));
     Bitmap result = hunter.hunt();
     verify(cache).get(URI_KEY_1);
-    verify(hunter, never()).decode(action.getData());
+    verify(hunter, never()).decode(action.getRequest());
     assertThat(result).isEqualTo(BITMAP_1);
   }
 

@@ -124,7 +124,7 @@ class TestUtils {
   static Action mockAction(String key, Request request, Object target) {
     Action action = mock(Action.class);
     when(action.getKey()).thenReturn(key);
-    when(action.getData()).thenReturn(request);
+    when(action.getRequest()).thenReturn(request);
     when(action.getTarget()).thenReturn(target);
     when(action.getPicasso()).thenReturn(mock(Picasso.class));
     return action;
@@ -196,6 +196,7 @@ class TestUtils {
     when(hunter.getData()).thenReturn(data);
     when(hunter.shouldSkipMemoryCache()).thenReturn(skipCache);
     when(hunter.getAction()).thenReturn(action);
+    when(hunter.getPicasso()).thenReturn(mock(Picasso.class));
     return hunter;
   }
 
