@@ -1,0 +1,27 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.9.+'
+    }
+}
+
+allprojects {
+    apply plugin: 'maven'
+    apply plugin: 'maven-publish'
+
+    group 'it.sephiroth.android.library.picasso'
+    version '2.1.6'
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.10'
+}

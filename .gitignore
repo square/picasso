@@ -29,3 +29,13 @@ gen-external-apklibs
 tmp
 
 .DS_Store
+
+build.gradle
+.gradle
+gradlew
+gradlew.bat
+local.properties
+picasso-sample/build.gradle
+picasso/build.gradle
+picasso/src/main/AndroidManifest.xml
+settings.gradle
