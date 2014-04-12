@@ -46,6 +46,11 @@ import static com.squareup.picasso.Utils.checkMain;
  */
 public class Picasso {
 
+  /**
+   * Custom Uri scheme to be used associated with a custom {@link Generator}
+   */
+  public static final String SCHEME_CUSTOM = "custom.resource";
+
   /** Callbacks for Picasso events. */
   public interface Listener {
     /**
@@ -256,6 +261,10 @@ public class Picasso {
     return stats.createSnapshot();
   }
 
+  public Cache getCache() {
+    return cache;
+  }
+
   /** Stops this instance from accepting further requests. */
   public void shutdown() {
     if (this == singleton) {
@@ -290,18 +299,18 @@ public class Picasso {
     targetToDeferredRequestCreator.put(view, request);
   }
 
-  void enqueueAndSubmit(Action action) {
+  void enqueueAndSubmit(Action action, long delayMillis) {
     Object target = action.getTarget();
     if (target != null) {
       // This will also check we are on the main thread.
       cancelExistingRequest(target);
       targetToAction.put(target, action);
     }
-    submit(action);
+    submit(action, delayMillis);
   }
 
-  void submit(Action action) {
-    dispatcher.dispatchSubmit(action);
+  void submit(Action action, long delayMillis) {
+    dispatcher.dispatchSubmit(action, delayMillis);
   }
 
   Bitmap quickMemoryCacheCheck(String key) {

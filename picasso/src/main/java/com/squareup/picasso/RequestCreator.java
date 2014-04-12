@@ -40,12 +40,13 @@ public class RequestCreator {
   private final Request.Builder data;
 
   private boolean skipMemoryCache;
-  private boolean noFade;
   private boolean deferred;
   private int placeholderResId;
   private int errorResId;
   private Drawable placeholderDrawable;
   private Drawable errorDrawable;
+  private long fadeTime = Utils.FADE_TIME;
+  private long delayMillis;
 
   RequestCreator(Picasso picasso, Uri uri, int resourceId) {
     if (picasso.shutdown) {
@@ -136,15 +137,32 @@ public class RequestCreator {
 
   /** Resize the image to the specified dimension size. */
   public RequestCreator resizeDimen(int targetWidthResId, int targetHeightResId) {
+    return resizeDimen(targetWidthResId, targetHeightResId, false);
+  }
+
+  /** Resize the image to the specified dimension size. */
+  public RequestCreator resizeDimen(int targetWidthResId, int targetHeightResId,
+      boolean onlyIfBigger) {
     Resources resources = picasso.context.getResources();
     int targetWidth = resources.getDimensionPixelSize(targetWidthResId);
     int targetHeight = resources.getDimensionPixelSize(targetHeightResId);
-    return resize(targetWidth, targetHeight);
+    return resize(targetWidth, targetHeight, onlyIfBigger);
   }
 
   /** Resize the image to the specified size in pixels. */
   public RequestCreator resize(int targetWidth, int targetHeight) {
-    data.resize(targetWidth, targetHeight);
+    return resize(targetWidth, targetHeight, false);
+  }
+
+  /**
+   * Resizes the image to the specified size in pixels
+   * @param targetWidth target width
+   * @param targetHeight target height
+   * @param onlyIfBigger If true the bitmap will be resized only only if bigger than
+   *                     targetWidth or targetHeight. If false the bitmap will be always resized
+   */
+  public RequestCreator resize(int targetWidth, int targetHeight, boolean onlyIfBigger) {
+    data.resize(targetWidth, targetHeight, onlyIfBigger);
     return this;
   }
 
@@ -191,6 +209,17 @@ public class RequestCreator {
   }
 
   /**
+   * Assign a custom {@link Generator} which will be used to decode the Uri,
+   * only if the uri scheme is {@link Picasso#SCHEME_CUSTOM}
+   * @param generator
+   * @return
+   */
+  public RequestCreator withGenerator(Generator generator) {
+    data.setGenerator(generator);
+    return this;
+  }
+
+  /**
    * Add a custom transformation to be applied to the image.
    * <p>
    * Custom transformations will always be run after the built-in transformations.
@@ -213,7 +242,28 @@ public class RequestCreator {
 
   /** Disable brief fade in of images loaded from the disk cache or network. */
   public RequestCreator noFade() {
-    noFade = true;
+    fadeTime = 0;
+    return this;
+  }
+
+  /**
+   * Uses a custom fadein duration, instead of the default.
+   * @see {@link Utils#FADE_TIME}
+   * @param ms
+   * @return
+   */
+  public RequestCreator fade(long ms) {
+    fadeTime = ms;
+    return this;
+  }
+
+  /**
+   * Delay the loader
+   * @param millis
+   * @return
+   */
+  public RequestCreator withDelay(long millis) {
+    delayMillis = millis;
     return this;
   }
 
@@ -235,7 +285,7 @@ public class RequestCreator {
     Request finalData = picasso.transformRequest(data.build());
     String key = createKey(finalData, new StringBuilder());
 
-    Action action = new GetAction(picasso, finalData, skipMemoryCache, key);
+    Action action = new GetAction(picasso, finalData, skipMemoryCache, fadeTime, key);
     return forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache, picasso.stats,
         action, picasso.dispatcher.downloader).hunt();
   }
@@ -254,8 +304,8 @@ public class RequestCreator {
       Request finalData = picasso.transformRequest(data.build());
       String key = createKey(finalData, new StringBuilder());
 
-      Action action = new FetchAction(picasso, finalData, skipMemoryCache, key);
-      picasso.submit(action);
+      Action action = new FetchAction(picasso, finalData, skipMemoryCache, fadeTime, key);
+      picasso.submit(action, delayMillis);
     }
   }
 
@@ -336,9 +386,9 @@ public class RequestCreator {
 
     target.onPrepareLoad(drawable);
 
-    Action action = new TargetAction(picasso, target, finalData, skipMemoryCache, errorResId,
-        errorDrawable, requestKey);
-    picasso.enqueueAndSubmit(action);
+    Action action = new TargetAction(picasso, target, finalData, skipMemoryCache, fadeTime,
+        errorResId, errorDrawable, requestKey);
+    picasso.enqueueAndSubmit(action, delayMillis);
   }
 
   /**
@@ -366,7 +416,7 @@ public class RequestCreator {
 
     RemoteViewsAction action =
         new NotificationAction(picasso, finalData, remoteViews, viewId, notificationId,
-            notification, skipMemoryCache, errorResId, key);
+            notification, skipMemoryCache, fadeTime, errorResId, key);
 
     performRemoteViewInto(action);
   }
@@ -395,7 +445,7 @@ public class RequestCreator {
 
     RemoteViewsAction action =
         new AppWidgetAction(picasso, finalData, remoteViews, viewId, appWidgetIds, skipMemoryCache,
-            errorResId, key);
+            fadeTime, errorResId, key);
 
     performRemoteViewInto(action);
   }
@@ -441,7 +491,7 @@ public class RequestCreator {
         picasso.defer(target, new DeferredRequestCreator(this, target, callback));
         return;
       }
-      data.resize(measuredWidth, measuredHeight);
+      data.resize(measuredWidth, measuredHeight, false);
     }
 
     Request finalData = picasso.transformRequest(data.build());
@@ -451,7 +501,7 @@ public class RequestCreator {
       Bitmap bitmap = picasso.quickMemoryCacheCheck(requestKey);
       if (bitmap != null) {
         picasso.cancelRequest(target);
-        PicassoDrawable.setBitmap(target, picasso.context, bitmap, MEMORY, noFade,
+        PicassoDrawable.setBitmap(target, picasso.context, bitmap, MEMORY, fadeTime,
             picasso.indicatorsEnabled);
         if (callback != null) {
           callback.onSuccess();
@@ -463,10 +513,10 @@ public class RequestCreator {
     PicassoDrawable.setPlaceholder(target, placeholderResId, placeholderDrawable);
 
     Action action =
-        new ImageViewAction(picasso, target, finalData, skipMemoryCache, noFade, errorResId,
+        new ImageViewAction(picasso, target, finalData, skipMemoryCache, fadeTime, errorResId,
             errorDrawable, requestKey, callback);
 
-    picasso.enqueueAndSubmit(action);
+    picasso.enqueueAndSubmit(action, delayMillis);
   }
 
   private void performRemoteViewInto(RemoteViewsAction action) {
@@ -482,6 +532,6 @@ public class RequestCreator {
       action.setImageResource(placeholderResId);
     }
 
-    picasso.enqueueAndSubmit(action);
+    picasso.enqueueAndSubmit(action, delayMillis);
   }
 }

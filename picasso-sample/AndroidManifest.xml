@@ -22,7 +22,8 @@
   <application
       android:label="@string/app_name"
       android:icon="@drawable/icon"
-      android:theme="@style/Theme.PicassoSample">
+      android:theme="@style/Theme.PicassoSample"
+      android:largeHeap="true">
 
     <activity
         android:label="@string/app_name"
