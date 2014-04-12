@@ -43,6 +43,7 @@ import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static android.provider.Settings.System.AIRPLANE_MODE_ON;
 
 final class Utils {
+  static final long FADE_TIME = 200; // default fade time
   static final String THREAD_PREFIX = "Picasso-";
   static final String THREAD_IDLE_NAME = THREAD_PREFIX + "Idle";
   static final int DEFAULT_READ_TIMEOUT = 20 * 1000; // 20s

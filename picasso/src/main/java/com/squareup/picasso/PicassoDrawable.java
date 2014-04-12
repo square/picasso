@@ -35,20 +35,19 @@ import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 final class PicassoDrawable extends BitmapDrawable {
   // Only accessed from main thread.
   private static final Paint DEBUG_PAINT = new Paint();
-  private static final float FADE_DURATION = 200f; //ms
 
   /**
    * Create or update the drawable on the target {@link ImageView} to display the supplied bitmap
    * image.
    */
   static void setBitmap(ImageView target, Context context, Bitmap bitmap,
-      Picasso.LoadedFrom loadedFrom, boolean noFade, boolean debugging) {
+      Picasso.LoadedFrom loadedFrom, long fadeTime, boolean debugging) {
     Drawable placeholder = target.getDrawable();
     if (placeholder instanceof AnimationDrawable) {
       ((AnimationDrawable) placeholder).stop();
     }
     PicassoDrawable drawable =
-        new PicassoDrawable(context, bitmap, placeholder, loadedFrom, noFade, debugging);
+        new PicassoDrawable(context, bitmap, placeholder, loadedFrom, fadeTime, debugging);
     target.setImageDrawable(drawable);
   }
 
@@ -76,9 +75,10 @@ final class PicassoDrawable extends BitmapDrawable {
   long startTimeMillis;
   boolean animating;
   int alpha = 0xFF;
+  long fadeTime;
 
   PicassoDrawable(Context context, Bitmap bitmap, Drawable placeholder,
-      Picasso.LoadedFrom loadedFrom, boolean noFade, boolean debugging) {
+      Picasso.LoadedFrom loadedFrom, long fadeTime, boolean debugging) {
     super(context.getResources(), bitmap);
 
     this.debugging = debugging;
@@ -86,7 +86,9 @@ final class PicassoDrawable extends BitmapDrawable {
 
     this.loadedFrom = loadedFrom;
 
-    boolean fade = loadedFrom != MEMORY && !noFade;
+    this.fadeTime = fadeTime;
+
+    boolean fade = loadedFrom != MEMORY && this.fadeTime > 0;
     if (fade) {
       this.placeholder = placeholder;
       animating = true;
@@ -98,7 +100,7 @@ final class PicassoDrawable extends BitmapDrawable {
     if (!animating) {
       super.draw(canvas);
     } else {
-      float normalized = (SystemClock.uptimeMillis() - startTimeMillis) / FADE_DURATION;
+      float normalized = (float)(SystemClock.uptimeMillis() - startTimeMillis) / fadeTime;
       if (normalized >= 1f) {
         animating = false;
         placeholder = null;

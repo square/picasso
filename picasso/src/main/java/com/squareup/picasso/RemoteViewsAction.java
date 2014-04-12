@@ -29,8 +29,8 @@ abstract class RemoteViewsAction extends Action<Void> {
   final int viewId;
 
   RemoteViewsAction(Picasso picasso, Request data, RemoteViews remoteViews, int viewId,
-      int errorResId, boolean skipCache, String key) {
-    super(picasso, null, data, skipCache, false, errorResId, null, key);
+      int errorResId, boolean skipCache, long fadeTime, String key) {
+    super(picasso, null, data, skipCache, fadeTime, errorResId, null, key);
     this.remoteViews = remoteViews;
     this.viewId = viewId;
   }
@@ -57,8 +57,8 @@ abstract class RemoteViewsAction extends Action<Void> {
     private final int[] appWidgetIds;
 
     AppWidgetAction(Picasso picasso, Request data, RemoteViews remoteViews, int viewId,
-        int[] appWidgetIds, boolean skipCache, int errorResId, String key) {
-      super(picasso, data, remoteViews, viewId, errorResId, skipCache, key);
+        int[] appWidgetIds, boolean skipCache, long fadeTime, int errorResId, String key) {
+      super(picasso, data, remoteViews, viewId, errorResId, skipCache, fadeTime, key);
       this.appWidgetIds = appWidgetIds;
     }
 
@@ -73,9 +73,9 @@ abstract class RemoteViewsAction extends Action<Void> {
     private final Notification notification;
 
     NotificationAction(Picasso picasso, Request data, RemoteViews remoteViews, int viewId,
-        int notificationId, Notification notification, boolean skipCache, int errorResId,
+        int notificationId, Notification notification, boolean skipCache, long fadeTime, int errorResId,
         String key) {
-      super(picasso, data, remoteViews, viewId, errorResId, skipCache, key);
+      super(picasso, data, remoteViews, viewId, errorResId, skipCache, fadeTime, key);
       this.notificationId = notificationId;
       this.notification = notification;
     }
