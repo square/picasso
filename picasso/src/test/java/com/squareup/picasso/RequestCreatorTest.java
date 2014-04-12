@@ -117,7 +117,7 @@ public class RequestCreatorTest {
 
   @Test public void fetchSubmitsFetchRequest() throws Exception {
     new RequestCreator(picasso, URI_1, 0).fetch();
-    verify(picasso).submit(actionCaptor.capture());
+    verify(picasso).submit(actionCaptor.capture(), eq(0L));
     assertThat(actionCaptor.getValue()).isInstanceOf(FetchAction.class);
   }
 
@@ -165,7 +165,7 @@ public class RequestCreatorTest {
     new RequestCreator(picasso, URI_1, 0).into(target);
     verify(target).onBitmapLoaded(BITMAP_1, MEMORY);
     verify(picasso).cancelRequest(target);
-    verify(picasso, never()).enqueueAndSubmit(any(Action.class));
+    verify(picasso, never()).enqueueAndSubmit(any(Action.class), eq(0L));
   }
 
   @Test
@@ -181,7 +181,7 @@ public class RequestCreatorTest {
     Drawable placeHolderDrawable = mock(Drawable.class);
     new RequestCreator(picasso, URI_1, 0).placeholder(placeHolderDrawable).into(target);
     verify(target).onPrepareLoad(placeHolderDrawable);
-    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture(), eq(0L));
     assertThat(actionCaptor.getValue()).isInstanceOf(TargetAction.class);
   }
 
@@ -200,7 +200,7 @@ public class RequestCreatorTest {
     new RequestCreator(picasso, null, 0).into(target);
     verify(picasso).cancelRequest(target);
     verify(picasso, never()).quickMemoryCacheCheck(anyString());
-    verify(picasso, never()).enqueueAndSubmit(any(Action.class));
+    verify(picasso, never()).enqueueAndSubmit(any(Action.class), eq(0L));
   }
 
   @Test
@@ -215,7 +215,7 @@ public class RequestCreatorTest {
     verify(target).setImageDrawable(any(PicassoDrawable.class));
     verify(callback).onSuccess();
     verify(picasso).cancelRequest(target);
-    verify(picasso, never()).enqueueAndSubmit(any(Action.class));
+    verify(picasso, never()).enqueueAndSubmit(any(Action.class), eq(0L));
   }
 
   @Test
@@ -227,7 +227,7 @@ public class RequestCreatorTest {
     Drawable placeHolderDrawable = mock(Drawable.class);
     new RequestCreator(picasso, URI_1, 0).placeholder(placeHolderDrawable).into(target);
     verify(target).setImageDrawable(placeHolderDrawable);
-    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture(), eq(0L));
     assertThat(actionCaptor.getValue()).isInstanceOf(ImageViewAction.class);
   }
 
@@ -239,7 +239,7 @@ public class RequestCreatorTest {
     ImageView target = mockImageViewTarget();
     new RequestCreator(picasso, URI_1, 0).placeholder(R.drawable.picture_frame).into(target);
     verify(target).setImageResource(R.drawable.picture_frame);
-    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture(), eq(0L));
     assertThat(actionCaptor.getValue()).isInstanceOf(ImageViewAction.class);
   }
 
@@ -263,7 +263,7 @@ public class RequestCreatorTest {
 
   @Test
   public void intoNotOnMainThreadCrashes() throws Exception {
-    doCallRealMethod().when(picasso).enqueueAndSubmit(any(Action.class));
+    doCallRealMethod().when(picasso).enqueueAndSubmit(any(Action.class), eq(0L));
     final CountDownLatch latch = new CountDownLatch(1);
     new Thread(new Runnable() {
       @Override public void run() {
@@ -283,7 +283,7 @@ public class RequestCreatorTest {
   public void intoImageViewAndNotInCacheSubmitsImageViewRequest() throws Exception {
     ImageView target = mockImageViewTarget();
     new RequestCreator(picasso, URI_1, 0).into(target);
-    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture(), eq(0L));
     assertThat(actionCaptor.getValue()).isInstanceOf(ImageViewAction.class);
   }
 
@@ -293,7 +293,7 @@ public class RequestCreatorTest {
     when(target.getWidth()).thenReturn(0);
     when(target.getHeight()).thenReturn(0);
     new RequestCreator(picasso, URI_1, 0).fit().into(target);
-    verify(picasso, never()).enqueueAndSubmit(any(Action.class));
+    verify(picasso, never()).enqueueAndSubmit(any(Action.class), eq(0L));
     verify(picasso).defer(eq(target), any(DeferredRequestCreator.class));
   }
 
@@ -303,7 +303,7 @@ public class RequestCreatorTest {
     when(target.getMeasuredWidth()).thenReturn(100);
     when(target.getMeasuredHeight()).thenReturn(100);
     new RequestCreator(picasso, URI_1, 0).fit().into(target);
-    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture(), eq(0L));
     assertThat(actionCaptor.getValue()).isInstanceOf(ImageViewAction.class);
   }
 
@@ -326,13 +326,13 @@ public class RequestCreatorTest {
 
   @Test public void intoRemoteViewsWidgetQueuesAppWidgetAction() throws Exception {
     new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, new int[] { 1, 2, 3 });
-    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture(), eq(0L));
     assertThat(actionCaptor.getValue()).isInstanceOf(AppWidgetAction.class);
   }
 
   @Test public void intoRemoteViewsNotificationQueuesNotificationAction() throws Exception {
     new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, 0, mockNotification());
-    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture(), eq(0L));
     assertThat(actionCaptor.getValue()).isInstanceOf(NotificationAction.class);
   }
 

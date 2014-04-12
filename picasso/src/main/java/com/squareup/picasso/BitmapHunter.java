@@ -242,7 +242,7 @@ abstract class BitmapHunter implements Runnable {
       } else {
         return new ContentStreamBitmapHunter(context, picasso, dispatcher, cache, stats, action);
       }
-    } else if (SCHEME_FILE.equals(scheme) || null == scheme ) {
+    } else if (SCHEME_FILE.equals(scheme) || null == scheme) {
       // if scheme is null then assume it's a local absolute path
       if (!uri.getPathSegments().isEmpty() && ANDROID_ASSET.equals(uri.getPathSegments().get(0))) {
         return new AssetBitmapHunter(context, picasso, dispatcher, cache, stats, action);
@@ -250,8 +250,8 @@ abstract class BitmapHunter implements Runnable {
       return new FileBitmapHunter(context, picasso, dispatcher, cache, stats, action);
     } else if (SCHEME_ANDROID_RESOURCE.equals(scheme)) {
       return new ResourceBitmapHunter(context, picasso, dispatcher, cache, stats, action);
-    } else if( SCHEME_CUSTOM.equals( scheme ) ) {
-      return new CustomBitmapHunter( picasso, dispatcher, cache, stats, action );
+    } else if (SCHEME_CUSTOM.equals(scheme)) {
+      return new CustomBitmapHunter(picasso, dispatcher, cache, stats, action);
     } else {
       return new NetworkBitmapHunter(picasso, dispatcher, cache, stats, action, downloader);
     }
@@ -387,14 +387,16 @@ abstract class BitmapHunter implements Runnable {
           drawX = (inWidth - newSize) / 2;
           drawWidth = newSize;
         }
-        if(!resizeOnlyIfBigger || (resizeOnlyIfBigger && (inWidth > targetWidth || inHeight > targetHeight))) {
+        if (!resizeOnlyIfBigger || (resizeOnlyIfBigger
+            && (inWidth > targetWidth || inHeight > targetHeight))) {
           matrix.preScale(scale, scale);
         }
       } else if (data.centerInside) {
         float widthRatio = targetWidth / (float) inWidth;
         float heightRatio = targetHeight / (float) inHeight;
         float scale = widthRatio < heightRatio ? widthRatio : heightRatio;
-        if(!resizeOnlyIfBigger || (resizeOnlyIfBigger && (inWidth > targetWidth || inHeight > targetHeight))) {
+        if (!resizeOnlyIfBigger || (resizeOnlyIfBigger
+            && (inWidth > targetWidth || inHeight > targetHeight))) {
           matrix.preScale(scale, scale);
         }
       } else if (targetWidth != 0 && targetHeight != 0 //
@@ -403,7 +405,8 @@ abstract class BitmapHunter implements Runnable {
         // pre-scale the existing matrix appropriately.
         float sx = targetWidth / (float) inWidth;
         float sy = targetHeight / (float) inHeight;
-        if(!resizeOnlyIfBigger || (resizeOnlyIfBigger && (inWidth > targetWidth || inHeight > targetHeight))) {
+        if (!resizeOnlyIfBigger || (resizeOnlyIfBigger
+            && (inWidth > targetWidth || inHeight > targetHeight))) {
           matrix.preScale(sx, sy);
         }
       }

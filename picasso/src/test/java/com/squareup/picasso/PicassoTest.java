@@ -73,17 +73,17 @@ public class PicassoTest {
 
   @Test public void submitWithNullTargetInvokesDispatcher() throws Exception {
     Action action = mockAction(URI_KEY_1, URI_1, null);
-    picasso.enqueueAndSubmit(action);
+    picasso.enqueueAndSubmit(action, 0);
     assertThat(picasso.targetToAction).isEmpty();
-    verify(dispatcher).dispatchSubmit(action);
+    verify(dispatcher).dispatchSubmit(action, 0);
   }
 
   @Test public void submitWithTargetInvokesDispatcher() throws Exception {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     assertThat(picasso.targetToAction).isEmpty();
-    picasso.enqueueAndSubmit(action);
+    picasso.enqueueAndSubmit(action, 0);
     assertThat(picasso.targetToAction).hasSize(1);
-    verify(dispatcher).dispatchSubmit(action);
+    verify(dispatcher).dispatchSubmit(action, 0);
   }
 
   @Test public void quickMemoryCheckReturnsBitmapIfInCache() throws Exception {
@@ -178,7 +178,7 @@ public class PicassoTest {
   @Test public void cancelExistingRequestWithImageViewTarget() throws Exception {
     ImageView target = mockImageViewTarget();
     Action action = mockAction(URI_KEY_1, URI_1, target);
-    picasso.enqueueAndSubmit(action);
+    picasso.enqueueAndSubmit(action, 0);
     assertThat(picasso.targetToAction).hasSize(1);
     picasso.cancelRequest(target);
     assertThat(picasso.targetToAction).isEmpty();
@@ -198,7 +198,7 @@ public class PicassoTest {
   @Test public void cancelExistingRequestWithTarget() throws Exception {
     Target target = mockTarget();
     Action action = mockAction(URI_KEY_1, URI_1, target);
-    picasso.enqueueAndSubmit(action);
+    picasso.enqueueAndSubmit(action, 0);
     assertThat(picasso.targetToAction).hasSize(1);
     picasso.cancelRequest(target);
     assertThat(picasso.targetToAction).isEmpty();

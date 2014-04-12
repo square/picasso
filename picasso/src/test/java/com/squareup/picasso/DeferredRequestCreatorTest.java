@@ -31,6 +31,7 @@ import static com.squareup.picasso.TestUtils.mockCallback;
 import static com.squareup.picasso.TestUtils.mockFitImageViewTarget;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -143,7 +144,7 @@ public class DeferredRequestCreatorTest {
     request.onPreDraw();
 
     verify(observer).removeOnPreDrawListener(request);
-    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture(), eq(0L));
 
     Action value = actionCaptor.getValue();
     assertThat(value).isInstanceOf(ImageViewAction.class);

@@ -141,7 +141,8 @@ public class RequestCreator {
   }
 
   /** Resize the image to the specified dimension size. */
-  public RequestCreator resizeDimen(int targetWidthResId, int targetHeightResId, boolean onlyIfBigger) {
+  public RequestCreator resizeDimen(int targetWidthResId, int targetHeightResId,
+      boolean onlyIfBigger) {
     Resources resources = picasso.context.getResources();
     int targetWidth = resources.getDimensionPixelSize(targetWidthResId);
     int targetHeight = resources.getDimensionPixelSize(targetHeightResId);
@@ -157,9 +158,10 @@ public class RequestCreator {
    * Resizes the image to the specified size in pixels
    * @param targetWidth target width
    * @param targetHeight target height
-   * @param onlyIfBigger If true the bitmap will be resized only only if bigger than targetWidth or targetHeight. If false the bitmap will be always resized
+   * @param onlyIfBigger If true the bitmap will be resized only only if bigger than
+   *                     targetWidth or targetHeight. If false the bitmap will be always resized
    */
-  public RequestCreator resize(int targetWidth, int targetHeight, boolean onlyIfBigger){
+  public RequestCreator resize(int targetWidth, int targetHeight, boolean onlyIfBigger) {
     data.resize(targetWidth, targetHeight, onlyIfBigger);
     return this;
   }
@@ -212,8 +214,8 @@ public class RequestCreator {
    * @param generator
    * @return
    */
-  public RequestCreator withGenerator( Generator generator ) {
-    data.setGenerator( generator );
+  public RequestCreator withGenerator(Generator generator) {
+    data.setGenerator(generator);
     return this;
   }
 
@@ -250,12 +252,17 @@ public class RequestCreator {
    * @param ms
    * @return
    */
-  public RequestCreator fade( long ms ) {
+  public RequestCreator fade(long ms) {
     fadeTime = ms;
     return this;
   }
 
-  public RequestCreator withDelay( long millis ) {
+  /**
+   * Delay the loader
+   * @param millis
+   * @return
+   */
+  public RequestCreator withDelay(long millis) {
     delayMillis = millis;
     return this;
   }
@@ -379,8 +386,8 @@ public class RequestCreator {
 
     target.onPrepareLoad(drawable);
 
-    Action action = new TargetAction(picasso, target, finalData, skipMemoryCache, fadeTime, errorResId,
-        errorDrawable, requestKey);
+    Action action = new TargetAction(picasso, target, finalData, skipMemoryCache, fadeTime,
+        errorResId, errorDrawable, requestKey);
     picasso.enqueueAndSubmit(action, delayMillis);
   }
 

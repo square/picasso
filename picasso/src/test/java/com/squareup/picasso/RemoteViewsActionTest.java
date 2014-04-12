@@ -26,6 +26,7 @@ import org.robolectric.annotation.Config;
 
 import static com.squareup.picasso.Picasso.LoadedFrom.NETWORK;
 import static com.squareup.picasso.Picasso.RequestTransformer.IDENTITY;
+import static com.squareup.picasso.Utils.FADE_TIME;
 import static com.squareup.picasso.TestUtils.BITMAP_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static org.mockito.Mockito.mock;
@@ -81,7 +82,7 @@ public class RemoteViewsActionTest {
   static class TestableRemoteViewsAction extends RemoteViewsAction {
     TestableRemoteViewsAction(Picasso picasso, Request data, RemoteViews remoteViews, int viewId,
         int errorResId, boolean skipCache, String key) {
-      super(picasso, data, remoteViews, viewId, errorResId, skipCache, key);
+      super(picasso, data, remoteViews, viewId, errorResId, skipCache, FADE_TIME, key);
     }
 
     @Override void update() {

@@ -100,7 +100,7 @@ final class PicassoDrawable extends BitmapDrawable {
     if (!animating) {
       super.draw(canvas);
     } else {
-      float normalized = (float)(SystemClock.uptimeMillis() - startTimeMillis) / fadeTime;
+      float normalized = (float) (SystemClock.uptimeMillis() - startTimeMillis) / fadeTime;
       if (normalized >= 1f) {
         animating = false;
         placeholder = null;

@@ -299,10 +299,6 @@ public class Picasso {
     targetToDeferredRequestCreator.put(view, request);
   }
 
-  void enqueueAndSubmit(Action action) {
-    enqueueAndSubmit(action, 0);
-  }
-
   void enqueueAndSubmit(Action action, long delayMillis) {
     Object target = action.getTarget();
     if (target != null) {
@@ -311,10 +307,6 @@ public class Picasso {
       targetToAction.put(target, action);
     }
     submit(action, delayMillis);
-  }
-
-  void submit(Action action) {
-    submit(action, 0);
   }
 
   void submit(Action action, long delayMillis) {

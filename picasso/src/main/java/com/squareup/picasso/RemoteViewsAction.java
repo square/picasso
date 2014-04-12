@@ -73,8 +73,8 @@ abstract class RemoteViewsAction extends Action<Void> {
     private final Notification notification;
 
     NotificationAction(Picasso picasso, Request data, RemoteViews remoteViews, int viewId,
-        int notificationId, Notification notification, boolean skipCache, long fadeTime, int errorResId,
-        String key) {
+        int notificationId, Notification notification, boolean skipCache, long fadeTime,
+        int errorResId, String key) {
       super(picasso, data, remoteViews, viewId, errorResId, skipCache, fadeTime, key);
       this.notificationId = notificationId;
       this.notification = notification;
