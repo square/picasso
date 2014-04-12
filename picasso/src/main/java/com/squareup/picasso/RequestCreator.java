@@ -136,15 +136,30 @@ public class RequestCreator {
 
   /** Resize the image to the specified dimension size. */
   public RequestCreator resizeDimen(int targetWidthResId, int targetHeightResId) {
+    return resizeDimen(targetWidthResId, targetHeightResId, false);
+  }
+
+  /** Resize the image to the specified dimension size. */
+  public RequestCreator resizeDimen(int targetWidthResId, int targetHeightResId, boolean onlyIfBigger) {
     Resources resources = picasso.context.getResources();
     int targetWidth = resources.getDimensionPixelSize(targetWidthResId);
     int targetHeight = resources.getDimensionPixelSize(targetHeightResId);
-    return resize(targetWidth, targetHeight);
+    return resize(targetWidth, targetHeight, onlyIfBigger);
   }
 
   /** Resize the image to the specified size in pixels. */
   public RequestCreator resize(int targetWidth, int targetHeight) {
-    data.resize(targetWidth, targetHeight);
+    return resize(targetWidth, targetHeight, false);
+  }
+
+  /**
+   * Resizes the image to the specified size in pixels
+   * @param targetWidth target width
+   * @param targetHeight target height
+   * @param onlyIfBigger If true the bitmap will be resized only only if bigger than targetWidth or targetHeight. If false the bitmap will be always resized
+   */
+  public RequestCreator resize(int targetWidth, int targetHeight, boolean onlyIfBigger){
+    data.resize(targetWidth, targetHeight, onlyIfBigger);
     return this;
   }
 
@@ -452,7 +467,7 @@ public class RequestCreator {
         picasso.defer(target, new DeferredRequestCreator(this, target, callback));
         return;
       }
-      data.resize(measuredWidth, measuredHeight);
+      data.resize(measuredWidth, measuredHeight, false);
     }
 
     Request finalData = picasso.transformRequest(data.build());
