@@ -67,10 +67,12 @@ public final class Request {
   public final boolean hasRotationPivot;
   /** Target image config for decoding. */
   public final Bitmap.Config config;
+  /** custom generator */
+  public final Generator generator;
 
   private Request(Uri uri, int resourceId, List<Transformation> transformations, int targetWidth,
       int targetHeight, boolean resizeOnlyIfBigger, boolean centerCrop, boolean centerInside, float rotationDegrees,
-      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot, Bitmap.Config config) {
+      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot, Bitmap.Config config, Generator generator) {
     this.uri = uri;
     this.resourceId = resourceId;
     if (transformations == null) {
@@ -88,6 +90,7 @@ public final class Request {
     this.hasRotationPivot = hasRotationPivot;
     this.resizeOnlyIfBigger = resizeOnlyIfBigger;
     this.config = config;
+    this.generator = generator;
   }
 
   String getName() {
@@ -99,6 +102,10 @@ public final class Request {
 
   public boolean hasSize() {
     return targetWidth != 0;
+  }
+
+  public boolean hasGenerator() {
+    return null != generator;
   }
 
   boolean needsTransformation() {
@@ -132,6 +139,7 @@ public final class Request {
     private List<Transformation> transformations;
     private Bitmap.Config config;
     private boolean resizeOnlyIfBigger;
+    private Generator generator;
 
     /** Start building a request using the specified {@link Uri}. */
     public Builder(Uri uri) {
@@ -292,6 +300,11 @@ public final class Request {
       return this;
     }
 
+    public Builder setGenerator( Generator generator ) {
+      this.generator = generator;
+      return this;
+    }
+
     /**
      * Add a custom transformation to be applied to the image.
      * <p>
@@ -320,7 +333,7 @@ public final class Request {
         throw new IllegalStateException("Center inside requires calling resize.");
       }
       return new Request(uri, resourceId, transformations, targetWidth, targetHeight, resizeOnlyIfBigger, centerCrop,
-          centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot, config);
+          centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot, config, generator);
     }
   }
 }

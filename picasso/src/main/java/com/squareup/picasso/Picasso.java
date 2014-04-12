@@ -46,6 +46,11 @@ import static com.squareup.picasso.Utils.checkMain;
  */
 public class Picasso {
 
+  /**
+   * Custom Uri scheme to be used associated with a custom {@link Generator}
+   */
+  public static final String SCHEME_CUSTOM = "custom.resource";
+
   /** Callbacks for Picasso events. */
   public interface Listener {
     /**

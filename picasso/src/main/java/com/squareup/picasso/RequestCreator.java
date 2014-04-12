@@ -207,6 +207,17 @@ public class RequestCreator {
   }
 
   /**
+   * Assign a custom {@link Generator} which will be used to decode the Uri,
+   * only if the uri scheme is {@link Picasso#SCHEME_CUSTOM}
+   * @param generator
+   * @return
+   */
+  public RequestCreator withGenerator( Generator generator ) {
+    data.setGenerator( generator );
+    return this;
+  }
+
+  /**
    * Add a custom transformation to be applied to the image.
    * <p>
    * Custom transformations will always be run after the built-in transformations.

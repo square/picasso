@@ -36,6 +36,7 @@ import static android.content.ContentResolver.SCHEME_FILE;
 import static android.provider.ContactsContract.Contacts;
 import static com.squareup.picasso.AssetBitmapHunter.ANDROID_ASSET;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
+import static com.squareup.picasso.Picasso.SCHEME_CUSTOM;
 
 abstract class BitmapHunter implements Runnable {
 
@@ -241,13 +242,16 @@ abstract class BitmapHunter implements Runnable {
       } else {
         return new ContentStreamBitmapHunter(context, picasso, dispatcher, cache, stats, action);
       }
-    } else if (SCHEME_FILE.equals(scheme)) {
+    } else if (SCHEME_FILE.equals(scheme) || null == scheme ) {
+      // if scheme is null then assume it's a local absolute path
       if (!uri.getPathSegments().isEmpty() && ANDROID_ASSET.equals(uri.getPathSegments().get(0))) {
         return new AssetBitmapHunter(context, picasso, dispatcher, cache, stats, action);
       }
       return new FileBitmapHunter(context, picasso, dispatcher, cache, stats, action);
     } else if (SCHEME_ANDROID_RESOURCE.equals(scheme)) {
       return new ResourceBitmapHunter(context, picasso, dispatcher, cache, stats, action);
+    } else if( SCHEME_CUSTOM.equals( scheme ) ) {
+      return new CustomBitmapHunter( picasso, dispatcher, cache, stats, action );
     } else {
       return new NetworkBitmapHunter(picasso, dispatcher, cache, stats, action, downloader);
     }
