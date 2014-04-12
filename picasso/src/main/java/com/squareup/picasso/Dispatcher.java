@@ -99,7 +99,15 @@ class Dispatcher {
   }
 
   void dispatchSubmit(Action action) {
-    handler.sendMessage(handler.obtainMessage(REQUEST_SUBMIT, action));
+    dispatchSubmit(action, 0);
+  }
+
+  void dispatchSubmit(Action<?> action, long delayMillis) {
+    if( delayMillis > 0 ) {
+      handler.sendMessageDelayed(handler.obtainMessage(REQUEST_SUBMIT, action), delayMillis);
+    } else {
+      handler.sendMessage(handler.obtainMessage(REQUEST_SUBMIT, action));
+    }
   }
 
   void dispatchCancel(Action action) {

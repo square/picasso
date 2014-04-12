@@ -46,6 +46,7 @@ public class RequestCreator {
   private Drawable placeholderDrawable;
   private Drawable errorDrawable;
   private long fadeTime = Utils.FADE_TIME;
+  private long delayMillis;
 
   RequestCreator(Picasso picasso, Uri uri, int resourceId) {
     if (picasso.shutdown) {
@@ -243,6 +244,11 @@ public class RequestCreator {
     return this;
   }
 
+  public RequestCreator withDelay( long millis ) {
+    delayMillis = millis;
+    return this;
+  }
+
   /**
    * Synchronously fulfill this request. Must not be called from the main thread.
    * <p>
@@ -281,7 +287,7 @@ public class RequestCreator {
       String key = createKey(finalData, new StringBuilder());
 
       Action action = new FetchAction(picasso, finalData, skipMemoryCache, fadeTime, key);
-      picasso.submit(action);
+      picasso.submit(action, delayMillis);
     }
   }
 
@@ -364,7 +370,7 @@ public class RequestCreator {
 
     Action action = new TargetAction(picasso, target, finalData, skipMemoryCache, fadeTime, errorResId,
         errorDrawable, requestKey);
-    picasso.enqueueAndSubmit(action);
+    picasso.enqueueAndSubmit(action, delayMillis);
   }
 
   /**
@@ -492,7 +498,7 @@ public class RequestCreator {
         new ImageViewAction(picasso, target, finalData, skipMemoryCache, fadeTime, errorResId,
             errorDrawable, requestKey, callback);
 
-    picasso.enqueueAndSubmit(action);
+    picasso.enqueueAndSubmit(action, delayMillis);
   }
 
   private void performRemoteViewInto(RemoteViewsAction action) {
@@ -508,6 +514,6 @@ public class RequestCreator {
       action.setImageResource(placeholderResId);
     }
 
-    picasso.enqueueAndSubmit(action);
+    picasso.enqueueAndSubmit(action, delayMillis);
   }
 }

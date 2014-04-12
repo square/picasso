@@ -291,17 +291,25 @@ public class Picasso {
   }
 
   void enqueueAndSubmit(Action action) {
+    enqueueAndSubmit(action, 0);
+  }
+
+  void enqueueAndSubmit(Action action, long delayMillis) {
     Object target = action.getTarget();
     if (target != null) {
       // This will also check we are on the main thread.
       cancelExistingRequest(target);
       targetToAction.put(target, action);
     }
-    submit(action);
+    submit(action, delayMillis);
   }
 
   void submit(Action action) {
-    dispatcher.dispatchSubmit(action);
+    submit(action, 0);
+  }
+
+  void submit(Action action, long delayMillis) {
+    dispatcher.dispatchSubmit(action, delayMillis);
   }
 
   Bitmap quickMemoryCacheCheck(String key) {
