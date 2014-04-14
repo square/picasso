@@ -223,7 +223,7 @@ public class RequestCreator {
    * @param ms
    * @return
    */
-  public RequestCreator fade( long ms ) {
+  public RequestCreator fade(long ms) {
     fadeTime = ms;
     return this;
   }
@@ -347,8 +347,8 @@ public class RequestCreator {
 
     target.onPrepareLoad(drawable);
 
-    Action action = new TargetAction(picasso, target, finalData, skipMemoryCache, fadeTime, errorResId,
-        errorDrawable, requestKey);
+    Action action = new TargetAction(picasso, target, finalData, skipMemoryCache, fadeTime,
+        errorResId, errorDrawable, requestKey);
     picasso.enqueueAndSubmit(action);
   }
 

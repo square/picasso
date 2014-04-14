@@ -30,6 +30,7 @@ import static com.squareup.picasso.TestUtils.RESOURCE_ID_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.mockCallback;
 import static com.squareup.picasso.TestUtils.mockImageViewTarget;
+import static com.squareup.picasso.Utils.FADE_TIME;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -43,7 +44,7 @@ public class ImageViewActionTest {
   @Test(expected = AssertionError.class)
   public void throwsErrorWithNullResult() throws Exception {
     ImageViewAction action =
-        new ImageViewAction(mock(Picasso.class), mockImageViewTarget(), null, false, false, 0, null,
+        new ImageViewAction(mock(Picasso.class), mockImageViewTarget(), null, false, FADE_TIME, 0, null,
             URI_KEY_1, null);
     action.complete(null, MEMORY);
   }
@@ -54,7 +55,7 @@ public class ImageViewActionTest {
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
     ImageViewAction request =
-        new ImageViewAction(picasso, target, null, false, false, 0, null, URI_KEY_1, callback);
+        new ImageViewAction(picasso, target, null, false, FADE_TIME, 0, null, URI_KEY_1, callback);
     request.target.clear();
     request.complete(BITMAP_1, MEMORY);
     verifyZeroInteractions(target);
@@ -67,7 +68,7 @@ public class ImageViewActionTest {
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
     ImageViewAction request =
-        new ImageViewAction(picasso, target, null, false, false, 0, null, URI_KEY_1, callback);
+        new ImageViewAction(picasso, target, null, false, FADE_TIME, 0, null, URI_KEY_1, callback);
     request.target.clear();
     request.error();
     verifyZeroInteractions(target);
@@ -82,7 +83,7 @@ public class ImageViewActionTest {
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
     ImageViewAction request =
-        new ImageViewAction(picasso, target, null, false, false, 0, null, URI_KEY_1, callback);
+        new ImageViewAction(picasso, target, null, false, FADE_TIME, 0, null, URI_KEY_1, callback);
     request.complete(BITMAP_1, MEMORY);
     verify(target).setImageDrawable(any(PicassoDrawable.class));
     verify(callback).onSuccess();
@@ -94,7 +95,7 @@ public class ImageViewActionTest {
     Callback callback = mockCallback();
     Picasso mock = mock(Picasso.class);
     ImageViewAction request =
-        new ImageViewAction(mock, target, null, false, false, RESOURCE_ID_1, null, null, callback);
+        new ImageViewAction(mock, target, null, false, FADE_TIME, RESOURCE_ID_1, null, null, callback);
     request.error();
     verify(target).setImageResource(RESOURCE_ID_1);
     verify(callback).onError();
@@ -106,7 +107,7 @@ public class ImageViewActionTest {
     Callback callback = mockCallback();
     Picasso mock = mock(Picasso.class);
     ImageViewAction request =
-        new ImageViewAction(mock, target, null, false, false, RESOURCE_ID_1, null, null, callback);
+        new ImageViewAction(mock, target, null, false, FADE_TIME, RESOURCE_ID_1, null, null, callback);
     request.error();
     verify(target).setImageResource(RESOURCE_ID_1);
     verify(callback).onError();
@@ -119,7 +120,7 @@ public class ImageViewActionTest {
     Callback callback = mockCallback();
     Picasso mock = mock(Picasso.class);
     ImageViewAction request =
-        new ImageViewAction(mock, target, null, false, false, 0, errorDrawable, URI_KEY_1,
+        new ImageViewAction(mock, target, null, false, FADE_TIME, 0, errorDrawable, URI_KEY_1,
             callback);
     request.error();
     verify(target).setImageDrawable(errorDrawable);
@@ -132,7 +133,7 @@ public class ImageViewActionTest {
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
     ImageViewAction request =
-        new ImageViewAction(picasso, target, null, false, false, 0, null, URI_KEY_1, callback);
+        new ImageViewAction(picasso, target, null, false, FADE_TIME, 0, null, URI_KEY_1, callback);
     request.cancel();
     assertThat(request.callback).isNull();
   }
