@@ -26,7 +26,8 @@
 
     <activity
         android:label="@string/app_name"
-        android:name=".SampleGridViewActivity">
+        android:name=".SampleGridViewActivity"
+        android:theme="@style/Theme.PicassoSample.NoWindowBackground">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER"/>

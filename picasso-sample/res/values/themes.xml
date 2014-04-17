@@ -7,4 +7,7 @@
     <item name="android:listViewStyle">@style/Widget.PicassoSample.ListView</item>
     <item name="android:textColor">#ffe0e0e0</item>
   </style>
+  <style name="Theme.PicassoSample.NoWindowBackground">
+    <item name="android:windowBackground">@null</item>
+  </style>
 </resources>
