@@ -78,6 +78,10 @@ class NetworkBitmapHunter extends BitmapHunter {
     return info == null || info.isConnectedOrConnecting();
   }
 
+  @Override boolean supportsReplay() {
+    return true;
+  }
+
   private Bitmap decodeStream(InputStream stream, Request data) throws IOException {
     MarkableInputStream markStream = new MarkableInputStream(stream);
     stream = markStream;
