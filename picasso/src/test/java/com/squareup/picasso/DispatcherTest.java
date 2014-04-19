@@ -17,10 +17,10 @@ package com.squareup.picasso;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
-import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,6 +48,7 @@ import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -71,7 +72,8 @@ public class DispatcherTest {
 
   @Before public void setUp() throws Exception {
     initMocks(this);
-    dispatcher = new Dispatcher(context, service, mainThreadHandler, downloader, cache, stats);
+    when(context.checkCallingOrSelfPermission(anyString())).thenReturn(PackageManager.PERMISSION_GRANTED);
+    dispatcher = createDispatcher();
   }
 
   @Test public void shutdownStopsService() throws Exception {
@@ -235,19 +237,31 @@ public class DispatcherTest {
   }
 
   @Test public void performRetryMarksForReplayIfReplaySupported() throws Exception {
+    PicassoExecutorService service = mock(PicassoExecutorService.class);
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false, mockAction(URI_KEY_1, URI_1));
     when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(false);
     when(hunter.supportsReplay()).thenReturn(true);
+    Dispatcher dispatcher = createDispatcher(service);
     dispatcher.performNetworkStateChange(mockNetworkInfo(false));
     dispatcher.performRetry(hunter);
     verify(service, never()).submit(hunter);
     assertThat(dispatcher.failedActions).hasSize(1);
   }
 
+  @Test public void performRetryNoNetworkInfoNoReplay() throws Exception {
+    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false, mockAction(URI_KEY_1, URI_1));
+    when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(false);
+    when(hunter.supportsReplay()).thenReturn(true);
+    dispatcher.performRetry(hunter);
+    assertThat(dispatcher.failedActions).isEmpty();
+  }
+
   @Test public void performRetryMarksForReplayIfShouldRetryAndReplaySupported() throws Exception {
+    PicassoExecutorService service = mock(PicassoExecutorService.class);
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false, mockAction(URI_KEY_1, URI_1));
     when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(true);
     when(hunter.supportsReplay()).thenReturn(true);
+    Dispatcher dispatcher = createDispatcher(service);
     dispatcher.performNetworkStateChange(mockNetworkInfo(false));
     dispatcher.performRetry(hunter);
     verify(service, never()).submit(hunter);
@@ -255,6 +269,7 @@ public class DispatcherTest {
   }
 
   @Test public void performRetryMarksForReplayAllActions() throws Exception {
+    PicassoExecutorService service = mock(PicassoExecutorService.class);
     Action mockAction1 = mockAction(URI_KEY_1, URI_1, mockTarget());
     Action mockAction2 = mockAction(URI_KEY_1, URI_1, mockTarget());
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
@@ -262,6 +277,7 @@ public class DispatcherTest {
     when(hunter.getActions()).thenReturn(asList(mockAction2));
     when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(true);
     when(hunter.supportsReplay()).thenReturn(true);
+    Dispatcher dispatcher = createDispatcher(service);
     dispatcher.performNetworkStateChange(mockNetworkInfo(false));
     dispatcher.performRetry(hunter);
     verify(service, never()).submit(hunter);
@@ -308,8 +324,7 @@ public class DispatcherTest {
       throws Exception {
     PicassoExecutorService service = mock(PicassoExecutorService.class);
     NetworkInfo info = mockNetworkInfo(true);
-    Dispatcher dispatcher =
-        new Dispatcher(context, service, mainThreadHandler, downloader, cache, stats);
+    Dispatcher dispatcher = createDispatcher(service);
     dispatcher.performNetworkStateChange(info);
     verify(service).adjustThreadCount(info);
     verifyZeroInteractions(service);
@@ -318,8 +333,7 @@ public class DispatcherTest {
   @Test public void performNetworkStateChangeFlushesFailedHunters() throws Exception {
     PicassoExecutorService service = mock(PicassoExecutorService.class);
     NetworkInfo info = mockNetworkInfo(true);
-    Dispatcher dispatcher =
-        new Dispatcher(context, service, mainThreadHandler, downloader, cache, stats);
+    Dispatcher dispatcher = createDispatcher(service);
     Action failedAction1 = mockAction(URI_KEY_1, URI_1);
     Action failedAction2 = mockAction(URI_KEY_2, URI_2);
     dispatcher.failedActions.put(URI_KEY_1, failedAction1);
@@ -366,5 +380,13 @@ public class DispatcherTest {
     intent.putExtra(EXTRA_AIRPLANE_STATE, airplaneOn);
     receiver.onReceive(context, intent);
     verify(dispatcher).dispatchAirplaneModeChange(airplaneOn);
+  }
+
+  private Dispatcher createDispatcher() {
+    return createDispatcher(service);
+  }
+
+  private Dispatcher createDispatcher(ExecutorService service) {
+    return new Dispatcher(context, service, mainThreadHandler, downloader, cache, stats);
   }
 }
