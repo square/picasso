@@ -33,6 +33,7 @@ import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.mockInputStream;
 import static com.squareup.picasso.TestUtils.mockNetworkInfo;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.mock;
@@ -94,7 +95,7 @@ public class NetworkBitmapHunterTest {
   @Test public void shouldRetryWithConnectedNetworkInfo() throws Exception {
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     NetworkInfo info = mockNetworkInfo();
-    when(info.isConnectedOrConnecting()).thenReturn(true);
+    when(info.isConnected()).thenReturn(true);
     NetworkBitmapHunter hunter =
         new NetworkBitmapHunter(picasso, dispatcher, cache, stats, action, downloader);
     assertThat(hunter.shouldRetry(false, info)).isTrue();
@@ -121,14 +122,18 @@ public class NetworkBitmapHunterTest {
     verify(stats).dispatchDownloadFinished(response.contentLength);
   }
 
-  @Test public void unknownContentLengthDoesNotDispatchToStats() throws Exception {
+  @Test public void unknownContentLengthThrows() throws Exception {
     Downloader.Response response = new Downloader.Response(mockInputStream(), false, 0);
     when(downloader.load(any(Uri.class), anyBoolean())).thenReturn(response);
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     NetworkBitmapHunter hunter =
         new NetworkBitmapHunter(picasso, dispatcher, cache, stats, action, downloader);
-    hunter.decode(action.getData());
-    verifyZeroInteractions(stats);
+    try {
+      hunter.decode(action.getData());
+      fail("Should have thrown IOException.");
+    } catch(IOException expected) {
+      verifyZeroInteractions(stats);
+    }
   }
 
   @Test public void cachedResponseDoesNotDispatchToStats() throws Exception {

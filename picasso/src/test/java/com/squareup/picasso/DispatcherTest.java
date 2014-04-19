@@ -20,7 +20,6 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
-import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +30,8 @@ import org.robolectric.annotation.Config;
 
 import static android.content.Context.CONNECTIVITY_SERVICE;
 import static android.content.Intent.ACTION_AIRPLANE_MODE_CHANGED;
+import static android.content.pm.PackageManager.PERMISSION_DENIED;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
 import static com.squareup.picasso.Dispatcher.NetworkBroadcastReceiver;
 import static com.squareup.picasso.Dispatcher.NetworkBroadcastReceiver.EXTRA_AIRPLANE_STATE;
@@ -44,15 +45,14 @@ import static com.squareup.picasso.TestUtils.mockAction;
 import static com.squareup.picasso.TestUtils.mockHunter;
 import static com.squareup.picasso.TestUtils.mockNetworkInfo;
 import static com.squareup.picasso.TestUtils.mockTarget;
-import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -62,6 +62,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 public class DispatcherTest {
 
   @Mock Context context;
+  @Mock ConnectivityManager connectivityManager;
   @Mock ExecutorService service;
   @Mock Handler mainThreadHandler;
   @Mock Downloader downloader;
@@ -71,7 +72,7 @@ public class DispatcherTest {
 
   @Before public void setUp() throws Exception {
     initMocks(this);
-    dispatcher = new Dispatcher(context, service, mainThreadHandler, downloader, cache, stats);
+    dispatcher = createDispatcher();
   }
 
   @Test public void shutdownStopsService() throws Exception {
@@ -210,69 +211,94 @@ public class DispatcherTest {
     assertThat(dispatcher.batch).isEmpty();
   }
 
-  @Test public void performRetrySkipsRetryIfCancelled() throws Exception {
-    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
+  @Test public void performRetrySkipsIfHunterIsCancelled() throws Exception {
+    BitmapHunter hunter = mockHunter(URI_KEY_2, BITMAP_1, false);
     when(hunter.isCancelled()).thenReturn(true);
     dispatcher.performRetry(hunter);
     verifyZeroInteractions(service);
-  }
-
-  @Test public void performRetrySkipsIfHunterSaysNo() throws Exception {
-    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
-    when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(false);
-    dispatcher.performRetry(hunter);
-    verify(service).isShutdown();
-    verifyNoMoreInteractions(service);
-  }
-
-  @Test public void performRetryIfIsConnectedAndHunterSaysYes() throws Exception {
-    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
-    when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(true);
-    dispatcher.performNetworkStateChange(mockNetworkInfo(true));
-    dispatcher.performRetry(hunter);
-    verify(service).submit(hunter);
+    assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.failedActions).isEmpty();
   }
 
-  @Test public void performRetryMarksForReplayIfReplaySupported() throws Exception {
+  @Test public void performRetryDoesNotMarkForReplayIfNotSupported() throws Exception {
+    NetworkInfo networkInfo = mockNetworkInfo(true);
+    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false, mockAction(URI_KEY_1, URI_1));
+    when(hunter.supportsReplay()).thenReturn(false);
+    when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(false);
+    when(connectivityManager.getActiveNetworkInfo()).thenReturn(networkInfo);
+    dispatcher.performRetry(hunter);
+    assertThat(dispatcher.hunterMap).isEmpty();
+    assertThat(dispatcher.failedActions).isEmpty();
+    verify(service, never()).submit(hunter);
+  }
+
+  @Test public void performRetryDoesNotMarkForReplayIfNoNetworkScanning() throws Exception {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false, mockAction(URI_KEY_1, URI_1));
     when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(false);
     when(hunter.supportsReplay()).thenReturn(true);
-    dispatcher.performNetworkStateChange(mockNetworkInfo(false));
+    Dispatcher dispatcher = createDispatcher(false);
     dispatcher.performRetry(hunter);
+    assertThat(dispatcher.hunterMap).isEmpty();
+    assertThat(dispatcher.failedActions).isEmpty();
     verify(service, never()).submit(hunter);
-    assertThat(dispatcher.failedActions).hasSize(1);
   }
 
-  @Test public void performRetryMarksForReplayIfShouldRetryAndReplaySupported() throws Exception {
+  @Test public void performRetryMarksForReplayIfSupportedScansNetworkChangesAndShouldNotRetry()
+      throws Exception {
+    NetworkInfo networkInfo = mockNetworkInfo(true);
+    Action action = mockAction(URI_KEY_1, URI_1, mockTarget());
+    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false, action);
+    when(hunter.supportsReplay()).thenReturn(true);
+    when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(false);
+    when(connectivityManager.getActiveNetworkInfo()).thenReturn(networkInfo);
+    dispatcher.performRetry(hunter);
+    assertThat(dispatcher.hunterMap).isEmpty();
+    assertThat(dispatcher.failedActions).hasSize(1);
+    verify(service, never()).submit(hunter);
+  }
+
+  @Test public void performRetryRetriesIfNoNetworkScanning() throws Exception {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false, mockAction(URI_KEY_1, URI_1));
     when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(true);
-    when(hunter.supportsReplay()).thenReturn(true);
-    dispatcher.performNetworkStateChange(mockNetworkInfo(false));
+    Dispatcher dispatcher = createDispatcher(false);
     dispatcher.performRetry(hunter);
-    verify(service, never()).submit(hunter);
-    assertThat(dispatcher.failedActions).hasSize(1);
+    assertThat(dispatcher.hunterMap).isEmpty();
+    assertThat(dispatcher.failedActions).isEmpty();
+    verify(service).submit(hunter);
   }
 
-  @Test public void performRetryMarksForReplayAllActions() throws Exception {
-    Action mockAction1 = mockAction(URI_KEY_1, URI_1, mockTarget());
-    Action mockAction2 = mockAction(URI_KEY_1, URI_1, mockTarget());
-    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
-    when(hunter.getAction()).thenReturn(mockAction1);
-    when(hunter.getActions()).thenReturn(asList(mockAction2));
+  @Test public void performRetryMarksForReplayIfSupportsReplayAndNoConnectivity() throws Exception {
+    NetworkInfo networkInfo = mockNetworkInfo(false);
+    Action action = mockAction(URI_KEY_1, URI_1, mockTarget());
+    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false, action);
     when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(true);
     when(hunter.supportsReplay()).thenReturn(true);
-    dispatcher.performNetworkStateChange(mockNetworkInfo(false));
+    when(connectivityManager.getActiveNetworkInfo()).thenReturn(networkInfo);
     dispatcher.performRetry(hunter);
+    assertThat(dispatcher.hunterMap).isEmpty();
+    assertThat(dispatcher.failedActions).hasSize(1);
     verify(service, never()).submit(hunter);
-    assertThat(dispatcher.failedActions).hasSize(2);
   }
 
-  @Test public void performRetrySkipsRetryIfServiceShutdown() throws Exception {
+  @Test public void performRetryRetriesIfHasConnectivity() throws Exception {
+    NetworkInfo networkInfo = mockNetworkInfo(true);
+    Action action = mockAction(URI_KEY_1, URI_1, mockTarget());
+    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false, action);
+    when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(true);
+    when(connectivityManager.getActiveNetworkInfo()).thenReturn(networkInfo);
+    dispatcher.performRetry(hunter);
+    assertThat(dispatcher.hunterMap).isEmpty();
+    assertThat(dispatcher.failedActions).isEmpty();
+    verify(service).submit(hunter);
+  }
+
+  @Test public void performRetrySkipIfServiceShutdown() throws Exception {
     when(service.isShutdown()).thenReturn(true);
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
     dispatcher.performRetry(hunter);
     verify(service, never()).submit(hunter);
+    assertThat(dispatcher.hunterMap).isEmpty();
+    assertThat(dispatcher.failedActions).isEmpty();
   }
 
   @Test public void performAirplaneModeChange() throws Exception {
@@ -308,8 +334,7 @@ public class DispatcherTest {
       throws Exception {
     PicassoExecutorService service = mock(PicassoExecutorService.class);
     NetworkInfo info = mockNetworkInfo(true);
-    Dispatcher dispatcher =
-        new Dispatcher(context, service, mainThreadHandler, downloader, cache, stats);
+    Dispatcher dispatcher = createDispatcher(service);
     dispatcher.performNetworkStateChange(info);
     verify(service).adjustThreadCount(info);
     verifyZeroInteractions(service);
@@ -318,8 +343,7 @@ public class DispatcherTest {
   @Test public void performNetworkStateChangeFlushesFailedHunters() throws Exception {
     PicassoExecutorService service = mock(PicassoExecutorService.class);
     NetworkInfo info = mockNetworkInfo(true);
-    Dispatcher dispatcher =
-        new Dispatcher(context, service, mainThreadHandler, downloader, cache, stats);
+    Dispatcher dispatcher = createDispatcher(service);
     Action failedAction1 = mockAction(URI_KEY_1, URI_1);
     Action failedAction2 = mockAction(URI_KEY_2, URI_2);
     dispatcher.failedActions.put(URI_KEY_1, failedAction1);
@@ -366,5 +390,24 @@ public class DispatcherTest {
     intent.putExtra(EXTRA_AIRPLANE_STATE, airplaneOn);
     receiver.onReceive(context, intent);
     verify(dispatcher).dispatchAirplaneModeChange(airplaneOn);
+  }
+
+  private Dispatcher createDispatcher() {
+    return createDispatcher(service);
+  }
+
+  private Dispatcher createDispatcher(boolean scansNetworkChanges) {
+    return createDispatcher(service, scansNetworkChanges);
+  }
+
+  private Dispatcher createDispatcher(ExecutorService service) {
+    return createDispatcher(service, true);
+  }
+
+  private Dispatcher createDispatcher(ExecutorService service, boolean scansNetworkChanges) {
+    when(context.getSystemService(Context.CONNECTIVITY_SERVICE)).thenReturn(connectivityManager);
+    when(context.checkCallingOrSelfPermission(anyString())).thenReturn(
+        scansNetworkChanges ? PERMISSION_GRANTED : PERMISSION_DENIED);
+    return new Dispatcher(context, service, mainThreadHandler, downloader, cache, stats);
   }
 }

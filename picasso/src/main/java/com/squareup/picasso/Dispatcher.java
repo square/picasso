@@ -40,6 +40,7 @@ import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static com.squareup.picasso.BitmapHunter.forRequest;
 import static com.squareup.picasso.Utils.getService;
+import static com.squareup.picasso.Utils.hasPermission;
 
 class Dispatcher {
   private static final int RETRY_DELAY = 500;
@@ -72,8 +73,8 @@ class Dispatcher {
   final Stats stats;
   final List<BitmapHunter> batch;
   final NetworkBroadcastReceiver receiver;
+  final boolean scansNetworkChanges;
 
-  NetworkInfo networkInfo;
   boolean airplaneMode;
 
   Dispatcher(Context context, ExecutorService service, Handler mainThreadHandler,
@@ -91,6 +92,7 @@ class Dispatcher {
     this.stats = stats;
     this.batch = new ArrayList<BitmapHunter>(4);
     this.airplaneMode = Utils.isAirplaneModeOn(this.context);
+    this.scansNetworkChanges = hasPermission(context, Manifest.permission.ACCESS_NETWORK_STATE);
     this.receiver = new NetworkBroadcastReceiver(this);
     receiver.register();
   }
@@ -167,24 +169,35 @@ class Dispatcher {
       return;
     }
 
-    boolean hasConnectivity = networkInfo != null && networkInfo.isConnectedOrConnecting();
+    NetworkInfo networkInfo = null;
+    if (scansNetworkChanges) {
+      ConnectivityManager connectivityManager = getService(context, CONNECTIVITY_SERVICE);
+      networkInfo = connectivityManager.getActiveNetworkInfo();
+    }
+
+    boolean hasConnectivity = networkInfo != null && networkInfo.isConnected();
     boolean shouldRetryHunter = hunter.shouldRetry(airplaneMode, networkInfo);
     boolean supportsReplay = hunter.supportsReplay();
 
-    if (shouldRetryHunter) {
-      if (hasConnectivity) {
-        hunter.future = service.submit(hunter);
-      } else {
-        if (supportsReplay) {
-          markForReplay(hunter);
-        }
-        performError(hunter);
-      }
-    } else {
-      if (supportsReplay) {
+    if (!shouldRetryHunter) {
+      // Mark for replay only if we observe network info changes and support replay.
+      if (scansNetworkChanges && supportsReplay) {
         markForReplay(hunter);
       }
       performError(hunter);
+      return;
+    }
+
+    // If we don't scan for network changes (missing permission) or if we have connectivity, retry.
+    if (!scansNetworkChanges || hasConnectivity) {
+      hunter.future = service.submit(hunter);
+      return;
+    }
+
+    performError(hunter);
+
+    if (supportsReplay) {
+      markForReplay(hunter);
     }
   }
 
@@ -212,12 +225,11 @@ class Dispatcher {
   }
 
   void performNetworkStateChange(NetworkInfo info) {
-    networkInfo = info;
     if (service instanceof PicassoExecutorService) {
       ((PicassoExecutorService) service).adjustThreadCount(info);
     }
     // Intentionally check only if isConnected() here before we flush out failed actions.
-    if (networkInfo != null && networkInfo.isConnected()) {
+    if (info != null && info.isConnected()) {
       flushFailedActions();
     }
   }
@@ -236,15 +248,23 @@ class Dispatcher {
   private void markForReplay(BitmapHunter hunter) {
     Action action = hunter.getAction();
     if (action != null) {
-      failedActions.put(action.getTarget(), action);
+      markForReplay(action);
     }
     List<Action> joined = hunter.getActions();
     if (joined != null) {
       //noinspection ForLoopReplaceableByForEach
       for (int i = 0, n = joined.size(); i < n; i++) {
         Action join = joined.get(i);
-        failedActions.put(join.getTarget(), join);
+        markForReplay(join);
       }
+    }
+  }
+
+  private void markForReplay(Action action) {
+    Object target = action.getTarget();
+    if (target != null) {
+      action.willReplay = true;
+      failedActions.put(target, action);
     }
   }
 
@@ -332,11 +352,9 @@ class Dispatcher {
     }
 
     void register() {
-      boolean shouldScanState = dispatcher.service instanceof PicassoExecutorService && //
-          Utils.hasPermission(dispatcher.context, Manifest.permission.ACCESS_NETWORK_STATE);
       IntentFilter filter = new IntentFilter();
       filter.addAction(ACTION_AIRPLANE_MODE_CHANGED);
-      if (shouldScanState) {
+      if (dispatcher.scansNetworkChanges) {
         filter.addAction(CONNECTIVITY_ACTION);
       }
       dispatcher.context.registerReceiver(this, filter);
