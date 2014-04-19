@@ -73,6 +73,8 @@ class Dispatcher {
   final List<BitmapHunter> batch;
   final NetworkBroadcastReceiver receiver;
 
+  final boolean scansNetworkChanges;
+
   NetworkInfo networkInfo;
   boolean airplaneMode;
 
@@ -91,8 +93,11 @@ class Dispatcher {
     this.stats = stats;
     this.batch = new ArrayList<BitmapHunter>(4);
     this.airplaneMode = Utils.isAirplaneModeOn(this.context);
+    this.scansNetworkChanges = service instanceof PicassoExecutorService && //
+        Utils.hasPermission(context, Manifest.permission.ACCESS_NETWORK_STATE);
     this.receiver = new NetworkBroadcastReceiver(this);
-    receiver.register();
+    receiver.register(scansNetworkChanges);
+
   }
 
   void shutdown() {
@@ -171,21 +176,27 @@ class Dispatcher {
     boolean shouldRetryHunter = hunter.shouldRetry(airplaneMode, networkInfo);
     boolean supportsReplay = hunter.supportsReplay();
 
-    if (shouldRetryHunter) {
-      if (hasConnectivity) {
-        hunter.future = service.submit(hunter);
-      } else {
-        if (supportsReplay) {
-          markForReplay(hunter);
-        }
-        performError(hunter);
-      }
-    } else {
-      if (supportsReplay) {
+    if (!shouldRetryHunter) {
+      // Mark for replay only if we observe network info changes.
+      if (scansNetworkChanges && supportsReplay) {
         markForReplay(hunter);
       }
       performError(hunter);
+      return;
     }
+
+    // If we don't scan for network changes (missing permission) or if we have connectivity, retry
+    // hunter.
+    if (!scansNetworkChanges || hasConnectivity) {
+      hunter.future = service.submit(hunter);
+      return;
+    }
+
+    if (supportsReplay) {
+      markForReplay(hunter);
+    }
+
+    performError(hunter);
   }
 
   void performComplete(BitmapHunter hunter) {
@@ -331,12 +342,10 @@ class Dispatcher {
       this.dispatcher = dispatcher;
     }
 
-    void register() {
-      boolean shouldScanState = dispatcher.service instanceof PicassoExecutorService && //
-          Utils.hasPermission(dispatcher.context, Manifest.permission.ACCESS_NETWORK_STATE);
+    void register(boolean scansNetworkChanges) {
       IntentFilter filter = new IntentFilter();
       filter.addAction(ACTION_AIRPLANE_MODE_CHANGED);
-      if (shouldScanState) {
+      if (scansNetworkChanges) {
         filter.addAction(CONNECTIVITY_ACTION);
       }
       dispatcher.context.registerReceiver(this, filter);
