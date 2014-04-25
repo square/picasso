@@ -26,6 +26,7 @@ import android.os.Looper;
 import android.os.Process;
 import android.os.StatFs;
 import android.provider.Settings;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -106,7 +107,11 @@ final class Utils {
   }
 
   static String createKey(Request data, StringBuilder builder) {
-    if (data.uri != null) {
+    if (data.stableKey != null) {
+      String stableKey = data.stableKey;
+      builder.ensureCapacity(stableKey.length() + KEY_PADDING);
+      builder.append(stableKey);
+    } else if (data.uri != null) {
       String path = data.uri.toString();
       builder.ensureCapacity(path.length() + KEY_PADDING);
       builder.append(path);
