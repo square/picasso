@@ -104,10 +104,7 @@ class NetworkBitmapHunter extends BitmapHunter {
       return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
     } else {
       if (calculateSize) {
-        BitmapFactory.decodeStream(stream, null, options);
         calculateInSampleSize(data.targetWidth, data.targetHeight, options);
-
-        markStream.reset(mark);
       }
       return BitmapFactory.decodeStream(stream, null, options);
     }
