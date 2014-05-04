@@ -39,6 +39,7 @@ abstract class Action<T> {
   final Drawable errorDrawable;
   final String key;
 
+  boolean willReplay;
   boolean cancelled;
 
   Action(Picasso picasso, T target, Request data, boolean skipCache, boolean noFade,
@@ -75,6 +76,10 @@ abstract class Action<T> {
 
   boolean isCancelled() {
     return cancelled;
+  }
+
+  boolean willReplay() {
+    return willReplay;
   }
 
   Picasso getPicasso() {

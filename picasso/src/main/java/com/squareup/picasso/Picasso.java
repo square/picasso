@@ -351,7 +351,9 @@ public class Picasso {
     if (action.isCancelled()) {
       return;
     }
-    targetToAction.remove(action.getTarget());
+    if (!action.willReplay()) {
+      targetToAction.remove(action.getTarget());
+    }
     if (result != null) {
       if (from == null) {
         throw new AssertionError("LoadedFrom cannot be null.");

@@ -59,6 +59,11 @@ class NetworkBitmapHunter extends BitmapHunter {
     if (is == null) {
       return null;
     }
+    // Sometimes response content length is zero when requests are being replayed. Haven't found
+    // root cause to this but retrying the request seems safe to do so.
+    if (response.getContentLength() == 0) {
+      throw new IOException("Received response with 0 content-length header.");
+    }
     if (loadedFrom == NETWORK && response.getContentLength() > 0) {
       stats.dispatchDownloadFinished(response.getContentLength());
     }
@@ -75,7 +80,7 @@ class NetworkBitmapHunter extends BitmapHunter {
       return false;
     }
     retryCount--;
-    return info == null || info.isConnectedOrConnecting();
+    return info == null || info.isConnected();
   }
 
   @Override boolean supportsReplay() {
@@ -109,7 +114,12 @@ class NetworkBitmapHunter extends BitmapHunter {
 
         markStream.reset(mark);
       }
-      return BitmapFactory.decodeStream(stream, null, options);
+      Bitmap bitmap = BitmapFactory.decodeStream(stream, null, options);
+      if (bitmap == null) {
+        // Treat null as an IO exception, we will eventually retry.
+        throw new IOException("Failed to decode stream.");
+      }
+      return bitmap;
     }
   }
 }
