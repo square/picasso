@@ -15,17 +15,30 @@
  */
 package com.squareup.picasso;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.media.ExifInterface;
-import android.net.Uri;
-import java.io.IOException;
-
 import static android.media.ExifInterface.ORIENTATION_NORMAL;
 import static android.media.ExifInterface.ORIENTATION_ROTATE_180;
 import static android.media.ExifInterface.ORIENTATION_ROTATE_270;
 import static android.media.ExifInterface.ORIENTATION_ROTATE_90;
 import static android.media.ExifInterface.TAG_ORIENTATION;
+import static android.os.Build.VERSION.SDK_INT;
+import static android.os.Build.VERSION_CODES.FROYO;
+import static android.provider.MediaStore.Video.Thumbnails.FULL_SCREEN_KIND;
+import static android.provider.MediaStore.Video.Thumbnails.MICRO_KIND;
+import static android.provider.MediaStore.Video.Thumbnails.MINI_KIND;
+import static com.squareup.picasso.FileBitmapHunter.PicassoKind.FULL;
+import static com.squareup.picasso.FileBitmapHunter.PicassoKind.MICRO;
+import static com.squareup.picasso.FileBitmapHunter.PicassoKind.MINI;
+
+import java.io.IOException;
+import java.net.URLConnection;
+
+import android.annotation.TargetApi;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.media.ExifInterface;
+import android.media.ThumbnailUtils;
+import android.net.Uri;
+import android.os.Build;
 
 class FileBitmapHunter extends ContentStreamBitmapHunter {
 
@@ -37,6 +50,21 @@ class FileBitmapHunter extends ContentStreamBitmapHunter {
   @Override Bitmap decode(Request data)
       throws IOException {
     setExifRotation(getFileExifRotation(data.uri));
+    if (SDK_INT >= FROYO) {
+        String mimeType = URLConnection.guessContentTypeFromName(data.uri.getPath());
+        boolean isVideo = mimeType != null && mimeType.startsWith("video/");
+        if (isVideo) {
+            int kind;
+            if(data.hasSize()) {
+                PicassoKind picassoKind = getPicassoKind(data.targetWidth, data.targetHeight);
+                kind = picassoKind.androidKind;
+            } else {
+                kind = FULL_SCREEN_KIND;
+            }
+            return createVideoThumbnail(data.uri, kind);
+        }
+    }
+
     return super.decode(data);
   }
 
@@ -53,5 +81,36 @@ class FileBitmapHunter extends ContentStreamBitmapHunter {
       default:
         return 0;
     }
+  }
+
+  static PicassoKind getPicassoKind(int targetWidth, int targetHeight) {
+      if (targetWidth <= MICRO.width && targetHeight <= MICRO.height) {
+          return MICRO;
+      } else if (targetWidth <= MINI.width && targetHeight <= MINI.height) {
+          return MINI;
+      }
+      return FULL;
+  }
+
+  // Only for SDK 8 and later, (FROYO, June 2010: Android 2.2)
+  @TargetApi(Build.VERSION_CODES.FROYO)
+  protected Bitmap createVideoThumbnail(Uri uri, int kind) {
+    return ThumbnailUtils.createVideoThumbnail(uri.getPath(), kind);
+  }
+
+  enum PicassoKind {
+      MICRO(MICRO_KIND, 96, 96),
+      MINI(MINI_KIND, 512, 384),
+      FULL(FULL_SCREEN_KIND, -1, -1);
+
+      final int androidKind;
+      final int width;
+      final int height;
+
+      PicassoKind(int androidKind, int width, int height) {
+          this.androidKind = androidKind;
+          this.width = width;
+          this.height = height;
+      }
   }
 }
