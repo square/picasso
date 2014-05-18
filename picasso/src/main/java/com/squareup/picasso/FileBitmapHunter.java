@@ -17,15 +17,28 @@ package com.squareup.picasso;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.ExifInterface;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
-import java.io.IOException;
+import android.provider.MediaStore;
+import android.util.Log;
 
+import java.io.IOException;
+import java.net.URLConnection;
+
+import static android.content.ContentUris.parseId;
 import static android.media.ExifInterface.ORIENTATION_NORMAL;
 import static android.media.ExifInterface.ORIENTATION_ROTATE_180;
 import static android.media.ExifInterface.ORIENTATION_ROTATE_270;
 import static android.media.ExifInterface.ORIENTATION_ROTATE_90;
 import static android.media.ExifInterface.TAG_ORIENTATION;
+import static android.provider.MediaStore.Video.Thumbnails.FULL_SCREEN_KIND;
+import static android.provider.MediaStore.Video.Thumbnails.MICRO_KIND;
+import static android.provider.MediaStore.Video.Thumbnails.MINI_KIND;
+import static com.squareup.picasso.FileBitmapHunter.PicassoKind.FULL;
+import static com.squareup.picasso.FileBitmapHunter.PicassoKind.MICRO;
+import static com.squareup.picasso.FileBitmapHunter.PicassoKind.MINI;
 
 class FileBitmapHunter extends ContentStreamBitmapHunter {
 
@@ -37,8 +50,32 @@ class FileBitmapHunter extends ContentStreamBitmapHunter {
   @Override Bitmap decode(Request data)
       throws IOException {
     setExifRotation(getFileExifRotation(data.uri));
+      String mimeType = URLConnection.guessContentTypeFromName(data.uri.toString().replaceFirst("file://", ""));
+      boolean isVideo = mimeType != null && mimeType.startsWith("video/");
+      if (isVideo) {
+          int kind;
+          if(data.hasSize()) {
+              PicassoKind picassoKind = getPicassoKind(data.targetWidth, data.targetHeight);
+              kind = picassoKind.androidKind;
+          } else {
+              kind = FULL_SCREEN_KIND;
+          }
+          Bitmap result = ThumbnailUtils.createVideoThumbnail(data.uri.toString().replaceFirst("file://", ""), kind);
+          if (result != null) {
+              return result;
+          }
+      }
     return super.decode(data);
   }
+
+    static PicassoKind getPicassoKind(int targetWidth, int targetHeight) {
+        if (targetWidth <= MICRO.width && targetHeight <= MICRO.height) {
+            return MICRO;
+        } else if (targetWidth <= MINI.width && targetHeight <= MINI.height) {
+            return MINI;
+        }
+        return FULL;
+    }
 
   static int getFileExifRotation(Uri uri) throws IOException {
     ExifInterface exifInterface = new ExifInterface(uri.getPath());
@@ -54,4 +91,20 @@ class FileBitmapHunter extends ContentStreamBitmapHunter {
         return 0;
     }
   }
+
+    enum PicassoKind {
+        MICRO(MICRO_KIND, 96, 96),
+        MINI(MINI_KIND, 512, 384),
+        FULL(FULL_SCREEN_KIND, -1, -1);
+
+        final int androidKind;
+        final int width;
+        final int height;
+
+        PicassoKind(int androidKind, int width, int height) {
+            this.androidKind = androidKind;
+            this.width = width;
+            this.height = height;
+        }
+    }
 }
