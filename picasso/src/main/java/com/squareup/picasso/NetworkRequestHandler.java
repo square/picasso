@@ -25,34 +25,37 @@ import static com.squareup.picasso.Downloader.Response;
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 import static com.squareup.picasso.Picasso.LoadedFrom.NETWORK;
 
-class NetworkBitmapHunter extends BitmapHunter {
-  static final int DEFAULT_RETRY_COUNT = 2;
+class NetworkRequestHandler extends RequestHandler {
+  static final int RETRY_COUNT = 2;
   private static final int MARKER = 65536;
 
+  private static final String SCHEME_HTTP = "http";
+  private static final String SCHEME_HTTPS = "https";
+
   private final Downloader downloader;
+  private final Stats stats;
 
-  int retryCount;
-
-  public NetworkBitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats,
-      Action action, Downloader downloader) {
-    super(picasso, dispatcher, cache, stats, action);
+  public NetworkRequestHandler(Downloader downloader, Stats stats) {
     this.downloader = downloader;
-    this.retryCount = DEFAULT_RETRY_COUNT;
+    this.stats = stats;
   }
 
-  @Override Bitmap decode(Request data) throws IOException {
-    boolean loadFromLocalCacheOnly = retryCount == 0;
+  @Override public boolean canHandleRequest(Request data) {
+    String scheme = data.uri.getScheme();
+    return (SCHEME_HTTP.equals(scheme) || SCHEME_HTTPS.equals(scheme));
+  }
 
-    Response response = downloader.load(data.uri, loadFromLocalCacheOnly);
+  @Override public Result load(Request data) throws IOException {
+    Response response = downloader.load(data.uri, data.loadFromLocalCacheOnly);
     if (response == null) {
       return null;
     }
 
-    loadedFrom = response.cached ? DISK : NETWORK;
+    Picasso.LoadedFrom loadedFrom = response.cached ? DISK : NETWORK;
 
-    Bitmap result = response.getBitmap();
-    if (result != null) {
-      return result;
+    Bitmap bitmap = response.getBitmap();
+    if (bitmap != null) {
+      return new Result(bitmap, loadedFrom);
     }
 
     InputStream is = response.getInputStream();
@@ -69,18 +72,17 @@ class NetworkBitmapHunter extends BitmapHunter {
       stats.dispatchDownloadFinished(response.getContentLength());
     }
     try {
-      return decodeStream(is, data);
+      return new Result(decodeStream(is, data), NETWORK);
     } finally {
       Utils.closeQuietly(is);
     }
   }
 
+  @Override int getRetryCount() {
+    return RETRY_COUNT;
+  }
+
   @Override boolean shouldRetry(boolean airplaneMode, NetworkInfo info) {
-    boolean hasRetries = retryCount > 0;
-    if (!hasRetries) {
-      return false;
-    }
-    retryCount--;
     return info == null || info.isConnected();
   }
 

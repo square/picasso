@@ -16,28 +16,30 @@
 package com.squareup.picasso;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.media.ExifInterface;
 import android.net.Uri;
 import java.io.IOException;
 
+import static android.content.ContentResolver.SCHEME_FILE;
 import static android.media.ExifInterface.ORIENTATION_NORMAL;
 import static android.media.ExifInterface.ORIENTATION_ROTATE_180;
 import static android.media.ExifInterface.ORIENTATION_ROTATE_270;
 import static android.media.ExifInterface.ORIENTATION_ROTATE_90;
 import static android.media.ExifInterface.TAG_ORIENTATION;
+import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 
-class FileBitmapHunter extends ContentStreamBitmapHunter {
+class FileRequestHandler extends ContentStreamRequestHandler {
 
-  FileBitmapHunter(Context context, Picasso picasso, Dispatcher dispatcher, Cache cache,
-      Stats stats, Action action) {
-    super(context, picasso, dispatcher, cache, stats, action);
+  FileRequestHandler(Context context) {
+    super(context);
   }
 
-  @Override Bitmap decode(Request data)
-      throws IOException {
-    setExifRotation(getFileExifRotation(data.uri));
-    return super.decode(data);
+  @Override public boolean canHandleRequest(Request data) {
+    return SCHEME_FILE.equals(data.uri.getScheme());
+  }
+
+  @Override public Result load(Request data) throws IOException {
+    return new Result(decodeContentStream(data), DISK, getFileExifRotation(data.uri));
   }
 
   static int getFileExifRotation(Uri uri) throws IOException {

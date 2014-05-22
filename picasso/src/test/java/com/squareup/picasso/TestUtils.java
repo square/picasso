@@ -28,13 +28,16 @@ import android.widget.RemoteViews;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static android.provider.ContactsContract.Contacts.CONTENT_URI;
 import static android.provider.ContactsContract.Contacts.Photo.CONTENT_DIRECTORY;
+import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Utils.createKey;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -88,6 +91,8 @@ class TestUtils {
       .build();
   static final String RESOURCE_TYPE_URI_KEY =
       createKey(new Request.Builder(RESOURCE_TYPE_URI).build());
+  static final Uri CUSTOM_URI = Uri.parse("foo://bar");
+  static final String CUSTOM_URI_KEY = createKey(new Request.Builder(CUSTOM_URI).build());;
 
   static Context mockPackageResourceContext() {
     Context context = mock(Context.class);
@@ -126,7 +131,10 @@ class TestUtils {
     when(action.getKey()).thenReturn(key);
     when(action.getRequest()).thenReturn(request);
     when(action.getTarget()).thenReturn(target);
-    when(action.getPicasso()).thenReturn(mock(Picasso.class));
+
+    Picasso picasso = mockPicasso();
+    when(action.getPicasso()).thenReturn(picasso);
+
     return action;
   }
 
@@ -200,8 +208,31 @@ class TestUtils {
     when(hunter.getData()).thenReturn(data);
     when(hunter.shouldSkipMemoryCache()).thenReturn(skipCache);
     when(hunter.getAction()).thenReturn(action);
-    when(hunter.getPicasso()).thenReturn(mock(Picasso.class));
+
+    Picasso picasso = mockPicasso();
+    when(hunter.getPicasso()).thenReturn(picasso);
+
     return hunter;
+  }
+
+  static Picasso mockPicasso() {
+    // Mock a RequestHandler that can handle any request.
+    RequestHandler requestHandler = mock(RequestHandler.class);
+    try {
+      RequestHandler.Result result = new RequestHandler.Result(BITMAP_1, MEMORY);
+      when(requestHandler.load(any(Request.class))).thenReturn(result);
+      when(requestHandler.canHandleRequest(any(Request.class))).thenReturn(true);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+    return mockPicasso(requestHandler);
+  }
+
+  static Picasso mockPicasso(RequestHandler requestHandler) {
+    Picasso picasso = mock(Picasso.class);
+    when(picasso.getRequestHandlers()).thenReturn(Arrays.asList(requestHandler));
+    return picasso;
   }
 
   private TestUtils() {

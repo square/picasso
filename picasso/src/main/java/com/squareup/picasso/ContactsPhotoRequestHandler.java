@@ -27,12 +27,13 @@ import android.provider.ContactsContract;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH;
 import static android.provider.ContactsContract.Contacts.openContactPhotoInputStream;
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 
-class ContactsPhotoBitmapHunter extends BitmapHunter {
+class ContactsPhotoRequestHandler extends RequestHandler {
   /** A lookup uri (e.g. content://com.android.contacts/contacts/lookup/3570i61d948d30808e537) */
   private static final int ID_LOOKUP = 1;
   /** A contact thumbnail uri (e.g. content://com.android.contacts/contacts/38/photo) */
@@ -58,29 +59,30 @@ class ContactsPhotoBitmapHunter extends BitmapHunter {
 
   final Context context;
 
-  ContactsPhotoBitmapHunter(Context context, Picasso picasso, Dispatcher dispatcher, Cache cache,
-      Stats stats, Action action) {
-    super(picasso, dispatcher, cache, stats, action);
+  ContactsPhotoRequestHandler(Context context) {
     this.context = context;
   }
 
-  @Override Bitmap decode(Request data) throws IOException {
+  @Override public boolean canHandleRequest(Request data) {
+    final Uri uri = data.uri;
+    return (SCHEME_CONTENT.equals(uri.getScheme())
+        && ContactsContract.Contacts.CONTENT_URI.getHost().equals(uri.getHost())
+        && !uri.getPathSegments().contains(ContactsContract.Contacts.Photo.CONTENT_DIRECTORY));
+  }
+
+  @Override public Result load(Request data) throws IOException {
     InputStream is = null;
     try {
-      is = getInputStream();
-      return decodeStream(is, data);
+      is = getInputStream(data);
+      return new Result(decodeStream(is, data), DISK);
     } finally {
       Utils.closeQuietly(is);
     }
   }
 
-  @Override Picasso.LoadedFrom getLoadedFrom() {
-    return DISK;
-  }
-
-  private InputStream getInputStream() throws IOException {
+  private InputStream getInputStream(Request data) throws IOException {
     ContentResolver contentResolver = context.getContentResolver();
-    Uri uri = getData().uri;
+    Uri uri = data.uri;
     switch (matcher.match(uri)) {
       case ID_LOOKUP:
         uri = ContactsContract.Contacts.lookupContact(contentResolver, uri);
@@ -108,7 +110,7 @@ class ContactsPhotoBitmapHunter extends BitmapHunter {
     }
     final BitmapFactory.Options options = createBitmapOptions(data);
     if (requiresInSampleSize(options)) {
-      InputStream is = getInputStream();
+      InputStream is = getInputStream(data);
       try {
         BitmapFactory.decodeStream(is, null, options);
       } finally {

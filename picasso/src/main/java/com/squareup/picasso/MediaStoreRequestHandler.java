@@ -21,38 +21,47 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.provider.MediaStore;
 import java.io.IOException;
 
+import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentUris.parseId;
 import static android.provider.MediaStore.Images;
 import static android.provider.MediaStore.Video;
 import static android.provider.MediaStore.Images.Thumbnails.FULL_SCREEN_KIND;
 import static android.provider.MediaStore.Images.Thumbnails.MICRO_KIND;
 import static android.provider.MediaStore.Images.Thumbnails.MINI_KIND;
-import static com.squareup.picasso.MediaStoreBitmapHunter.PicassoKind.FULL;
-import static com.squareup.picasso.MediaStoreBitmapHunter.PicassoKind.MICRO;
-import static com.squareup.picasso.MediaStoreBitmapHunter.PicassoKind.MINI;
+import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.FULL;
+import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.MICRO;
+import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.MINI;
+import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 
-class MediaStoreBitmapHunter extends ContentStreamBitmapHunter {
+class MediaStoreRequestHandler extends ContentStreamRequestHandler {
   private static final String[] CONTENT_ORIENTATION = new String[] {
       Images.ImageColumns.ORIENTATION
   };
 
-  MediaStoreBitmapHunter(Context context, Picasso picasso, Dispatcher dispatcher, Cache cache,
-      Stats stats, Action action) {
-    super(context, picasso, dispatcher, cache, stats, action);
+  MediaStoreRequestHandler(Context context) {
+    super(context);
   }
 
-  @Override Bitmap decode(Request data) throws IOException {
+  @Override public boolean canHandleRequest(Request data) {
+    final Uri uri = data.uri;
+    return (SCHEME_CONTENT.equals(uri.getScheme())
+            && MediaStore.AUTHORITY.equals(uri.getAuthority()));
+  }
+
+  @Override public Result load(Request data) throws IOException {
     ContentResolver contentResolver = context.getContentResolver();
-    setExifRotation(getExifOrientation(contentResolver, data.uri));
+    int exifOrientation = getExifOrientation(contentResolver, data.uri);
+
     String mimeType = contentResolver.getType(data.uri);
     boolean isVideo = mimeType != null && mimeType.startsWith("video/");
 
     if (data.hasSize()) {
       PicassoKind picassoKind = getPicassoKind(data.targetWidth, data.targetHeight);
       if (!isVideo && picassoKind == FULL) {
-        return super.decode(data);
+        return new Result(decodeContentStream(data), DISK, exifOrientation);
       }
 
       long id = parseId(data.uri);
@@ -61,26 +70,26 @@ class MediaStoreBitmapHunter extends ContentStreamBitmapHunter {
       options.inJustDecodeBounds = true;
 
       calculateInSampleSize(data.targetWidth, data.targetHeight, picassoKind.width,
-          picassoKind.height, options);
+              picassoKind.height, options);
 
-      Bitmap result;
+      Bitmap bitmap;
 
       if (isVideo) {
         // Since MediaStore doesn't provide the full screen kind thumbnail, we use the mini kind
         // instead which is the largest thumbnail size can be fetched from MediaStore.
         int kind = (picassoKind == FULL) ? Video.Thumbnails.MINI_KIND : picassoKind.androidKind;
-        result = Video.Thumbnails.getThumbnail(contentResolver, id, kind, options);
+        bitmap = Video.Thumbnails.getThumbnail(contentResolver, id, kind, options);
       } else {
-        result =
+        bitmap =
             Images.Thumbnails.getThumbnail(contentResolver, id, picassoKind.androidKind, options);
       }
 
-      if (result != null) {
-        return result;
+      if (bitmap != null) {
+        return new Result(bitmap, DISK, exifOrientation);
       }
     }
 
-    return super.decode(data);
+    return new Result(decodeContentStream(data), DISK, exifOrientation);
   }
 
   static PicassoKind getPicassoKind(int targetWidth, int targetHeight) {

@@ -156,7 +156,7 @@ class Dispatcher {
       return;
     }
 
-    hunter = forRequest(context, action.getPicasso(), this, cache, stats, action, downloader);
+    hunter = forRequest(action.getPicasso(), this, cache, stats, action);
     hunter.future = service.submit(hunter);
     hunterMap.put(action.getKey(), hunter);
     failedActions.remove(action.getTarget());

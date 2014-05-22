@@ -27,6 +27,8 @@ import android.widget.ImageView;
 import android.widget.RemoteViews;
 import java.io.File;
 import java.lang.ref.ReferenceQueue;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -115,6 +117,7 @@ public class Picasso {
   private final Listener listener;
   private final RequestTransformer requestTransformer;
   private final CleanupThread cleanupThread;
+  private final List<RequestHandler> requestHandlers;
 
   final Context context;
   final Dispatcher dispatcher;
@@ -130,13 +133,31 @@ public class Picasso {
   boolean shutdown;
 
   Picasso(Context context, Dispatcher dispatcher, Cache cache, Listener listener,
-      RequestTransformer requestTransformer, Stats stats, boolean indicatorsEnabled,
-      boolean loggingEnabled) {
+      RequestTransformer requestTransformer, List<RequestHandler> extraRequestHandlers,
+      Stats stats, boolean indicatorsEnabled, boolean loggingEnabled) {
     this.context = context;
     this.dispatcher = dispatcher;
     this.cache = cache;
     this.listener = listener;
     this.requestTransformer = requestTransformer;
+
+    final int extraCount = (extraRequestHandlers != null ? extraRequestHandlers.size() : 0);
+    final List<RequestHandler> allRequestHandlers = new ArrayList<RequestHandler>(7 + extraCount);
+    // ResourceRequestHandler needs to be the first in the list to avoid
+    // forcing other RequestHandlers to perform null checks on request.uri
+    // to cover the (request.resourceId != 0) case.
+    allRequestHandlers.add(new ResourceRequestHandler(context));
+    allRequestHandlers.add(new ContactsPhotoRequestHandler(context));
+    allRequestHandlers.add(new MediaStoreRequestHandler(context));
+    allRequestHandlers.add(new ContentStreamRequestHandler(context));
+    allRequestHandlers.add(new AssetRequestHandler(context));
+    allRequestHandlers.add(new FileRequestHandler(context));
+    allRequestHandlers.add(new NetworkRequestHandler(dispatcher.downloader, stats));
+    if (extraRequestHandlers != null) {
+      allRequestHandlers.addAll(extraRequestHandlers);
+    }
+    requestHandlers = Collections.unmodifiableList(allRequestHandlers);
+
     this.stats = stats;
     this.targetToAction = new WeakHashMap<Object, Action>();
     this.targetToDeferredRequestCreator = new WeakHashMap<ImageView, DeferredRequestCreator>();
@@ -310,6 +331,10 @@ public class Picasso {
     }
     targetToDeferredRequestCreator.clear();
     shutdown = true;
+  }
+
+  List<RequestHandler> getRequestHandlers() {
+    return requestHandlers;
   }
 
   Request transformRequest(Request request) {
@@ -495,6 +520,7 @@ public class Picasso {
     private Cache cache;
     private Listener listener;
     private RequestTransformer transformer;
+    private List<RequestHandler> requestHandlers;
 
     private boolean indicatorsEnabled;
     private boolean loggingEnabled;
@@ -572,6 +598,21 @@ public class Picasso {
       return this;
     }
 
+    /** Register a {@link RequestHandler}. */
+    public Builder addRequestHandler(RequestHandler requestHandler) {
+      if (requestHandler == null) {
+        throw new IllegalArgumentException("RequestHandler must not be null.");
+      }
+      if (requestHandlers == null) {
+        requestHandlers = new ArrayList<RequestHandler>();
+      }
+      if (requestHandlers.contains(requestHandler)) {
+        throw new IllegalStateException("RequestHandler already registered.");
+      }
+      requestHandlers.add(requestHandler);
+      return this;
+    }
+
     /**
      * @deprecated Use {@link #indicatorsEnabled(boolean)} instead.
      * Whether debugging is enabled or not.
@@ -618,8 +659,8 @@ public class Picasso {
 
       Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, downloader, cache, stats);
 
-      return new Picasso(context, dispatcher, cache, listener, transformer, stats,
-          indicatorsEnabled, loggingEnabled);
+      return new Picasso(context, dispatcher, cache, listener, transformer,
+          requestHandlers, stats, indicatorsEnabled, loggingEnabled);
     }
   }
 

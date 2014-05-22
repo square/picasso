@@ -15,13 +15,9 @@
  */
 package com.squareup.picasso;
 
-import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.NetworkInfo;
-import android.net.Uri;
-import android.provider.MediaStore;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -29,11 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 
-import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
-import static android.content.ContentResolver.SCHEME_CONTENT;
-import static android.content.ContentResolver.SCHEME_FILE;
-import static android.provider.ContactsContract.Contacts;
-import static com.squareup.picasso.AssetBitmapHunter.ANDROID_ASSET;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Utils.OWNER_HUNTER;
 import static com.squareup.picasso.Utils.VERB_DECODED;
@@ -44,8 +35,7 @@ import static com.squareup.picasso.Utils.VERB_TRANSFORMED;
 import static com.squareup.picasso.Utils.getLogIdsForHunter;
 import static com.squareup.picasso.Utils.log;
 
-abstract class BitmapHunter implements Runnable {
-
+class BitmapHunter implements Runnable {
   /**
    * Global lock for bitmap decoding to ensure that we are only are decoding one at a time. Since
    * this will only ever happen in background threads we help avoid excessive memory thrashing as
@@ -66,6 +56,7 @@ abstract class BitmapHunter implements Runnable {
   final String key;
   final Request data;
   final boolean skipMemoryCache;
+  final RequestHandler requestHandler;
 
   Action action;
   List<Action> actions;
@@ -74,8 +65,10 @@ abstract class BitmapHunter implements Runnable {
   Picasso.LoadedFrom loadedFrom;
   Exception exception;
   int exifRotation; // Determined during decoding of original resource.
+  int retryCount;
 
-  BitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats, Action action) {
+  BitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats, Action action,
+               RequestHandler requestHandler) {
     this.picasso = picasso;
     this.dispatcher = dispatcher;
     this.cache = cache;
@@ -83,11 +76,9 @@ abstract class BitmapHunter implements Runnable {
     this.key = action.getKey();
     this.data = action.getRequest();
     this.skipMemoryCache = action.skipCache;
+    this.requestHandler = requestHandler;
+    this.retryCount = requestHandler.getRetryCount();
     this.action = action;
-  }
-
-  protected void setExifRotation(int exifRotation) {
-    this.exifRotation = exifRotation;
   }
 
   @Override public void run() {
@@ -124,10 +115,8 @@ abstract class BitmapHunter implements Runnable {
     }
   }
 
-  abstract Bitmap decode(Request data) throws IOException;
-
   Bitmap hunt() throws IOException {
-    Bitmap bitmap;
+    Bitmap bitmap = null;
 
     if (!skipMemoryCache) {
       bitmap = cache.get(key);
@@ -141,7 +130,13 @@ abstract class BitmapHunter implements Runnable {
       }
     }
 
-    bitmap = decode(data);
+    data.loadFromLocalCacheOnly = (retryCount == 0);
+    RequestHandler.Result result = requestHandler.load(data);
+    if (result != null) {
+      bitmap = result.getBitmap();
+      loadedFrom = result.getLoadedFrom();
+      exifRotation = result.getExifOrientation();
+    }
 
     if (bitmap != null) {
       if (picasso.loggingEnabled) {
@@ -227,11 +222,16 @@ abstract class BitmapHunter implements Runnable {
   }
 
   boolean shouldRetry(boolean airplaneMode, NetworkInfo info) {
-    return false;
+    boolean hasRetries = retryCount > 0;
+    if (!hasRetries) {
+      return false;
+    }
+    retryCount--;
+    return requestHandler.shouldRetry(airplaneMode, info);
   }
 
   boolean supportsReplay() {
-    return false;
+    return requestHandler.supportsReplay();
   }
 
   Bitmap getResult() {
@@ -276,70 +276,20 @@ abstract class BitmapHunter implements Runnable {
     Thread.currentThread().setName(builder.toString());
   }
 
-  static BitmapHunter forRequest(Context context, Picasso picasso, Dispatcher dispatcher,
-      Cache cache, Stats stats, Action action, Downloader downloader) {
-    if (action.getRequest().resourceId != 0) {
-      return new ResourceBitmapHunter(context, picasso, dispatcher, cache, stats, action);
-    }
-    Uri uri = action.getRequest().uri;
-    String scheme = uri.getScheme();
-    if (SCHEME_CONTENT.equals(scheme)) {
-      if (Contacts.CONTENT_URI.getHost().equals(uri.getHost()) //
-          && !uri.getPathSegments().contains(Contacts.Photo.CONTENT_DIRECTORY)) {
-        return new ContactsPhotoBitmapHunter(context, picasso, dispatcher, cache, stats, action);
-      } else if (MediaStore.AUTHORITY.equals(uri.getAuthority())) {
-        return new MediaStoreBitmapHunter(context, picasso, dispatcher, cache, stats, action);
-      } else {
-        return new ContentStreamBitmapHunter(context, picasso, dispatcher, cache, stats, action);
-      }
-    } else if (SCHEME_FILE.equals(scheme)) {
-      if (!uri.getPathSegments().isEmpty() && ANDROID_ASSET.equals(uri.getPathSegments().get(0))) {
-        return new AssetBitmapHunter(context, picasso, dispatcher, cache, stats, action);
-      }
-      return new FileBitmapHunter(context, picasso, dispatcher, cache, stats, action);
-    } else if (SCHEME_ANDROID_RESOURCE.equals(scheme)) {
-      return new ResourceBitmapHunter(context, picasso, dispatcher, cache, stats, action);
-    } else {
-      return new NetworkBitmapHunter(picasso, dispatcher, cache, stats, action, downloader);
-    }
-  }
+  static BitmapHunter forRequest(Picasso picasso, Dispatcher dispatcher,
+      Cache cache, Stats stats, Action action) {
+    Request request = action.getRequest();
 
-  /**
-   * Lazily create {@link android.graphics.BitmapFactory.Options} based in given
-   * {@link com.squareup.picasso.Request}, only instantiating them if needed.
-   */
-  static BitmapFactory.Options createBitmapOptions(Request data) {
-    final boolean justBounds = data.hasSize();
-    final boolean hasConfig = data.config != null;
-    BitmapFactory.Options options = null;
-    if (justBounds || hasConfig) {
-      options = new BitmapFactory.Options();
-      options.inJustDecodeBounds = justBounds;
-      if (hasConfig) {
-        options.inPreferredConfig = data.config;
+    List<RequestHandler> requestHandlers = picasso.getRequestHandlers();
+    final int count = requestHandlers.size();
+    for (int i = 0; i < count; i++) {
+      RequestHandler requestHandler = requestHandlers.get(i);
+      if (requestHandler.canHandleRequest(request)) {
+        return new BitmapHunter(picasso, dispatcher, cache, stats, action, requestHandler);
       }
     }
-    return options;
-  }
 
-  static boolean requiresInSampleSize(BitmapFactory.Options options) {
-    return options != null && options.inJustDecodeBounds;
-  }
-
-  static void calculateInSampleSize(int reqWidth, int reqHeight, BitmapFactory.Options options) {
-    calculateInSampleSize(reqWidth, reqHeight, options.outWidth, options.outHeight, options);
-  }
-
-  static void calculateInSampleSize(int reqWidth, int reqHeight, int width, int height,
-      BitmapFactory.Options options) {
-    int sampleSize = 1;
-    if (height > reqHeight || width > reqWidth) {
-      final int heightRatio = (int) Math.floor((float) height / (float) reqHeight);
-      final int widthRatio = (int) Math.floor((float) width / (float) reqWidth);
-      sampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
-    }
-    options.inSampleSize = sampleSize;
-    options.inJustDecodeBounds = false;
+    throw new IllegalStateException("Unrecognized type of request: " + request);
   }
 
   static Bitmap applyCustomTransformations(List<Transformation> transformations, Bitmap result) {
