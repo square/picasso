@@ -188,7 +188,7 @@ public class DispatcherTest {
   @Test public void performErrorCleansUpAndAddsToBatch() throws Exception {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
     dispatcher.hunterMap.put(hunter.getKey(), hunter);
-    dispatcher.performError(hunter);
+    dispatcher.performError(hunter, false);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.batch).hasSize(1);
   }
@@ -197,7 +197,7 @@ public class DispatcherTest {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
     when(hunter.isCancelled()).thenReturn(true);
     dispatcher.hunterMap.put(hunter.getKey(), hunter);
-    dispatcher.performError(hunter);
+    dispatcher.performError(hunter, false);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.batch).isEmpty();
   }

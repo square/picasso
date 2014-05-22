@@ -26,6 +26,7 @@ import android.os.Looper;
 import android.os.Process;
 import android.os.StatFs;
 import android.provider.Settings;
+import android.util.Log;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -41,6 +42,8 @@ import static android.os.Build.VERSION_CODES.HONEYCOMB;
 import static android.os.Build.VERSION_CODES.HONEYCOMB_MR1;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static android.provider.Settings.System.AIRPLANE_MODE_ON;
+import static com.squareup.picasso.Picasso.TAG;
+import static java.lang.String.format;
 
 final class Utils {
   static final String THREAD_PREFIX = "Picasso-";
@@ -54,6 +57,27 @@ final class Utils {
 
   /** Thread confined to main thread for key creation. */
   static final StringBuilder MAIN_THREAD_KEY_BUILDER = new StringBuilder();
+
+  /** Logging */
+  static final String OWNER_MAIN = "Main";
+  static final String OWNER_DISPATCHER = "Dispatcher";
+  static final String OWNER_HUNTER = "Hunter";
+  static final String VERB_CREATED = "created";
+  static final String VERB_CHANGED = "changed";
+  static final String VERB_IGNORED = "ignored";
+  static final String VERB_ENQUEUED = "enqueued";
+  static final String VERB_CANCELED = "canceled";
+  static final String VERB_BATCHED = "batched";
+  static final String VERB_RETRYING = "retrying";
+  static final String VERB_EXECUTING = "executing";
+  static final String VERB_DECODED = "decoded";
+  static final String VERB_TRANSFORMED = "transformed";
+  static final String VERB_JOINED = "joined";
+  static final String VERB_REMOVED = "removed";
+  static final String VERB_DELIVERED = "delivered";
+  static final String VERB_REPLAYING = "replaying";
+  static final String VERB_COMPLETED = "completed";
+  static final String VERB_ERRORED = "errored";
 
   /* WebP file header
      0                   1                   2                   3
@@ -88,15 +112,47 @@ final class Utils {
   }
 
   static void checkNotMain() {
-    if (Looper.getMainLooper().getThread() == Thread.currentThread()) {
+    if (isMain()) {
       throw new IllegalStateException("Method call should not happen from the main thread.");
     }
   }
 
   static void checkMain() {
-    if (Looper.getMainLooper().getThread() != Thread.currentThread()) {
+    if (!isMain()) {
       throw new IllegalStateException("Method call should happen from the main thread.");
     }
+  }
+
+  static boolean isMain() {
+    return Looper.getMainLooper().getThread() == Thread.currentThread();
+  }
+
+  static String getLogIdsForHunter(BitmapHunter hunter) {
+    return getLogIdsForHunter(hunter, "");
+  }
+
+  static String getLogIdsForHunter(BitmapHunter hunter, String prefix) {
+    StringBuilder builder = new StringBuilder(prefix);
+    Action action = hunter.getAction();
+    if (action != null) {
+      builder.append(action.request.logId());
+    }
+    List<Action> actions = hunter.getActions();
+    if (actions != null) {
+      for (int i = 0, count = actions.size(); i < count; i++) {
+        if (i > 0 || action != null) builder.append(", ");
+        builder.append(actions.get(i).request.logId());
+      }
+    }
+    return builder.toString();
+  }
+
+  static void log(String owner, String verb, String logId) {
+    log(owner, verb, logId, "");
+  }
+
+  static void log(String owner, String verb, String logId, String extras) {
+    Log.d(TAG, format("%1$-11s %2$-12s %3$s %4$s", owner, verb, logId, extras));
   }
 
   static String createKey(Request data) {
@@ -183,6 +239,7 @@ final class Utils {
   static File createDefaultCacheDir(Context context) {
     File cache = new File(context.getApplicationContext().getCacheDir(), PICASSO_CACHE);
     if (!cache.exists()) {
+      //noinspection ResultOfMethodCallIgnored
       cache.mkdirs();
     }
     return cache;

@@ -39,8 +39,18 @@ import static android.content.Intent.ACTION_AIRPLANE_MODE_CHANGED;
 import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static com.squareup.picasso.BitmapHunter.forRequest;
+import static com.squareup.picasso.Utils.OWNER_DISPATCHER;
+import static com.squareup.picasso.Utils.VERB_BATCHED;
+import static com.squareup.picasso.Utils.VERB_CANCELED;
+import static com.squareup.picasso.Utils.VERB_DELIVERED;
+import static com.squareup.picasso.Utils.VERB_ENQUEUED;
+import static com.squareup.picasso.Utils.VERB_IGNORED;
+import static com.squareup.picasso.Utils.VERB_REPLAYING;
+import static com.squareup.picasso.Utils.VERB_RETRYING;
+import static com.squareup.picasso.Utils.getLogIdsForHunter;
 import static com.squareup.picasso.Utils.getService;
 import static com.squareup.picasso.Utils.hasPermission;
+import static com.squareup.picasso.Utils.log;
 
 class Dispatcher {
   private static final int RETRY_DELAY = 500;
@@ -140,6 +150,9 @@ class Dispatcher {
     }
 
     if (service.isShutdown()) {
+      if (action.getPicasso().loggingEnabled) {
+        log(OWNER_DISPATCHER, VERB_IGNORED, action.request.logId(), "because shut down");
+      }
       return;
     }
 
@@ -147,6 +160,10 @@ class Dispatcher {
     hunter.future = service.submit(hunter);
     hunterMap.put(action.getKey(), hunter);
     failedActions.remove(action.getTarget());
+
+    if (action.getPicasso().loggingEnabled) {
+      log(OWNER_DISPATCHER, VERB_ENQUEUED, action.request.logId());
+    }
   }
 
   void performCancel(Action action) {
@@ -156,16 +173,22 @@ class Dispatcher {
       hunter.detach(action);
       if (hunter.cancel()) {
         hunterMap.remove(key);
+        if (action.getPicasso().loggingEnabled) {
+          log(OWNER_DISPATCHER, VERB_CANCELED, action.getRequest().logId());
+        }
       }
     }
-    failedActions.remove(action.getTarget());
+    Action remove = failedActions.remove(action.getTarget());
+    if (remove != null && remove.getPicasso().loggingEnabled) {
+      log(OWNER_DISPATCHER, VERB_CANCELED, remove.getRequest().logId(), "from replaying");
+    }
   }
 
   void performRetry(BitmapHunter hunter) {
     if (hunter.isCancelled()) return;
 
     if (service.isShutdown()) {
-      performError(hunter);
+      performError(hunter, false);
       return;
     }
 
@@ -181,20 +204,24 @@ class Dispatcher {
 
     if (!shouldRetryHunter) {
       // Mark for replay only if we observe network info changes and support replay.
-      if (scansNetworkChanges && supportsReplay) {
+      boolean willReplay = scansNetworkChanges && supportsReplay;
+      performError(hunter, willReplay);
+      if (willReplay) {
         markForReplay(hunter);
       }
-      performError(hunter);
       return;
     }
 
     // If we don't scan for network changes (missing permission) or if we have connectivity, retry.
     if (!scansNetworkChanges || hasConnectivity) {
+      if (hunter.getPicasso().loggingEnabled) {
+        log(OWNER_DISPATCHER, VERB_RETRYING, getLogIdsForHunter(hunter));
+      }
       hunter.future = service.submit(hunter);
       return;
     }
 
-    performError(hunter);
+    performError(hunter, supportsReplay);
 
     if (supportsReplay) {
       markForReplay(hunter);
@@ -207,15 +234,23 @@ class Dispatcher {
     }
     hunterMap.remove(hunter.getKey());
     batch(hunter);
+    if (hunter.getPicasso().loggingEnabled) {
+      log(OWNER_DISPATCHER, VERB_BATCHED, getLogIdsForHunter(hunter), "for completion");
+    }
   }
 
   void performBatchComplete() {
     List<BitmapHunter> copy = new ArrayList<BitmapHunter>(batch);
     batch.clear();
     mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(HUNTER_BATCH_COMPLETE, copy));
+    logBatch(copy);
   }
 
-  void performError(BitmapHunter hunter) {
+  void performError(BitmapHunter hunter, boolean willReplay) {
+    if (hunter.getPicasso().loggingEnabled) {
+      log(OWNER_DISPATCHER, VERB_BATCHED, getLogIdsForHunter(hunter),
+          "for error" + (willReplay ? " (will replay)" : ""));
+    }
     hunterMap.remove(hunter.getKey());
     batch(hunter);
   }
@@ -240,6 +275,9 @@ class Dispatcher {
       while (iterator.hasNext()) {
         Action action = iterator.next();
         iterator.remove();
+        if (action.getPicasso().loggingEnabled) {
+          log(OWNER_DISPATCHER, VERB_REPLAYING, action.getRequest().logId());
+        }
         performSubmit(action);
       }
     }
@@ -278,6 +316,20 @@ class Dispatcher {
     }
   }
 
+  private void logBatch(List<BitmapHunter> copy) {
+    if (copy == null || copy.isEmpty()) return;
+    BitmapHunter hunter = copy.get(0);
+    Picasso picasso = hunter.getPicasso();
+    if (picasso.loggingEnabled) {
+      StringBuilder builder = new StringBuilder();
+      for (BitmapHunter bitmapHunter : copy) {
+        if (builder.length() > 0) builder.append(", ");
+        builder.append(Utils.getLogIdsForHunter(bitmapHunter));
+      }
+      log(OWNER_DISPATCHER, VERB_DELIVERED, builder.toString());
+    }
+  }
+
   private static class DispatcherHandler extends Handler {
     private final Dispatcher dispatcher;
 
@@ -310,7 +362,7 @@ class Dispatcher {
         }
         case HUNTER_DECODE_FAILED: {
           BitmapHunter hunter = (BitmapHunter) msg.obj;
-          dispatcher.performError(hunter);
+          dispatcher.performError(hunter, false);
           break;
         }
         case HUNTER_DELAY_NEXT_BATCH: {
