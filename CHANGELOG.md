@@ -1,6 +1,22 @@
 Change Log
 ==========
 
+Version 2.3.0 *TBD*
+----------------------------
+
+ * Requests will now be automatically replayed if they failed due to network errors.
+ * Add API for logging. This is mostly useful for debugging Picasso itself.
+ * Add API for loading images into remote views (notifications and widgets).
+ * Stats now provide download statistics.
+ * Updated to use Pollexor 2.0.
+ * `MediaStoreBitmapHunter` now properly returns video thumbnails if requested URI is for a video.
+ * All API calls now properly validate the current thread they must run on.
+ * Performance: Various optimizations for reducing object allocations.
+ * Fix: Stats were incorrectly invoked even if the bitmap failed to decode.
+ * Fix: Handle `null` intent case in network broadcast receiver extras.
+ * Fix: `Target` now correctly invokes bitmap failed if an error drawable or resource is supplied.
+
+
 Version 2.2.0 *(2014-01-31)*
 ----------------------------
 
