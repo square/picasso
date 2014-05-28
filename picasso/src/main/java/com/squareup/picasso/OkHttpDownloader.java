@@ -17,8 +17,8 @@ package com.squareup.picasso;
 
 import android.content.Context;
 import android.net.Uri;
-import com.squareup.okhttp.HttpResponseCache;
 import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.OkUrlFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -31,7 +31,7 @@ public class OkHttpDownloader implements Downloader {
   static final String RESPONSE_SOURCE_ANDROID = "X-Android-Response-Source";
   static final String RESPONSE_SOURCE_OKHTTP = "OkHttp-Response-Source";
 
-  private final OkHttpClient client;
+  private final OkUrlFactory urlFactory;
 
   /**
    * Create new downloader that uses OkHttp. This will install an image cache into your application
@@ -71,7 +71,7 @@ public class OkHttpDownloader implements Downloader {
   public OkHttpDownloader(final File cacheDir, final long maxSize) {
     this(new OkHttpClient());
     try {
-      client.setResponseCache(new HttpResponseCache(cacheDir, maxSize));
+      urlFactory.client().setCache(new com.squareup.okhttp.Cache(cacheDir, maxSize));
     } catch (IOException ignored) {
     }
   }
@@ -81,18 +81,18 @@ public class OkHttpDownloader implements Downloader {
    * automatically configured.
    */
   public OkHttpDownloader(OkHttpClient client) {
-    this.client = client;
+    this.urlFactory = new OkUrlFactory(client);
   }
 
   protected HttpURLConnection openConnection(Uri uri) throws IOException {
-    HttpURLConnection connection = client.open(new URL(uri.toString()));
+    HttpURLConnection connection = urlFactory.open(new URL(uri.toString()));
     connection.setConnectTimeout(Utils.DEFAULT_CONNECT_TIMEOUT);
     connection.setReadTimeout(Utils.DEFAULT_READ_TIMEOUT);
     return connection;
   }
 
   protected OkHttpClient getClient() {
-    return client;
+    return urlFactory.client();
   }
 
   @Override public Response load(Uri uri, boolean localCacheOnly) throws IOException {
