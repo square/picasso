@@ -58,7 +58,7 @@ public interface Downloader {
      */
     @Deprecated @SuppressWarnings("UnusedDeclaration")
     public Response(Bitmap bitmap, boolean loadedFromCache) {
-      this(bitmap, loadedFromCache, 0);
+      this(bitmap, loadedFromCache, -1);
     }
 
     /**
@@ -70,7 +70,7 @@ public interface Downloader {
      */
     @Deprecated @SuppressWarnings("UnusedDeclaration")
     public Response(InputStream stream, boolean loadedFromCache) {
-      this(stream, loadedFromCache, 0);
+      this(stream, loadedFromCache, -1);
     }
 
     /**
