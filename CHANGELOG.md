@@ -9,6 +9,7 @@ Version 2.3.0 *TBD*
  * Add API for loading images into remote views (notifications and widgets).
  * Stats now provide download statistics.
  * Updated to use Pollexor 2.0.
+ * When using OkHttp version 1.6 or newer (including 2.0+) is now required.
  * `MediaStoreBitmapHunter` now properly returns video thumbnails if requested URI is for a video.
  * All API calls now properly validate the current thread they must run on.
  * Performance: Various optimizations for reducing object allocations.
