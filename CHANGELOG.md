@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+Version 2.3.1 *(2014-05-29)*
+----------------------------
+
+ * Fix: Deprecated Response constructor used 0 for content-length.
+ 
+
 Version 2.3.0 *(2014-05-29)*
 ----------------------------
 
