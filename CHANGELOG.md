@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-Version 2.3.0 *TBD*
+Version 2.3.0 *(2014-05-29)*
 ----------------------------
 
  * Requests will now be automatically replayed if they failed due to network errors.
