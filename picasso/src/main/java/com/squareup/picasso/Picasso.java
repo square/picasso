@@ -466,7 +466,7 @@ public class Picasso {
    * If these settings do not meet the requirements of your application you can construct your own
    * instance with full control over the configuration by using {@link Picasso.Builder}.
    */
-  public static Picasso with(Context context) {
+  public static synchronized Picasso with(Context context) {
     if (singleton == null) {
       singleton = new Builder(context).build();
     }
