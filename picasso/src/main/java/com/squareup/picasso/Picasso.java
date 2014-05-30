@@ -468,7 +468,11 @@ public class Picasso {
    */
   public static Picasso with(Context context) {
     if (singleton == null) {
-      singleton = new Builder(context).build();
+      synchronized (Picasso.class) {
+        if (singleton == null) {
+          singleton = new Builder(context).build();
+        }
+      }
     }
     return singleton;
   }
