@@ -4,9 +4,10 @@ Change Log
 Version 2.3.2 *(2014-06-05)*
 ----------------------------
 
- * Fix: Correclty invalidate PicassoDrawable for GB.
- * Fix: Attempt to decode responses with missing `content-length` header.
- 
+ * Fix: Correctly invalidate PicassoDrawable for GB.
+ * Fix: Attempt to decode responses with missing `Content-Length` header.
+ * Fix: Prevent race condition to initial `with()` call.
+
 
 Version 2.3.1 *(2014-05-29)*
 ----------------------------
