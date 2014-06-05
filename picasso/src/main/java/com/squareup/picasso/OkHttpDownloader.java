@@ -113,7 +113,7 @@ public class OkHttpDownloader implements Downloader {
       responseSource = connection.getHeaderField(RESPONSE_SOURCE_ANDROID);
     }
 
-    long contentLength = connection.getHeaderFieldInt("Content-Length", 0);
+    long contentLength = connection.getHeaderFieldInt("Content-Length", -1);
     boolean fromCache = parseResponseSourceHeader(responseSource);
 
     return new Response(connection.getInputStream(), fromCache, contentLength);

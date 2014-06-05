@@ -67,7 +67,7 @@ public class UrlConnectionDownloader implements Downloader {
       throw new ResponseException(responseCode + " " + connection.getResponseMessage());
     }
 
-    long contentLength = connection.getHeaderFieldInt("Content-Length", 0);
+    long contentLength = connection.getHeaderFieldInt("Content-Length", -1);
     boolean fromCache = parseResponseSourceHeader(connection.getHeaderField(RESPONSE_SOURCE));
 
     return new Response(connection.getInputStream(), fromCache, contentLength);

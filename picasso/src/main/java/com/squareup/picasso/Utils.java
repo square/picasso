@@ -232,14 +232,14 @@ final class Utils {
     try {
       Class.forName("com.squareup.okhttp.OkUrlFactory");
       okUrlFactory = true;
-    } catch (ClassNotFoundException e) {
+    } catch (ClassNotFoundException ignored) {
     }
 
     boolean okHttpClient = false;
     try {
       Class.forName("com.squareup.okhttp.OkHttpClient");
       okHttpClient = true;
-    } catch (ClassNotFoundException e) {
+    } catch (ClassNotFoundException ignored) {
     }
 
     if (okHttpClient != okUrlFactory) {
