@@ -62,6 +62,7 @@ class NetworkBitmapHunter extends BitmapHunter {
     // Sometimes response content length is zero when requests are being replayed. Haven't found
     // root cause to this but retrying the request seems safe to do so.
     if (response.getContentLength() == 0) {
+      Utils.closeQuietly(is);
       throw new IOException("Received response with 0 content-length header.");
     }
     if (loadedFrom == NETWORK && response.getContentLength() > 0) {

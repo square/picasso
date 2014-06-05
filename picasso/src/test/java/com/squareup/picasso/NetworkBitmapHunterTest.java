@@ -20,6 +20,7 @@ import android.graphics.Bitmap;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import java.io.IOException;
+import java.io.InputStream;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -123,7 +124,8 @@ public class NetworkBitmapHunterTest {
   }
 
   @Test public void unknownContentLengthThrows() throws Exception {
-    Downloader.Response response = new Downloader.Response(mockInputStream(), false, 0);
+    InputStream stream = mockInputStream();
+    Downloader.Response response = new Downloader.Response(stream, false, 0);
     when(downloader.load(any(Uri.class), anyBoolean())).thenReturn(response);
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     NetworkBitmapHunter hunter =
@@ -133,6 +135,7 @@ public class NetworkBitmapHunterTest {
       fail("Should have thrown IOException.");
     } catch(IOException expected) {
       verifyZeroInteractions(stats);
+      verify(stream).close();
     }
   }
 
