@@ -53,13 +53,19 @@ public final class Request {
   /**
    * True if the final image should use the 'centerCrop' scale technique.
    * <p>
-   * This is mutually exclusive with {@link #centerInside}.
+   * This is mutually exclusive with {@link #centerInside} and {@link #faceCenterCrop}.
    */
   public final boolean centerCrop;
   /**
+   * True if the final image should use the 'faceCenterCrop' scale technique.
+   * <p>
+   * This is mutually exclusive with {@link #centerCrop} and {@link #centerInside}.
+   */
+  public final boolean faceCenterCrop;
+  /**
    * True if the final image should use the 'centerInside' scale technique.
    * <p>
-   * This is mutually exclusive with {@link #centerCrop}.
+   * This is mutually exclusive with {@link #centerCrop} and {@link #faceCenterCrop}.
    */
   public final boolean centerInside;
   /** Amount to rotate the image in degrees. */
@@ -70,12 +76,15 @@ public final class Request {
   public final float rotationPivotY;
   /** Whether or not {@link #rotationPivotX} and {@link #rotationPivotY} are set. */
   public final boolean hasRotationPivot;
+  /** Face detector for face center crop. */
+  public final FaceDetector faceDetector;
   /** Target image config for decoding. */
   public final Bitmap.Config config;
 
   private Request(Uri uri, int resourceId, List<Transformation> transformations, int targetWidth,
-      int targetHeight, boolean centerCrop, boolean centerInside, float rotationDegrees,
-      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot, Bitmap.Config config) {
+      int targetHeight, boolean centerCrop, boolean faceCenterCrop, boolean centerInside,
+      float rotationDegrees, float rotationPivotX, float rotationPivotY, boolean hasRotationPivot,
+      FaceDetector faceDetector, Bitmap.Config config) {
     this.uri = uri;
     this.resourceId = resourceId;
     if (transformations == null) {
@@ -86,11 +95,13 @@ public final class Request {
     this.targetWidth = targetWidth;
     this.targetHeight = targetHeight;
     this.centerCrop = centerCrop;
+    this.faceCenterCrop = faceCenterCrop;
     this.centerInside = centerInside;
     this.rotationDegrees = rotationDegrees;
     this.rotationPivotX = rotationPivotX;
     this.rotationPivotY = rotationPivotY;
     this.hasRotationPivot = hasRotationPivot;
+    this.faceDetector = faceDetector;
     this.config = config;
   }
 
@@ -111,6 +122,9 @@ public final class Request {
     }
     if (centerCrop) {
       sb.append(" centerCrop");
+    }
+    if (faceCenterCrop) {
+      sb.append(" faceCenterCrop");
     }
     if (centerInside) {
       sb.append(" centerInside");
@@ -176,11 +190,13 @@ public final class Request {
     private int targetWidth;
     private int targetHeight;
     private boolean centerCrop;
+    private boolean faceCenterCrop;
     private boolean centerInside;
     private float rotationDegrees;
     private float rotationPivotX;
     private float rotationPivotY;
     private boolean hasRotationPivot;
+    private FaceDetector faceDetector;
     private List<Transformation> transformations;
     private Bitmap.Config config;
 
@@ -280,8 +296,9 @@ public final class Request {
      * requested bounds and then crops the extra.
      */
     public Builder centerCrop() {
-      if (centerInside) {
-        throw new IllegalStateException("Center crop can not be used after calling centerInside");
+      if (centerInside || faceCenterCrop) {
+        throw new IllegalStateException(
+            "Center crop can not be used after calling centerInside" + " or faceCenterCrop");
       }
       centerCrop = true;
       return this;
@@ -293,13 +310,43 @@ public final class Request {
       return this;
     }
 
+    /** Set the face detector for face center crop. */
+    public Builder setFaceDetector(FaceDetector faceDetector) {
+      if (faceDetector == null) {
+        throw new IllegalArgumentException("face detector must not be null.");
+      }
+      this.faceDetector = faceDetector;
+      return this;
+    }
+
+    /**
+     * Use specific face detector to crop an image that contain faces and remain the ratio
+     * specified by {@link #resize(int, int)}. If the image do not contain face, the effect
+     * would equal to {@link #centerCrop()}.
+     */
+    public Builder faceCenterCrop() {
+      if (centerInside || centerCrop) {
+        throw new IllegalStateException(
+            "Face center crop can not be used after calling centerCrop" + " or centerInside");
+      }
+      faceCenterCrop = true;
+      return this;
+    }
+
+    /** Clear the face center crop transformation flag, if set. */
+    public Builder clearFaceCenterCrop() {
+      faceCenterCrop = false;
+      return this;
+    }
+
     /**
      * Centers an image inside of the bounds specified by {@link #resize(int, int)}. This scales
      * the image so that both dimensions are equal to or less than the requested bounds.
      */
     public Builder centerInside() {
-      if (centerCrop) {
-        throw new IllegalStateException("Center inside can not be used after calling centerCrop");
+      if (centerCrop || faceCenterCrop) {
+        throw new IllegalStateException(
+            "Center inside can not be used after calling centerCrop" + " or faceCenterCrop");
       }
       centerInside = true;
       return this;
@@ -362,14 +409,26 @@ public final class Request {
       if (centerInside && centerCrop) {
         throw new IllegalStateException("Center crop and center inside can not be used together.");
       }
+      if (faceCenterCrop && centerCrop) {
+        throw new IllegalStateException(
+            "Center crop and face center crop can not be " + "used together.");
+      }
+      if (centerInside && faceCenterCrop) {
+        throw new IllegalStateException(
+            "Face center crop and center inside can not be " + "used together.");
+      }
       if (centerCrop && targetWidth == 0) {
         throw new IllegalStateException("Center crop requires calling resize.");
       }
       if (centerInside && targetWidth == 0) {
         throw new IllegalStateException("Center inside requires calling resize.");
       }
+      if (faceCenterCrop && targetWidth == 0) {
+        throw new IllegalStateException("Face center crop requires calling resize.");
+      }
       return new Request(uri, resourceId, transformations, targetWidth, targetHeight, centerCrop,
-          centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot, config);
+          faceCenterCrop, centerInside, rotationDegrees, rotationPivotX, rotationPivotY,
+          hasRotationPivot, faceDetector, config);
     }
   }
 }

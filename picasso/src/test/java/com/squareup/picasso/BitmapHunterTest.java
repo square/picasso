@@ -19,9 +19,12 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.net.Uri;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.FutureTask;
 import org.junit.Before;
 import org.junit.Test;
@@ -490,6 +493,298 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
   }
 
+  @Test public void faceCenterCropTallTooSmall() throws Exception {
+    Bitmap source = Bitmap.createBitmap(20, 40, ARGB_8888);
+    Bitmap result = null;
+    Request data = null;
+    Matrix matrix = null;
+    ShadowBitmap shadowBitmap = null;
+    ShadowMatrix shadowMatrix = null;
+
+    data = new Request.Builder(URI_1).resize(40, 40)
+        .setFaceDetector(new MockFacaDetector(0))
+        .faceCenterCrop()
+        .build();
+    result = transformResult(data, source, 0);
+    shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(20);
+    assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(20);
+    matrix = shadowBitmap.getCreatedFromMatrix();
+    shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 2.0 2.0");
+    result.recycle();
+
+    data = new Request.Builder(URI_1).resize(40, 40)
+        .setFaceDetector(new MockFacaDetector(1))
+        .faceCenterCrop()
+        .build();
+    result = transformResult(data, source, 0);
+    shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(10);
+    assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(20);
+    assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(20);
+    matrix = shadowBitmap.getCreatedFromMatrix();
+    shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 2.0 2.0");
+    result.recycle();
+
+    data = new Request.Builder(URI_1).resize(40, 40)
+        .setFaceDetector(new MockFacaDetector(2))
+        .faceCenterCrop()
+        .build();
+    result = transformResult(data, source, 0);
+    shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(20);
+    assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(20);
+    assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(20);
+    matrix = shadowBitmap.getCreatedFromMatrix();
+    shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 2.0 2.0");
+    result.recycle();
+
+    data = new Request.Builder(URI_1).resize(40, 40)
+        .setFaceDetector(new MockFacaDetector(-1))
+        .faceCenterCrop()
+        .build();
+    result = transformResult(data, source, 0);
+    shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(10);
+    assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(20);
+    assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(20);
+    matrix = shadowBitmap.getCreatedFromMatrix();
+    shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 2.0 2.0");
+    result.recycle();
+  }
+
+  @Test public void faceCenterCropTallTooLarge() throws Exception {
+    Bitmap source = Bitmap.createBitmap(200, 400, ARGB_8888);
+    Bitmap result = null;
+    Request data = null;
+    Matrix matrix = null;
+    ShadowBitmap shadowBitmap = null;
+    ShadowMatrix shadowMatrix = null;
+
+    data = new Request.Builder(URI_1).resize(40, 40)
+        .setFaceDetector(new MockFacaDetector(0))
+        .faceCenterCrop()
+        .build();
+    result = transformResult(data, source, 0);
+    shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(200);
+    assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(200);
+    matrix = shadowBitmap.getCreatedFromMatrix();
+    shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.2 0.2");
+    result.recycle();
+
+    data = new Request.Builder(URI_1).resize(40, 40)
+        .setFaceDetector(new MockFacaDetector(1))
+        .faceCenterCrop()
+        .build();
+    result = transformResult(data, source, 0);
+    shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(100);
+    assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(200);
+    assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(200);
+    matrix = shadowBitmap.getCreatedFromMatrix();
+    shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.2 0.2");
+    result.recycle();
+
+    data = new Request.Builder(URI_1).resize(40, 40)
+        .setFaceDetector(new MockFacaDetector(2))
+        .faceCenterCrop()
+        .build();
+    result = transformResult(data, source, 0);
+    shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(200);
+    assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(200);
+    assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(200);
+    matrix = shadowBitmap.getCreatedFromMatrix();
+    shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.2 0.2");
+    result.recycle();
+
+    data = new Request.Builder(URI_1).resize(40, 40)
+        .setFaceDetector(new MockFacaDetector(-1))
+        .faceCenterCrop()
+        .build();
+    result = transformResult(data, source, 0);
+    shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(100);
+    assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(200);
+    assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(200);
+    matrix = shadowBitmap.getCreatedFromMatrix();
+    shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.2 0.2");
+    result.recycle();
+  }
+
+  @Test public void faceCenterCropWideTooSmall() throws Exception {
+    Bitmap source = Bitmap.createBitmap(40, 20, ARGB_8888);
+    Bitmap result = null;
+    Request data = null;
+    Matrix matrix = null;
+    ShadowBitmap shadowBitmap = null;
+    ShadowMatrix shadowMatrix = null;
+
+    data = new Request.Builder(URI_1).resize(40, 40)
+        .setFaceDetector(new MockFacaDetector(0))
+        .faceCenterCrop()
+        .build();
+    result = transformResult(data, source, 0);
+    shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(20);
+    assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(20);
+    matrix = shadowBitmap.getCreatedFromMatrix();
+    shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 2.0 2.0");
+    result.recycle();
+
+    data = new Request.Builder(URI_1).resize(40, 40)
+        .setFaceDetector(new MockFacaDetector(1))
+        .faceCenterCrop()
+        .build();
+    result = transformResult(data, source, 0);
+    shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(10);
+    assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(20);
+    assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(20);
+    matrix = shadowBitmap.getCreatedFromMatrix();
+    shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 2.0 2.0");
+    result.recycle();
+
+    data = new Request.Builder(URI_1).resize(40, 40)
+        .setFaceDetector(new MockFacaDetector(2))
+        .faceCenterCrop()
+        .build();
+    result = transformResult(data, source, 0);
+    shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(20);
+    assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(20);
+    assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(20);
+    matrix = shadowBitmap.getCreatedFromMatrix();
+    shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 2.0 2.0");
+    result.recycle();
+
+    data = new Request.Builder(URI_1).resize(40, 40)
+        .setFaceDetector(new MockFacaDetector(-1))
+        .faceCenterCrop()
+        .build();
+    result = transformResult(data, source, 0);
+    shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(10);
+    assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(20);
+    assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(20);
+    matrix = shadowBitmap.getCreatedFromMatrix();
+    shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 2.0 2.0");
+    result.recycle();
+  }
+
+  @Test public void faceCenterCropWideTooLargel() throws Exception {
+    Bitmap source = Bitmap.createBitmap(400, 200, ARGB_8888);
+    Bitmap result = null;
+    Request data = null;
+    Matrix matrix = null;
+    ShadowBitmap shadowBitmap = null;
+    ShadowMatrix shadowMatrix = null;
+
+    data = new Request.Builder(URI_1).resize(40, 40)
+        .setFaceDetector(new MockFacaDetector(0))
+        .faceCenterCrop()
+        .build();
+    result = transformResult(data, source, 0);
+    shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(200);
+    assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(200);
+    matrix = shadowBitmap.getCreatedFromMatrix();
+    shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.2 0.2");
+    result.recycle();
+
+    data = new Request.Builder(URI_1).resize(40, 40)
+        .setFaceDetector(new MockFacaDetector(1))
+        .faceCenterCrop()
+        .build();
+    result = transformResult(data, source, 0);
+    shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(100);
+    assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(200);
+    assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(200);
+    matrix = shadowBitmap.getCreatedFromMatrix();
+    shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.2 0.2");
+    result.recycle();
+
+    data = new Request.Builder(URI_1).resize(40, 40)
+        .setFaceDetector(new MockFacaDetector(2))
+        .faceCenterCrop()
+        .build();
+    result = transformResult(data, source, 0);
+    shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(200);
+    assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(200);
+    assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(200);
+    matrix = shadowBitmap.getCreatedFromMatrix();
+    shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.2 0.2");
+    result.recycle();
+
+    data = new Request.Builder(URI_1).resize(40, 40)
+        .setFaceDetector(new MockFacaDetector(-1))
+        .faceCenterCrop()
+        .build();
+    result = transformResult(data, source, 0);
+    shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(100);
+    assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(200);
+    assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(200);
+    matrix = shadowBitmap.getCreatedFromMatrix();
+    shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.2 0.2");
+    result.recycle();
+  }
+
   @Test public void centerInsideTallTooSmall() throws Exception {
     Bitmap source = Bitmap.createBitmap(20, 10, ARGB_8888);
     Request data = new Request.Builder(URI_1).resize(50, 50).centerInside().build();
@@ -596,6 +891,43 @@ public class BitmapHunterTest {
 
     @Override Bitmap decode(Request data) throws IOException {
       throw new OutOfMemoryError();
+    }
+  }
+
+  private static class MockFacaDetector implements FaceDetector {
+
+    private final int faceType;
+
+    public MockFacaDetector(int faceType) {
+      this.faceType = faceType;
+    }
+
+    @Override public List<Face> findFaces(Bitmap source, int maxFaces) {
+      int iWidth = source.getWidth();
+      int iHeight = source.getHeight();
+      int aspectRatio = iWidth / iHeight;
+      int faceSize = (int) (Math.min(iWidth, iHeight) / 4.0f);
+      int halfFaceSize = (int) ((Math.min(iWidth, iHeight) / 4.0f) * 0.5f);
+
+      Point oneFourthOfImage = aspectRatio < 1 ? new Point((int) (iWidth * 0.5f - halfFaceSize),
+          (int) (iHeight * 0.25f - halfFaceSize))
+          : new Point((int) (iWidth * 0.25f - halfFaceSize), (int) (iHeight * 0.5f - halfFaceSize));
+      Point halfOfImage = aspectRatio < 1 ? new Point((int) (iWidth * 0.5f - halfFaceSize),
+          (int) (iHeight * 0.5f - halfFaceSize))
+          : new Point((int) (iWidth * 0.5f - halfFaceSize), (int) (iHeight * 0.5f - halfFaceSize));
+      Point threeFourthOfImage = aspectRatio < 1 ? new Point((int) (iWidth * 0.5f - halfFaceSize),
+          (int) (iHeight * 0.75f - halfFaceSize))
+          : new Point((int) (iWidth * 0.75f - halfFaceSize), (int) (iHeight * 0.5f - halfFaceSize));
+
+      Face face1 = new Face(faceSize, faceSize, oneFourthOfImage);
+      Face face2 = new Face(faceSize, faceSize, halfOfImage);
+      Face face3 = new Face(faceSize, faceSize, threeFourthOfImage);
+      List<Face> faces = Arrays.asList(face1, face2, face3);
+      List<Face> noFace = null; // No face detected
+      if (faceType == -1) {
+        return noFace;
+      }
+      return Arrays.asList(faces.get(faceType));
     }
   }
 }

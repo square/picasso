@@ -461,14 +461,42 @@ public class RequestCreatorTest {
       fail("Calling center crop after center inside should throw exception.");
     } catch (IllegalStateException expected) {
     }
+    try {
+      new RequestCreator().resize(10, 10).faceCenterCrop().centerCrop();
+      fail("Calling center crop after face center crop should throw exception.");
+    } catch (IllegalStateException expected) {
+    }
   }
 
   @Test public void invalidCenterInside() throws Exception {
     try {
-      new RequestCreator().resize(10, 10).centerInside().centerCrop();
+      new RequestCreator().resize(10, 10).centerCrop().centerInside();
       fail("Calling center inside after center crop should throw exception.");
     } catch (IllegalStateException expected) {
     }
+    try {
+      new RequestCreator().resize(10, 10).faceCenterCrop().centerInside();
+      fail("Calling center inside after face center crop should throw exception.");
+    } catch (IllegalStateException expected) {
+    }
+  }
+
+  @Test public void invalidFaceCenterCrop() throws Exception {
+    try {
+      new RequestCreator().resize(10, 10).centerCrop().faceCenterCrop();
+      fail("Calling face center crop after center crop should throw exception.");
+    } catch (IllegalStateException expected) {
+    }
+    try {
+      new RequestCreator().resize(10, 10).centerInside().faceCenterCrop();
+      fail("Calling face center crop after center inside should throw exception.");
+    } catch (IllegalStateException expected) {
+    }
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void nullFaceDetectorInvalid() throws Exception {
+    new RequestCreator().resize(10, 10).faceCenterCrop(null);
   }
 
   @Test public void invalidPlaceholderImage() throws Exception {

@@ -187,6 +187,8 @@ final class Utils {
       builder.append("centerCrop\n");
     } else if (data.centerInside) {
       builder.append("centerInside\n");
+    } else if (data.faceCenterCrop) {
+      builder.append("faceCenterCrop\n");
     }
 
     if (data.transformations != null) {

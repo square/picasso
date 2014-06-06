@@ -18,7 +18,12 @@ package com.squareup.picasso;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.provider.MediaStore;
@@ -34,6 +39,7 @@ import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentResolver.SCHEME_FILE;
 import static android.provider.ContactsContract.Contacts;
 import static com.squareup.picasso.AssetBitmapHunter.ANDROID_ASSET;
+import static com.squareup.picasso.FaceDetector.Face;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Utils.OWNER_HUNTER;
 import static com.squareup.picasso.Utils.VERB_DECODED;
@@ -397,11 +403,7 @@ abstract class BitmapHunter implements Runnable {
     int inWidth = result.getWidth();
     int inHeight = result.getHeight();
 
-    int drawX = 0;
-    int drawY = 0;
-    int drawWidth = inWidth;
-    int drawHeight = inHeight;
-
+    DrawDimens drawDimens = new DrawDimens(0, 0, inWidth, inHeight);
     Matrix matrix = new Matrix();
 
     if (data.needsMatrixTransform()) {
@@ -418,26 +420,44 @@ abstract class BitmapHunter implements Runnable {
       }
 
       if (data.centerCrop) {
-        float widthRatio = targetWidth / (float) inWidth;
-        float heightRatio = targetHeight / (float) inHeight;
-        float scale;
-        if (widthRatio > heightRatio) {
-          scale = widthRatio;
-          int newSize = (int) Math.ceil(inHeight * (heightRatio / widthRatio));
-          drawY = (inHeight - newSize) / 2;
-          drawHeight = newSize;
-        } else {
-          scale = heightRatio;
-          int newSize = (int) Math.ceil(inWidth * (widthRatio / heightRatio));
-          drawX = (inWidth - newSize) / 2;
-          drawWidth = newSize;
-        }
-        matrix.preScale(scale, scale);
+        centerCrop(targetWidth, targetHeight, inWidth, inHeight, drawDimens, matrix,
+            new Point(inWidth / 2, inHeight / 2));
       } else if (data.centerInside) {
         float widthRatio = targetWidth / (float) inWidth;
         float heightRatio = targetHeight / (float) inHeight;
         float scale = widthRatio < heightRatio ? widthRatio : heightRatio;
         matrix.preScale(scale, scale);
+      } else if (data.faceCenterCrop) {
+        // Transform bitmap to RGB565 format and make sure width is even
+        // those are requirements for android face detector
+        Bitmap convertedBitmap = null;
+        List<Face> faces = null;
+        try {
+          if ((result.getConfig() != Bitmap.Config.RGB_565 || result.getWidth() % 2 != 0)
+              && data.faceDetector instanceof AndroidFaceDetector) {
+            convertedBitmap = convertToMeetAndroidFaceDetection(result);
+          }
+          faces =
+              data.faceDetector.findFaces(convertedBitmap != null ? convertedBitmap : result, 5);
+        } finally {
+          if (convertedBitmap != null) {
+            convertedBitmap.recycle();
+          }
+        }
+        if (faces == null || faces.size() <= 0) {
+          centerCrop(targetWidth, targetHeight, inWidth, inHeight, drawDimens, matrix,
+              new Point(inWidth / 2, inHeight / 2));
+        } else {
+          Point faceGravityPoint = new Point();
+          for (Face face : faces) {
+            faceGravityPoint.x += face.leftTopPoint.x + face.width / 2;
+            faceGravityPoint.y += face.leftTopPoint.y + face.height / 2;
+          }
+          faceGravityPoint.x /= faces.size();
+          faceGravityPoint.y /= faces.size();
+          centerCrop(targetWidth, targetHeight, inWidth, inHeight, drawDimens, matrix,
+              faceGravityPoint);
+        }
       } else if (targetWidth != 0 && targetHeight != 0 //
           && (targetWidth != inWidth || targetHeight != inHeight)) {
         // If an explicit target size has been specified and they do not match the results bounds,
@@ -453,12 +473,86 @@ abstract class BitmapHunter implements Runnable {
     }
 
     Bitmap newResult =
-        Bitmap.createBitmap(result, drawX, drawY, drawWidth, drawHeight, matrix, true);
+        Bitmap.createBitmap(result, drawDimens.drawX, drawDimens.drawY, drawDimens.drawWidth,
+            drawDimens.drawHeight, matrix, true);
     if (newResult != result) {
       result.recycle();
       result = newResult;
     }
 
     return result;
+  }
+
+  private static void centerCrop(int targetWidth, int targetHeight, int inWidth, int inHeight,
+      DrawDimens drawDimens, Matrix matrix, Point center) {
+    float widthRatio = targetWidth / (float) inWidth;
+    float heightRatio = targetHeight / (float) inHeight;
+    float scale;
+    if (widthRatio > heightRatio) {
+      scale = widthRatio;
+      int newSize = (int) Math.ceil(inHeight * (heightRatio / widthRatio));
+      int drawY = center.y - (newSize / 2);
+      drawDimens.drawY = ensureMargin(drawY, inHeight, newSize);
+      drawDimens.drawHeight = newSize;
+    } else {
+      scale = heightRatio;
+      int newSize = (int) Math.ceil(inWidth * (widthRatio / heightRatio));
+      int drawX = center.x - (newSize / 2);
+      drawDimens.drawX = ensureMargin(drawX, inWidth, newSize);
+      drawDimens.drawWidth = newSize;
+    }
+    matrix.preScale(scale, scale);
+  }
+
+  /**
+   * Ensure the boundary
+   */
+  private static int ensureMargin(int start, int end, int distance) {
+    if (start < 0) {
+      return 0;
+    } else if (start >= 0 && (start + distance) <= end) {
+      return start;
+    } else {
+      return end - distance;
+    }
+  }
+
+  /**
+   * Convert the given bitmap to the requirements that meet Android's face detector
+   * Note that the original bitmap would not be recycled.
+   */
+  private static Bitmap convertToMeetAndroidFaceDetection(Bitmap bitmap) {
+    Bitmap convertedBitmap = null;
+    if (bitmap == null) {
+      return convertedBitmap;
+    }
+    int width = bitmap.getWidth();
+    int height = bitmap.getHeight();
+    // the width of the bitmap must be even
+    if (width % 2 != 0) {
+      width--;
+    }
+    Rect roi = new Rect(0, 0, width, height);
+    convertedBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+    Canvas canvas = new Canvas(convertedBitmap);
+    Paint paint = new Paint();
+    paint.setColor(Color.BLACK);
+    canvas.drawBitmap(bitmap, roi, roi, paint);
+
+    return convertedBitmap;
+  }
+
+  private static class DrawDimens {
+    private int drawX;
+    private int drawY;
+    private int drawWidth;
+    private int drawHeight;
+
+    DrawDimens(int drawX, int drawY, int drawWidth, int drawHeight) {
+      this.drawX = drawX;
+      this.drawY = drawY;
+      this.drawWidth = drawWidth;
+      this.drawHeight = drawHeight;
+    }
   }
 }
