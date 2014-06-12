@@ -20,6 +20,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.FutureTask;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,10 +31,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowBitmap;
 import org.robolectric.shadows.ShadowMatrix;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.FutureTask;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static android.graphics.Bitmap.Config.RGB_565;
@@ -537,20 +536,6 @@ public class BitmapHunterTest {
     ShadowMatrix shadowMatrix = shadowOf(matrix);
 
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
-  }
-
-  @Test public void exif90SwapsDimensions() throws Exception {
-    Request data = new Request.Builder(URI_1).build();
-    Bitmap in = Bitmap.createBitmap(30, 40, null);
-    Bitmap out = transformResult(data, in, 90);
-    assertThat(out).hasWidth(40).hasHeight(30);
-  }
-
-  @Test public void exif270SwapsDimensions() throws Exception {
-    Request data = new Request.Builder(URI_1).build();
-    Bitmap in = Bitmap.createBitmap(30, 40, null);
-    Bitmap out = transformResult(data, in, 270);
-    assertThat(out).hasWidth(40).hasHeight(30);
   }
 
   @Test public void reusedBitmapIsNotRecycled() throws Exception {
