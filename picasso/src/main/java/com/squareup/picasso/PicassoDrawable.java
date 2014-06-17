@@ -110,9 +110,9 @@ final class PicassoDrawable extends BitmapDrawable {
         }
 
         int partialAlpha = (int) (alpha * normalized);
-        setAlpha(partialAlpha);
+        super.setAlpha(partialAlpha);
         super.draw(canvas);
-        setAlpha(alpha);
+        super.setAlpha(alpha);
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1) {
           invalidateSelf();
         }
@@ -125,6 +125,7 @@ final class PicassoDrawable extends BitmapDrawable {
   }
 
   @Override public void setAlpha(int alpha) {
+    this.alpha = alpha;
     if (placeholder != null) {
       placeholder.setAlpha(alpha);
     }
