@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.scrolling.PicassoScrollListener;
 
 public class SampleListDetailActivity extends PicassoSampleActivity {
   @Override protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +51,9 @@ public class SampleListDetailActivity extends PicassoSampleActivity {
           activity.showDetails(url);
         }
       });
+
+      listView.setOnScrollListener(new PicassoScrollListener(activity));
+
       return listView;
     }
   }

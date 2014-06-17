@@ -24,6 +24,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
 import android.widget.ImageView;
+
 import java.io.File;
 import java.lang.ref.ReferenceQueue;
 import java.util.List;
@@ -413,7 +414,28 @@ public class Picasso {
         deferredRequestCreator.cancel();
       }
     }
+
+      // TODO right place to cancel dispatcher queue
+
   }
+
+    public void interruptDispatching() {
+        if (dispatcher == null){
+            throw new NullPointerException("The dispatcher is null");
+        }
+
+        dispatcher.interruptDispatching();
+    }
+
+
+    public void continueDispatching(){
+        if (dispatcher == null) {
+            throw new NullPointerException("The dispatcher is null");
+        }
+
+        dispatcher.continueDispatching();
+    }
+
 
   private static class CleanupThread extends Thread {
     private final ReferenceQueue<?> referenceQueue;
