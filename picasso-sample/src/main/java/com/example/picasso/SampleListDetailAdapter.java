@@ -8,6 +8,8 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.RequestCreator;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,9 +17,11 @@ import java.util.List;
 final class SampleListDetailAdapter extends BaseAdapter {
   private final Context context;
   private final List<String> urls = new ArrayList<String>();
+  private boolean skipMemoryCache;
 
-  public SampleListDetailAdapter(Context context) {
+  public SampleListDetailAdapter(Context context, boolean skipMemoryCache) {
     this.context = context;
+    this.skipMemoryCache = skipMemoryCache;
     Collections.addAll(urls, Data.URLS);
   }
 
@@ -39,13 +43,17 @@ final class SampleListDetailAdapter extends BaseAdapter {
     holder.text.setText(url);
 
     // Trigger the download of the URL asynchronously into the image view.
-    Picasso.with(context)
+    RequestCreator creator = Picasso.with(context)
         .load(url)
         .placeholder(R.drawable.placeholder)
         .error(R.drawable.error)
         .resizeDimen(R.dimen.list_detail_image_size, R.dimen.list_detail_image_size)
-        .centerInside()
-        .into(holder.image);
+        .centerInside();
+
+      if (skipMemoryCache){
+          creator.skipMemoryCache();
+      }
+        creator.into(holder.image);
 
     return view;
   }
@@ -66,4 +74,9 @@ final class SampleListDetailAdapter extends BaseAdapter {
     ImageView image;
     TextView text;
   }
+
+    public boolean toggleSkipMemoryCache(){
+        this.skipMemoryCache = !this.skipMemoryCache;
+        return this.skipMemoryCache;
+    }
 }

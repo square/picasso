@@ -23,9 +23,11 @@ final class PicassoSampleAdapter extends BaseAdapter {
 
   enum Sample {
     GRID_VIEW("Image Grid View", SampleGridViewActivity.class),
+    GRID_VIEW_SCROLLING("Image Grid View with ScrollListener", SampleGridViewScrollingActivity.class),
     GALLERY("Load from Gallery", SampleGalleryActivity.class),
     CONTACTS("Contact Photos", SampleContactsActivity.class),
     LIST_DETAIL("List / Detail View", SampleListDetailActivity.class),
+    LIST_DETAIL_SCROLLING ("List / Detail with ScrollListener", SampleListDetailScrollingActivity.class),
     SHOW_NOTIFICATION("Sample Notification", null) {
       @Override public void launch(Activity activity) {
         RemoteViews remoteViews =

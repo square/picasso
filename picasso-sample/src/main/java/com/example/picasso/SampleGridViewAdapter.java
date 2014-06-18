@@ -4,7 +4,10 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.RequestCreator;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -14,11 +17,10 @@ import static android.widget.ImageView.ScaleType.CENTER_CROP;
 final class SampleGridViewAdapter extends BaseAdapter {
   private final Context context;
   private final List<String> urls = new ArrayList<String>();
-
-  public SampleGridViewAdapter(Context context) {
+  private boolean skipMemoryCache;
+  public SampleGridViewAdapter(Context context, boolean skipMemoryCache) {
     this.context = context;
-
-    // Ensure we get a different ordering of images on each run.
+    this.skipMemoryCache = skipMemoryCache;
     Collections.addAll(urls, Data.URLS);
     Collections.shuffle(urls);
 
@@ -39,12 +41,17 @@ final class SampleGridViewAdapter extends BaseAdapter {
     String url = getItem(position);
 
     // Trigger the download of the URL asynchronously into the image view.
-    Picasso.with(context) //
+
+    RequestCreator creator = Picasso.with(context) //
         .load(url) //
         .placeholder(R.drawable.placeholder) //
         .error(R.drawable.error) //
-        .fit() //
-        .into(view);
+        .fit();
+
+      if (skipMemoryCache) {
+          creator.skipMemoryCache();
+      }
+      creator.into(view);
 
     return view;
   }
@@ -60,4 +67,10 @@ final class SampleGridViewAdapter extends BaseAdapter {
   @Override public long getItemId(int position) {
     return position;
   }
+
+
+    public boolean toggleSkipMemoryCache(){
+        this.skipMemoryCache = !this.skipMemoryCache;
+        return this.skipMemoryCache;
+    }
 }

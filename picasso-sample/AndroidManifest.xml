@@ -34,9 +34,12 @@
       </intent-filter>
     </activity>
 
+
+    <activity android:name=".SampleGridViewScrollingActivity"/>
     <activity android:name=".SampleContactsActivity"/>
     <activity android:name=".SampleGalleryActivity"/>
     <activity android:name=".SampleListDetailActivity"/>
+    <activity android:name=".SampleListDetailScrollingActivity"/>
 
     <receiver android:name="SampleWidgetProvider">
       <intent-filter>
