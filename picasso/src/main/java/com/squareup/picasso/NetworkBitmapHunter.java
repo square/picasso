@@ -15,6 +15,7 @@
  */
 package com.squareup.picasso;
 
+import android.Manifest;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.NetworkInfo;
@@ -24,6 +25,7 @@ import java.io.InputStream;
 import static com.squareup.picasso.Downloader.Response;
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 import static com.squareup.picasso.Picasso.LoadedFrom.NETWORK;
+import static com.squareup.picasso.Utils.hasPermission;
 
 class NetworkBitmapHunter extends BitmapHunter {
   static final int DEFAULT_RETRY_COUNT = 2;
@@ -38,6 +40,13 @@ class NetworkBitmapHunter extends BitmapHunter {
     super(picasso, dispatcher, cache, stats, action);
     this.downloader = downloader;
     this.retryCount = DEFAULT_RETRY_COUNT;
+    if (!hasPermission(picasso.context, Manifest.permission.INTERNET)) {
+      Picasso.HANDLER.post(new Runnable() {
+        @Override public void run() {
+          throw new IllegalStateException("INTERNET permission is required.");
+        }
+      });
+    }
   }
 
   @Override Bitmap decode(Request data) throws IOException {
