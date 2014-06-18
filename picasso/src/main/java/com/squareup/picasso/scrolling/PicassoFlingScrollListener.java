@@ -1,7 +1,6 @@
 package com.squareup.picasso.scrolling;
 
 import android.content.Context;
-import android.util.Log;
 import android.widget.AbsListView;
 
 import com.squareup.picasso.Picasso;
@@ -10,27 +9,26 @@ import com.squareup.picasso.Picasso;
  * A simple scroll listener that disables fading / setting image drawable while the AbsListView is flinging
  * @author Hannes Dorfmann
  */
-public class PicassoScrollListener implements AbsListView.OnScrollListener {
+public class PicassoFlingScrollListener implements AbsListView.OnScrollListener {
 
 
     protected AbsListView.OnScrollListener delegate;
     protected Picasso picasso;
-    private int previousScrollState = SCROLL_STATE_IDLE;
 
-    public PicassoScrollListener(Picasso picasso, AbsListView.OnScrollListener delegate){
+    public PicassoFlingScrollListener(Picasso picasso, AbsListView.OnScrollListener delegate){
         this.delegate = delegate;
         this.picasso = picasso;
     }
 
-    public PicassoScrollListener(Picasso picasso){
+    public PicassoFlingScrollListener(Picasso picasso){
         this(picasso, null);
     }
 
-    public PicassoScrollListener(Context context){
+    public PicassoFlingScrollListener(Context context){
        this(context, null);
     }
 
-    public PicassoScrollListener(Context context, AbsListView.OnScrollListener delegate){
+    public PicassoFlingScrollListener(Context context, AbsListView.OnScrollListener delegate){
         this(Picasso.with(context), delegate);
     }
 
@@ -39,26 +37,18 @@ public class PicassoScrollListener implements AbsListView.OnScrollListener {
     public void onScrollStateChanged(AbsListView view, int scrollState) {
 
         // TO the picasso staff
-        if (!isScrolling(scrollState) && isScrolling(previousScrollState)){
+        if (SCROLL_STATE_IDLE == scrollState ){
             picasso.continueDispatching();
-            Log.d("Test", " continue");
         }
 
-        if ( isScrolling(scrollState) && !isScrolling(previousScrollState)){
+        if (SCROLL_STATE_FLING == scrollState){
             picasso.interruptDispatching();
-            Log.d("Test", " interrupt");
         }
-
-        previousScrollState = scrollState;
 
         // Forwart to the delegate
         if (delegate != null){
             delegate.onScrollStateChanged(view, scrollState);
         }
-    }
-
-    protected boolean isScrolling(int scrollState){
-        return scrollState == SCROLL_STATE_FLING || scrollState == SCROLL_STATE_TOUCH_SCROLL;
     }
 
     @Override

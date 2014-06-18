@@ -20,13 +20,15 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
-import java.util.concurrent.ExecutorService;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+
+import java.util.concurrent.ExecutorService;
 
 import static android.content.Context.CONNECTIVITY_SERVICE;
 import static android.content.Intent.ACTION_AIRPLANE_MODE_CHANGED;
@@ -131,9 +133,9 @@ public class DispatcherTest {
 
   @Test public void performCancelDetachesRequestAndCleansUp() throws Exception {
     Target target = mockTarget();
-    Action action = mockAction(URI_KEY_1, URI_1, target);
-    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
-    hunter.attach(action);
+      Action action = mockAction(URI_KEY_1, URI_1, target);
+      BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
+      hunter.attach(action);
     when(hunter.cancel()).thenReturn(true);
     dispatcher.hunterMap.put(URI_KEY_1, hunter);
     dispatcher.failedActions.put(target, action);

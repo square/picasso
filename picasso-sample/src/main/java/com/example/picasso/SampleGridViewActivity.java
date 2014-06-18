@@ -3,6 +3,8 @@ package com.example.picasso;
 import android.os.Bundle;
 import android.widget.GridView;
 
+import com.squareup.picasso.scrolling.PicassoScrollListener;
+
 public class SampleGridViewActivity extends PicassoSampleActivity {
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -10,5 +12,6 @@ public class SampleGridViewActivity extends PicassoSampleActivity {
 
     GridView gv = (GridView) findViewById(R.id.grid_view);
     gv.setAdapter(new SampleGridViewAdapter(this));
+    gv.setOnScrollListener(new PicassoScrollListener(this));
   }
 }

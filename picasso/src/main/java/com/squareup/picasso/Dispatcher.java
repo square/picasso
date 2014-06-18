@@ -114,6 +114,7 @@ class Dispatcher {
     service.shutdown();
     dispatcherThread.quit();
     receiver.unregister();
+    dispatchingQueue.clear();
   }
 
   void dispatchSubmit(Action action) {

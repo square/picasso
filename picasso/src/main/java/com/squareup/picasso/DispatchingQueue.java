@@ -72,7 +72,7 @@ public class DispatchingQueue {
         } else {
             // dispatching is disabled temporarly
             CompleteDispatchJob job = new CompleteDispatchJob(handler, hunter);
-            jobQueue.offer(job);
+            scheduleJob(job);
         }
 
     }
@@ -86,7 +86,7 @@ public class DispatchingQueue {
         } else {
             // dispatching is disabled temporarly
             FailedDispatchJob job = new FailedDispatchJob(handler, hunter);
-            jobQueue.offer(job);
+            scheduleJob(job);
         }
 
     }
@@ -115,6 +115,11 @@ public class DispatchingQueue {
             jobQueue.remove(job);
             hunterMap.remove(hunter);
         }
+    }
+
+    public void clear() {
+        jobQueue.clear();
+        hunterMap.clear();
     }
 
 
