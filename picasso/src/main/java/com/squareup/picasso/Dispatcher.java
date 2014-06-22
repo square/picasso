@@ -26,7 +26,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -54,10 +53,6 @@ import static com.squareup.picasso.Utils.hasPermission;
 import static com.squareup.picasso.Utils.log;
 
 class Dispatcher {
-  private static final int RETRY_DELAY = 500;
-  private static final int AIRPLANE_MODE_ON = 1;
-  private static final int AIRPLANE_MODE_OFF = 0;
-
   static final int REQUEST_SUBMIT = 1;
   static final int REQUEST_CANCEL = 2;
   static final int REQUEST_GCED = 3;
@@ -68,7 +63,9 @@ class Dispatcher {
   static final int HUNTER_BATCH_COMPLETE = 8;
   static final int NETWORK_STATE_CHANGE = 9;
   static final int AIRPLANE_MODE_CHANGE = 10;
-
+  private static final int RETRY_DELAY = 500;
+  private static final int AIRPLANE_MODE_ON = 1;
+  private static final int AIRPLANE_MODE_OFF = 0;
   private static final String DISPATCHER_THREAD_NAME = "Dispatcher";
   private static final int BATCH_DELAY = 200; // ms
 
@@ -134,7 +131,7 @@ class Dispatcher {
   }
 
   void dispatchFailed(BitmapHunter hunter) {
-      dispatchingQueue.dispatchComplete(hunter);
+    dispatchingQueue.dispatchComplete(hunter);
   }
 
   void dispatchNetworkStateChange(NetworkInfo info) {
@@ -321,14 +318,13 @@ class Dispatcher {
     }
   }
 
-   public void interruptDispatching() {
+  public void interruptDispatching() {
     dispatchingQueue.interruptDispatching();
-   }
+  }
 
-
-   public void continueDispatching() {
+  public void continueDispatching() {
     dispatchingQueue.continueDispatching();
-   }
+  }
 
   private void logBatch(List<BitmapHunter> copy) {
     if (copy == null || copy.isEmpty()) return;

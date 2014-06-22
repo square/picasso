@@ -24,7 +24,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
 import android.widget.ImageView;
-
 import java.io.File;
 import java.lang.ref.ReferenceQueue;
 import java.util.List;
@@ -51,41 +50,6 @@ import static com.squareup.picasso.Utils.log;
  */
 public class Picasso {
 
-  /** Callbacks for Picasso events. */
-  public interface Listener {
-    /**
-     * Invoked when an image has failed to load. This is useful for reporting image failures to a
-     * remote analytics service, for example.
-     */
-    void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception);
-  }
-
-  /**
-   * A transformer that is called immediately before every request is submitted. This can be used to
-   * modify any information about a request.
-   * <p>
-   * For example, if you use a CDN you can change the hostname for the image based on the current
-   * location of the user in order to get faster download speeds.
-   * <p>
-   * <b>NOTE:</b> This is a beta feature. The API is subject to change in a backwards incompatible
-   * way at any time.
-   */
-  public interface RequestTransformer {
-    /**
-     * Transform a request before it is submitted to be processed.
-     *
-     * @return The original request or a new request to replace it. Must not be null.
-     */
-    Request transformRequest(Request request);
-
-    /** A {@link RequestTransformer} which returns the original request. */
-    RequestTransformer IDENTITY = new RequestTransformer() {
-      @Override public Request transformRequest(Request request) {
-        return request;
-      }
-    };
-  }
-
   static final String TAG = "Picasso";
   static final Handler HANDLER = new Handler(Looper.getMainLooper()) {
     @Override public void handleMessage(Message msg) {
@@ -109,13 +73,7 @@ public class Picasso {
       }
     }
   };
-
   static Picasso singleton = null;
-
-  private final Listener listener;
-  private final RequestTransformer requestTransformer;
-  private final CleanupThread cleanupThread;
-
   final Context context;
   final Dispatcher dispatcher;
   final Cache cache;
@@ -123,10 +81,11 @@ public class Picasso {
   final Map<Object, Action> targetToAction;
   final Map<ImageView, DeferredRequestCreator> targetToDeferredRequestCreator;
   final ReferenceQueue<Object> referenceQueue;
-
+  private final Listener listener;
+  private final RequestTransformer requestTransformer;
+  private final CleanupThread cleanupThread;
   boolean indicatorsEnabled;
   volatile boolean loggingEnabled;
-
   boolean shutdown;
 
   Picasso(Context context, Dispatcher dispatcher, Cache cache, Listener listener,
@@ -145,6 +104,33 @@ public class Picasso {
     this.referenceQueue = new ReferenceQueue<Object>();
     this.cleanupThread = new CleanupThread(referenceQueue, HANDLER);
     this.cleanupThread.start();
+  }
+
+  /**
+   * The global default {@link Picasso} instance.
+   * <p>
+   * This instance is automatically initialized with defaults that are suitable to most
+   * implementations.
+   * <ul>
+   * <li>LRU memory cache of 15% the available application RAM</li>
+   * <li>Disk cache of 2% storage space up to 50MB but no less than 5MB. (Note: this is only
+   * available on API 14+ <em>or</em> if you are using a standalone library that provides a disk
+   * cache on all API levels like OkHttp)</li>
+   * <li>Three download threads for disk and network access.</li>
+   * </ul>
+   * <p>
+   * If these settings do not meet the requirements of your application you can construct your own
+   * instance with full control over the configuration by using {@link Picasso.Builder}.
+   */
+  public static Picasso with(Context context) {
+    if (singleton == null) {
+      synchronized (Picasso.class) {
+        if (singleton == null) {
+          singleton = new Builder(context).build();
+        }
+      }
+    }
+    return singleton;
   }
 
   /** Cancel any existing requests for the specified target {@link ImageView}. */
@@ -182,10 +168,10 @@ public class Picasso {
    * Passing {@code null} as a {@code path} will not trigger any request but will set a
    * placeholder, if one is specified.
    *
+   * @throws IllegalArgumentException if {@code path} is empty or blank string.
    * @see #load(Uri)
    * @see #load(File)
    * @see #load(int)
-   * @throws IllegalArgumentException if {@code path} is empty or blank string.
    */
   public RequestCreator load(String path) {
     if (path == null) {
@@ -234,6 +220,7 @@ public class Picasso {
   /**
    * {@code true} if debug display, logging, and statistics are enabled.
    * <p>
+   *
    * @deprecated Use {@link #areIndicatorsEnabled()} and {@link #isLoggingEnabled()} instead.
    */
   @SuppressWarnings("UnusedDeclaration") @Deprecated public boolean isDebugging() {
@@ -243,6 +230,7 @@ public class Picasso {
   /**
    * Toggle whether debug display, logging, and statistics are enabled.
    * <p>
+   *
    * @deprecated Use {@link #setIndicatorsEnabled(boolean)} and {@link #setLoggingEnabled(boolean)}
    * instead.
    */
@@ -260,6 +248,11 @@ public class Picasso {
     return indicatorsEnabled;
   }
 
+  /** {@code true} if debug logging is enabled. */
+  public boolean isLoggingEnabled() {
+    return loggingEnabled;
+  }
+
   /**
    * Toggle whether debug logging is enabled.
    * <p>
@@ -268,11 +261,6 @@ public class Picasso {
    */
   public void setLoggingEnabled(boolean enabled) {
     loggingEnabled = enabled;
-  }
-
-  /** {@code true} if debug logging is enabled. */
-  public boolean isLoggingEnabled() {
-    return loggingEnabled;
   }
 
   /**
@@ -415,27 +403,74 @@ public class Picasso {
       }
     }
 
-      // TODO right place to cancel dispatcher queue
+    // TODO right place to cancel dispatcher queue
 
   }
 
-    public void interruptDispatching() {
-        if (dispatcher == null){
-            throw new NullPointerException("The dispatcher is null");
-        }
-
-        dispatcher.interruptDispatching();
+  public void interruptDispatching() {
+    if (dispatcher == null) {
+      throw new NullPointerException("The dispatcher is null");
     }
 
+    dispatcher.interruptDispatching();
+  }
 
-    public void continueDispatching(){
-        if (dispatcher == null) {
-            throw new NullPointerException("The dispatcher is null");
-        }
-
-        dispatcher.continueDispatching();
+  public void continueDispatching() {
+    if (dispatcher == null) {
+      throw new NullPointerException("The dispatcher is null");
     }
 
+    dispatcher.continueDispatching();
+  }
+
+  /** Describes where the image was loaded from. */
+  public enum LoadedFrom {
+    MEMORY(Color.GREEN),
+    DISK(Color.YELLOW),
+    NETWORK(Color.RED);
+
+    final int debugColor;
+
+    private LoadedFrom(int debugColor) {
+      this.debugColor = debugColor;
+    }
+  }
+
+  /** Callbacks for Picasso events. */
+  public interface Listener {
+    /**
+     * Invoked when an image has failed to load. This is useful for reporting image failures to a
+     * remote analytics service, for example.
+     */
+    void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception);
+  }
+
+  /**
+   * A transformer that is called immediately before every request is submitted. This can be used
+   * to
+   * modify any information about a request.
+   * <p>
+   * For example, if you use a CDN you can change the hostname for the image based on the current
+   * location of the user in order to get faster download speeds.
+   * <p>
+   * <b>NOTE:</b> This is a beta feature. The API is subject to change in a backwards incompatible
+   * way at any time.
+   */
+  public interface RequestTransformer {
+    /** A {@link RequestTransformer} which returns the original request. */
+    RequestTransformer IDENTITY = new RequestTransformer() {
+      @Override public Request transformRequest(Request request) {
+        return request;
+      }
+    };
+
+    /**
+     * Transform a request before it is submitted to be processed.
+     *
+     * @return The original request or a new request to replace it. Must not be null.
+     */
+    Request transformRequest(Request request);
+  }
 
   private static class CleanupThread extends Thread {
     private final ReferenceQueue<?> referenceQueue;
@@ -470,33 +505,6 @@ public class Picasso {
     void shutdown() {
       interrupt();
     }
-  }
-
-  /**
-   * The global default {@link Picasso} instance.
-   * <p>
-   * This instance is automatically initialized with defaults that are suitable to most
-   * implementations.
-   * <ul>
-   * <li>LRU memory cache of 15% the available application RAM</li>
-   * <li>Disk cache of 2% storage space up to 50MB but no less than 5MB. (Note: this is only
-   * available on API 14+ <em>or</em> if you are using a standalone library that provides a disk
-   * cache on all API levels like OkHttp)</li>
-   * <li>Three download threads for disk and network access.</li>
-   * </ul>
-   * <p>
-   * If these settings do not meet the requirements of your application you can construct your own
-   * instance with full control over the configuration by using {@link Picasso.Builder}.
-   */
-  public static Picasso with(Context context) {
-    if (singleton == null) {
-      synchronized (Picasso.class) {
-        if (singleton == null) {
-          singleton = new Builder(context).build();
-        }
-      }
-    }
-    return singleton;
   }
 
   /** Fluent API for creating {@link Picasso} instances. */
@@ -571,7 +579,8 @@ public class Picasso {
     /**
      * Specify a transformer for all incoming requests.
      * <p>
-     * <b>NOTE:</b> This is a beta feature. The API is subject to change in a backwards incompatible
+     * <b>NOTE:</b> This is a beta feature. The API is subject to change in a backwards
+     * incompatible
      * way at any time.
      */
     public Builder requestTransformer(RequestTransformer transformer) {
@@ -602,7 +611,8 @@ public class Picasso {
     /**
      * Toggle whether debug logging is enabled.
      * <p>
-     * <b>WARNING:</b> Enabling this will result in excessive object allocation. This should be only
+     * <b>WARNING:</b> Enabling this will result in excessive object allocation. This should be
+     * only
      * be used for debugging purposes. Do NOT pass {@code BuildConfig.DEBUG}.
      */
     public Builder loggingEnabled(boolean enabled) {
@@ -633,19 +643,6 @@ public class Picasso {
 
       return new Picasso(context, dispatcher, cache, listener, transformer, stats,
           indicatorsEnabled, loggingEnabled);
-    }
-  }
-
-  /** Describes where the image was loaded from. */
-  public enum LoadedFrom {
-    MEMORY(Color.GREEN),
-    DISK(Color.YELLOW),
-    NETWORK(Color.RED);
-
-    final int debugColor;
-
-    private LoadedFrom(int debugColor) {
-      this.debugColor = debugColor;
     }
   }
 }

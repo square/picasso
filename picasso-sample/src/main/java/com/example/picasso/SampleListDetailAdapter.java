@@ -9,7 +9,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,10 +49,10 @@ final class SampleListDetailAdapter extends BaseAdapter {
         .resizeDimen(R.dimen.list_detail_image_size, R.dimen.list_detail_image_size)
         .centerInside();
 
-      if (skipMemoryCache){
-          creator.skipMemoryCache();
-      }
-        creator.into(holder.image);
+    if (skipMemoryCache) {
+      creator.skipMemoryCache();
+    }
+    creator.into(holder.image);
 
     return view;
   }
@@ -70,13 +69,13 @@ final class SampleListDetailAdapter extends BaseAdapter {
     return position;
   }
 
+  public boolean toggleSkipMemoryCache() {
+    this.skipMemoryCache = !this.skipMemoryCache;
+    return this.skipMemoryCache;
+  }
+
   static class ViewHolder {
     ImageView image;
     TextView text;
   }
-
-    public boolean toggleSkipMemoryCache(){
-        this.skipMemoryCache = !this.skipMemoryCache;
-        return this.skipMemoryCache;
-    }
 }
