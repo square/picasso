@@ -16,37 +16,28 @@ public class DispatchingQueue {
   final Map<BitmapHunter, DispatchJob> hunterMap;
   final Queue<DispatchJob> jobQueue;
   final Handler handler;
-  int dispInterruptedCount;
+  boolean dispatching;
 
   public DispatchingQueue(Handler handler) {
     this.handler = handler;
     this.jobQueue = new ConcurrentLinkedQueue<DispatchJob>();
     this.hunterMap = new ConcurrentHashMap<BitmapHunter, DispatchJob>();
-    this.dispInterruptedCount = 0;
+    this.dispatching = true;
   }
 
   public void interruptDispatching() {
     Utils.checkMain();
-    dispInterruptedCount++;
+    dispatching = false;
   }
 
   public void continueDispatching() {
     Utils.checkMain();
-
-    dispInterruptedCount--;
-
-    if (dispInterruptedCount < 0) {
-      // Should never be reached
-      dispInterruptedCount = 0;
-    }
-
-    if (isDispatchingEnabled()) {
-      dispatchNextFromQueue();
-    }
+    dispatching = true;
+    dispatchNextFromQueue();
   }
 
   public boolean isDispatchingEnabled() {
-    return dispInterruptedCount == 0;
+    return dispatching;
   }
 
   private void scheduleJob(DispatchJob job) {
@@ -63,7 +54,7 @@ public class DispatchingQueue {
       // dispatch directly; avoid object creation overhead
       handler.sendMessage(handler.obtainMessage(Dispatcher.HUNTER_COMPLETE, hunter));
     } else {
-      // dispatching is disabled temporarly
+      // dispatching is disabled temporally
       CompleteDispatchJob job = new CompleteDispatchJob(handler, hunter);
       scheduleJob(job);
     }
@@ -72,10 +63,10 @@ public class DispatchingQueue {
   public void dispatchFailed(BitmapHunter hunter) {
 
     if (isDispatchingEnabled()) {
-      // dispatch directly; avoir object creation overhead
+      // dispatch directly; avoid object creation overhead
       handler.sendMessage(handler.obtainMessage(Dispatcher.HUNTER_DECODE_FAILED, hunter));
     } else {
-      // dispatching is disabled temporarly
+      // dispatching is disabled temporally
       FailedDispatchJob job = new FailedDispatchJob(handler, hunter);
       scheduleJob(job);
     }
@@ -83,7 +74,6 @@ public class DispatchingQueue {
 
   public void dispatchNextFromQueue() {
 
-    // TODO limit the count of simultaneous dispatches?!?!?
     while (!jobQueue.isEmpty()) {
       DispatchJob job = jobQueue.poll();
 

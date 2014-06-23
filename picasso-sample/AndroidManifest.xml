@@ -35,7 +35,7 @@
     </activity>
 
 
-    <activity android:name=".SampleGridViewScrollingActivity"/>
+    <activity android:name=".SampleGridViewScrollingActivity" android:label="@string/view_pager_activity"/>
     <activity android:name=".SampleContactsActivity"/>
     <activity android:name=".SampleGalleryActivity"/>
     <activity android:name=".SampleListDetailActivity"/>

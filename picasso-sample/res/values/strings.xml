@@ -11,4 +11,5 @@
     image.\n\nTo enable this functionality on pre-ICS use a standalone HTTP client with caching such
     as OkHttp.
   </string>
+  <string name="view_pager_activity">ViewPager and Scrolling</string>
 </resources>

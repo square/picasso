@@ -1,7 +1,6 @@
 package com.squareup.picasso.scrolling;
 
 import android.content.Context;
-import android.util.Log;
 import android.widget.AbsListView;
 import com.squareup.picasso.Picasso;
 
@@ -15,10 +14,12 @@ public class PicassoFlingScrollListener implements AbsListView.OnScrollListener 
 
   protected AbsListView.OnScrollListener delegate;
   protected Picasso picasso;
+  protected boolean scrollingFirstTime = true;
 
   public PicassoFlingScrollListener(Picasso picasso, AbsListView.OnScrollListener delegate) {
     this.delegate = delegate;
     this.picasso = picasso;
+    picasso.continueDispatching();
   }
 
   public PicassoFlingScrollListener(Picasso picasso) {
@@ -36,7 +37,10 @@ public class PicassoFlingScrollListener implements AbsListView.OnScrollListener 
   @Override
   public void onScrollStateChanged(AbsListView view, int scrollState) {
 
-    Log.d("Test", "state " + scrollState);
+    if (scrollingFirstTime) {
+      picasso.continueDispatching();
+      scrollingFirstTime = false;
+    }
 
     // TO the picasso staff
     if (SCROLL_STATE_IDLE == scrollState) {
@@ -47,7 +51,7 @@ public class PicassoFlingScrollListener implements AbsListView.OnScrollListener 
       picasso.interruptDispatching();
     }
 
-    // Forwart to the delegate
+    // Forward to the delegate
     if (delegate != null) {
       delegate.onScrollStateChanged(view, scrollState);
     }

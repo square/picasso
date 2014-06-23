@@ -78,50 +78,16 @@ public class DispatchingQueueTest {
     dispatcher.interruptDispatching();
     assertThat(dispatchingQueue.isDispatchingEnabled()).isFalse();
 
+
+    dispatcher.continueDispatching();
+    assertThat(dispatchingQueue.isDispatchingEnabled()).isTrue();
+
     dispatcher.interruptDispatching();
     assertThat(dispatchingQueue.isDispatchingEnabled()).isFalse();
 
     dispatcher.continueDispatching();
-    assertThat(dispatchingQueue.isDispatchingEnabled()).isFalse();
-
-    dispatcher.continueDispatching();
     assertThat(dispatchingQueue.isDispatchingEnabled()).isTrue();
 
-    // Do random testing
-    Random r = new Random();
-    int tests = r.nextInt(20) + 10;
-    int interruptions = 0;
-
-    for (int i = 0; i < tests; i++) {
-
-      if (r.nextBoolean()) {
-        dispatcher.interruptDispatching();
-        interruptions++;
-      } else {
-        dispatcher.continueDispatching();
-        interruptions--;
-        if (interruptions < 0) {
-          interruptions = 0;
-        }
-      }
-
-      if (interruptions > 0) {
-        assertThat(dispatchingQueue.isDispatchingEnabled()).isFalse();
-      } else {
-        assertThat(dispatchingQueue.isDispatchingEnabled()).isTrue();
-      }
-    }
-
-    for (; interruptions > 1; interruptions--) {
-      dispatcher.continueDispatching();
-      assertThat(dispatchingQueue.isDispatchingEnabled()).isFalse();
-    }
-
-    if (interruptions == 1) {
-      interruptions--;
-      dispatcher.continueDispatching();
-    }
-    assertThat(dispatchingQueue.isDispatchingEnabled()).isTrue();
   }
 
   private DispatchingQueue.DispatchJob getJobFromQueue(BitmapHunter hunter) {
