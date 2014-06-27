@@ -73,6 +73,7 @@ public class Picasso {
       }
     }
   };
+
   static Picasso singleton = null;
   final Context context;
   final Dispatcher dispatcher;
@@ -87,6 +88,8 @@ public class Picasso {
   boolean indicatorsEnabled;
   volatile boolean loggingEnabled;
   boolean shutdown;
+
+
 
   Picasso(Context context, Dispatcher dispatcher, Cache cache, Listener listener,
       RequestTransformer requestTransformer, Stats stats, boolean indicatorsEnabled,
@@ -402,9 +405,6 @@ public class Picasso {
         deferredRequestCreator.cancel();
       }
     }
-
-    // TODO right place to cancel dispatcher queue
-
   }
 
   public void interruptDispatching() {

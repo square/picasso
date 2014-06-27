@@ -319,11 +319,19 @@ class Dispatcher {
   }
 
   public void interruptDispatching() {
+
     dispatchingQueue.interruptDispatching();
+    if (service instanceof PicassoExecutorService) {
+      ((PicassoExecutorService) service).pause();
+    }
   }
 
   public void continueDispatching() {
+
     dispatchingQueue.continueDispatching();
+    if (service instanceof PicassoExecutorService) {
+      ((PicassoExecutorService) service).resume();
+    }
   }
 
   private void logBatch(List<BitmapHunter> copy) {
