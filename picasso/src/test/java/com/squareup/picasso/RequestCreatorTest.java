@@ -300,8 +300,8 @@ public class RequestCreatorTest {
   @Test
   public void intoImageViewWithFitAndDimensionsQueuesImageViewRequest() throws Exception {
     ImageView target = mockFitImageViewTarget(true);
-    when(target.getMeasuredWidth()).thenReturn(100);
-    when(target.getMeasuredHeight()).thenReturn(100);
+    when(target.getWidth()).thenReturn(100);
+    when(target.getHeight()).thenReturn(100);
     new RequestCreator(picasso, URI_1, 0).fit().into(target);
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue()).isInstanceOf(ImageViewAction.class);
