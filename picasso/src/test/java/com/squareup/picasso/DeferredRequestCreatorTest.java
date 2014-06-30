@@ -101,8 +101,8 @@ public class DeferredRequestCreatorTest {
 
   @Test public void waitsForAnotherLayoutIfWidthOrHeightIsZero() throws Exception {
     ImageView target = mockFitImageViewTarget(true);
-    when(target.getMeasuredWidth()).thenReturn(0);
-    when(target.getMeasuredHeight()).thenReturn(0);
+    when(target.getWidth()).thenReturn(0);
+    when(target.getHeight()).thenReturn(0);
     RequestCreator creator = mock(RequestCreator.class);
     DeferredRequestCreator request = new DeferredRequestCreator(creator, target);
     request.onPreDraw();
@@ -134,8 +134,8 @@ public class DeferredRequestCreatorTest {
     RequestCreator creator = new RequestCreator(picasso, URI_1, 0);
 
     ImageView target = mockFitImageViewTarget(true);
-    when(target.getMeasuredWidth()).thenReturn(100);
-    when(target.getMeasuredHeight()).thenReturn(100);
+    when(target.getWidth()).thenReturn(100);
+    when(target.getHeight()).thenReturn(100);
 
     ViewTreeObserver observer = target.getViewTreeObserver();
 
