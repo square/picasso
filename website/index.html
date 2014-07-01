@@ -120,6 +120,8 @@ Picasso.with(context).load(new File(...)).into(imageView2);</pre>
   &lt;artifactId>picasso&lt;/artifactId>
   &lt;version><span class="version pln"><em>(insert latest version)</em></span>&lt;/version>
 &lt;/dependency></pre>
+            <p>Once you've installed Picasso, add the following lines to your <code>proguard-project.txt</code> file:</p>
+            <pre class="prettyprint">-dontwarn com.squareup.okhttp.**</pre>
 
             <h3 id="contributing">Contributing</h3>
             <p>If you would like to contribute code you can do so through GitHub by forking the repository and sending a pull request.</p>
