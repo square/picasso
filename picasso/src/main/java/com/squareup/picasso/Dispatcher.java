@@ -231,6 +231,11 @@ class Dispatcher {
   }
 
   void performComplete(BitmapHunter hunter) {
+    if (hunter.getResult() == null) {
+      performError(hunter, false);
+      return;
+    }
+
     if (!hunter.shouldSkipMemoryCache()) {
       cache.set(hunter.getKey(), hunter.getResult());
     }
