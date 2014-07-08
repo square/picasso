@@ -15,6 +15,7 @@
 */
 package com.squareup.picasso;
 
+import android.Manifest;
 import android.app.Notification;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -32,6 +33,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.provider.ContactsContract.Contacts.CONTENT_URI;
 import static android.provider.ContactsContract.Contacts.Photo.CONTENT_DIRECTORY;
 import static com.squareup.picasso.Utils.createKey;
@@ -123,10 +125,11 @@ class TestUtils {
 
   static Action mockAction(String key, Request request, Object target) {
     Action action = mock(Action.class);
+    Picasso picasso = mockPicasso();
     when(action.getKey()).thenReturn(key);
     when(action.getRequest()).thenReturn(request);
     when(action.getTarget()).thenReturn(target);
-    when(action.getPicasso()).thenReturn(mock(Picasso.class));
+    when(action.getPicasso()).thenReturn(picasso);
     return action;
   }
 
@@ -135,6 +138,22 @@ class TestUtils {
     action.cancelled = true;
     when(action.isCancelled()).thenReturn(true);
     return action;
+  }
+
+  static Picasso mockPicasso() {
+    Context context = mockContext();
+    when(context.checkCallingOrSelfPermission(Manifest.permission.INTERNET)).thenReturn(
+        PERMISSION_GRANTED);
+    return new Picasso(context, mock(Dispatcher.class), mock(Cache.class),
+        mock(Picasso.Listener.class), mock(Picasso.RequestTransformer.class), mock(Stats.class),
+        false, false);
+  }
+
+  static Context mockContext() {
+    Context context = mock(Context.class);
+    when(context.checkCallingOrSelfPermission(Manifest.permission.INTERNET)).thenReturn(
+        PERMISSION_GRANTED);
+    return context;
   }
 
   static ImageView mockImageViewTarget() {
