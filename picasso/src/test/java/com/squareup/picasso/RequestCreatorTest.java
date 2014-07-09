@@ -32,6 +32,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.concurrent.CountDownLatch;
 
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
@@ -212,6 +213,21 @@ public class RequestCreatorTest {
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
     new RequestCreator(picasso, URI_1, 0).into(target, callback);
+    verify(target).setImageDrawable(any(PicassoDrawable.class));
+    verify(callback).onSuccess();
+    verify(picasso).cancelRequest(target);
+    verify(picasso, never()).enqueueAndSubmit(any(Action.class));
+  }
+
+  @Test
+  public void intoImageViewWithQuickMemoryCacheCheckDoesNotSubmitWithCallbackWeakReference() throws Exception {
+    Picasso picasso =
+       spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null, IDENTITY,
+           mock(Stats.class), false, false));
+    doReturn(BITMAP_1).when(picasso).quickMemoryCacheCheck(URI_KEY_1);
+    ImageView target = mockImageViewTarget();
+    Callback callback = mockCallback();
+    new RequestCreator(picasso, URI_1, 0).into(target, new WeakReference<Callback>(callback));
     verify(target).setImageDrawable(any(PicassoDrawable.class));
     verify(callback).onSuccess();
     verify(picasso).cancelRequest(target);
