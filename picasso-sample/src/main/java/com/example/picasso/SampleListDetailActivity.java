@@ -51,7 +51,6 @@ public class SampleListDetailActivity extends PicassoSampleActivity {
           activity.showDetails(url);
         }
       });
-
       return listView;
     }
   }
