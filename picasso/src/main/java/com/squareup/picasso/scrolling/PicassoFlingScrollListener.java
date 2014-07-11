@@ -12,8 +12,8 @@ import com.squareup.picasso.Picasso;
  */
 public class PicassoFlingScrollListener implements AbsListView.OnScrollListener {
 
-  protected AbsListView.OnScrollListener delegate;
-  protected Picasso picasso;
+  protected final AbsListView.OnScrollListener delegate;
+  protected final Picasso picasso;
   protected boolean scrollingFirstTime = true;
 
   public PicassoFlingScrollListener(Picasso picasso, AbsListView.OnScrollListener delegate) {
