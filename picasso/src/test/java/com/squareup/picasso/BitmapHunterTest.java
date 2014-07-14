@@ -34,6 +34,7 @@ import org.robolectric.shadows.ShadowMatrix;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static android.graphics.Bitmap.Config.RGB_565;
+import static com.squareup.picasso.BitmapHunter.calculateInSampleSize;
 import static com.squareup.picasso.BitmapHunter.createBitmapOptions;
 import static com.squareup.picasso.BitmapHunter.forRequest;
 import static com.squareup.picasso.BitmapHunter.requiresInSampleSize;
@@ -386,6 +387,12 @@ public class BitmapHunterTest {
     final BitmapFactory.Options justBounds = new BitmapFactory.Options();
     justBounds.inJustDecodeBounds = true;
     assertThat(requiresInSampleSize(justBounds)).isTrue();
+  }
+
+  @Test public void calculateInSampleSizeNoResize() {
+    final BitmapFactory.Options options = new BitmapFactory.Options();
+    calculateInSampleSize(100, 100, 150, 150, options);
+    assertThat(options.inSampleSize).isEqualTo(1);
   }
 
   @Test public void nullBitmapOptionsIfNoResizing() {
