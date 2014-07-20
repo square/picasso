@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+Version 2.3.3 *(TBD)*
+----------------------------
+
+ * Fix: Crash when attempting to swap dimension for exif transformation.
+ * Fix: Properly honor alpha value in PicassoDrawable.
+ * Fix: Use `getWidth()/getHeight()` instead of `getMeasuredWidth()` and `getMeasuredHeight()` during `fit()`.
+
+
 Version 2.3.2 *(2014-06-05)*
 ----------------------------
 
