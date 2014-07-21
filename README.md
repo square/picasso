@@ -12,13 +12,16 @@ For more information please see [the website][1]
 Download
 --------
 
-Download [the latest JAR][2] or grab via Maven:
-
+Download [the latest JAR][2] or grab via Gradle:
+```groovy
+compile 'com.squareup.picasso:picasso:2.3.3'
+```
+or Maven:
 ```xml
 <dependency>
     <groupId>com.squareup.picasso</groupId>
     <artifactId>picasso</artifactId>
-    <version>(insert latest version)</version>
+    <version>2.3.3</version>
 </dependency>
 ```
 
