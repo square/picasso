@@ -58,6 +58,7 @@ public class PicassoTest {
 
   @Mock Context context;
   @Mock Downloader downloader;
+  @Mock FaceDetector faceDetector;
   @Mock Dispatcher dispatcher;
   @Mock Picasso.RequestTransformer transformer;
   @Mock Cache cache;
@@ -68,7 +69,9 @@ public class PicassoTest {
 
   @Before public void setUp() {
     initMocks(this);
-    picasso = new Picasso(context, dispatcher, cache, listener, transformer, stats, false, false);
+    picasso =
+        new Picasso(context, dispatcher, faceDetector, cache, listener, transformer, stats,
+            false, false);
   }
 
   @Test public void submitWithNullTargetInvokesDispatcher() throws Exception {
@@ -322,6 +325,19 @@ public class PicassoTest {
     try {
       new Picasso.Builder(context).downloader(downloader).downloader(downloader);
       fail("Setting Downloader twice should throw exception.");
+    } catch (IllegalStateException expected) {
+    }
+  }
+
+  @Test public void builderInvalidFaceDetector() throws Exception {
+    try {
+      new Picasso.Builder(context).faceDetector(null);
+      fail("Null face detector should throw exception.");
+    } catch (IllegalArgumentException expected) {
+    }
+    try {
+      new Picasso.Builder(context).faceDetector(faceDetector).faceDetector(faceDetector);
+      fail("Setting face detector twice should throw exception.");
     } catch (IllegalStateException expected) {
     }
   }

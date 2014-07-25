@@ -77,8 +77,8 @@ public class ImageViewActionTest {
   @Test
   public void invokesTargetAndCallbackSuccessIfTargetIsNotNull() throws Exception {
     Picasso picasso =
-        new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null, IDENTITY,
-            mock(Stats.class), false, false);
+        new Picasso(Robolectric.application, mock(Dispatcher.class), mock(FaceDetector.class),
+            Cache.NONE, null, IDENTITY, mock(Stats.class), false, false);
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
     ImageViewAction request =

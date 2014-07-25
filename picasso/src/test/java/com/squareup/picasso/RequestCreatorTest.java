@@ -206,8 +206,8 @@ public class RequestCreatorTest {
   @Test
   public void intoImageViewWithQuickMemoryCacheCheckDoesNotSubmit() throws Exception {
     Picasso picasso =
-        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null, IDENTITY,
-            mock(Stats.class), false, false));
+        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), mock(FaceDetector.class),
+            Cache.NONE, null, IDENTITY, mock(Stats.class), false, false));
     doReturn(BITMAP_1).when(picasso).quickMemoryCacheCheck(URI_KEY_1);
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
@@ -221,8 +221,8 @@ public class RequestCreatorTest {
   @Test
   public void intoImageViewSetsPlaceholderDrawable() throws Exception {
     Picasso picasso =
-        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null, IDENTITY,
-            mock(Stats.class), false, false));
+        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), mock(FaceDetector.class),
+            Cache.NONE, null, IDENTITY, mock(Stats.class), false, false));
     ImageView target = mockImageViewTarget();
     Drawable placeHolderDrawable = mock(Drawable.class);
     new RequestCreator(picasso, URI_1, 0).placeholder(placeHolderDrawable).into(target);
@@ -234,8 +234,8 @@ public class RequestCreatorTest {
   @Test
   public void intoImageViewSetsPlaceholderWithResourceId() throws Exception {
     Picasso picasso =
-        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null, IDENTITY,
-            mock(Stats.class), false, false));
+        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), mock(FaceDetector.class),
+            Cache.NONE, null, IDENTITY, mock(Stats.class), false, false));
     ImageView target = mockImageViewTarget();
     new RequestCreator(picasso, URI_1, 0).placeholder(R.drawable.picture_frame).into(target);
     verify(target).setImageResource(R.drawable.picture_frame);
@@ -462,7 +462,7 @@ public class RequestCreatorTest {
     } catch (IllegalStateException expected) {
     }
     try {
-      new RequestCreator().resize(10, 10).faceCenterCrop().centerCrop();
+      new RequestCreator(mock(FaceDetector.class)).resize(10, 10).faceCenterCrop().centerCrop();
       fail("Calling center crop after face center crop should throw exception.");
     } catch (IllegalStateException expected) {
     }
@@ -475,7 +475,7 @@ public class RequestCreatorTest {
     } catch (IllegalStateException expected) {
     }
     try {
-      new RequestCreator().resize(10, 10).faceCenterCrop().centerInside();
+      new RequestCreator(mock(FaceDetector.class)).resize(10, 10).faceCenterCrop().centerInside();
       fail("Calling center inside after face center crop should throw exception.");
     } catch (IllegalStateException expected) {
     }
@@ -483,20 +483,15 @@ public class RequestCreatorTest {
 
   @Test public void invalidFaceCenterCrop() throws Exception {
     try {
-      new RequestCreator().resize(10, 10).centerCrop().faceCenterCrop();
+      new RequestCreator(mock(FaceDetector.class)).resize(10, 10).centerCrop().faceCenterCrop();
       fail("Calling face center crop after center crop should throw exception.");
     } catch (IllegalStateException expected) {
     }
     try {
-      new RequestCreator().resize(10, 10).centerInside().faceCenterCrop();
+      new RequestCreator(mock(FaceDetector.class)).resize(10, 10).centerInside().faceCenterCrop();
       fail("Calling face center crop after center inside should throw exception.");
     } catch (IllegalStateException expected) {
     }
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void nullFaceDetectorInvalid() throws Exception {
-    new RequestCreator().resize(10, 10).faceCenterCrop(null);
   }
 
   @Test public void invalidPlaceholderImage() throws Exception {

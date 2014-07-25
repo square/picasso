@@ -98,6 +98,11 @@ public class RequestCreator {
     this.data = new Request.Builder(null, 0);
   }
 
+  @TestOnly RequestCreator(FaceDetector faceDetector) {
+    this.picasso = new Picasso(faceDetector);
+    this.data = new Request.Builder(null, 0);
+  }
+
   /**
    * A placeholder drawable to be used while the image is being loaded. If the requested image is
    * not immediately available in the memory cache then this resource will be set on the target
@@ -201,20 +206,10 @@ public class RequestCreator {
    * specific {@link com.squareup.picasso.FaceDetector}.
    * If tha image had no faces, the result would be equal to centerCrop
    */
-  public RequestCreator faceCenterCrop(FaceDetector faceDetector) {
-    data.faceCenterCrop();
-    data.setFaceDetector(faceDetector);
-    return this;
-  }
-
-  /**
-   * Crops an image inside of the bounds specified by {@link #resize(int, int)}
-   * rather than distorting the aspect ratio which is according to faces
-   * detected by the default Android built-in face detector.
-   * If tha image had no faces, the result would be equal to centerCrop
-   */
   public RequestCreator faceCenterCrop() {
-    return faceCenterCrop(new AndroidFaceDetector());
+    data.faceCenterCrop();
+    data.setFaceDetector(picasso.faceDetector);
+    return this;
   }
 
   /**
