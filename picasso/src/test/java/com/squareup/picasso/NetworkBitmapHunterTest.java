@@ -51,6 +51,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 public class NetworkBitmapHunterTest {
 
   @Mock Picasso.Listener listener;
+  @Mock FaceDetector faceDetector;
   @Mock Cache cache;
   @Mock Stats stats;
   @Mock Dispatcher dispatcher;
@@ -62,7 +63,8 @@ public class NetworkBitmapHunterTest {
   @Before public void setUp() throws Exception {
     initMocks(this);
     context = mockContext();
-    picasso = new Picasso(context, dispatcher, cache, listener, transformer, stats, false, false);
+    picasso = new Picasso(context, dispatcher, faceDetector, cache, listener,
+        transformer, stats, false, false);
     when(downloader.load(any(Uri.class), anyBoolean())).thenReturn(mock(Downloader.Response.class));
   }
 

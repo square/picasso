@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
+import org.jetbrains.annotations.TestOnly;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static com.squareup.picasso.Action.RequestWeakReference;
@@ -117,6 +118,7 @@ public class Picasso {
 
   final Context context;
   final Dispatcher dispatcher;
+  final FaceDetector faceDetector;
   final Cache cache;
   final Stats stats;
   final Map<Object, Action> targetToAction;
@@ -128,11 +130,12 @@ public class Picasso {
 
   boolean shutdown;
 
-  Picasso(Context context, Dispatcher dispatcher, Cache cache, Listener listener,
-      RequestTransformer requestTransformer, Stats stats, boolean indicatorsEnabled,
-      boolean loggingEnabled) {
+  Picasso(Context context, Dispatcher dispatcher, FaceDetector faceDetector,
+      Cache cache, Listener listener, RequestTransformer requestTransformer,
+      Stats stats, boolean indicatorsEnabled, boolean loggingEnabled) {
     this.context = context;
     this.dispatcher = dispatcher;
+    this.faceDetector = faceDetector;
     this.cache = cache;
     this.listener = listener;
     this.requestTransformer = requestTransformer;
@@ -144,6 +147,20 @@ public class Picasso {
     this.referenceQueue = new ReferenceQueue<Object>();
     this.cleanupThread = new CleanupThread(referenceQueue, HANDLER);
     this.cleanupThread.start();
+  }
+
+  @TestOnly Picasso(FaceDetector faceDetector) {
+    this.faceDetector = faceDetector;
+    this.context = null;
+    this.dispatcher = null;
+    this.cache = null;
+    this.listener = null;
+    this.requestTransformer = null;
+    this.stats = null;
+    this.targetToAction = null;
+    this.targetToDeferredRequestCreator = null;
+    this.referenceQueue = null;
+    this.cleanupThread = null;
   }
 
   /** Cancel any existing requests for the specified target {@link ImageView}. */
@@ -482,6 +499,7 @@ public class Picasso {
   public static class Builder {
     private final Context context;
     private Downloader downloader;
+    private FaceDetector faceDetector;
     private ExecutorService service;
     private Cache cache;
     private Listener listener;
@@ -507,6 +525,21 @@ public class Picasso {
         throw new IllegalStateException("Downloader already set.");
       }
       this.downloader = downloader;
+      return this;
+    }
+
+    /**
+     * Specify the {@link FaceDetector} for cropping images
+     * with {@link RequestCreator#faceCenterCrop()}.
+     */
+    public Builder faceDetector(FaceDetector faceDetector) {
+      if (faceDetector == null) {
+        throw new IllegalArgumentException("Face detector must not be null.");
+      }
+      if (this.faceDetector != null) {
+        throw new IllegalStateException("Face detector already set.");
+      }
+      this.faceDetector = faceDetector;
       return this;
     }
 
@@ -595,6 +628,9 @@ public class Picasso {
       if (downloader == null) {
         downloader = Utils.createDefaultDownloader(context);
       }
+      if (faceDetector == null) {
+        faceDetector = new AndroidFaceDetector();
+      }
       if (cache == null) {
         cache = new LruCache(context);
       }
@@ -609,7 +645,7 @@ public class Picasso {
 
       Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, downloader, cache, stats);
 
-      return new Picasso(context, dispatcher, cache, listener, transformer, stats,
+      return new Picasso(context, dispatcher, faceDetector, cache, listener, transformer, stats,
           indicatorsEnabled, loggingEnabled);
     }
   }

@@ -18,7 +18,6 @@ package com.squareup.picasso;
 import android.app.Notification;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.widget.ImageView;
@@ -96,6 +95,11 @@ public class RequestCreator {
 
   @TestOnly RequestCreator() {
     this.picasso = null;
+    this.data = new Request.Builder(null, 0);
+  }
+
+  @TestOnly RequestCreator(FaceDetector faceDetector) {
+    this.picasso = new Picasso(faceDetector);
     this.data = new Request.Builder(null, 0);
   }
 
@@ -193,6 +197,18 @@ public class RequestCreator {
    */
   public RequestCreator centerCrop() {
     data.centerCrop();
+    return this;
+  }
+
+  /**
+   * Crops an image inside of the bounds specified by {@link #resize(int, int)}
+   * rather than distorting the aspect ratio.according to faces detected by the
+   * specific {@link com.squareup.picasso.FaceDetector}.
+   * If tha image had no faces, the result would be equal to centerCrop
+   */
+  public RequestCreator faceCenterCrop() {
+    data.faceCenterCrop();
+    data.setFaceDetector(picasso.faceDetector);
     return this;
   }
 

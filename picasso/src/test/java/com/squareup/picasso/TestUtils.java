@@ -144,9 +144,9 @@ class TestUtils {
     Context context = mockContext();
     when(context.checkCallingOrSelfPermission(Manifest.permission.INTERNET)).thenReturn(
         PERMISSION_GRANTED);
-    return new Picasso(context, mock(Dispatcher.class), mock(Cache.class),
-        mock(Picasso.Listener.class), mock(Picasso.RequestTransformer.class), mock(Stats.class),
-        false, false);
+    return new Picasso(context, mock(Dispatcher.class), mock(FaceDetector.class),
+        mock(Cache.class), mock(Picasso.Listener.class), mock(Picasso.RequestTransformer.class),
+        mock(Stats.class), false, false);
   }
 
   static Context mockContext() {
