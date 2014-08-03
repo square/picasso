@@ -61,7 +61,6 @@ import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.mockAction;
 import static com.squareup.picasso.TestUtils.mockImageViewTarget;
-import static com.squareup.picasso.TestUtils.mockPicasso;
 import static org.fest.assertions.api.ANDROID.assertThat;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.api.Assertions.entry;
@@ -78,15 +77,14 @@ import static org.robolectric.Robolectric.shadowOf;
 public class BitmapHunterTest {
 
   @Mock Context context;
+  @Mock Picasso picasso;
   @Mock Cache cache;
   @Mock Stats stats;
   @Mock Dispatcher dispatcher;
   @Mock Downloader downloader;
-  Picasso picasso;
 
   @Before public void setUp() throws Exception {
     initMocks(this);
-    picasso = mockPicasso();
   }
 
   @Test public void nullDecodeResponseIsError() throws Exception {
