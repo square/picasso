@@ -15,7 +15,6 @@
  */
 package com.squareup.picasso;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -49,6 +48,7 @@ import static com.squareup.picasso.TestUtils.mockTarget;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -406,10 +406,8 @@ public class DispatcherTest {
 
   private Dispatcher createDispatcher(ExecutorService service, boolean scansNetworkChanges) {
     when(context.getSystemService(Context.CONNECTIVITY_SERVICE)).thenReturn(connectivityManager);
-    when(context.checkCallingOrSelfPermission(Manifest.permission.ACCESS_NETWORK_STATE)).thenReturn(
+    when(context.checkCallingOrSelfPermission(anyString())).thenReturn(
         scansNetworkChanges ? PERMISSION_GRANTED : PERMISSION_DENIED);
-    when(context.checkCallingOrSelfPermission(Manifest.permission.INTERNET)).thenReturn(
-        PERMISSION_GRANTED);
     return new Dispatcher(context, service, mainThreadHandler, downloader, cache, stats);
   }
 }

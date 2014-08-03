@@ -15,7 +15,6 @@
  */
 package com.squareup.picasso;
 
-import android.Manifest;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.NetworkInfo;
@@ -29,11 +28,9 @@ import org.mockito.Mock;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
-import static com.squareup.picasso.TestUtils.mockContext;
 import static com.squareup.picasso.TestUtils.mockInputStream;
 import static com.squareup.picasso.TestUtils.mockNetworkInfo;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -50,19 +47,15 @@ import static org.mockito.MockitoAnnotations.initMocks;
 @Config(manifest = Config.NONE)
 public class NetworkBitmapHunterTest {
 
-  @Mock Picasso.Listener listener;
+  @Mock Context context;
+  @Mock Picasso picasso;
   @Mock Cache cache;
   @Mock Stats stats;
   @Mock Dispatcher dispatcher;
   @Mock Downloader downloader;
-  @Mock Picasso.RequestTransformer transformer;
-  Picasso picasso;
-  Context context;
 
   @Before public void setUp() throws Exception {
     initMocks(this);
-    context = mockContext();
-    picasso = new Picasso(context, dispatcher, cache, listener, transformer, stats, false, false);
     when(downloader.load(any(Uri.class), anyBoolean())).thenReturn(mock(Downloader.Response.class));
   }
 
@@ -140,7 +133,7 @@ public class NetworkBitmapHunterTest {
     try {
       hunter.decode(action.getRequest());
       fail("Should have thrown IOException.");
-    } catch (IOException expected) {
+    } catch(IOException expected) {
       verifyZeroInteractions(stats);
       verify(stream).close();
     }
@@ -169,16 +162,5 @@ public class NetworkBitmapHunterTest {
 
     Bitmap actual = hunter.decode(action.getRequest());
     assertThat(actual).isSameAs(expected);
-  }
-
-  @Test public void failsIfMissingInternetPermission() throws Exception {
-    when(context.checkCallingOrSelfPermission(Manifest.permission.INTERNET)).thenReturn(
-        PERMISSION_DENIED);
-    Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    try {
-      new NetworkBitmapHunter(picasso, dispatcher, cache, stats, action, downloader);
-      fail("Expected IllegalStateException");
-    } catch (IllegalStateException exception) {
-    }
   }
 }
