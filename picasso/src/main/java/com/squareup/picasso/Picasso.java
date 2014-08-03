@@ -24,6 +24,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
 import android.widget.ImageView;
+import android.widget.RemoteViews;
 import java.io.File;
 import java.lang.ref.ReferenceQueue;
 import java.util.List;
@@ -154,6 +155,14 @@ public class Picasso {
   /** Cancel any existing requests for the specified {@link Target} instance. */
   public void cancelRequest(Target target) {
     cancelExistingRequest(target);
+  }
+
+  /**
+   * Cancel any existing requests for the specified {@link RemoteViews} target with the given {@code
+   * viewId}.
+   */
+  public void cancelRequest(RemoteViews remoteViews, int viewId) {
+    cancelExistingRequest(new RemoteViewsAction.RemoteViewsTarget(remoteViews, viewId));
   }
 
   /**
