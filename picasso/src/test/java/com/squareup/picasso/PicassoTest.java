@@ -18,6 +18,7 @@ package com.squareup.picasso;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.widget.ImageView;
+import android.widget.RemoteViews;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
@@ -31,6 +32,7 @@ import org.robolectric.annotation.Config;
 
 import static com.squareup.picasso.Picasso.Listener;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
+import static com.squareup.picasso.RemoteViewsAction.RemoteViewsTarget;
 import static com.squareup.picasso.TestUtils.BITMAP_1;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
@@ -214,6 +216,20 @@ public class PicassoTest {
     picasso.enqueueAndSubmit(action);
     assertThat(picasso.targetToAction).hasSize(1);
     picasso.cancelRequest(target);
+    assertThat(picasso.targetToAction).isEmpty();
+    verify(action).cancel();
+    verify(dispatcher).dispatchCancel(action);
+  }
+
+  @Test public void cancelExistingRequestWithRemoteViewTarget() throws Exception {
+    int layoutId = 0;
+    int viewId = 1;
+    RemoteViews remoteViews = new RemoteViews("packageName", layoutId);
+    RemoteViewsTarget target = new RemoteViewsTarget(remoteViews, viewId);
+    Action action = mockAction(URI_KEY_1, URI_1, target);
+    picasso.enqueueAndSubmit(action);
+    assertThat(picasso.targetToAction).hasSize(1);
+    picasso.cancelRequest(remoteViews, viewId);
     assertThat(picasso.targetToAction).isEmpty();
     verify(action).cancel();
     verify(dispatcher).dispatchCancel(action);

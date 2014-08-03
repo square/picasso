@@ -180,6 +180,10 @@ class TestUtils {
     return mock(Target.class);
   }
 
+  static RemoteViewsAction.RemoteViewsTarget mockRemoteViewsTarget() {
+    return mock(RemoteViewsAction.RemoteViewsTarget.class);
+  }
+
   static Callback mockCallback() {
     return mock(Callback.class);
   }
