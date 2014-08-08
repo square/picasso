@@ -31,6 +31,7 @@ import android.os.SystemClock;
 import android.widget.ImageView;
 
 import static android.graphics.Color.WHITE;
+import static com.squareup.picasso.Picasso.LoadedFrom.DISK_CACHE;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 
 final class PicassoDrawable extends BitmapDrawable {
@@ -87,7 +88,7 @@ final class PicassoDrawable extends BitmapDrawable {
 
     this.loadedFrom = loadedFrom;
 
-    boolean fade = loadedFrom != MEMORY && !noFade;
+    boolean fade = loadedFrom != MEMORY && loadedFrom != DISK_CACHE && !noFade;
     if (fade) {
       this.placeholder = placeholder;
       animating = true;

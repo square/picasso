@@ -111,12 +111,12 @@ public class LruCache implements Cache {
   }
 
   /** Returns the sum of the sizes of the entries in this cache. */
-  public final synchronized int size() {
+  public final synchronized long size() {
     return size;
   }
 
   /** Returns the maximum sum of the sizes of the entries in this cache. */
-  public final synchronized int maxSize() {
+  public final synchronized long maxSize() {
     return maxSize;
   }
 

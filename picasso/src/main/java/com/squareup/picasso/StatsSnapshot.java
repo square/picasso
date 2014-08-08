@@ -23,8 +23,8 @@ import static com.squareup.picasso.Picasso.TAG;
 
 /** Represents all stats for a {@link Picasso} instance at a single point in time. */
 public class StatsSnapshot {
-  public final int maxSize;
-  public final int size;
+  public final long maxSize;
+  public final long size;
   public final long cacheHits;
   public final long cacheMisses;
   public final long totalDownloadSize;
@@ -39,7 +39,7 @@ public class StatsSnapshot {
 
   public final long timeStamp;
 
-  public StatsSnapshot(int maxSize, int size, long cacheHits, long cacheMisses,
+  public StatsSnapshot(long maxSize, long size, long cacheHits, long cacheMisses,
       long totalDownloadSize, long totalOriginalBitmapSize, long totalTransformedBitmapSize,
       long averageDownloadSize, long averageOriginalBitmapSize, long averageTransformedBitmapSize,
       int downloadCount, int originalBitmapCount, int transformedBitmapCount, long timeStamp) {
