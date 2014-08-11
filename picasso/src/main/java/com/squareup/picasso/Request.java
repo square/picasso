@@ -46,10 +46,12 @@ public final class Request {
   public final int resourceId;
   /** List of custom transformations to be applied after the built-in transformations. */
   public final List<Transformation> transformations;
+  /** A custom function to compute the target image size. */
+  public final Resizer resizer;
   /** Target image width for resizing. */
-  public final int targetWidth;
+  public int targetWidth;
   /** Target image height for resizing. */
-  public final int targetHeight;
+  public int targetHeight;
   /**
    * True if the final image should use the 'centerCrop' scale technique.
    * <p>
@@ -73,7 +75,7 @@ public final class Request {
   /** Target image config for decoding. */
   public final Bitmap.Config config;
 
-  private Request(Uri uri, int resourceId, List<Transformation> transformations, int targetWidth,
+  private Request(Uri uri, int resourceId, List<Transformation> transformations, Resizer resizer, int targetWidth,
       int targetHeight, boolean centerCrop, boolean centerInside, float rotationDegrees,
       float rotationPivotX, float rotationPivotY, boolean hasRotationPivot, Bitmap.Config config) {
     this.uri = uri;
@@ -83,6 +85,7 @@ public final class Request {
     } else {
       this.transformations = unmodifiableList(transformations);
     }
+    this.resizer = resizer;
     this.targetWidth = targetWidth;
     this.targetHeight = targetHeight;
     this.centerCrop = centerCrop;
@@ -182,6 +185,7 @@ public final class Request {
     private float rotationPivotY;
     private boolean hasRotationPivot;
     private List<Transformation> transformations;
+    private Resizer resizer;
     private Bitmap.Config config;
 
     /** Start building a request using the specified {@link Uri}. */
@@ -357,6 +361,15 @@ public final class Request {
       return this;
     }
 
+    /** Use the provided resizer object to pick a target size after the image has loaded. */
+    public Builder resizer(Resizer resizer) {
+      if (resizer == null) {
+        throw new IllegalArgumentException("Resizer must not be null.");
+      }
+      this.resizer = resizer;
+      return this;
+    }
+
     /** Create the immutable {@link Request} object. */
     public Request build() {
       if (centerInside && centerCrop) {
@@ -368,7 +381,7 @@ public final class Request {
       if (centerInside && targetWidth == 0) {
         throw new IllegalStateException("Center inside requires calling resize.");
       }
-      return new Request(uri, resourceId, transformations, targetWidth, targetHeight, centerCrop,
+      return new Request(uri, resourceId, transformations, resizer, targetWidth, targetHeight, centerCrop,
           centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot, config);
     }
   }

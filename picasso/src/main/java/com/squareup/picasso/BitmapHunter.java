@@ -19,6 +19,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.provider.MediaStore;
@@ -311,10 +312,11 @@ abstract class BitmapHunter implements Runnable {
   static BitmapFactory.Options createBitmapOptions(Request data) {
     final boolean justBounds = data.hasSize();
     final boolean hasConfig = data.config != null;
+    final boolean hasResizer = data.resizer != null;
     BitmapFactory.Options options = null;
-    if (justBounds || hasConfig) {
+    if (justBounds || hasConfig || hasResizer) {
       options = new BitmapFactory.Options();
-      options.inJustDecodeBounds = justBounds;
+      options.inJustDecodeBounds = justBounds || hasResizer;
       if (hasConfig) {
         options.inPreferredConfig = data.config;
       }
@@ -326,6 +328,15 @@ abstract class BitmapHunter implements Runnable {
     return options != null && options.inJustDecodeBounds;
   }
 
+  static void applyResizer(Request data, BitmapFactory.Options options) {
+    if (data.resizer == null) return;
+    Point pt = data.resizer.resize(options.outWidth, options.outHeight);
+    if (pt != null) {
+      data.targetWidth = pt.x;
+      data.targetHeight = pt.y;
+    }
+  }
+
   static void calculateInSampleSize(int reqWidth, int reqHeight, BitmapFactory.Options options) {
     calculateInSampleSize(reqWidth, reqHeight, options.outWidth, options.outHeight, options);
   }
@@ -333,7 +344,7 @@ abstract class BitmapHunter implements Runnable {
   static void calculateInSampleSize(int reqWidth, int reqHeight, int width, int height,
       BitmapFactory.Options options) {
     int sampleSize = 1;
-    if (height > reqHeight || width > reqWidth) {
+    if (reqHeight > 0 && reqWidth > 0 && (height > reqHeight || width > reqWidth)) {
       final int heightRatio = (int) Math.floor((float) height / (float) reqHeight);
       final int widthRatio = (int) Math.floor((float) width / (float) reqWidth);
       sampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
