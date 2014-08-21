@@ -144,7 +144,7 @@ public final class Request {
 
   String getName() {
     if (uri != null) {
-      return uri.getPath();
+      return String.valueOf(uri.getPath());
     }
     return Integer.toHexString(resourceId);
   }
