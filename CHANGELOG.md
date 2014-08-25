@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+Version 2.3.4 *(2014-08-25)*
+----------------------------
+
+ * Fix: Revert fail fast when missing internet permission.
+ * Fix: Account for null paths when naming a Request.
+ * Add API to allow canceling of remote views requests.
+
+
 Version 2.3.3 *(2014-07-21)*
 ----------------------------
 
