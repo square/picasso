@@ -239,6 +239,12 @@ public class RequestCreator {
     return this;
   }
 
+  /** Use the provided resizer object to pick a target size after the image has loaded. */
+  public RequestCreator resizer(Resizer resizer) {
+    data.resizer(resizer);
+    return this;
+  }
+
   /**
    * Indicate that this action should not use the memory cache for attempting to load or save the
    * image. This can be useful when you know an image will only ever be used once (e.g., loading
