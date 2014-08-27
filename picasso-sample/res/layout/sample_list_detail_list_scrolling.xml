@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+  <ListView
+      android:id="@+id/listView"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:paddingTop="@dimen/faux_action_bar_size"
+      android:clipToPadding="false"
+      />
+
+  <Button
+      style="?android:attr/buttonStyleSmall"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="toggle Skip memory cache"
+      android:id="@+id/skipMemoryCacheButton"
+      android:layout_gravity="right|bottom"
+      />
+
+</FrameLayout>

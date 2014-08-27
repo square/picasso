@@ -21,6 +21,8 @@ import android.telephony.TelephonyManager;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * The default {@link java.util.concurrent.ExecutorService} used for new {@link Picasso} instances.
@@ -30,6 +32,9 @@ import java.util.concurrent.TimeUnit;
  */
 class PicassoExecutorService extends ThreadPoolExecutor {
   private static final int DEFAULT_THREAD_COUNT = 3;
+  private boolean isPaused;
+  private ReentrantLock pauseLock = new ReentrantLock();
+  private Condition unpaused = pauseLock.newCondition();
 
   PicassoExecutorService() {
     super(DEFAULT_THREAD_COUNT, DEFAULT_THREAD_COUNT, 0, TimeUnit.MILLISECONDS,
@@ -78,4 +83,37 @@ class PicassoExecutorService extends ThreadPoolExecutor {
     setCorePoolSize(threadCount);
     setMaximumPoolSize(threadCount);
   }
+
+  @Override
+  protected void beforeExecute(Thread t, Runnable r) {
+    super.beforeExecute(t, r);
+    pauseLock.lock();
+    try {
+      while (isPaused) unpaused.await();
+    } catch (InterruptedException ie) {
+      t.interrupt();
+    } finally {
+      pauseLock.unlock();
+    }
+  }
+
+  public void pause() {
+    pauseLock.lock();
+    try {
+      isPaused = true;
+    } finally {
+      pauseLock.unlock();
+    }
+  }
+
+  public void resume() {
+    pauseLock.lock();
+    try {
+      isPaused = false;
+      unpaused.signalAll();
+    } finally {
+      pauseLock.unlock();
+    }
+  }
+
 }

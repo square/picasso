@@ -20,12 +20,44 @@ import java.util.Random;
 final class PicassoSampleAdapter extends BaseAdapter {
 
   private static final int NOTIFICATION_ID = 666;
+  private final LayoutInflater inflater;
+
+  public PicassoSampleAdapter(Context context) {
+    inflater = LayoutInflater.from(context);
+  }
+
+  @Override public int getCount() {
+    return Sample.values().length;
+  }
+
+  @Override public Sample getItem(int position) {
+    return Sample.values()[position];
+  }
+
+  @Override public long getItemId(int position) {
+    return position;
+  }
+
+  @Override public View getView(int position, View convertView, ViewGroup parent) {
+    TextView view = (TextView) convertView;
+    if (view == null) {
+      view = (TextView) inflater.inflate(R.layout.picasso_sample_activity_item, parent, false);
+    }
+
+    view.setText(getItem(position).name);
+
+    return view;
+  }
 
   enum Sample {
     GRID_VIEW("Image Grid View", SampleGridViewActivity.class),
+    GRID_VIEW_SCROLLING("View Pager with Image Grid View and ScrollListener",
+        SampleGridViewScrollingActivity.class),
     GALLERY("Load from Gallery", SampleGalleryActivity.class),
     CONTACTS("Contact Photos", SampleContactsActivity.class),
     LIST_DETAIL("List / Detail View", SampleListDetailActivity.class),
+    LIST_DETAIL_SCROLLING("List / Detail with ScrollListener",
+        SampleListDetailScrollingActivity.class),
     SHOW_NOTIFICATION("Sample Notification", null) {
       @Override public void launch(Activity activity) {
         RemoteViews remoteViews =
@@ -69,34 +101,5 @@ final class PicassoSampleAdapter extends BaseAdapter {
       activity.startActivity(new Intent(activity, activityClass));
       activity.finish();
     }
-  }
-
-  private final LayoutInflater inflater;
-
-  public PicassoSampleAdapter(Context context) {
-    inflater = LayoutInflater.from(context);
-  }
-
-  @Override public int getCount() {
-    return Sample.values().length;
-  }
-
-  @Override public Sample getItem(int position) {
-    return Sample.values()[position];
-  }
-
-  @Override public long getItemId(int position) {
-    return position;
-  }
-
-  @Override public View getView(int position, View convertView, ViewGroup parent) {
-    TextView view = (TextView) convertView;
-    if (view == null) {
-      view = (TextView) inflater.inflate(R.layout.picasso_sample_activity_item, parent, false);
-    }
-
-    view.setText(getItem(position).name);
-
-    return view;
   }
 }

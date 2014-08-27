@@ -53,10 +53,6 @@ import static com.squareup.picasso.Utils.hasPermission;
 import static com.squareup.picasso.Utils.log;
 
 class Dispatcher {
-  private static final int RETRY_DELAY = 500;
-  private static final int AIRPLANE_MODE_ON = 1;
-  private static final int AIRPLANE_MODE_OFF = 0;
-
   static final int REQUEST_SUBMIT = 1;
   static final int REQUEST_CANCEL = 2;
   static final int REQUEST_GCED = 3;
@@ -67,7 +63,9 @@ class Dispatcher {
   static final int HUNTER_BATCH_COMPLETE = 8;
   static final int NETWORK_STATE_CHANGE = 9;
   static final int AIRPLANE_MODE_CHANGE = 10;
-
+  private static final int RETRY_DELAY = 500;
+  private static final int AIRPLANE_MODE_ON = 1;
+  private static final int AIRPLANE_MODE_OFF = 0;
   private static final String DISPATCHER_THREAD_NAME = "Dispatcher";
   private static final int BATCH_DELAY = 200; // ms
 
@@ -84,6 +82,7 @@ class Dispatcher {
   final List<BitmapHunter> batch;
   final NetworkBroadcastReceiver receiver;
   final boolean scansNetworkChanges;
+  final DispatchingQueue dispatchingQueue;
 
   boolean airplaneMode;
 
@@ -96,6 +95,7 @@ class Dispatcher {
     this.hunterMap = new LinkedHashMap<String, BitmapHunter>();
     this.failedActions = new WeakHashMap<Object, Action>();
     this.handler = new DispatcherHandler(dispatcherThread.getLooper(), this);
+    this.dispatchingQueue = new DispatchingQueue(handler);
     this.downloader = downloader;
     this.mainThreadHandler = mainThreadHandler;
     this.cache = cache;
@@ -111,6 +111,7 @@ class Dispatcher {
     service.shutdown();
     dispatcherThread.quit();
     receiver.unregister();
+    dispatchingQueue.clear();
   }
 
   void dispatchSubmit(Action action) {
@@ -122,7 +123,7 @@ class Dispatcher {
   }
 
   void dispatchComplete(BitmapHunter hunter) {
-    handler.sendMessage(handler.obtainMessage(HUNTER_COMPLETE, hunter));
+    dispatchingQueue.dispatchComplete(hunter);
   }
 
   void dispatchRetry(BitmapHunter hunter) {
@@ -130,7 +131,7 @@ class Dispatcher {
   }
 
   void dispatchFailed(BitmapHunter hunter) {
-    handler.sendMessage(handler.obtainMessage(HUNTER_DECODE_FAILED, hunter));
+    dispatchingQueue.dispatchComplete(hunter);
   }
 
   void dispatchNetworkStateChange(NetworkInfo info) {
@@ -173,6 +174,7 @@ class Dispatcher {
       hunter.detach(action);
       if (hunter.cancel()) {
         hunterMap.remove(key);
+        dispatchingQueue.dequeue(hunter);
         if (action.getPicasso().loggingEnabled) {
           log(OWNER_DISPATCHER, VERB_CANCELED, action.getRequest().logId());
         }
@@ -229,6 +231,11 @@ class Dispatcher {
   }
 
   void performComplete(BitmapHunter hunter) {
+    if (hunter.getResult() == null) {
+      performError(hunter, false);
+      return;
+    }
+
     if (!hunter.shouldSkipMemoryCache()) {
       cache.set(hunter.getKey(), hunter.getResult());
     }
@@ -313,6 +320,22 @@ class Dispatcher {
     batch.add(hunter);
     if (!handler.hasMessages(HUNTER_DELAY_NEXT_BATCH)) {
       handler.sendEmptyMessageDelayed(HUNTER_DELAY_NEXT_BATCH, BATCH_DELAY);
+    }
+  }
+
+  public void interruptDispatching() {
+
+    dispatchingQueue.interruptDispatching();
+    if (service instanceof PicassoExecutorService) {
+      ((PicassoExecutorService) service).pause();
+    }
+  }
+
+  public void continueDispatching() {
+
+    dispatchingQueue.continueDispatching();
+    if (service instanceof PicassoExecutorService) {
+      ((PicassoExecutorService) service).resume();
     }
   }
 

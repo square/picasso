@@ -7,13 +7,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-
+import android.widget.Toast;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.scrolling.PicassoFlingScrollListener;
 
-public class SampleListDetailActivity extends PicassoSampleActivity {
+public class SampleListDetailScrollingActivity extends PicassoSampleActivity {
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
@@ -32,17 +34,23 @@ public class SampleListDetailActivity extends PicassoSampleActivity {
   }
 
   public static class ListFragment extends Fragment {
+    private Button skipMemoryCacheButton;
+
     public static ListFragment newInstance() {
       return new ListFragment();
     }
 
     @Override public View onCreateView(LayoutInflater inflater, ViewGroup container,
         Bundle savedInstanceState) {
-      final SampleListDetailActivity activity = (SampleListDetailActivity) getActivity();
-      final SampleListDetailAdapter adapter = new SampleListDetailAdapter(activity, false);
+      boolean skipMemory = true;
+      final SampleListDetailScrollingActivity activity =
+          (SampleListDetailScrollingActivity) getActivity();
+      final SampleListDetailAdapter adapter = new SampleListDetailAdapter(activity, skipMemory);
 
-      ListView listView = (ListView) LayoutInflater.from(activity)
-          .inflate(R.layout.sample_list_detail_list, container, false);
+      View v = LayoutInflater.from(activity)
+          .inflate(R.layout.sample_list_detail_list_scrolling, container, false);
+
+      ListView listView = (ListView) v.findViewById(R.id.listView);
       listView.setAdapter(adapter);
       listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
         @Override
@@ -51,7 +59,27 @@ public class SampleListDetailActivity extends PicassoSampleActivity {
           activity.showDetails(url);
         }
       });
-      return listView;
+
+      listView.setOnScrollListener(new PicassoFlingScrollListener(activity));
+      Toast.makeText(activity,
+          "Fades the loaded images only if ListView is NOT flinging (scrolling will do so)",
+          Toast.LENGTH_LONG).show();
+
+      skipMemoryCacheButton = (Button) v.findViewById(R.id.skipMemoryCacheButton);
+      updateButton(skipMemory);
+      skipMemoryCacheButton.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+          boolean skip = adapter.toggleSkipMemoryCache();
+          updateButton(skip);
+        }
+      });
+
+      return v;
+    }
+
+    private void updateButton(boolean skip) {
+      skipMemoryCacheButton.setText("skip memory cache = " + skip);
     }
   }
 
@@ -81,10 +109,7 @@ public class SampleListDetailActivity extends PicassoSampleActivity {
       String url = arguments.getString(KEY_URL);
 
       urlView.setText(url);
-      Picasso.with(activity)
-          .load(url)
-          .fit()
-          .into(imageView);
+      Picasso.with(activity).load(url).fit().into(imageView);
 
       return view;
     }
