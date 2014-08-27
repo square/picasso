@@ -32,10 +32,10 @@ public interface Cache {
   void set(String key, Bitmap bitmap);
 
   /** Returns the current size of the cache in bytes. */
-  int size();
+  long size();
 
   /** Returns the maximum size in bytes that the cache can hold. */
-  int maxSize();
+  long maxSize();
 
   /** Clears the cache. */
   void clear();
@@ -50,11 +50,11 @@ public interface Cache {
       // Ignore.
     }
 
-    @Override public int size() {
+    @Override public long size() {
       return 0;
     }
 
-    @Override public int maxSize() {
+    @Override public long maxSize() {
       return 0;
     }
 

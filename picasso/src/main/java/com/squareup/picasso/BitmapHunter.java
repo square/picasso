@@ -34,6 +34,7 @@ import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentResolver.SCHEME_FILE;
 import static android.provider.ContactsContract.Contacts;
 import static com.squareup.picasso.AssetBitmapHunter.ANDROID_ASSET;
+import static com.squareup.picasso.Picasso.LoadedFrom.DISK_CACHE;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Utils.OWNER_HUNTER;
 import static com.squareup.picasso.Utils.VERB_DECODED;
@@ -141,6 +142,17 @@ abstract class BitmapHunter implements Runnable {
       }
     }
 
+    if (picasso.diskCache != null) {
+      bitmap = picasso.diskCache.get(key);
+      if (bitmap != null) {
+        loadedFrom = DISK_CACHE;
+        if (picasso.loggingEnabled) {
+          log(OWNER_HUNTER, VERB_DECODED, data.logId(), "from disk cache");
+        }
+        return bitmap;
+      }
+    }
+
     bitmap = decode(data);
 
     if (bitmap != null) {
@@ -166,6 +178,9 @@ abstract class BitmapHunter implements Runnable {
         if (bitmap != null) {
           stats.dispatchBitmapTransformed(bitmap);
         }
+      }
+      if (picasso.diskCache != null && loadedFrom != Picasso.LoadedFrom.DISK_CACHE) {
+        picasso.diskCache.set(key, bitmap);
       }
     }
 
