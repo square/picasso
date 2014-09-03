@@ -15,51 +15,42 @@
  */
 package com.squareup.picasso;
 
-import android.content.ContentResolver;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import java.io.IOException;
-import java.io.InputStream;
 
+import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 
-class ContentStreamBitmapHunter extends BitmapHunter {
-  final Context context;
+class ResourceRequestHandler extends RequestHandler {
+  private final Context context;
 
-  ContentStreamBitmapHunter(Context context, Picasso picasso, Dispatcher dispatcher, Cache cache,
-      Stats stats, Action action) {
-    super(picasso, dispatcher, cache, stats, action);
+  ResourceRequestHandler(Context context) {
     this.context = context;
   }
 
-  @Override Bitmap decode(Request data)
-      throws IOException {
-    return decodeContentStream(data);
+  @Override public boolean canHandleRequest(Request data) {
+    if (data.resourceId != 0) {
+      return true;
+    }
+
+    return SCHEME_ANDROID_RESOURCE.equals(data.uri.getScheme());
   }
 
-  @Override Picasso.LoadedFrom getLoadedFrom() {
-    return DISK;
+  @Override public Result load(Request data) throws IOException {
+    Resources res = Utils.getResources(context, data);
+    int id = Utils.getResourceId(res, data);
+    return new Result(decodeResource(res, id, data), DISK);
   }
 
-  protected Bitmap decodeContentStream(Request data) throws IOException {
-    ContentResolver contentResolver = context.getContentResolver();
+  private static Bitmap decodeResource(Resources resources, int id, Request data) {
     final BitmapFactory.Options options = createBitmapOptions(data);
     if (requiresInSampleSize(options)) {
-      InputStream is = null;
-      try {
-        is = contentResolver.openInputStream(data.uri);
-        BitmapFactory.decodeStream(is, null, options);
-      } finally {
-        Utils.closeQuietly(is);
-      }
+      BitmapFactory.decodeResource(resources, id, options);
       calculateInSampleSize(data.targetWidth, data.targetHeight, options);
     }
-    InputStream is = contentResolver.openInputStream(data.uri);
-    try {
-      return BitmapFactory.decodeStream(is, null, options);
-    } finally {
-      Utils.closeQuietly(is);
-    }
+    return BitmapFactory.decodeResource(resources, id, options);
   }
 }

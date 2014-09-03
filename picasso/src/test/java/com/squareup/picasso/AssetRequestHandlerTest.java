@@ -19,13 +19,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-public class AssetBitmapHunterTest {
+public class AssetRequestHandlerTest {
   @Mock Context context;
-  @Mock Picasso picasso;
-  @Mock Cache cache;
-  @Mock Stats stats;
-  @Mock Dispatcher dispatcher;
-  @Mock Downloader downloader;
 
   @Before public void setUp() {
     initMocks(this);
@@ -35,14 +30,11 @@ public class AssetBitmapHunterTest {
     String path = "foo/bar.png";
     Uri uri = Uri.parse("file:///android_asset/" + path);
     Request request = new Request.Builder(uri).build();
-    String key = createKey(request);
 
-    Action action = TestUtils.mockAction(key, uri);
-    AssetBitmapHunter hunter =
-        spy(new AssetBitmapHunter(context, picasso, dispatcher, cache, stats, action));
-    doReturn(null).when(hunter).decodeAsset(anyString());
+    AssetRequestHandler requestHandler = spy(new AssetRequestHandler(context));
+    doReturn(null).when(requestHandler).decodeAsset(request, path);
 
-    hunter.decode(request);
-    verify(hunter).decodeAsset(path);
+    requestHandler.load(request);
+    verify(requestHandler).decodeAsset(request, path);
   }
 }

@@ -72,8 +72,8 @@ public class TargetActionTest {
     Target target = mockTarget();
     Context context = mock(Context.class);
     Picasso picasso =
-        new Picasso(context, mock(Dispatcher.class), Cache.NONE, null, IDENTITY, mock(Stats.class),
-            false, false);
+        new Picasso(context, mock(Dispatcher.class), Cache.NONE, null, IDENTITY, null,
+            mock(Stats.class), false, false);
     Resources res = mock(Resources.class);
     TargetAction request =
         new TargetAction(picasso, target, null, false, RESOURCE_ID_1, null, URI_KEY_1);

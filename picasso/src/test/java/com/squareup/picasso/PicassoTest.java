@@ -62,6 +62,7 @@ public class PicassoTest {
   @Mock Downloader downloader;
   @Mock Dispatcher dispatcher;
   @Mock Picasso.RequestTransformer transformer;
+  @Mock RequestHandler requestHandler;
   @Mock Cache cache;
   @Mock Listener listener;
   @Mock Stats stats;
@@ -70,7 +71,8 @@ public class PicassoTest {
 
   @Before public void setUp() {
     initMocks(this);
-    picasso = new Picasso(context, dispatcher, cache, listener, transformer, stats, false, false);
+    picasso = new Picasso(context, dispatcher, cache, listener, transformer, null,
+        stats, false, false);
   }
 
   @Test public void submitWithNullTargetInvokesDispatcher() throws Exception {
@@ -380,6 +382,29 @@ public class PicassoTest {
       fail("Setting request transformer twice should throw exception.");
     } catch (IllegalStateException expected) {
     }
+  }
+
+  @Test public void builderInvalidRequestHandler() throws Exception {
+    try {
+      new Picasso.Builder(context).addRequestHandler(null);
+      fail("Null request handler should throw exception.");
+    } catch (IllegalArgumentException expected) {
+    }
+    try {
+      new Picasso.Builder(context).addRequestHandler(requestHandler).addRequestHandler(requestHandler);
+      fail("Registering same request handler twice should throw exception.");
+    } catch (IllegalStateException expected) {
+    }
+  }
+
+  @Test public void builderWithoutRequestHandler() throws Exception {
+    Picasso picasso = new Picasso.Builder(Robolectric.application).build();
+    assertThat(picasso.getRequestHandlers()).isNotEmpty().doesNotContain(requestHandler);
+  }
+
+  @Test public void builderWithRequestHandler() throws Exception {
+    Picasso picasso = new Picasso.Builder(Robolectric.application).addRequestHandler(requestHandler).build();
+    assertThat(picasso.getRequestHandlers()).isNotNull().isNotEmpty().contains(requestHandler);
   }
 
   @Test public void builderInvalidContext() throws Exception {

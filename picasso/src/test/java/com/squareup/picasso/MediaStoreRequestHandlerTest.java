@@ -11,10 +11,10 @@ import org.mockito.Mock;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import static com.squareup.picasso.MediaStoreBitmapHunter.PicassoKind.FULL;
-import static com.squareup.picasso.MediaStoreBitmapHunter.PicassoKind.MICRO;
-import static com.squareup.picasso.MediaStoreBitmapHunter.PicassoKind.MINI;
-import static com.squareup.picasso.MediaStoreBitmapHunter.getPicassoKind;
+import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.FULL;
+import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.MICRO;
+import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.MINI;
+import static com.squareup.picasso.MediaStoreRequestHandler.getPicassoKind;
 import static com.squareup.picasso.TestUtils.IMAGE_THUMBNAIL_1;
 import static com.squareup.picasso.TestUtils.MEDIA_STORE_CONTENT_1_URL;
 import static com.squareup.picasso.TestUtils.MEDIA_STORE_CONTENT_KEY_1;
@@ -29,13 +29,9 @@ import static org.mockito.MockitoAnnotations.initMocks;
 @RunWith(RobolectricTestRunner.class) //
 @Config(manifest = Config.NONE,
     shadows = { Shadows.ShadowVideoThumbnails.class, Shadows.ShadowImageThumbnails.class })
-public class MediaStoreBitmapHunterTest {
+public class MediaStoreRequestHandlerTest {
 
   @Mock Context context;
-  @Mock Picasso picasso;
-  @Mock Dispatcher dispatcher;
-  @Mock Cache cache;
-  @Mock Stats stats;
 
   @Before public void setUp() {
     initMocks(this);
@@ -44,16 +40,16 @@ public class MediaStoreBitmapHunterTest {
   @Test public void decodesVideoThumbnailWithVideoMimeType() throws Exception {
     Request request = new Request.Builder(MEDIA_STORE_CONTENT_1_URL, 0).resize(100, 100).build();
     Action action = mockAction(MEDIA_STORE_CONTENT_KEY_1, request);
-    MediaStoreBitmapHunter hunter = create("video/", action);
-    Bitmap result = hunter.decode(action.getRequest());
+    MediaStoreRequestHandler requestHandler = create("video/", action);
+    Bitmap result = requestHandler.load(action.getRequest()).getBitmap();
     assertThat(result).isEqualTo(VIDEO_THUMBNAIL_1);
   }
 
   @Test public void decodesImageThumbnailWithImageMimeType() throws Exception {
     Request request = new Request.Builder(MEDIA_STORE_CONTENT_1_URL, 0).resize(100, 100).build();
     Action action = mockAction(MEDIA_STORE_CONTENT_KEY_1, request);
-    MediaStoreBitmapHunter hunter = create("image/png", action);
-    Bitmap result = hunter.decode(action.getRequest());
+    MediaStoreRequestHandler requestHandler = create("image/png", action);
+    Bitmap result = requestHandler.load(action.getRequest()).getBitmap();
     assertThat(result).isEqualTo(IMAGE_THUMBNAIL_1);
   }
 
@@ -75,14 +71,14 @@ public class MediaStoreBitmapHunterTest {
     assertThat(getPicassoKind(96, 1000)).isEqualTo(FULL);
   }
 
-  private MediaStoreBitmapHunter create(String mimeType, Action action) {
+  private MediaStoreRequestHandler create(String mimeType, Action action) {
     ContentResolver contentResolver = mock(ContentResolver.class);
     when(contentResolver.getType(any(Uri.class))).thenReturn(mimeType);
     return create(contentResolver, action);
   }
 
-  private MediaStoreBitmapHunter create(ContentResolver contentResolver, Action action) {
+  private MediaStoreRequestHandler create(ContentResolver contentResolver, Action action) {
     when(context.getContentResolver()).thenReturn(contentResolver);
-    return new MediaStoreBitmapHunter(context, picasso, dispatcher, cache, stats, action);
+    return new MediaStoreRequestHandler(context);
   }
 }

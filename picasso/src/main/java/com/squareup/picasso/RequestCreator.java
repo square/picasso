@@ -276,8 +276,7 @@ public class RequestCreator {
     String key = createKey(finalData, new StringBuilder());
 
     Action action = new GetAction(picasso, finalData, skipMemoryCache, key);
-    return forRequest(picasso.context, picasso, picasso.dispatcher, picasso.cache, picasso.stats,
-        action, picasso.dispatcher.downloader).hunt();
+    return forRequest(picasso, picasso.dispatcher, picasso.cache, picasso.stats, action).hunt();
   }
 
   /**
