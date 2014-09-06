@@ -28,9 +28,11 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
   final RemoteViews remoteViews;
   final int viewId;
 
+  private RemoteViewsTarget target;
+
   RemoteViewsAction(Picasso picasso, Request data, RemoteViews remoteViews, int viewId,
       int errorResId, boolean skipCache, String key, Object tag) {
-    super(picasso, new RemoteViewsTarget(remoteViews, viewId), data, skipCache, false, errorResId,
+    super(picasso, null, data, skipCache, false, errorResId,
         null, key, tag);
     this.remoteViews = remoteViews;
     this.viewId = viewId;
@@ -45,6 +47,13 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
     if (errorResId != 0) {
       setImageResource(errorResId);
     }
+  }
+
+  @Override RemoteViewsTarget getTarget() {
+    if (target == null) {
+      target = new RemoteViewsTarget(remoteViews, viewId);
+    }
+    return target;
   }
 
   void setImageResource(int resId) {
