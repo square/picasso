@@ -147,15 +147,15 @@ public class Picasso {
     // forcing other RequestHandlers to perform null checks on request.uri
     // to cover the (request.resourceId != 0) case.
     allRequestHandlers.add(new ResourceRequestHandler(context));
+    if (extraRequestHandlers != null) {
+      allRequestHandlers.addAll(extraRequestHandlers);
+    }
     allRequestHandlers.add(new ContactsPhotoRequestHandler(context));
     allRequestHandlers.add(new MediaStoreRequestHandler(context));
     allRequestHandlers.add(new ContentStreamRequestHandler(context));
     allRequestHandlers.add(new AssetRequestHandler(context));
     allRequestHandlers.add(new FileRequestHandler(context));
     allRequestHandlers.add(new NetworkRequestHandler(dispatcher.downloader, stats));
-    if (extraRequestHandlers != null) {
-      allRequestHandlers.addAll(extraRequestHandlers);
-    }
     requestHandlers = Collections.unmodifiableList(allRequestHandlers);
 
     this.stats = stats;

@@ -17,30 +17,26 @@ package com.squareup.picasso;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.FutureTask;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowBitmap;
 import org.robolectric.shadows.ShadowMatrix;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
-import static android.graphics.Bitmap.Config.RGB_565;
 import static com.squareup.picasso.BitmapHunter.forRequest;
 import static com.squareup.picasso.BitmapHunter.transformResult;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
-import static com.squareup.picasso.RequestHandler.calculateInSampleSize;
-import static com.squareup.picasso.RequestHandler.createBitmapOptions;
-import static com.squareup.picasso.RequestHandler.requiresInSampleSize;
 import static com.squareup.picasso.TestUtils.ASSET_KEY_1;
 import static com.squareup.picasso.TestUtils.ASSET_URI_1;
 import static com.squareup.picasso.TestUtils.BITMAP_1;
@@ -327,6 +323,17 @@ public class BitmapHunterTest {
     BitmapHunter hunter = forRequest(mockPicasso(new CustomRequestHandler()), dispatcher, cache,
         stats, action);
     assertThat(hunter.requestHandler).isInstanceOf(CustomRequestHandler.class);
+  }
+
+  @Test public void forOverrideRequest() {
+    Action action = mockAction(ASSET_KEY_1, ASSET_URI_1);
+    RequestHandler handler = new AssetRequestHandler(context);
+    List<RequestHandler> handlers = Arrays.asList(handler);
+    // Must use non-mock constructor because that is where Picasso's list of handlers is created.
+    Picasso picasso = new Picasso(context, dispatcher, cache, null, null, handlers, stats,
+        false, false);
+    BitmapHunter hunter = forRequest(picasso, dispatcher, cache, stats, action);
+    assertThat(hunter.requestHandler).isEqualTo(handler);
   }
 
   @Test public void exifRotation() throws Exception {
