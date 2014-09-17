@@ -72,7 +72,7 @@ class NetworkRequestHandler extends RequestHandler {
       stats.dispatchDownloadFinished(response.getContentLength());
     }
     try {
-      return new Result(decodeStream(is, data), NETWORK);
+      return new Result(decodeStream(is, data), loadedFrom);
     } finally {
       Utils.closeQuietly(is);
     }
