@@ -24,6 +24,7 @@ import android.net.Uri;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.jetbrains.annotations.TestOnly;
@@ -41,6 +42,7 @@ import static com.squareup.picasso.Utils.VERB_CREATED;
 import static com.squareup.picasso.Utils.checkMain;
 import static com.squareup.picasso.Utils.checkNotMain;
 import static com.squareup.picasso.Utils.createKey;
+import static com.squareup.picasso.Utils.getCallback;
 import static com.squareup.picasso.Utils.isMain;
 import static com.squareup.picasso.Utils.log;
 
@@ -458,7 +460,7 @@ public class RequestCreator {
    * automatically support object recycling.
    */
   public void into(ImageView target) {
-    into(target, null);
+    into(target, (Callback) null);
   }
 
   /**
@@ -471,11 +473,44 @@ public class RequestCreator {
    * {@link Picasso#cancelRequest(android.widget.ImageView)} call to prevent temporary leaking.
    */
   public void into(ImageView target, Callback callback) {
+    into(target, callback, null);
+  }
+
+  /**
+   * Asynchronously fulfills the request into the specified {@link ImageView} and invokes the
+   * target {@link Callback} if it's not {@code null}.
+   * <p>
+   * <em>Note:</em> The {@link Callback} param is a weak reference and *will not* prevent your
+   * {@link android.app.Activity} or {@link android.app.Fragment} from being garbage collected. If
+   * you use this method, you *don't* need to invoke
+   * {@link Picasso#cancelRequest(android.widget.ImageView)} call to prevent temporary leaking.
+   * But you have to make sure that your callback will live long enough to be called, i.e.
+   * the callback should be held by a {@link android.app.Activity} or {@link android.app.Fragment}
+   * as a data member for instance, not a local variable.
+   */
+  public void into(ImageView target, WeakReference<Callback> callbackRef) {
+    if (callbackRef == null) {
+      throw new IllegalArgumentException("CallbackRef must not be null.");
+    }
+
+    into(target, null, callbackRef);
+  }
+
+  /**
+   * Supports either a {@link Callback} or a {@link java.lang.ref.WeakReference} of
+   * a {@link Callback}.
+   */
+  private void into(ImageView target, Callback callback, WeakReference<Callback> callbackRef) {
     long started = System.nanoTime();
     checkMain();
 
     if (target == null) {
       throw new IllegalArgumentException("Target must not be null.");
+    }
+
+    if (callback != null && callbackRef != null) {
+      //sanity check
+      throw new AssertionError("Either callback or callbackRef, or both, must be null.");
     }
 
     if (!data.hasImage()) {
@@ -492,7 +527,12 @@ public class RequestCreator {
       int height = target.getHeight();
       if (width == 0 || height == 0) {
         setPlaceholder(target, placeholderResId, placeholderDrawable);
-        picasso.defer(target, new DeferredRequestCreator(this, target, callback));
+        if (callbackRef != null) {
+          picasso.defer(target, new DeferredRequestCreator(this, target, callbackRef));
+        } else {
+          picasso.defer(target, new DeferredRequestCreator(this, target, callback));
+        }
+
         return;
       }
       data.resize(width, height);
@@ -509,8 +549,9 @@ public class RequestCreator {
         if (picasso.loggingEnabled) {
           log(OWNER_MAIN, VERB_COMPLETED, request.plainId(), "from " + MEMORY);
         }
-        if (callback != null) {
-          callback.onSuccess();
+          Callback realCallback = getCallback(callback, callbackRef);
+          if (realCallback != null) {
+          realCallback.onSuccess();
         }
         return;
       }
@@ -518,9 +559,15 @@ public class RequestCreator {
 
     setPlaceholder(target, placeholderResId, placeholderDrawable);
 
-    Action action =
-        new ImageViewAction(picasso, target, request, skipMemoryCache, noFade, errorResId,
-            errorDrawable, requestKey, callback);
+    Action action = null;
+    if (callback != null) {
+      action = new ImageViewAction(picasso, target, request, skipMemoryCache, noFade, errorResId,
+          errorDrawable, requestKey, callback);
+    } else {
+      action = new ImageViewAction(picasso, target, request, skipMemoryCache, noFade, errorResId,
+          errorDrawable, requestKey, callbackRef);
+    }
+
 
     picasso.enqueueAndSubmit(action);
   }

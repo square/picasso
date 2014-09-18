@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.ThreadFactory;
 
@@ -406,5 +407,15 @@ final class Utils {
     static Downloader create(Context context) {
       return new OkHttpDownloader(context);
     }
+  }
+
+  public static Callback getCallback(Callback callback, WeakReference<Callback> callbackRef) {
+    if (callback != null) {
+      return callback;
+    }
+    if (callbackRef == null) {
+      return null;
+    }
+    return callbackRef.get();
   }
 }

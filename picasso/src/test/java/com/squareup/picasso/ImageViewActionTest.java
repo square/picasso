@@ -44,7 +44,7 @@ public class ImageViewActionTest {
   public void throwsErrorWithNullResult() throws Exception {
     ImageViewAction action =
         new ImageViewAction(mock(Picasso.class), mockImageViewTarget(), null, false, false, 0, null,
-            URI_KEY_1, null);
+            URI_KEY_1, (Callback) null);
     action.complete(null, MEMORY);
   }
 

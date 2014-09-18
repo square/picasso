@@ -20,22 +20,39 @@ import android.widget.ImageView;
 import java.lang.ref.WeakReference;
 import org.jetbrains.annotations.TestOnly;
 
+import static com.squareup.picasso.Utils.getCallback;
+
 class DeferredRequestCreator implements ViewTreeObserver.OnPreDrawListener {
 
   final RequestCreator creator;
   final WeakReference<ImageView> target;
   Callback callback;
+  WeakReference<Callback> callbackRef;
 
   @TestOnly DeferredRequestCreator(RequestCreator creator, ImageView target) {
-    this(creator, target, null);
+    this(creator, target, (Callback) null);
   }
 
+  /**
+   * Creates a {@link DeferredRequestCreator} which holds a strong reference to the given callback.
+   */
   DeferredRequestCreator(RequestCreator creator, ImageView target, Callback callback) {
     this.creator = creator;
     this.target = new WeakReference<ImageView>(target);
     this.callback = callback;
     target.getViewTreeObserver().addOnPreDrawListener(this);
   }
+
+  /**
+   * Creates a {@link DeferredRequestCreator} which holds a weak reference to the given callback.
+   */
+   DeferredRequestCreator(RequestCreator creator, ImageView target,
+       WeakReference<Callback> callbackRef) {
+     this.creator = creator;
+     this.target = new WeakReference<ImageView>(target);
+     this.callbackRef = callbackRef;
+     target.getViewTreeObserver().addOnPreDrawListener(this);
+   }
 
   @Override public boolean onPreDraw() {
     ImageView target = this.target.get();
@@ -56,12 +73,16 @@ class DeferredRequestCreator implements ViewTreeObserver.OnPreDrawListener {
 
     vto.removeOnPreDrawListener(this);
 
-    this.creator.unfit().resize(width, height).into(target, callback);
+    this.creator.unfit().resize(width, height).into(target, getCallback(callback, callbackRef));
     return true;
   }
 
   void cancel() {
     callback = null;
+    if (callbackRef != null) {
+      callbackRef.clear();
+    }
+    callbackRef = null;
     ImageView target = this.target.get();
     if (target == null) {
       return;
@@ -72,4 +93,5 @@ class DeferredRequestCreator implements ViewTreeObserver.OnPreDrawListener {
     }
     vto.removeOnPreDrawListener(this);
   }
+
 }

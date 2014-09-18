@@ -20,14 +20,26 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
 
+import java.lang.ref.WeakReference;
+
+import static com.squareup.picasso.Utils.getCallback;
+
 class ImageViewAction extends Action<ImageView> {
 
   Callback callback;
+  WeakReference<Callback> callbackRef;
 
   ImageViewAction(Picasso picasso, ImageView imageView, Request data, boolean skipCache,
       boolean noFade, int errorResId, Drawable errorDrawable, String key, Callback callback) {
     super(picasso, imageView, data, skipCache, noFade, errorResId, errorDrawable, key);
     this.callback = callback;
+  }
+
+  ImageViewAction(Picasso picasso, ImageView imageView, Request data, boolean skipCache,
+      boolean noFade, int errorResId, Drawable errorDrawable, String key,
+      WeakReference<Callback> callbackRef) {
+    super(picasso, imageView, data, skipCache, noFade, errorResId, errorDrawable, key);
+    this.callbackRef = callbackRef;
   }
 
   @Override public void complete(Bitmap result, Picasso.LoadedFrom from) {
@@ -45,8 +57,8 @@ class ImageViewAction extends Action<ImageView> {
     boolean indicatorsEnabled = picasso.indicatorsEnabled;
     PicassoDrawable.setBitmap(target, context, result, from, noFade, indicatorsEnabled);
 
-    if (callback != null) {
-      callback.onSuccess();
+    if (getCallback(callback, callbackRef) != null) {
+      getCallback(callback, callbackRef).onSuccess();
     }
   }
 
@@ -61,15 +73,19 @@ class ImageViewAction extends Action<ImageView> {
       target.setImageDrawable(errorDrawable);
     }
 
-    if (callback != null) {
-      callback.onError();
+      Callback realCallback = getCallback(callback, callbackRef);
+      if (realCallback != null) {
+      realCallback.onError();
     }
   }
 
   @Override void cancel() {
     super.cancel();
-    if (callback != null) {
-      callback = null;
+    callback = null;
+    if (callbackRef != null) {
+      callbackRef.clear();
     }
+    callbackRef = null;
   }
+
 }
