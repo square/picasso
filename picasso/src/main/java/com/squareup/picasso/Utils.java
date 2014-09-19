@@ -181,7 +181,7 @@ final class Utils {
       }
       builder.append('\n');
     }
-    if (data.targetWidth != 0) {
+    if (data.hasSize()) {
       builder.append("resize:").append(data.targetWidth).append('x').append(data.targetHeight);
       builder.append('\n');
     }

@@ -145,11 +145,19 @@ public abstract class RequestHandler {
       BitmapFactory.Options options, Request request) {
     int sampleSize = 1;
     if (height > reqHeight || width > reqWidth) {
-      final int heightRatio = (int) Math.floor((float) height / (float) reqHeight);
-      final int widthRatio = (int) Math.floor((float) width / (float) reqWidth);
-      sampleSize = request.centerInside
-          ? Math.max(heightRatio, widthRatio)
-          : Math.min(heightRatio, widthRatio);
+      final int heightRatio;
+      final int widthRatio;
+      if (reqHeight == 0) {
+        sampleSize = (int) Math.floor((float) width / (float) reqWidth);
+      } else if (reqWidth == 0) {
+        sampleSize = (int) Math.floor((float) height / (float) reqHeight);
+      } else {
+        heightRatio = (int) Math.floor((float) height / (float) reqHeight);
+        widthRatio = (int) Math.floor((float) width / (float) reqWidth);
+        sampleSize = request.centerInside
+            ? Math.max(heightRatio, widthRatio)
+            : Math.min(heightRatio, widthRatio);
+      }
     }
     options.inSampleSize = sampleSize;
     options.inJustDecodeBounds = false;

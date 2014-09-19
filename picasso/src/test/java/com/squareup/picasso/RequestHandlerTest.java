@@ -73,6 +73,20 @@ public class RequestHandlerTest {
     assertThat(options.inSampleSize).isEqualTo(4);
   }
 
+  @Test public void calculateInSampleSizeKeepAspectRatioWithWidth() {
+    final BitmapFactory.Options options = new BitmapFactory.Options();
+    Request data = new Request.Builder(URI_1).resize(400, 0).build();
+    calculateInSampleSize(data.targetWidth, data.targetHeight, 800, 200, options, data);
+    assertThat(options.inSampleSize).isEqualTo(2);
+  }
+
+  @Test public void calculateInSampleSizeKeepAspectRatioWithHeight() {
+    final BitmapFactory.Options options = new BitmapFactory.Options();
+    Request data = new Request.Builder(URI_1).resize(0, 100).build();
+    calculateInSampleSize(data.targetWidth, data.targetHeight, 800, 200, options, data);
+    assertThat(options.inSampleSize).isEqualTo(2);
+  }
+
   @Test public void nullBitmapOptionsIfNoResizing() {
     // No resize must return no bitmap options
     final Request noResize = new Request.Builder(URI_1).build();

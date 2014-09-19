@@ -514,7 +514,31 @@ public class RequestCreatorTest {
     }
   }
 
-  @Test public void appWidgetActionWithDefaultPriority() {
+  @Test
+  public void intoTargetResizeWith0WithCenterInsideOrCenterCropThrows() {
+    try {
+      new RequestCreator(picasso, URI_1, 0).resize(0, 10).centerInside().into(mockTarget());
+      fail("Center inside with unknown width should throw exception.");
+    } catch (IllegalStateException ignored) {
+    }
+    try {
+      new RequestCreator(picasso, URI_1, 0).resize(10, 0).centerInside().into(mockTarget());
+      fail("Center inside with unknown height should throw exception.");
+    } catch (IllegalStateException ignored) {
+    }
+    try {
+      new RequestCreator(picasso, URI_1, 0).resize(0, 10).centerCrop().into(mockTarget());
+      fail("Center inside with unknown width should throw exception.");
+    } catch (IllegalStateException ignored) {
+    }
+    try {
+      new RequestCreator(picasso, URI_1, 0).resize(10, 0).centerCrop().into(mockTarget());
+      fail("Center inside with unknown height should throw exception.");
+    } catch (IllegalStateException ignored) {
+    }
+  }
+
+  @Test public void appWidgetActionWithDefaultPriority() throws Exception {
     new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, new int[] { 1, 2, 3 });
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getPriority()).isEqualTo(NORMAL);
@@ -578,13 +602,8 @@ public class RequestCreatorTest {
     } catch (IllegalArgumentException ignored) {
     }
     try {
-      new RequestCreator().resize(0, 10);
-      fail("Zero width should throw exception.");
-    } catch (IllegalArgumentException ignored) {
-    }
-    try {
-      new RequestCreator().resize(10, 0);
-      fail("Zero height should throw exception.");
+      new RequestCreator().resize(0, 0);
+      fail("Zero dimensions should throw exception.");
     } catch (IllegalArgumentException ignored) {
     }
   }

@@ -405,6 +405,30 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsOnly("rotate 90.0");
   }
 
+  @Test public void keepsAspectRationWhileResizingWhenDesiredWidthIs0() throws Exception {
+    Request request = new Request.Builder(URI_1).resize(20, 0).build();
+    Bitmap source = Bitmap.createBitmap(40, 20, ARGB_8888);
+
+    Bitmap result = transformResult(request, source, 0);
+
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
+  }
+
+  @Test public void keepsAspectRationWhileResizingWhenDesiredHeighIs0() throws Exception {
+    Request request = new Request.Builder(URI_1).resize(0, 10).build();
+    Bitmap source = Bitmap.createBitmap(40, 20, ARGB_8888);
+
+    Bitmap result = transformResult(request, source, 0);
+
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
+  }
+
   @Test public void exifRotationWithManualRotation() throws Exception {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Request data = new Request.Builder(URI_1).rotate(-45).build();
