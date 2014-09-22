@@ -135,17 +135,21 @@ public abstract class RequestHandler {
     return options != null && options.inJustDecodeBounds;
   }
 
-  static void calculateInSampleSize(int reqWidth, int reqHeight, BitmapFactory.Options options) {
-    calculateInSampleSize(reqWidth, reqHeight, options.outWidth, options.outHeight, options);
+  static void calculateInSampleSize(int reqWidth, int reqHeight, BitmapFactory.Options options,
+                                    Request request) {
+    calculateInSampleSize(reqWidth, reqHeight, options.outWidth, options.outHeight, options,
+            request);
   }
 
   static void calculateInSampleSize(int reqWidth, int reqHeight, int width, int height,
-                                    BitmapFactory.Options options) {
+                                    BitmapFactory.Options options, Request request) {
     int sampleSize = 1;
     if (height > reqHeight || width > reqWidth) {
       final int heightRatio = (int) Math.floor((float) height / (float) reqHeight);
       final int widthRatio = (int) Math.floor((float) width / (float) reqWidth);
-      sampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+      sampleSize = request.centerInside
+              ? Math.max(heightRatio, widthRatio)
+              : Math.min(heightRatio, widthRatio);
     }
     options.inSampleSize = sampleSize;
     options.inJustDecodeBounds = false;

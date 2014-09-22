@@ -116,7 +116,7 @@ class ContactsPhotoRequestHandler extends RequestHandler {
       } finally {
         Utils.closeQuietly(is);
       }
-      calculateInSampleSize(data.targetWidth, data.targetHeight, options);
+      calculateInSampleSize(data.targetWidth, data.targetHeight, options, data);
     }
     return BitmapFactory.decodeStream(stream, null, options);
   }

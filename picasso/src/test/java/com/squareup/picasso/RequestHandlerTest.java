@@ -55,7 +55,8 @@ public class RequestHandlerTest {
 
   @Test public void calculateInSampleSizeNoResize() {
     final BitmapFactory.Options options = new BitmapFactory.Options();
-    calculateInSampleSize(100, 100, 150, 150, options);
+    Request data = new Request.Builder(null).build();
+    calculateInSampleSize(100, 100, 150, 150, options, data);
     assertThat(options.inSampleSize).isEqualTo(1);
   }
 
