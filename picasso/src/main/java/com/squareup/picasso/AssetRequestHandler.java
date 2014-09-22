@@ -58,7 +58,7 @@ class AssetRequestHandler extends RequestHandler {
       } finally {
         Utils.closeQuietly(is);
       }
-      calculateInSampleSize(data.targetWidth, data.targetHeight, options);
+      calculateInSampleSize(data.targetWidth, data.targetHeight, options, data);
     }
     InputStream is = assetManager.open(filePath);
     try {

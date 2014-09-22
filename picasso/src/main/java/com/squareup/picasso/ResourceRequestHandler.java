@@ -49,7 +49,7 @@ class ResourceRequestHandler extends RequestHandler {
     final BitmapFactory.Options options = createBitmapOptions(data);
     if (requiresInSampleSize(options)) {
       BitmapFactory.decodeResource(resources, id, options);
-      calculateInSampleSize(data.targetWidth, data.targetHeight, options);
+      calculateInSampleSize(data.targetWidth, data.targetHeight, options, data);
     }
     return BitmapFactory.decodeResource(resources, id, options);
   }
