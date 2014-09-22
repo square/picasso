@@ -44,6 +44,7 @@ final class SampleGridViewAdapter extends BaseAdapter {
         .placeholder(R.drawable.placeholder) //
         .error(R.drawable.error) //
         .fit() //
+        .tag(context) //
         .into(view);
 
     return view;

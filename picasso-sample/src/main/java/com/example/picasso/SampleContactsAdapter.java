@@ -61,6 +61,7 @@ class SampleContactsAdapter extends CursorAdapter {
     Picasso.with(context)
         .load(contactUri)
         .placeholder(R.drawable.contact_picture_placeholder)
+        .tag(context)
         .into(holder.icon);
   }
 

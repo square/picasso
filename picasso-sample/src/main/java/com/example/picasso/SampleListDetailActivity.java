@@ -43,6 +43,7 @@ public class SampleListDetailActivity extends PicassoSampleActivity {
       ListView listView = (ListView) LayoutInflater.from(activity)
           .inflate(R.layout.sample_list_detail_list, container, false);
       listView.setAdapter(adapter);
+      listView.setOnScrollListener(new SampleScrollListener(activity));
       listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
@@ -83,6 +84,7 @@ public class SampleListDetailActivity extends PicassoSampleActivity {
       Picasso.with(activity)
           .load(url)
           .fit()
+          .tag(activity)
           .into(imageView);
 
       return view;

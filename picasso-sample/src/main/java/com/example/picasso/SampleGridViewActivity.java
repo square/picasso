@@ -10,5 +10,6 @@ public class SampleGridViewActivity extends PicassoSampleActivity {
 
     GridView gv = (GridView) findViewById(R.id.grid_view);
     gv.setAdapter(new SampleGridViewAdapter(this));
+    gv.setOnScrollListener(new SampleScrollListener(this));
   }
 }
