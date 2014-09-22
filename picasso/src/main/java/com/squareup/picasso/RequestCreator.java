@@ -85,6 +85,7 @@ public class RequestCreator {
   private int errorResId;
   private Drawable placeholderDrawable;
   private Drawable errorDrawable;
+  private Object tag;
 
   RequestCreator(Picasso picasso, Uri uri, int resourceId) {
     if (picasso.shutdown) {
@@ -153,6 +154,35 @@ public class RequestCreator {
       throw new IllegalStateException("Error image already set.");
     }
     this.errorDrawable = errorDrawable;
+    return this;
+  }
+
+  /**
+   * Assign a tag to this request. Tags are an easy way to logically associate
+   * related requests that can be managed together e.g. paused, resumed,
+   * or canceled.
+   * <p>
+   * You can either use simple {@link String} tags or objects that naturally
+   * define the scope of your requests within your app such as a
+   * {@link android.content.Context}, an {@link android.app.Activity}, or a
+   * {@link android.app.Fragment}.
+   *
+   * <strong>WARNING:</strong>: Picasso will keep a reference to the tag for
+   * as long as this tag is paused and/or has active requests. Look out for
+   * potential leaks.
+   *
+   * @see Picasso#cancelTag(Object)
+   * @see Picasso#pauseTag(Object)
+   * @see Picasso#resumeTag(Object)
+   */
+  public RequestCreator tag(Object tag) {
+    if (tag == null) {
+      throw new IllegalArgumentException("Tag invalid.");
+    }
+    if (this.tag != null) {
+      throw new IllegalStateException("Tag already set.");
+    }
+    this.tag = tag;
     return this;
   }
 
@@ -288,7 +318,7 @@ public class RequestCreator {
     Request finalData = createRequest(started);
     String key = createKey(finalData, new StringBuilder());
 
-    Action action = new GetAction(picasso, finalData, skipMemoryCache, key);
+    Action action = new GetAction(picasso, finalData, skipMemoryCache, key, tag);
     return forRequest(picasso, picasso.dispatcher, picasso.cache, picasso.stats, action).hunt();
   }
 
@@ -313,7 +343,7 @@ public class RequestCreator {
       Request request = createRequest(started);
       String key = createKey(request, new StringBuilder());
 
-      Action action = new FetchAction(picasso, request, skipMemoryCache, key);
+      Action action = new FetchAction(picasso, request, skipMemoryCache, key, tag);
       picasso.submit(action);
     }
   }
@@ -400,7 +430,7 @@ public class RequestCreator {
 
     Action action =
         new TargetAction(picasso, target, request, skipMemoryCache, errorResId, errorDrawable,
-            requestKey);
+            requestKey, tag);
     picasso.enqueueAndSubmit(action);
   }
 
@@ -432,7 +462,7 @@ public class RequestCreator {
 
     RemoteViewsAction action =
         new NotificationAction(picasso, request, remoteViews, viewId, notificationId, notification,
-            skipMemoryCache, errorResId, key);
+            skipMemoryCache, errorResId, key, tag);
 
     performRemoteViewInto(action);
   }
@@ -464,7 +494,7 @@ public class RequestCreator {
 
     RemoteViewsAction action =
         new AppWidgetAction(picasso, request, remoteViews, viewId, appWidgetIds, skipMemoryCache,
-            errorResId, key);
+            errorResId, key, tag);
 
     performRemoteViewInto(action);
   }
@@ -538,7 +568,7 @@ public class RequestCreator {
 
     Action action =
         new ImageViewAction(picasso, target, request, skipMemoryCache, noFade, errorResId,
-            errorDrawable, requestKey, callback);
+            errorDrawable, requestKey, tag, callback);
 
     picasso.enqueueAndSubmit(action);
   }

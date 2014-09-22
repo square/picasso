@@ -78,6 +78,8 @@ final class Utils {
   static final String VERB_REPLAYING = "replaying";
   static final String VERB_COMPLETED = "completed";
   static final String VERB_ERRORED = "errored";
+  static final String VERB_PAUSED = "paused";
+  static final String VERB_RESUMED = "resumed";
 
   /* WebP file header
      0                   1                   2                   3

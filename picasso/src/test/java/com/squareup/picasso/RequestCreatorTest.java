@@ -212,6 +212,18 @@ public class RequestCreatorTest {
     assertThat(actionCaptor.getValue().getPriority()).isEqualTo(HIGH);
   }
 
+  @Test public void targetActionWithDefaultTag() throws Exception {
+    new RequestCreator(picasso, URI_1, 0).into(mockTarget());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getTag()).isEqualTo(actionCaptor.getValue());
+  }
+
+  @Test public void targetActionWithCustomTag() throws Exception {
+    new RequestCreator(picasso, URI_1, 0).tag("tag").into(mockTarget());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getTag()).isEqualTo("tag");
+  }
+
   @Test
   public void intoImageViewWithNullThrows() throws Exception {
     try {
@@ -363,6 +375,18 @@ public class RequestCreatorTest {
     assertThat(actionCaptor.getValue().getPriority()).isEqualTo(HIGH);
   }
 
+  @Test public void imageViewActionWithDefaultTag() throws Exception {
+    new RequestCreator(picasso, URI_1, 0).into(mockImageViewTarget());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getTag()).isEqualTo(actionCaptor.getValue());
+  }
+
+  @Test public void imageViewActionWithCustomTag() throws Exception {
+    new RequestCreator(picasso, URI_1, 0).tag("tag").into(mockImageViewTarget());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getTag()).isEqualTo("tag");
+  }
+
   @Test public void intoRemoteViewsWidgetQueuesAppWidgetAction() throws Exception {
     new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, new int[] { 1, 2, 3 });
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
@@ -497,6 +521,32 @@ public class RequestCreatorTest {
     assertThat(actionCaptor.getValue().getPriority()).isEqualTo(HIGH);
   }
 
+  @Test public void appWidgetActionWithDefaultTag() throws Exception {
+    new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, new int[] { 1, 2, 3 });
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getTag()).isEqualTo(actionCaptor.getValue());
+  }
+
+  @Test public void appWidgetActionWithCustomTag() throws Exception {
+    new RequestCreator(picasso, URI_1, 0).tag("tag")
+        .into(mockRemoteViews(), 0, new int[]{1, 2, 3});
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getTag()).isEqualTo("tag");
+  }
+
+  @Test public void notificationActionWithDefaultTag() throws Exception {
+    new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, 0, mockNotification());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getTag()).isEqualTo(actionCaptor.getValue());
+  }
+
+  @Test public void notificationActionWithCustomTag() throws Exception {
+    new RequestCreator(picasso, URI_1, 0).tag("tag")
+        .into(mockRemoteViews(), 0, 0, mockNotification());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getTag()).isEqualTo("tag");
+  }
+
   @Test public void invalidResize() throws Exception {
     try {
       new RequestCreator().resize(-1, 10);
@@ -586,6 +636,20 @@ public class RequestCreatorTest {
     try {
       new RequestCreator().priority(LOW).priority(HIGH);
       fail("Two priorities should throw exception.");
+    } catch (IllegalStateException expected) {
+    }
+  }
+
+
+  @Test public void invalidTag() throws Exception {
+    try {
+      new RequestCreator().tag(null);
+      fail("Null tag should throw exception.");
+    } catch (IllegalArgumentException expected) {
+    }
+    try {
+      new RequestCreator().tag("tag1").tag("tag2");
+      fail("Two tags should throw exception.");
     } catch (IllegalStateException expected) {
     }
   }
