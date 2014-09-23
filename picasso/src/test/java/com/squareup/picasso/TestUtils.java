@@ -36,6 +36,7 @@ import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static android.provider.ContactsContract.Contacts.CONTENT_URI;
 import static android.provider.ContactsContract.Contacts.Photo.CONTENT_DIRECTORY;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
+import static com.squareup.picasso.Picasso.Priority;
 import static com.squareup.picasso.Utils.createKey;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -114,23 +115,32 @@ class TestUtils {
   }
 
   static Action mockAction(String key, Uri uri, Object target) {
-    return mockAction(key, uri, target, 0);
+    return mockAction(key, uri, target, 0, null);
+  }
+
+  static Action mockAction(String key, Uri uri, Priority priority) {
+    return mockAction(key, uri, null, 0, priority);
   }
 
   static Action mockAction(String key, Uri uri, Object target, int resourceId) {
+    return mockAction(key, uri, target, resourceId, null);
+  }
+
+  static Action mockAction(String key, Uri uri, Object target, int resourceId, Priority priority) {
     Request request = new Request.Builder(uri, resourceId).build();
-    return mockAction(key, request, target);
+    return mockAction(key, request, target, priority);
   }
 
   static Action mockAction(String key, Request request) {
-    return mockAction(key, request, null);
+    return mockAction(key, request, null, null);
   }
 
-  static Action mockAction(String key, Request request, Object target) {
+  static Action mockAction(String key, Request request, Object target, Priority priority) {
     Action action = mock(Action.class);
     when(action.getKey()).thenReturn(key);
     when(action.getRequest()).thenReturn(request);
     when(action.getTarget()).thenReturn(target);
+    when(action.getPriority()).thenReturn(priority != null ? priority : Priority.NORMAL);
 
     Picasso picasso = mockPicasso();
     when(action.getPicasso()).thenReturn(picasso);

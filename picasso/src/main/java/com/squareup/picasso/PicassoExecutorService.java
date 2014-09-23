@@ -18,7 +18,10 @@ package com.squareup.picasso;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.telephony.TelephonyManager;
-import java.util.concurrent.LinkedBlockingQueue;
+
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -33,7 +36,7 @@ class PicassoExecutorService extends ThreadPoolExecutor {
 
   PicassoExecutorService() {
     super(DEFAULT_THREAD_COUNT, DEFAULT_THREAD_COUNT, 0, TimeUnit.MILLISECONDS,
-        new LinkedBlockingQueue<Runnable>(), new Utils.PicassoThreadFactory());
+        new PriorityBlockingQueue<Runnable>(), new Utils.PicassoThreadFactory());
   }
 
   void adjustThreadCount(NetworkInfo info) {
@@ -77,5 +80,32 @@ class PicassoExecutorService extends ThreadPoolExecutor {
   private void setThreadCount(int threadCount) {
     setCorePoolSize(threadCount);
     setMaximumPoolSize(threadCount);
+  }
+
+  @Override
+  public Future<?> submit(Runnable task) {
+    PicassoFutureTask ftask = new PicassoFutureTask((BitmapHunter) task);
+    execute(ftask);
+    return ftask;
+  }
+
+  private static final class PicassoFutureTask extends FutureTask<BitmapHunter>
+      implements Comparable<PicassoFutureTask> {
+    private final BitmapHunter hunter;
+
+    public PicassoFutureTask(BitmapHunter hunter) {
+      super(hunter, null);
+      this.hunter = hunter;
+    }
+
+    @Override
+    public int compareTo(PicassoFutureTask other) {
+      Picasso.Priority p1 = hunter.getPriority();
+      Picasso.Priority p2 = other.hunter.getPriority();
+
+      // High-priority requests are "lesser" so they are sorted to the front.
+      // Equal priorities are sorted by sequence number to provide FIFO ordering.
+      return (p1 == p2 ? hunter.sequence - other.hunter.sequence : p2.ordinal() - p1.ordinal());
+    }
   }
 }

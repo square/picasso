@@ -88,6 +88,17 @@ public class Picasso {
     };
   }
 
+  /**
+   * The priority of a request.
+   *
+   * @see RequestCreator#priority(Priority)
+   */
+  public enum Priority {
+    LOW,
+    NORMAL,
+    HIGH
+  }
+
   static final String TAG = "Picasso";
   static final Handler HANDLER = new Handler(Looper.getMainLooper()) {
     @Override public void handleMessage(Message msg) {
