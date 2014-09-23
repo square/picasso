@@ -70,7 +70,7 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
       options.inJustDecodeBounds = true;
 
       calculateInSampleSize(data.targetWidth, data.targetHeight, picassoKind.width,
-              picassoKind.height, options);
+              picassoKind.height, options, data);
 
       Bitmap bitmap;
 
