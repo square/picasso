@@ -76,7 +76,7 @@ public class PicassoTest {
   }
 
   @Test public void submitWithNullTargetInvokesDispatcher() throws Exception {
-    Action action = mockAction(URI_KEY_1, URI_1, null);
+    Action action = mockAction(URI_KEY_1, URI_1);
     picasso.enqueueAndSubmit(action);
     assertThat(picasso.targetToAction).isEmpty();
     verify(dispatcher).dispatchSubmit(action);
@@ -88,6 +88,16 @@ public class PicassoTest {
     picasso.enqueueAndSubmit(action);
     assertThat(picasso.targetToAction).hasSize(1);
     verify(dispatcher).dispatchSubmit(action);
+  }
+
+  @Test public void submitWithSameActionDoesNotCancel() throws Exception {
+    Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
+    picasso.enqueueAndSubmit(action);
+    verify(dispatcher).dispatchSubmit(action);
+    assertThat(picasso.targetToAction).hasSize(1).containsValue(action);
+    picasso.enqueueAndSubmit(action);
+    verify(action, never()).cancel();
+    verify(dispatcher, never()).dispatchCancel(action);
   }
 
   @Test public void quickMemoryCheckReturnsBitmapIfInCache() throws Exception {
@@ -183,6 +193,19 @@ public class PicassoTest {
     if (!caught) {
       fail("Calling complete() with null LoadedFrom should throw");
     }
+  }
+
+  @Test public void resumeActionTriggersSubmitOnPausedAction() {
+    Action action = mockAction(URI_KEY_1, URI_1);
+    picasso.resumeAction(action);
+    verify(dispatcher).dispatchSubmit(action);
+  }
+
+  @Test public void resumeActionImmediatelyCompletesCachedRequest() {
+    when(cache.get(URI_KEY_1)).thenReturn(BITMAP_1);
+    Action action = mockAction(URI_KEY_1, URI_1);
+    picasso.resumeAction(action);
+    verify(action).complete(BITMAP_1, MEMORY);
   }
 
   @Test public void cancelExistingRequestWithUnknownTarget() throws Exception {

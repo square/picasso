@@ -37,11 +37,14 @@ import java.util.concurrent.ExecutorService;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static com.squareup.picasso.Action.RequestWeakReference;
 import static com.squareup.picasso.Dispatcher.HUNTER_BATCH_COMPLETE;
+import static com.squareup.picasso.Dispatcher.REQUEST_BATCH_RESUME;
 import static com.squareup.picasso.Dispatcher.REQUEST_GCED;
+import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Utils.OWNER_MAIN;
 import static com.squareup.picasso.Utils.THREAD_PREFIX;
 import static com.squareup.picasso.Utils.VERB_COMPLETED;
 import static com.squareup.picasso.Utils.VERB_ERRORED;
+import static com.squareup.picasso.Utils.VERB_RESUMED;
 import static com.squareup.picasso.Utils.checkMain;
 import static com.squareup.picasso.Utils.log;
 
@@ -117,6 +120,13 @@ public class Picasso {
           action.picasso.cancelExistingRequest(action.getTarget());
           break;
         }
+        case REQUEST_BATCH_RESUME:
+          @SuppressWarnings("unchecked") List<Action> batch = (List<Action>) msg.obj;
+          for (int i = 0, n = batch.size(); i < n; i++) {
+            Action action = batch.get(i);
+            action.picasso.resumeAction(action);
+          }
+          break;
         default:
           throw new AssertionError("Unknown handler message received: " + msg.what);
       }
@@ -195,6 +205,45 @@ public class Picasso {
    */
   public void cancelRequest(RemoteViews remoteViews, int viewId) {
     cancelExistingRequest(new RemoteViewsAction.RemoteViewsTarget(remoteViews, viewId));
+  }
+
+  /**
+   * Cancel any existing requests with given tag. You can set a tag
+   * on new requests with {@link RequestCreator#tag(Object)}.
+   *
+   * @see RequestCreator#tag(Object)
+   */
+  public void cancelTag(Object tag) {
+    checkMain();
+    List<Action> actions = new ArrayList<Action>(targetToAction.values());
+    for (int i = 0, n = actions.size(); i < n; i++) {
+      Action action = actions.get(i);
+      if (action.getTag().equals(tag)) {
+        cancelExistingRequest(action.getTarget());
+      }
+    }
+  }
+
+  /**
+   * Pause existing requests with the given tag. Use {@link #resumeTag(Object)}
+   * to resume requests with the given tag.
+   *
+   * @see #resumeTag(Object)
+   * @see RequestCreator#tag(Object)
+   */
+  public void pauseTag(Object tag) {
+    dispatcher.dispatchPauseTag(tag);
+  }
+
+  /**
+   * Resume paused requests with the given tag. Use {@link #pauseTag(Object)}
+   * to pause requests with the given tag.
+   *
+   * @see #pauseTag(Object)
+   * @see RequestCreator#tag(Object)
+   */
+  public void resumeTag(Object tag) {
+    dispatcher.dispatchResumeTag(tag);
   }
 
   /**
@@ -365,7 +414,7 @@ public class Picasso {
 
   void enqueueAndSubmit(Action action) {
     Object target = action.getTarget();
-    if (target != null) {
+    if (target != null && targetToAction.get(target) != action) {
       // This will also check we are on the main thread.
       cancelExistingRequest(target);
       targetToAction.put(target, action);
@@ -417,6 +466,27 @@ public class Picasso {
 
     if (listener != null && exception != null) {
       listener.onImageLoadFailed(this, uri, exception);
+    }
+  }
+
+  void resumeAction(Action action) {
+    Bitmap bitmap = null;
+    if (!action.skipCache) {
+      bitmap = quickMemoryCacheCheck(action.getKey());
+    }
+
+    if (bitmap != null) {
+      // Resumed action is cached, complete immediately.
+      deliverAction(bitmap, MEMORY, action);
+      if (loggingEnabled) {
+        log(OWNER_MAIN, VERB_COMPLETED, action.request.logId(), "from " + MEMORY);
+      }
+    } else {
+      // Re-submit the action to the executor.
+      enqueueAndSubmit(action);
+      if (loggingEnabled) {
+        log(OWNER_MAIN, VERB_RESUMED, action.request.logId());
+      }
     }
   }
 

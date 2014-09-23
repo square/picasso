@@ -10,6 +10,8 @@ import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.ToggleButton;
 
+import com.squareup.picasso.Picasso;
+
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
@@ -38,6 +40,12 @@ abstract class PicassoSampleActivity extends FragmentActivity {
         activityList.setVisibility(checked ? VISIBLE : GONE);
       }
     });
+  }
+
+  @Override
+  protected void onDestroy() {
+    super.onDestroy();
+    Picasso.with(this).cancelTag(this);
   }
 
   @Override public void onBackPressed() {

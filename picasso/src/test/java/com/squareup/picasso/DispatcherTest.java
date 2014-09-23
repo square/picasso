@@ -20,6 +20,9 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
+import android.os.Message;
+
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import org.junit.Before;
 import org.junit.Test;
@@ -155,6 +158,18 @@ public class DispatcherTest {
     verify(hunter).detach(action1);
     verify(hunter).cancel();
     assertThat(dispatcher.hunterMap).hasSize(1);
+  }
+
+  @Test public void performCancelUnqueuesAndDetachesPausedRequest() {
+    Action action = mockAction(URI_KEY_1, URI_1, mockTarget(), "tag");
+    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false, action);
+    dispatcher.hunterMap.put(URI_KEY_1, hunter);
+    dispatcher.pausedTags.add("tag");
+    dispatcher.pausedActions.put(action.getTarget(), action);
+    dispatcher.performCancel(action);
+    assertThat(dispatcher.pausedTags).hasSize(1).contains("tag");
+    assertThat(dispatcher.pausedActions).isEmpty();
+    verify(hunter).detach(action);
   }
 
   @Test public void performCompleteSetsResultInCache() throws Exception {
@@ -327,6 +342,70 @@ public class DispatcherTest {
     NetworkInfo info = mockNetworkInfo(true);
     dispatcher.performNetworkStateChange(info);
     verifyZeroInteractions(service);
+  }
+
+  @Test public void performPauseAndResumeUpdatesListOfPausedTags() {
+    dispatcher.performPauseTag("tag");
+    assertThat(dispatcher.pausedTags).hasSize(1).contains("tag");
+    dispatcher.performResumeTag("tag");
+    assertThat(dispatcher.pausedTags).isEmpty();
+  }
+
+  @Test public void performPauseTagIsIdempotent() {
+    Action action = mockAction(URI_KEY_1, URI_1, mockTarget(), "tag");
+    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false, action);
+    dispatcher.hunterMap.put(URI_KEY_1, hunter);
+    dispatcher.pausedTags.add("tag");
+    dispatcher.performPauseTag("tag");
+    verify(hunter, never()).getAction();
+  }
+
+  @Test public void performPauseTagQueuesNewRequestDoesNotSubmit() {
+    dispatcher.performPauseTag("tag");
+    Action action = mockAction(URI_KEY_1, URI_1, "tag");
+    dispatcher.performSubmit(action);
+    assertThat(dispatcher.hunterMap).isEmpty();
+    assertThat(dispatcher.pausedActions).hasSize(1).containsValue(action);
+    verify(service, never()).submit(any(BitmapHunter.class));
+  }
+
+  @Test public void performPauseTagDoesNotQueueUnrelatedRequest() {
+    dispatcher.performPauseTag("tag");
+    Action action = mockAction(URI_KEY_1, URI_1, "anothertag");
+    dispatcher.performSubmit(action);
+    assertThat(dispatcher.hunterMap).hasSize(1);
+    assertThat(dispatcher.pausedActions).isEmpty();
+    verify(service).submit(any(BitmapHunter.class));
+  }
+
+  @Test public void performPauseDetachesRequestAndCancelsHunter() {
+    Action action = mockAction(URI_KEY_1, URI_1, "tag");
+    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false, action);
+    when(hunter.cancel()).thenReturn(true);
+    dispatcher.hunterMap.put(URI_KEY_1, hunter);
+    dispatcher.performPauseTag("tag");
+    assertThat(dispatcher.hunterMap).isEmpty();
+    assertThat(dispatcher.pausedActions).hasSize(1).containsValue(action);
+    verify(hunter).detach(action);
+    verify(hunter).cancel();
+  }
+
+  @Test public void performPauseOnlyDetachesPausedRequest() {
+    Action action1 = mockAction(URI_KEY_1, URI_1, mockTarget(), "tag1");
+    Action action2 = mockAction(URI_KEY_1, URI_1, mockTarget(), "tag2");
+    BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
+    when(hunter.getActions()).thenReturn(Arrays.asList(action1, action2));
+    dispatcher.hunterMap.put(URI_KEY_1, hunter);
+    dispatcher.performPauseTag("tag1");
+    assertThat(dispatcher.hunterMap).hasSize(1).containsValue(hunter);
+    assertThat(dispatcher.pausedActions).hasSize(1).containsValue(action1);
+    verify(hunter).detach(action1);
+    verify(hunter, never()).detach(action2);
+  }
+
+  @Test public void performResumeTagIsIdempotent() {
+    dispatcher.performResumeTag("tag");
+    verify(mainThreadHandler, never()).sendMessage(any(Message.class));
   }
 
   @Test

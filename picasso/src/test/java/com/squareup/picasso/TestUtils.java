@@ -111,36 +111,47 @@ class TestUtils {
   }
 
   static Action mockAction(String key, Uri uri) {
-    return mockAction(key, uri, null, 0);
+    return mockAction(key, uri, null, 0, null, null);
   }
 
   static Action mockAction(String key, Uri uri, Object target) {
-    return mockAction(key, uri, target, 0, null);
+    return mockAction(key, uri, target, 0, null, null);
   }
 
   static Action mockAction(String key, Uri uri, Priority priority) {
-    return mockAction(key, uri, null, 0, priority);
+    return mockAction(key, uri, null, 0, priority, null);
+  }
+
+  static Action mockAction(String key, Uri uri, String tag) {
+    return mockAction(key, uri, null, 0, null, tag);
+  }
+
+  static Action mockAction(String key, Uri uri, Object target, String tag) {
+    return mockAction(key, uri, target, 0, null, tag);
   }
 
   static Action mockAction(String key, Uri uri, Object target, int resourceId) {
-    return mockAction(key, uri, target, resourceId, null);
+    return mockAction(key, uri, target, resourceId, null, null);
   }
 
-  static Action mockAction(String key, Uri uri, Object target, int resourceId, Priority priority) {
+  static Action mockAction(String key, Uri uri, Object target, int resourceId, Priority priority,
+                           String tag) {
     Request request = new Request.Builder(uri, resourceId).build();
-    return mockAction(key, request, target, priority);
+    return mockAction(key, request, target, priority, tag);
   }
 
   static Action mockAction(String key, Request request) {
-    return mockAction(key, request, null, null);
+    return mockAction(key, request, null, null, null);
   }
 
-  static Action mockAction(String key, Request request, Object target, Priority priority) {
+  static Action mockAction(String key, Request request, Object target, Priority priority,
+                           String tag) {
     Action action = mock(Action.class);
     when(action.getKey()).thenReturn(key);
     when(action.getRequest()).thenReturn(request);
     when(action.getTarget()).thenReturn(target);
     when(action.getPriority()).thenReturn(priority != null ? priority : Priority.NORMAL);
+    when(action.getTag()).thenReturn(tag != null ? tag : action);
 
     Picasso picasso = mockPicasso();
     when(action.getPicasso()).thenReturn(picasso);
