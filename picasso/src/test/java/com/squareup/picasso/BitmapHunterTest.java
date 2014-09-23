@@ -37,6 +37,9 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso.BitmapHunter.forRequest;
 import static com.squareup.picasso.BitmapHunter.transformResult;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
+import static com.squareup.picasso.Picasso.Priority.LOW;
+import static com.squareup.picasso.Picasso.Priority.HIGH;
+import static com.squareup.picasso.Picasso.Priority.NORMAL;
 import static com.squareup.picasso.TestUtils.ASSET_KEY_1;
 import static com.squareup.picasso.TestUtils.ASSET_URI_1;
 import static com.squareup.picasso.TestUtils.BITMAP_1;
@@ -59,6 +62,7 @@ import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.CUSTOM_URI;
 import static com.squareup.picasso.TestUtils.CUSTOM_URI_KEY;
 import static com.squareup.picasso.TestUtils.mockAction;
+import static com.squareup.picasso.TestUtils.mockHunter;
 import static com.squareup.picasso.TestUtils.mockImageViewTarget;
 import static com.squareup.picasso.TestUtils.mockPicasso;
 import static org.fest.assertions.api.ANDROID.assertThat;
@@ -334,6 +338,59 @@ public class BitmapHunterTest {
         false, false);
     BitmapHunter hunter = forRequest(picasso, dispatcher, cache, stats, action);
     assertThat(hunter.requestHandler).isEqualTo(handler);
+  }
+
+  @Test public void sequenceIsIncremented() throws Exception {
+    Action action = mockAction(URI_KEY_1, URI_1);
+    Picasso picasso = mockPicasso();
+    BitmapHunter hunter1 = forRequest(picasso, dispatcher, cache, stats, action);
+    BitmapHunter hunter2 = forRequest(picasso, dispatcher, cache, stats, action);
+    assertThat(hunter2.sequence).isGreaterThan(hunter1.sequence);
+  }
+
+  @Test public void getPriorityWithNoRequests() throws Exception {
+    Action action = mockAction(URI_KEY_1, URI_1);
+    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
+        dispatcher, cache, stats, action);
+    hunter.detach(action);
+    assertThat(hunter.getAction()).isNull();
+    assertThat(hunter.getActions()).isNull();
+    assertThat(hunter.getPriority()).isEqualTo(LOW);
+  }
+
+  @Test public void getPriorityWithSingleRequest() throws Exception {
+    Action action = mockAction(URI_KEY_1, URI_1, HIGH);
+    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
+        dispatcher, cache, stats, action);
+    assertThat(hunter.getAction()).isEqualTo(action);
+    assertThat(hunter.getActions()).isNull();
+    assertThat(hunter.getPriority()).isEqualTo(HIGH);
+  }
+
+  @Test public void getPriorityWithMultipleRequests() throws Exception {
+    Action action1 = mockAction(URI_KEY_1, URI_1, NORMAL);
+    Action action2 = mockAction(URI_KEY_1, URI_1, HIGH);
+    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
+        dispatcher, cache, stats, action1);
+    hunter.attach(action2);
+    assertThat(hunter.getAction()).isEqualTo(action1);
+    assertThat(hunter.getActions()).hasSize(1).contains(action2);
+    assertThat(hunter.getPriority()).isEqualTo(HIGH);
+  }
+
+  @Test public void getPriorityAfterDetach() throws Exception {
+    Action action1 = mockAction(URI_KEY_1, URI_1, NORMAL);
+    Action action2 = mockAction(URI_KEY_1, URI_1, HIGH);
+    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
+        dispatcher, cache, stats, action1);
+    hunter.attach(action2);
+    assertThat(hunter.getAction()).isEqualTo(action1);
+    assertThat(hunter.getActions()).hasSize(1).contains(action2);
+    assertThat(hunter.getPriority()).isEqualTo(HIGH);
+    hunter.detach(action2);
+    assertThat(hunter.getAction()).isEqualTo(action1);
+    assertThat(hunter.getActions()).isEmpty();
+    assertThat(hunter.getPriority()).isEqualTo(NORMAL);
   }
 
   @Test public void exifRotation() throws Exception {

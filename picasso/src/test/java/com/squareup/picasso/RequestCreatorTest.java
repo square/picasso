@@ -35,6 +35,9 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
+import static com.squareup.picasso.Picasso.Priority.LOW;
+import static com.squareup.picasso.Picasso.Priority.HIGH;
+import static com.squareup.picasso.Picasso.Priority.NORMAL;
 import static com.squareup.picasso.Picasso.RequestTransformer.IDENTITY;
 import static com.squareup.picasso.RemoteViewsAction.AppWidgetAction;
 import static com.squareup.picasso.RemoteViewsAction.NotificationAction;
@@ -129,6 +132,18 @@ public class RequestCreatorTest {
     }
   }
 
+  @Test public void fetchWithDefaultPriority() throws Exception {
+    new RequestCreator(picasso, URI_1, 0).fetch();
+    verify(picasso).submit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getPriority()).isEqualTo(LOW);
+  }
+
+  @Test public void fetchWithCustomPriority() throws Exception {
+    new RequestCreator(picasso, URI_1, 0).priority(HIGH).fetch();
+    verify(picasso).submit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getPriority()).isEqualTo(HIGH);
+  }
+
   @Test
   public void intoTargetWithNullThrows() throws Exception {
     try {
@@ -183,6 +198,18 @@ public class RequestCreatorTest {
     verify(target).onPrepareLoad(placeHolderDrawable);
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue()).isInstanceOf(TargetAction.class);
+  }
+
+  @Test public void targetActionWithDefaultPriority() throws Exception {
+    new RequestCreator(picasso, URI_1, 0).into(mockTarget());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getPriority()).isEqualTo(NORMAL);
+  }
+
+  @Test public void targetActionWithCustomPriority() throws Exception {
+    new RequestCreator(picasso, URI_1, 0).priority(HIGH).into(mockTarget());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getPriority()).isEqualTo(HIGH);
   }
 
   @Test
@@ -324,6 +351,18 @@ public class RequestCreatorTest {
     }
   }
 
+  @Test public void imageViewActionWithDefaultPriority() throws Exception {
+    new RequestCreator(picasso, URI_1, 0).into(mockImageViewTarget());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getPriority()).isEqualTo(NORMAL);
+  }
+
+  @Test public void imageViewActionWithCustomPriority() throws Exception {
+    new RequestCreator(picasso, URI_1, 0).priority(HIGH).into(mockImageViewTarget());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getPriority()).isEqualTo(HIGH);
+  }
+
   @Test public void intoRemoteViewsWidgetQueuesAppWidgetAction() throws Exception {
     new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, new int[] { 1, 2, 3 });
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
@@ -432,6 +471,32 @@ public class RequestCreatorTest {
     }
   }
 
+  @Test public void appWidgetActionWithDefaultPriority() throws Exception {
+    new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, new int[] { 1, 2, 3 });
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getPriority()).isEqualTo(NORMAL);
+  }
+
+  @Test public void appWidgetActionWithCustomPriority() throws Exception {
+    new RequestCreator(picasso, URI_1, 0).priority(HIGH)
+        .into(mockRemoteViews(), 0, new int[]{1, 2, 3});
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getPriority()).isEqualTo(HIGH);
+  }
+
+  @Test public void notificationActionWithDefaultPriority() throws Exception {
+    new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, 0, mockNotification());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getPriority()).isEqualTo(NORMAL);
+  }
+
+  @Test public void notificationActionWithCustomPriority() throws Exception {
+    new RequestCreator(picasso, URI_1, 0).priority(HIGH)
+        .into(mockRemoteViews(), 0, 0, mockNotification());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getPriority()).isEqualTo(HIGH);
+  }
+
   @Test public void invalidResize() throws Exception {
     try {
       new RequestCreator().resize(-1, 10);
@@ -508,6 +573,19 @@ public class RequestCreatorTest {
     try {
       new RequestCreator().error(new ColorDrawable(0)).error(1);
       fail("Two placeholders should throw exception.");
+    } catch (IllegalStateException expected) {
+    }
+  }
+
+  @Test public void invalidPriority() throws Exception {
+    try {
+      new RequestCreator().priority(null);
+      fail("Null priority should throw exception.");
+    } catch (IllegalArgumentException expected) {
+    }
+    try {
+      new RequestCreator().priority(LOW).priority(HIGH);
+      fail("Two priorities should throw exception.");
     } catch (IllegalStateException expected) {
     }
   }

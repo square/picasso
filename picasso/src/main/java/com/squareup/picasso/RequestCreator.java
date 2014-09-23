@@ -30,6 +30,7 @@ import org.jetbrains.annotations.TestOnly;
 
 import static com.squareup.picasso.BitmapHunter.forRequest;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
+import static com.squareup.picasso.Picasso.Priority;
 import static com.squareup.picasso.PicassoDrawable.setBitmap;
 import static com.squareup.picasso.PicassoDrawable.setPlaceholder;
 import static com.squareup.picasso.RemoteViewsAction.AppWidgetAction;
@@ -229,6 +230,18 @@ public class RequestCreator {
   }
 
   /**
+   * Set the priority of this request.
+   * <p>
+   * This will affect the order in which the requests execute but does not guarantee it.
+   * By default, all requests have {@link Priority#NORMAL} priority, except for
+   * {@link #fetch()} requests, which have {@link Priority#LOW} priority by default.
+   */
+  public RequestCreator priority(Priority priority) {
+    data.priority(priority);
+    return this;
+  }
+
+  /**
    * Add a custom transformation to be applied to the image.
    * <p>
    * Custom transformations will always be run after the built-in transformations.
@@ -292,6 +305,11 @@ public class RequestCreator {
       throw new IllegalStateException("Fit cannot be used with fetch.");
     }
     if (data.hasImage()) {
+      // Fetch requests have lower priority by default.
+      if (!data.hasPriority()) {
+        data.priority(Priority.LOW);
+      }
+
       Request request = createRequest(started);
       String key = createKey(request, new StringBuilder());
 

@@ -17,6 +17,7 @@ package com.squareup.picasso;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
+import com.squareup.picasso.Picasso.Priority;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -74,10 +75,13 @@ public final class Request {
   public final boolean hasRotationPivot;
   /** Target image config for decoding. */
   public final Bitmap.Config config;
+  /** The priority of this request. */
+  public final Priority priority;
 
   private Request(Uri uri, int resourceId, List<Transformation> transformations, int targetWidth,
       int targetHeight, boolean centerCrop, boolean centerInside, float rotationDegrees,
-      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot, Bitmap.Config config) {
+      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot, Bitmap.Config config,
+      Priority priority) {
     this.uri = uri;
     this.resourceId = resourceId;
     if (transformations == null) {
@@ -94,6 +98,7 @@ public final class Request {
     this.rotationPivotY = rotationPivotY;
     this.hasRotationPivot = hasRotationPivot;
     this.config = config;
+    this.priority = priority;
   }
 
   @Override public String toString() {
@@ -185,6 +190,7 @@ public final class Request {
     private boolean hasRotationPivot;
     private List<Transformation> transformations;
     private Bitmap.Config config;
+    private Priority priority;
 
     /** Start building a request using the specified {@link Uri}. */
     public Builder(Uri uri) {
@@ -216,6 +222,7 @@ public final class Request {
         transformations = new ArrayList<Transformation>(request.transformations);
       }
       config = request.config;
+      priority = request.priority;
     }
 
     boolean hasImage() {
@@ -224,6 +231,10 @@ public final class Request {
 
     boolean hasSize() {
       return targetWidth != 0;
+    }
+
+    boolean hasPriority() {
+      return priority != null;
     }
 
     /**
@@ -343,6 +354,18 @@ public final class Request {
       return this;
     }
 
+    /** Execute request using the specified priority. */
+    public Builder priority(Priority priority) {
+      if (priority == null) {
+        throw new IllegalArgumentException("Priority invalid.");
+      }
+      if (this.priority != null) {
+        throw new IllegalStateException("Priority already set.");
+      }
+      this.priority = priority;
+      return this;
+    }
+
     /**
      * Add a custom transformation to be applied to the image.
      * <p>
@@ -370,8 +393,12 @@ public final class Request {
       if (centerInside && targetWidth == 0) {
         throw new IllegalStateException("Center inside requires calling resize.");
       }
+      if (priority == null) {
+        priority = Priority.NORMAL;
+      }
       return new Request(uri, resourceId, transformations, targetWidth, targetHeight, centerCrop,
-          centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot, config);
+          centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot, config,
+          priority);
     }
   }
 }

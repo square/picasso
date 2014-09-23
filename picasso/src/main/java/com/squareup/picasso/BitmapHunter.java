@@ -24,8 +24,11 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
+import static com.squareup.picasso.Picasso.Priority;
+import static com.squareup.picasso.Picasso.Priority.LOW;
 import static com.squareup.picasso.Utils.OWNER_HUNTER;
 import static com.squareup.picasso.Utils.VERB_DECODED;
 import static com.squareup.picasso.Utils.VERB_EXECUTING;
@@ -49,6 +52,9 @@ class BitmapHunter implements Runnable {
     }
   };
 
+  private static final AtomicInteger SEQUENCE_GENERATOR = new AtomicInteger();
+
+  final int sequence;
   final Picasso picasso;
   final Dispatcher dispatcher;
   final Cache cache;
@@ -66,9 +72,11 @@ class BitmapHunter implements Runnable {
   Exception exception;
   int exifRotation; // Determined during decoding of original resource.
   int retryCount;
+  Priority priority;
 
   BitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats, Action action,
                RequestHandler requestHandler) {
+    this.sequence = SEQUENCE_GENERATOR.incrementAndGet();
     this.picasso = picasso;
     this.dispatcher = dispatcher;
     this.cache = cache;
@@ -79,6 +87,7 @@ class BitmapHunter implements Runnable {
     this.requestHandler = requestHandler;
     this.retryCount = requestHandler.getRetryCount();
     this.action = action;
+    this.priority = (action != null ? action.getPriority() : LOW);
   }
 
   @Override public void run() {
@@ -192,18 +201,57 @@ class BitmapHunter implements Runnable {
     if (loggingEnabled) {
       log(OWNER_HUNTER, VERB_JOINED, request.logId(), getLogIdsForHunter(this, "to "));
     }
+
+    Priority actionPriority = action.getPriority();
+    if (actionPriority.ordinal() > priority.ordinal()) {
+      priority = actionPriority;
+    }
   }
 
   void detach(Action action) {
+    boolean detached = false;
     if (this.action == action) {
       this.action = null;
+      detached = true;
     } else if (actions != null) {
-      actions.remove(action);
+      detached = actions.remove(action);
+    }
+
+    // The action being detached had the highest priority. Update this
+    // hunter's priority with the remaining actions.
+    if (detached && action.getPriority() == priority) {
+      priority = computeNewPriority();
     }
 
     if (picasso.loggingEnabled) {
       log(OWNER_HUNTER, VERB_REMOVED, action.request.logId(), getLogIdsForHunter(this, "from "));
     }
+  }
+
+  private Priority computeNewPriority() {
+    Priority newPriority = LOW;
+
+    boolean hasMultiple = actions != null && !actions.isEmpty();
+
+    // Hunter has no requests, low priority.
+    if (actions == null && !hasMultiple) {
+      return newPriority;
+    }
+
+    if (action != null) {
+      newPriority = action.getPriority();
+    }
+
+    if (hasMultiple) {
+      for (int i = 0, n = actions.size(); i < n; i++) {
+        Priority actionPriority = actions.get(i).getPriority();
+        if (actionPriority.ordinal() > newPriority.ordinal()) {
+          newPriority = actionPriority;
+        }
+      }
+    }
+
+    return newPriority;
   }
 
   boolean cancel() {
@@ -264,6 +312,10 @@ class BitmapHunter implements Runnable {
 
   Picasso.LoadedFrom getLoadedFrom() {
     return loadedFrom;
+  }
+
+  Priority getPriority() {
+    return priority;
   }
 
   static void updateThreadName(Request data) {
