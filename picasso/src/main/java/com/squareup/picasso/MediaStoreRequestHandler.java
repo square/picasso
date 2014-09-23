@@ -15,19 +15,23 @@
  */
 package com.squareup.picasso;
 
+import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.provider.MediaStore;
+
 import java.io.IOException;
 
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentUris.parseId;
+import static android.os.Build.VERSION.SDK_INT;
+import static android.os.Build.VERSION_CODES.GINGERBREAD_MR1;
 import static android.provider.MediaStore.Images;
-import static android.provider.MediaStore.Video;
 import static android.provider.MediaStore.Images.Thumbnails.FULL_SCREEN_KIND;
 import static android.provider.MediaStore.Images.Thumbnails.MICRO_KIND;
 import static android.provider.MediaStore.Images.Thumbnails.MINI_KIND;
@@ -40,6 +44,7 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
   private static final String[] CONTENT_ORIENTATION = new String[] {
       Images.ImageColumns.ORIENTATION
   };
+  static final String TIME_OFFSET_QUERY = "t";
 
   MediaStoreRequestHandler(Context context) {
     super(context);
@@ -75,13 +80,27 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
       Bitmap bitmap;
 
       if (isVideo) {
-        // Since MediaStore doesn't provide the full screen kind thumbnail, we use the mini kind
-        // instead which is the largest thumbnail size can be fetched from MediaStore.
-        int kind = (picassoKind == FULL) ? Video.Thumbnails.MINI_KIND : picassoKind.androidKind;
-        bitmap = Video.Thumbnails.getThumbnail(contentResolver, id, kind, options);
+        long offsetMicros = Long.MIN_VALUE;
+        try {
+          // Attempt to retrieve a time offset from the URI in microseconds.
+          String timeParameter = data.uri.getQueryParameter(TIME_OFFSET_QUERY);
+          offsetMicros = Long.valueOf(timeParameter);
+        } catch (NumberFormatException ignored) {
+        } catch (UnsupportedOperationException ignored) { }
+
+        if (SDK_INT >= GINGERBREAD_MR1 && offsetMicros >= 0) {
+          bitmap = getVideoFrame(context, data.uri, offsetMicros);
+        } else {
+          // Android's default thumbnail behavior is to pull a frame from the middle of the video.
+          // Since MediaStore doesn't provide the full screen kind thumbnail, we use the mini kind
+          // instead which is the largest thumbnail size can be fetched from MediaStore.
+          int kind = (picassoKind == FULL) ? MediaStore.Video.Thumbnails.MINI_KIND
+                  : picassoKind.androidKind;
+          bitmap = MediaStore.Video.Thumbnails.getThumbnail(contentResolver, id, kind, options);
+        }
       } else {
-        bitmap =
-            Images.Thumbnails.getThumbnail(contentResolver, id, picassoKind.androidKind, options);
+        bitmap = Images.Thumbnails
+                .getThumbnail(contentResolver, id, picassoKind.androidKind, options);
       }
 
       if (bitmap != null) {
@@ -91,6 +110,14 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
 
     return new Result(decodeContentStream(data), DISK, exifOrientation);
   }
+
+  @TargetApi(GINGERBREAD_MR1)
+  private Bitmap getVideoFrame(Context context, Uri uri, long time) {
+    MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
+    mediaMetadataRetriever.setDataSource(context, uri);
+    return mediaMetadataRetriever.getFrameAtTime(time);
+  }
+
 
   static PicassoKind getPicassoKind(int targetWidth, int targetHeight) {
     if (targetWidth <= MICRO.width && targetHeight <= MICRO.height) {

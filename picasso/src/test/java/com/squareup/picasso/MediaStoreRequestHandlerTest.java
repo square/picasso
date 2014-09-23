@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,10 +15,12 @@ import org.robolectric.annotation.Config;
 import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.FULL;
 import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.MICRO;
 import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.MINI;
+import static com.squareup.picasso.MediaStoreRequestHandler.TIME_OFFSET_QUERY;
 import static com.squareup.picasso.MediaStoreRequestHandler.getPicassoKind;
 import static com.squareup.picasso.TestUtils.IMAGE_THUMBNAIL_1;
 import static com.squareup.picasso.TestUtils.MEDIA_STORE_CONTENT_1_URL;
 import static com.squareup.picasso.TestUtils.MEDIA_STORE_CONTENT_KEY_1;
+import static com.squareup.picasso.TestUtils.VIDEO_FRAME_1;
 import static com.squareup.picasso.TestUtils.VIDEO_THUMBNAIL_1;
 import static com.squareup.picasso.TestUtils.mockAction;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -28,7 +31,11 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(RobolectricTestRunner.class) //
 @Config(manifest = Config.NONE,
-    shadows = { Shadows.ShadowVideoThumbnails.class, Shadows.ShadowImageThumbnails.class })
+    shadows = {
+            Shadows.ShadowMediaMetadataRetriever.class,
+            Shadows.ShadowVideoThumbnails.class,
+            Shadows.ShadowImageThumbnails.class
+    })
 public class MediaStoreRequestHandlerTest {
 
   @Mock Context context;
@@ -40,15 +47,28 @@ public class MediaStoreRequestHandlerTest {
   @Test public void decodesVideoThumbnailWithVideoMimeType() throws Exception {
     Request request = new Request.Builder(MEDIA_STORE_CONTENT_1_URL, 0).resize(100, 100).build();
     Action action = mockAction(MEDIA_STORE_CONTENT_KEY_1, request);
-    MediaStoreRequestHandler requestHandler = create("video/", action);
+    RequestHandler requestHandler = create("video/");
     Bitmap result = requestHandler.load(action.getRequest()).getBitmap();
     assertThat(result).isEqualTo(VIDEO_THUMBNAIL_1);
+  }
+
+  @Test
+  public void decodesVideoFrameWithOffset() throws Exception {
+    final long time = 1000000;
+    Uri uriWithOffset = MEDIA_STORE_CONTENT_1_URL.buildUpon()
+            .appendQueryParameter(TIME_OFFSET_QUERY, Long.toString(time)).build();
+    Shadows.ShadowMediaMetadataRetriever.addFrame(context, uriWithOffset, time, VIDEO_FRAME_1);
+    Request request = new Request.Builder(uriWithOffset).resize(100, 100).build();
+    Action action = mockAction(MEDIA_STORE_CONTENT_KEY_1, request);
+    RequestHandler requestHandler = create("video/");
+    Bitmap result = requestHandler.load(action.getRequest()).getBitmap();
+    assertThat(result).isEqualTo(VIDEO_FRAME_1);
   }
 
   @Test public void decodesImageThumbnailWithImageMimeType() throws Exception {
     Request request = new Request.Builder(MEDIA_STORE_CONTENT_1_URL, 0).resize(100, 100).build();
     Action action = mockAction(MEDIA_STORE_CONTENT_KEY_1, request);
-    MediaStoreRequestHandler requestHandler = create("image/png", action);
+    RequestHandler requestHandler = create("image/png");
     Bitmap result = requestHandler.load(action.getRequest()).getBitmap();
     assertThat(result).isEqualTo(IMAGE_THUMBNAIL_1);
   }
@@ -71,13 +91,13 @@ public class MediaStoreRequestHandlerTest {
     assertThat(getPicassoKind(96, 1000)).isEqualTo(FULL);
   }
 
-  private MediaStoreRequestHandler create(String mimeType, Action action) {
+  private RequestHandler create(String mimeType) {
     ContentResolver contentResolver = mock(ContentResolver.class);
     when(contentResolver.getType(any(Uri.class))).thenReturn(mimeType);
-    return create(contentResolver, action);
+    return create(contentResolver);
   }
 
-  private MediaStoreRequestHandler create(ContentResolver contentResolver, Action action) {
+  private RequestHandler create(ContentResolver contentResolver) {
     when(context.getContentResolver()).thenReturn(contentResolver);
     return new MediaStoreRequestHandler(context);
   }

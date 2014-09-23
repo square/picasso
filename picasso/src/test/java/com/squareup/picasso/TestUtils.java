@@ -54,6 +54,7 @@ class TestUtils {
   static final String URI_KEY_1 = createKey(new Request.Builder(URI_1).build());
   static final String URI_KEY_2 = createKey(new Request.Builder(URI_2).build());
   static final Bitmap VIDEO_THUMBNAIL_1 = Bitmap.createBitmap(10, 10, null);
+  static final Bitmap VIDEO_FRAME_1 = Bitmap.createBitmap(10, 10, null);
   static final Bitmap IMAGE_THUMBNAIL_1 = Bitmap.createBitmap(20, 20, null);
   static final Bitmap BITMAP_1 = Bitmap.createBitmap(10, 10, null);
   static final Bitmap BITMAP_2 = Bitmap.createBitmap(15, 15, null);
