@@ -187,11 +187,8 @@ public class PicassoTest {
     boolean caught = false;
     try {
       picasso.complete(hunter);
-    } catch (AssertionError error) {
-      caught = true;
-    }
-    if (!caught) {
       fail("Calling complete() with null LoadedFrom should throw");
+    } catch (AssertionError expected) {
     }
   }
 
