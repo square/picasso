@@ -54,6 +54,16 @@ class BitmapHunter implements Runnable {
 
   private static final AtomicInteger SEQUENCE_GENERATOR = new AtomicInteger();
 
+  private static final RequestHandler ERRORING_HANDLER = new RequestHandler() {
+    @Override public boolean canHandleRequest(Request data) {
+      return true;
+    }
+
+    @Override public Result load(Request data) throws IOException {
+      throw new IllegalStateException("Unrecognized type of request: " + data);
+    }
+  };
+
   final int sequence;
   final Picasso picasso;
   final Dispatcher dispatcher;
@@ -331,17 +341,18 @@ class BitmapHunter implements Runnable {
   static BitmapHunter forRequest(Picasso picasso, Dispatcher dispatcher,
       Cache cache, Stats stats, Action action) {
     Request request = action.getRequest();
-
     List<RequestHandler> requestHandlers = picasso.getRequestHandlers();
-    final int count = requestHandlers.size();
-    for (int i = 0; i < count; i++) {
+
+    // Index-based loop to avoid allocating an iterator.
+    //noinspection ForLoopReplaceableByForEach
+    for (int i = 0, count = requestHandlers.size(); i < count; i++) {
       RequestHandler requestHandler = requestHandlers.get(i);
       if (requestHandler.canHandleRequest(request)) {
         return new BitmapHunter(picasso, dispatcher, cache, stats, action, requestHandler);
       }
     }
 
-    throw new IllegalStateException("Unrecognized type of request: " + request);
+    return new BitmapHunter(picasso, dispatcher, cache, stats, action, ERRORING_HANDLER);
   }
 
   static Bitmap applyCustomTransformations(List<Transformation> transformations, Bitmap result) {

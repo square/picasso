@@ -37,8 +37,8 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso.BitmapHunter.forRequest;
 import static com.squareup.picasso.BitmapHunter.transformResult;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
-import static com.squareup.picasso.Picasso.Priority.LOW;
 import static com.squareup.picasso.Picasso.Priority.HIGH;
+import static com.squareup.picasso.Picasso.Priority.LOW;
 import static com.squareup.picasso.Picasso.Priority.NORMAL;
 import static com.squareup.picasso.TestUtils.ASSET_KEY_1;
 import static com.squareup.picasso.TestUtils.ASSET_URI_1;
@@ -47,6 +47,8 @@ import static com.squareup.picasso.TestUtils.CONTACT_KEY_1;
 import static com.squareup.picasso.TestUtils.CONTACT_URI_1;
 import static com.squareup.picasso.TestUtils.CONTENT_1_URL;
 import static com.squareup.picasso.TestUtils.CONTENT_KEY_1;
+import static com.squareup.picasso.TestUtils.CUSTOM_URI;
+import static com.squareup.picasso.TestUtils.CUSTOM_URI_KEY;
 import static com.squareup.picasso.TestUtils.FILE_1_URL;
 import static com.squareup.picasso.TestUtils.FILE_KEY_1;
 import static com.squareup.picasso.TestUtils.MEDIA_STORE_CONTENT_1_URL;
@@ -59,10 +61,7 @@ import static com.squareup.picasso.TestUtils.RESOURCE_TYPE_URI;
 import static com.squareup.picasso.TestUtils.RESOURCE_TYPE_URI_KEY;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
-import static com.squareup.picasso.TestUtils.CUSTOM_URI;
-import static com.squareup.picasso.TestUtils.CUSTOM_URI_KEY;
 import static com.squareup.picasso.TestUtils.mockAction;
-import static com.squareup.picasso.TestUtils.mockHunter;
 import static com.squareup.picasso.TestUtils.mockImageViewTarget;
 import static com.squareup.picasso.TestUtils.mockPicasso;
 import static org.fest.assertions.api.ANDROID.assertThat;
@@ -171,8 +170,9 @@ public class BitmapHunterTest {
 
   @Test public void huntUnrecognizedUri() throws Exception {
     Action action = mockAction(CUSTOM_URI_KEY, CUSTOM_URI);
+    BitmapHunter hunder = forRequest(picasso, dispatcher, cache, stats, action);
     try {
-      forRequest(picasso, dispatcher, cache, stats, action);
+      hunder.hunt();
       fail("Unrecognized URI should throw exception.");
     } catch (IllegalStateException expected) {
     }

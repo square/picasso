@@ -162,8 +162,11 @@ public class Picasso {
     this.listener = listener;
     this.requestTransformer = requestTransformer;
 
-    final int extraCount = (extraRequestHandlers != null ? extraRequestHandlers.size() : 0);
-    final List<RequestHandler> allRequestHandlers = new ArrayList<RequestHandler>(7 + extraCount);
+    int builtInHandlers = 7; // Adjust this as internal handlers are added or removed.
+    int extraCount = (extraRequestHandlers != null ? extraRequestHandlers.size() : 0);
+    List<RequestHandler> allRequestHandlers =
+        new ArrayList<RequestHandler>(builtInHandlers + extraCount);
+
     // ResourceRequestHandler needs to be the first in the list to avoid
     // forcing other RequestHandlers to perform null checks on request.uri
     // to cover the (request.resourceId != 0) case.
