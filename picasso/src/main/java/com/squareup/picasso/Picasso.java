@@ -42,6 +42,7 @@ import static com.squareup.picasso.Dispatcher.REQUEST_GCED;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Utils.OWNER_MAIN;
 import static com.squareup.picasso.Utils.THREAD_PREFIX;
+import static com.squareup.picasso.Utils.VERB_CANCELED;
 import static com.squareup.picasso.Utils.VERB_COMPLETED;
 import static com.squareup.picasso.Utils.VERB_ERRORED;
 import static com.squareup.picasso.Utils.VERB_RESUMED;
@@ -117,6 +118,9 @@ public class Picasso {
         }
         case REQUEST_GCED: {
           Action action = (Action) msg.obj;
+          if (action.getPicasso().loggingEnabled) {
+            log(OWNER_MAIN, VERB_CANCELED, action.request.logId(), "target got garbage collected");
+          }
           action.picasso.cancelExistingRequest(action.getTarget());
           break;
         }
