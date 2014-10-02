@@ -1,5 +1,7 @@
 language: android
 
+before_install: sudo pip install codecov
+
 jdk:
  - oraclejdk7
  - oraclejdk8
@@ -17,3 +19,5 @@ branches:
 
 notifications:
   email: false
+
+after_success: codecov
