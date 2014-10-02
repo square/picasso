@@ -1,4 +1,4 @@
-Picasso
+Picasso [![codecov.io](https://codecov.io/github/square/picasso/coverage.svg?branch=master)](https://codecov.io/github/square/picasso?branch=master)
 =======
 
 A powerful image downloading and caching library for Android
