@@ -170,9 +170,9 @@ public class BitmapHunterTest {
 
   @Test public void huntUnrecognizedUri() throws Exception {
     Action action = mockAction(CUSTOM_URI_KEY, CUSTOM_URI);
-    BitmapHunter hunder = forRequest(picasso, dispatcher, cache, stats, action);
+    BitmapHunter hunter = forRequest(picasso, dispatcher, cache, stats, action);
     try {
-      hunder.hunt();
+      hunter.hunt();
       fail("Unrecognized URI should throw exception.");
     } catch (IllegalStateException expected) {
     }
