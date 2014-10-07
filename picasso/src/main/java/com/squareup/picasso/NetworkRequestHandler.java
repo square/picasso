@@ -18,6 +18,14 @@ package com.squareup.picasso;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.NetworkInfo;
+import org.apache.commons.imaging.ImageReadException;
+import org.apache.commons.imaging.Imaging;
+import org.apache.commons.imaging.common.IImageMetadata;
+import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
+import org.apache.commons.imaging.formats.tiff.TiffField;
+import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
+import org.apache.commons.imaging.formats.tiff.constants.TiffTagConstants;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -34,6 +42,7 @@ class NetworkRequestHandler extends RequestHandler {
 
   private final Downloader downloader;
   private final Stats stats;
+  private static Boolean hasImaging;
 
   public NetworkRequestHandler(Downloader downloader, Stats stats) {
     this.downloader = downloader;
@@ -72,7 +81,11 @@ class NetworkRequestHandler extends RequestHandler {
       stats.dispatchDownloadFinished(response.getContentLength());
     }
     try {
-      return new Result(decodeStream(is, data), loadedFrom);
+      MarkableInputStream markStream = new MarkableInputStream(is);
+      long mark = markStream.savePosition(MARKER);
+      int orientation = getOrientation(markStream);
+      markStream.reset(mark);
+      return new Result(decodeStream(markStream, data), loadedFrom, orientation);
     } finally {
       Utils.closeQuietly(is);
     }
@@ -114,7 +127,6 @@ class NetworkRequestHandler extends RequestHandler {
       if (calculateSize) {
         BitmapFactory.decodeStream(stream, null, options);
         calculateInSampleSize(data.targetWidth, data.targetHeight, options, data);
-
         markStream.reset(mark);
       }
       Bitmap bitmap = BitmapFactory.decodeStream(stream, null, options);
@@ -123,6 +135,52 @@ class NetworkRequestHandler extends RequestHandler {
         throw new IOException("Failed to decode stream.");
       }
       return bitmap;
+    }
+  }
+
+  private int getOrientation(InputStream is) {
+    if (hasImaging == null) {
+      hasImaging = isImagingOnClasspath();
+    }
+    if (!hasImaging) {
+      return 0;
+    }
+
+    try {
+      IImageMetadata metadata = Imaging.getMetadata(is, null);
+      TiffImageMetadata tiffMetaData;
+      if (metadata instanceof JpegImageMetadata) {
+        JpegImageMetadata jpegMetadata = (JpegImageMetadata) metadata;
+        tiffMetaData = jpegMetadata.getExif();
+      } else if (metadata instanceof TiffImageMetadata) {
+        tiffMetaData = (TiffImageMetadata) metadata;
+      } else {
+        return 0;
+      }
+      TiffField orientationField = tiffMetaData.findField(TiffTagConstants.TIFF_TAG_ORIENTATION);
+      if (orientationField != null) {
+        int orientationValue = orientationField.getIntValue();
+        switch (orientationValue) {
+          case 3:
+            return 180;
+          case 6:
+            return 90;
+          case 8:
+            return -90;
+        }
+      }
+    } catch (IOException ignored) {
+    } catch (ImageReadException ignored) {
+    }
+    return 0;
+  }
+
+  private Boolean isImagingOnClasspath() {
+    try {
+      Class.forName("org.apache.commons.imaging.Imaging");
+      return true;
+    } catch (ClassNotFoundException ignored) {
+      return false;
     }
   }
 }
