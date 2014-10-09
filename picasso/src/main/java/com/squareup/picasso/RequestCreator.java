@@ -272,6 +272,14 @@ public class RequestCreator {
   }
 
   /**
+   * Set the density DPI of original image and let Picasso adjust.
+   */
+  public RequestCreator originalDensity(int density) {
+    data.originalDensity(density);
+    return this;
+  }
+
+  /**
    * Add a custom transformation to be applied to the image.
    * <p>
    * Custom transformations will always be run after the built-in transformations.

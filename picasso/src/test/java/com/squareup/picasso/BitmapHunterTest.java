@@ -275,7 +275,7 @@ public class BitmapHunterTest {
 
   @Test public void forNetworkRequest() throws Exception {
     Action action = mockAction(URI_KEY_1, URI_1);
-    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
+    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(context, downloader, stats)),
         dispatcher, cache, stats, action);
     assertThat(hunter.requestHandler).isInstanceOf(NetworkRequestHandler.class);
   }
@@ -350,7 +350,7 @@ public class BitmapHunterTest {
 
   @Test public void getPriorityWithNoRequests() throws Exception {
     Action action = mockAction(URI_KEY_1, URI_1);
-    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
+    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(context, downloader, stats)),
         dispatcher, cache, stats, action);
     hunter.detach(action);
     assertThat(hunter.getAction()).isNull();
@@ -360,7 +360,7 @@ public class BitmapHunterTest {
 
   @Test public void getPriorityWithSingleRequest() throws Exception {
     Action action = mockAction(URI_KEY_1, URI_1, HIGH);
-    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
+    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(context, downloader, stats)),
         dispatcher, cache, stats, action);
     assertThat(hunter.getAction()).isEqualTo(action);
     assertThat(hunter.getActions()).isNull();
@@ -370,7 +370,7 @@ public class BitmapHunterTest {
   @Test public void getPriorityWithMultipleRequests() throws Exception {
     Action action1 = mockAction(URI_KEY_1, URI_1, NORMAL);
     Action action2 = mockAction(URI_KEY_1, URI_1, HIGH);
-    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
+    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(context, downloader, stats)),
         dispatcher, cache, stats, action1);
     hunter.attach(action2);
     assertThat(hunter.getAction()).isEqualTo(action1);
@@ -381,7 +381,7 @@ public class BitmapHunterTest {
   @Test public void getPriorityAfterDetach() throws Exception {
     Action action1 = mockAction(URI_KEY_1, URI_1, NORMAL);
     Action action2 = mockAction(URI_KEY_1, URI_1, HIGH);
-    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
+    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(context, downloader, stats)),
         dispatcher, cache, stats, action1);
     hunter.attach(action2);
     assertThat(hunter.getAction()).isEqualTo(action1);

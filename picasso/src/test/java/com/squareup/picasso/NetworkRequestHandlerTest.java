@@ -48,6 +48,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 public class NetworkRequestHandlerTest {
 
   @Mock Picasso picasso;
+  @Mock Context context;
   @Mock Cache cache;
   @Mock Stats stats;
   @Mock Dispatcher dispatcher;
@@ -56,7 +57,7 @@ public class NetworkRequestHandlerTest {
 
   @Before public void setUp() throws Exception {
     initMocks(this);
-    networkHandler = new NetworkRequestHandler(downloader, stats);
+    networkHandler = new NetworkRequestHandler(context, downloader, stats);
     when(downloader.load(any(Uri.class), anyBoolean())).thenReturn(mock(Downloader.Response.class));
   }
 
@@ -139,7 +140,7 @@ public class NetworkRequestHandlerTest {
       }
     };
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    NetworkRequestHandler customNetworkHandler = new NetworkRequestHandler(bitmapDownloader, stats);
+    NetworkRequestHandler customNetworkHandler = new NetworkRequestHandler(context, bitmapDownloader, stats);
 
     Bitmap actual = customNetworkHandler.load(action.getRequest()).getBitmap();
     assertThat(actual).isSameAs(expected);

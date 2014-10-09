@@ -77,11 +77,13 @@ public final class Request {
   public final Bitmap.Config config;
   /** The priority of this request. */
   public final Priority priority;
+  /** Density of original image. */
+  public final int originalDensity;
 
   private Request(Uri uri, int resourceId, List<Transformation> transformations, int targetWidth,
       int targetHeight, boolean centerCrop, boolean centerInside, float rotationDegrees,
       float rotationPivotX, float rotationPivotY, boolean hasRotationPivot, Bitmap.Config config,
-      Priority priority) {
+      Priority priority, int originalDensity) {
     this.uri = uri;
     this.resourceId = resourceId;
     if (transformations == null) {
@@ -99,6 +101,7 @@ public final class Request {
     this.hasRotationPivot = hasRotationPivot;
     this.config = config;
     this.priority = priority;
+    this.originalDensity = originalDensity;
   }
 
   @Override public String toString() {
@@ -131,6 +134,9 @@ public final class Request {
     }
     if (config != null) {
       sb.append(' ').append(config);
+    }
+    if (originalDensity > 0) {
+      sb.append(" originalDensity(").append(originalDensity).append(')');
     }
     sb.append('}');
 
@@ -191,6 +197,7 @@ public final class Request {
     private List<Transformation> transformations;
     private Bitmap.Config config;
     private Priority priority;
+    private int originalDensity;
 
     /** Start building a request using the specified {@link Uri}. */
     public Builder(Uri uri) {
@@ -223,6 +230,7 @@ public final class Request {
       }
       config = request.config;
       priority = request.priority;
+      originalDensity = request.originalDensity;
     }
 
     boolean hasImage() {
@@ -382,6 +390,14 @@ public final class Request {
       return this;
     }
 
+    /**
+     * Specify the density of original image.
+     */
+    public Builder originalDensity(int density) {
+      originalDensity = density;
+      return this;
+    }
+
     /** Create the immutable {@link Request} object. */
     public Request build() {
       if (centerInside && centerCrop) {
@@ -398,7 +414,7 @@ public final class Request {
       }
       return new Request(uri, resourceId, transformations, targetWidth, targetHeight, centerCrop,
           centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot, config,
-          priority);
+          priority, originalDensity);
     }
   }
 }

@@ -198,6 +198,10 @@ final class Utils {
         builder.append('\n');
       }
     }
+    if (data.originalDensity != 0) {
+      builder.append("originalDensity:").append(data.originalDensity);
+      builder.append('\n');
+    }
 
     return builder.toString();
   }

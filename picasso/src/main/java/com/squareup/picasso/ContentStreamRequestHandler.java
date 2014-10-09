@@ -42,7 +42,7 @@ class ContentStreamRequestHandler extends RequestHandler {
 
   protected Bitmap decodeContentStream(Request data) throws IOException {
     ContentResolver contentResolver = context.getContentResolver();
-    final BitmapFactory.Options options = createBitmapOptions(data);
+    final BitmapFactory.Options options = createBitmapOptions(data, context);
     if (requiresInSampleSize(options)) {
       InputStream is = null;
       try {
