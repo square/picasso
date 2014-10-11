@@ -406,6 +406,7 @@ class BitmapHunter implements Runnable {
     return result;
   }
 
+  @SuppressWarnings("SuspiciousNameCombination")
   static Bitmap transformResult(Request data, Bitmap result, int exifRotation) {
     int inWidth = result.getWidth();
     int inHeight = result.getHeight();
@@ -427,6 +428,15 @@ class BitmapHunter implements Runnable {
           matrix.setRotate(targetRotation, data.rotationPivotX, data.rotationPivotY);
         } else {
           matrix.setRotate(targetRotation);
+        }
+      }
+
+      if (exifRotation != 0) {
+        matrix.preRotate(exifRotation);
+        if (exifRotation == 90 || exifRotation == 270) {
+          int tmpHeight = targetHeight;
+          targetHeight = targetWidth;
+          targetWidth = tmpHeight;
         }
       }
 
@@ -459,10 +469,6 @@ class BitmapHunter implements Runnable {
         float sy = targetHeight / (float) inHeight;
         matrix.preScale(sx, sy);
       }
-    }
-
-    if (exifRotation != 0) {
-      matrix.preRotate(exifRotation);
     }
 
     Bitmap newResult =

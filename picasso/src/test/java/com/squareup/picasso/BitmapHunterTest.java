@@ -112,7 +112,7 @@ public class BitmapHunterTest {
     verify(dispatcher).dispatchFailed(hunter);
   }
 
-  @Test public void responseExcpetionDispatchFailed() throws Exception {
+  @Test public void responseExceptionDispatchFailed() throws Exception {
     Action action = mockAction(URI_KEY_1, URI_1);
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, null,
         new Downloader.ResponseException("Test"));
@@ -403,6 +403,18 @@ public class BitmapHunterTest {
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
     assertThat(shadowMatrix.getPreOperations()).containsOnly("rotate 90.0");
+  }
+
+  @Test public void exifRotationSizing() throws Exception {
+    Request data = new Request.Builder(URI_1).rotate(-45).resize(5, 10).build();
+    Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
+    Bitmap result = transformResult(data, source, 90);
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).contains("scale 1.0 0.5");
   }
 
   @Test public void exifRotationWithManualRotation() throws Exception {
