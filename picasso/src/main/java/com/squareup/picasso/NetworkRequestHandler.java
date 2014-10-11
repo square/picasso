@@ -18,13 +18,13 @@ package com.squareup.picasso;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.NetworkInfo;
-import org.apache.commons.imaging.ImageReadException;
-import org.apache.commons.imaging.Imaging;
-import org.apache.commons.imaging.common.IImageMetadata;
-import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
-import org.apache.commons.imaging.formats.tiff.TiffField;
-import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
-import org.apache.commons.imaging.formats.tiff.constants.TiffTagConstants;
+import org.apache.sanselan.ImageReadException;
+import org.apache.sanselan.Sanselan;
+import org.apache.sanselan.common.IImageMetadata;
+import org.apache.sanselan.formats.jpeg.JpegImageMetadata;
+import org.apache.sanselan.formats.tiff.TiffField;
+import org.apache.sanselan.formats.tiff.TiffImageMetadata;
+import org.apache.sanselan.formats.tiff.constants.TiffTagConstants;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +39,11 @@ class NetworkRequestHandler extends RequestHandler {
 
   private static final String SCHEME_HTTP = "http";
   private static final String SCHEME_HTTPS = "https";
+
+  // These constants are not defined in Sanselan
+  static final int ORIENTATION_VALUE_ROTATE_180 = 3;
+  static final int ORIENTATION_VALUE_ROTATE_90_CW = 6;
+  static final int ORIENTATION_VALUE_ROTATE_270_CW = 8;
 
   private final Downloader downloader;
   private final Stats stats;
@@ -142,7 +147,7 @@ class NetworkRequestHandler extends RequestHandler {
     }
 
     try {
-      IImageMetadata metadata = Imaging.getMetadata(is, null);
+      IImageMetadata metadata = Sanselan.getMetadata(is, null);
       TiffImageMetadata tiffMetaData;
       if (metadata instanceof JpegImageMetadata) {
         JpegImageMetadata jpegMetadata = (JpegImageMetadata) metadata;
@@ -156,12 +161,14 @@ class NetworkRequestHandler extends RequestHandler {
       if (orientationField != null) {
         int orientationValue = orientationField.getIntValue();
         switch (orientationValue) {
-          case TiffTagConstants.ORIENTATION_VALUE_ROTATE_180:
+          case ORIENTATION_VALUE_ROTATE_180:
             return 180;
-          case TiffTagConstants.ORIENTATION_VALUE_ROTATE_90_CW:
+          case ORIENTATION_VALUE_ROTATE_90_CW:
             return 90;
-          case TiffTagConstants.ORIENTATION_VALUE_ROTATE_270_CW:
-            return -90;
+          case ORIENTATION_VALUE_ROTATE_270_CW:
+            return 270;
+          default:
+            return 0;
         }
       }
     } catch (IOException ignored) {
@@ -172,7 +179,7 @@ class NetworkRequestHandler extends RequestHandler {
 
   private Boolean isImagingOnClasspath() {
     try {
-      Class.forName("org.apache.commons.imaging.Imaging");
+      Class.forName("org.apache.sanselan.Sanselan");
       return true;
     } catch (ClassNotFoundException ignored) {
       return false;

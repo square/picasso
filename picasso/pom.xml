@@ -25,9 +25,9 @@
       <optional>true</optional>
     </dependency>
     <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-imaging</artifactId>
-        <optional>true</optional>
+      <groupId>org.apache.sanselan</groupId>
+      <artifactId>sanselan</artifactId>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
