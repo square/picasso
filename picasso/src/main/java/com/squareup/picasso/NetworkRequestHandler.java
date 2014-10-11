@@ -42,11 +42,12 @@ class NetworkRequestHandler extends RequestHandler {
 
   private final Downloader downloader;
   private final Stats stats;
-  private static Boolean hasImaging;
+  private final boolean hasImaging;
 
   public NetworkRequestHandler(Downloader downloader, Stats stats) {
     this.downloader = downloader;
     this.stats = stats;
+    this.hasImaging = isImagingOnClasspath();
   }
 
   @Override public boolean canHandleRequest(Request data) {
@@ -103,17 +104,14 @@ class NetworkRequestHandler extends RequestHandler {
     return true;
   }
 
-  private Bitmap decodeStream(InputStream stream, Request data) throws IOException {
-    MarkableInputStream markStream = new MarkableInputStream(stream);
-    stream = markStream;
-
-    long mark = markStream.savePosition(MARKER);
+  private Bitmap decodeStream(MarkableInputStream stream, Request data) throws IOException {
+    long mark = stream.savePosition(MARKER);
 
     final BitmapFactory.Options options = createBitmapOptions(data);
     final boolean calculateSize = requiresInSampleSize(options);
 
     boolean isWebPFile = Utils.isWebPFile(stream);
-    markStream.reset(mark);
+    stream.reset(mark);
     // When decode WebP network stream, BitmapFactory throw JNI Exception and make app crash.
     // Decode byte array instead
     if (isWebPFile) {
@@ -127,7 +125,7 @@ class NetworkRequestHandler extends RequestHandler {
       if (calculateSize) {
         BitmapFactory.decodeStream(stream, null, options);
         calculateInSampleSize(data.targetWidth, data.targetHeight, options, data);
-        markStream.reset(mark);
+        stream.reset(mark);
       }
       Bitmap bitmap = BitmapFactory.decodeStream(stream, null, options);
       if (bitmap == null) {
@@ -139,9 +137,6 @@ class NetworkRequestHandler extends RequestHandler {
   }
 
   private int getOrientation(InputStream is) {
-    if (hasImaging == null) {
-      hasImaging = isImagingOnClasspath();
-    }
     if (!hasImaging) {
       return 0;
     }
@@ -161,11 +156,11 @@ class NetworkRequestHandler extends RequestHandler {
       if (orientationField != null) {
         int orientationValue = orientationField.getIntValue();
         switch (orientationValue) {
-          case 3:
+          case TiffTagConstants.ORIENTATION_VALUE_ROTATE_180:
             return 180;
-          case 6:
+          case TiffTagConstants.ORIENTATION_VALUE_ROTATE_90_CW:
             return 90;
-          case 8:
+          case TiffTagConstants.ORIENTATION_VALUE_ROTATE_270_CW:
             return -90;
         }
       }
