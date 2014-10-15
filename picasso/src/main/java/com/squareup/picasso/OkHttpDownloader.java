@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
 
 import static com.squareup.picasso.Utils.parseResponseSourceHeader;
 
@@ -95,12 +96,13 @@ public class OkHttpDownloader implements Downloader {
     return urlFactory.client();
   }
 
-  @Override public Response load(Uri uri, boolean localCacheOnly) throws IOException {
+  @Override public Response load(Uri uri, DownloaderOptions downloaderOptions) throws IOException {
     HttpURLConnection connection = openConnection(uri);
     connection.setUseCaches(true);
-    if (localCacheOnly) {
+    if (downloaderOptions.loadFromLocalCacheOnly()) {
       connection.setRequestProperty("Cache-Control", "only-if-cached,max-age=" + Integer.MAX_VALUE);
     }
+    applyRequestProperties(connection, downloaderOptions.getRequestProperties());
 
     int responseCode = connection.getResponseCode();
     if (responseCode >= 300) {
@@ -117,5 +119,14 @@ public class OkHttpDownloader implements Downloader {
     boolean fromCache = parseResponseSourceHeader(responseSource);
 
     return new Response(connection.getInputStream(), fromCache, contentLength);
+  }
+
+  private static void applyRequestProperties(HttpURLConnection connection,
+                                             HashMap<String, String> properties) {
+    if (properties != null && !properties.isEmpty()) {
+      for (String key : properties.keySet()) {
+        connection.setRequestProperty(key, properties.get(key));
+      }
+    }
   }
 }
