@@ -71,7 +71,7 @@ abstract class Action<T> {
   }
 
   T getTarget() {
-    return target.get();
+    return target == null ? null : target.get();
   }
 
   String getKey() {
