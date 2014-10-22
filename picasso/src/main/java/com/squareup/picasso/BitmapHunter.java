@@ -149,7 +149,7 @@ class BitmapHunter implements Runnable {
       }
     }
 
-    data.loadFromLocalCacheOnly = (retryCount == 0);
+    data.loadFromCacheIf(retryCount == 0);
     RequestHandler.Result result = requestHandler.load(data);
     if (result != null) {
       bitmap = result.getBitmap();

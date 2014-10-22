@@ -283,6 +283,14 @@ public class RequestCreator {
   }
 
   /**
+   * Sets parameters that will be applied if the request results in a download.
+   */
+  public RequestCreator downloaderOptions(DownloaderOptions options) {
+    data.setDownloadOptions(options);
+    return this;
+  }
+
+  /**
    * Indicate that this action should not use the memory cache for attempting to load or save the
    * image. This can be useful when you know an image will only ever be used once (e.g., loading
    * an image from the filesystem and uploading to a remote server).

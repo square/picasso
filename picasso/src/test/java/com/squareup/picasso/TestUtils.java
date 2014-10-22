@@ -256,6 +256,15 @@ class TestUtils {
     return picasso;
   }
 
+
+  static DownloaderOptions mockDownloaderOptions(boolean loadFromCache) {
+    DownloaderOptions options = mock(DownloaderOptions.class);
+
+    when(options.loadFromLocalCacheOnly()).thenReturn(loadFromCache);
+
+    return options;
+  }
+
   private TestUtils() {
   }
 }

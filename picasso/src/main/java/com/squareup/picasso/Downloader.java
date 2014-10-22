@@ -26,14 +26,13 @@ public interface Downloader {
    * Download the specified image {@code url} from the internet.
    *
    * @param uri Remote image URL.
-   * @param localCacheOnly If {@code true} the URL should only be loaded if available in a local
-   * disk cache.
+   * @param options A set of options that are applied to the download.
    * @return {@link Response} containing either a {@link Bitmap} representation of the request or an
    * {@link InputStream} for the image data. {@code null} can be returned to indicate a problem
    * loading the bitmap.
    * @throws IOException if the requested URL cannot successfully be loaded.
    */
-  Response load(Uri uri, boolean localCacheOnly) throws IOException;
+  Response load(Uri uri, DownloaderOptions options) throws IOException;
 
   /** Thrown for non-2XX responses. */
   class ResponseException extends IOException {

@@ -32,8 +32,6 @@ public final class Request {
   int id;
   /** The time that the request was first submitted (in nanos). */
   long started;
-  /** Whether or not this request should only load from local cache. */
-  boolean loadFromLocalCacheOnly;
 
   /**
    * The image URI.
@@ -77,11 +75,15 @@ public final class Request {
   public final Bitmap.Config config;
   /** The priority of this request. */
   public final Priority priority;
+  /**
+   * A set of options that will be used if this request requires a download.
+   */
+  public final DownloaderOptions downloaderOptions;
 
   private Request(Uri uri, int resourceId, List<Transformation> transformations, int targetWidth,
       int targetHeight, boolean centerCrop, boolean centerInside, float rotationDegrees,
       float rotationPivotX, float rotationPivotY, boolean hasRotationPivot, Bitmap.Config config,
-      Priority priority) {
+      Priority priority, DownloaderOptions downloaderOptions) {
     this.uri = uri;
     this.resourceId = resourceId;
     if (transformations == null) {
@@ -99,6 +101,7 @@ public final class Request {
     this.hasRotationPivot = hasRotationPivot;
     this.config = config;
     this.priority = priority;
+    this.downloaderOptions = downloaderOptions;
   }
 
   @Override public String toString() {
@@ -172,6 +175,10 @@ public final class Request {
     return transformations != null;
   }
 
+  void loadFromCacheIf(boolean condition) {
+    downloaderOptions.setLoadFromLocalCacheOnly(condition);
+  }
+
   public Builder buildUpon() {
     return new Builder(this);
   }
@@ -191,6 +198,7 @@ public final class Request {
     private List<Transformation> transformations;
     private Bitmap.Config config;
     private Priority priority;
+    private DownloaderOptions downloaderOptions;
 
     /** Start building a request using the specified {@link Uri}. */
     public Builder(Uri uri) {
@@ -366,6 +374,18 @@ public final class Request {
       return this;
     }
 
+    /** Execute request using the specified {@link DownloaderOptions}. */
+    public Builder setDownloadOptions(DownloaderOptions downloaderOptions) {
+      if (downloaderOptions == null) {
+        throw new IllegalArgumentException("DownloaderOptions invalid.");
+      }
+      if (this.downloaderOptions != null) {
+        throw new IllegalStateException("DownloaderOptions already set.");
+      }
+      this.downloaderOptions = downloaderOptions;
+      return this;
+    }
+
     /**
      * Add a custom transformation to be applied to the image.
      * <p>
@@ -396,9 +416,12 @@ public final class Request {
       if (priority == null) {
         priority = Priority.NORMAL;
       }
+      if (downloaderOptions == null) {
+        downloaderOptions = new DownloaderOptions();
+      }
       return new Request(uri, resourceId, transformations, targetWidth, targetHeight, centerCrop,
           centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot, config,
-          priority);
+          priority, downloaderOptions);
     }
   }
 }

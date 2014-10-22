@@ -61,41 +61,66 @@ public class OkHttpDownloaderTest {
 
   @Test public void allowExpiredSetsCacheControl() throws Exception {
     server.enqueue(new MockResponse());
-    loader.load(URL, false);
+    loader.load(URL, TestUtils.mockDownloaderOptions(false));
     RecordedRequest request1 = server.takeRequest();
     assertThat(request1.getHeader("Cache-Control")).isNull();
 
     server.enqueue(new MockResponse());
-    loader.load(URL, true);
+    loader.load(URL, TestUtils.mockDownloaderOptions(true));
     RecordedRequest request2 = server.takeRequest();
     assertThat(request2.getHeader("Cache-Control")) //
         .isEqualTo("only-if-cached,max-age=" + Integer.MAX_VALUE);
   }
 
+  @Test public void requestPropertyAppliedToRequestWhenRefererSpecified() throws Exception {
+    final String REFERER_VALUE = "http://my.bogus.referer.url/path";
+
+    server.enqueue(new MockResponse());
+    loader.load(URL, new DownloaderOptions()
+      .setRequestProperty("REFERER", REFERER_VALUE));
+    RecordedRequest request1 = server.takeRequest();
+    assertThat(request1.getHeader("REFERER")).isEqualTo(REFERER_VALUE);
+  }
+
+  @Test public void requestPropertyAppliedToRequestWhenRefererNull() throws Exception {
+    server.enqueue(new MockResponse());
+    loader.load(URL, new DownloaderOptions()
+      .setRequestProperty("REFERER", null));
+    RecordedRequest request1 = server.takeRequest();
+    assertThat(request1.getHeader("REFERER")).isNullOrEmpty();
+  }
+
+  @Test public void noRequestPropertyAppliedToRequestWhenNoneSpecified() throws Exception {
+    server.enqueue(new MockResponse());
+    loader.load(URL, new DownloaderOptions());
+    RecordedRequest request1 = server.takeRequest();
+    assertThat(request1.getHeaders()).doesNotContain("REFERER");
+  }
+
   @Test public void responseSourceHeaderSetsResponseValue() throws Exception {
     server.enqueue(new MockResponse());
-    Downloader.Response response1 = loader.load(URL, false);
+    Downloader.Response response1 = loader.load(URL, TestUtils.mockDownloaderOptions(false));
     assertThat(response1.cached).isFalse();
 
     server.enqueue(new MockResponse().addHeader(RESPONSE_SOURCE_ANDROID, "CACHE 200"));
-    Downloader.Response response2 = loader.load(URL, true);
+    Downloader.Response response2 = loader.load(URL, TestUtils.mockDownloaderOptions(true));
     assertThat(response2.cached).isTrue();
 
     server.enqueue(new MockResponse().addHeader(RESPONSE_SOURCE_OKHTTP, "CACHE 200"));
-    Downloader.Response response3 = loader.load(URL, true);
+    Downloader.Response response3 = loader.load(URL, TestUtils.mockDownloaderOptions(true));
     assertThat(response3.cached).isTrue();
   }
 
   @Test public void readsContentLengthHeader() throws Exception {
     server.enqueue(new MockResponse().addHeader("Content-Length", 1024));
-    Downloader.Response response = loader.load(URL, true);
+    Downloader.Response response = loader.load(URL, TestUtils.mockDownloaderOptions(true));
     assertThat(response.contentLength).isEqualTo(1024);
   }
 
   @Test public void throwsResponseException() throws Exception {
     server.enqueue(new MockResponse().setStatus("HTTP/1.1 401 Not Authorized"));
     try {
-      loader.load(URL, false);
+      loader.load(URL, TestUtils.mockDownloaderOptions(false));
       fail("Expected ResponseException.");
     } catch (Downloader.ResponseException e) {
       assertThat(e).hasMessage("401 Not Authorized");
