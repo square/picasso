@@ -44,6 +44,7 @@ import static com.squareup.picasso.Utils.checkNotMain;
 import static com.squareup.picasso.Utils.createKey;
 import static com.squareup.picasso.Utils.isMain;
 import static com.squareup.picasso.Utils.log;
+import static com.squareup.picasso.Utils.sneakyRethrow;
 
 /** Fluent API for building an image download request. */
 @SuppressWarnings("UnusedDeclaration") // Public API.
@@ -65,12 +66,8 @@ public class RequestCreator {
     });
     try {
       latch.await();
-    } catch (final InterruptedException e) {
-      Picasso.HANDLER.post(new Runnable() {
-        @Override public void run() {
-          throw new RuntimeException(e);
-        }
-      });
+    } catch (InterruptedException e) {
+      sneakyRethrow(e);
     }
     return id.get();
   }
