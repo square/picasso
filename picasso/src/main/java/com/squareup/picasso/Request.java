@@ -375,6 +375,9 @@ public final class Request {
       if (transformation == null) {
         throw new IllegalArgumentException("Transformation must not be null.");
       }
+      if (transformation.key() == null) {
+        throw new IllegalArgumentException("Transformation key must not be null.");
+      }
       if (transformations == null) {
         transformations = new ArrayList<Transformation>(2);
       }

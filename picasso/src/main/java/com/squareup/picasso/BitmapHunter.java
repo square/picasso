@@ -358,7 +358,19 @@ class BitmapHunter implements Runnable {
   static Bitmap applyCustomTransformations(List<Transformation> transformations, Bitmap result) {
     for (int i = 0, count = transformations.size(); i < count; i++) {
       final Transformation transformation = transformations.get(i);
-      Bitmap newResult = transformation.transform(result);
+      Bitmap newResult;
+      try {
+        newResult = transformation.transform(result);
+      } catch (final RuntimeException e) {
+        Picasso.HANDLER.post(new Runnable() {
+          @Override public void run() {
+            throw new RuntimeException("Transformation "
+                + transformation.key()
+                + " crashed with exception.", e);
+          }
+        });
+        return null;
+      }
 
       if (newResult == null) {
         final StringBuilder builder = new StringBuilder() //

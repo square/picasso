@@ -659,6 +659,19 @@ public class RequestCreatorTest {
     new RequestCreator().transform(null);
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void nullKeyTransformationInvalid() throws Exception {
+    new RequestCreator().transform(new Transformation() {
+      @Override public Bitmap transform(Bitmap source) {
+        return source;
+      }
+
+      @Override public String key() {
+        return null;
+      }
+    });
+  }
+
   @Test public void nullTargetsInvalid() throws Exception {
     try {
       new RequestCreator().into((ImageView) null);
