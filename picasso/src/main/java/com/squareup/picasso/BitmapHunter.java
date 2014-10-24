@@ -463,12 +463,15 @@ class BitmapHunter implements Runnable {
         float heightRatio = targetHeight / (float) inHeight;
         float scale = widthRatio < heightRatio ? widthRatio : heightRatio;
         matrix.preScale(scale, scale);
-      } else if (targetWidth != 0 && targetHeight != 0 //
+      } else if ((targetWidth != 0 || targetHeight != 0) //
           && (targetWidth != inWidth || targetHeight != inHeight)) {
         // If an explicit target size has been specified and they do not match the results bounds,
         // pre-scale the existing matrix appropriately.
-        float sx = targetWidth / (float) inWidth;
-        float sy = targetHeight / (float) inHeight;
+        // Keep aspect ratio if one dimension is set to 0.
+        float sx = targetWidth != 0 ? targetWidth / (float) inWidth
+            : targetHeight / (float) inHeight;
+        float sy = targetHeight != 0 ? targetHeight / (float) inHeight
+            : targetWidth / (float) inWidth;
         matrix.preScale(sx, sy);
       }
     }
