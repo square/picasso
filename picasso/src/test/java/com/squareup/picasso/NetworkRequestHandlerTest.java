@@ -137,6 +137,9 @@ public class NetworkRequestHandlerTest {
       @Override public Response load(Uri uri, boolean localCacheOnly) throws IOException {
         return new Response(expected, false, 0);
       }
+
+      @Override public void shutdown() {
+      }
     };
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     NetworkRequestHandler customNetworkHandler = new NetworkRequestHandler(bitmapDownloader, stats);

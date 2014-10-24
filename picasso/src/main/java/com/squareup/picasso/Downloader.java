@@ -35,6 +35,12 @@ public interface Downloader {
    */
   Response load(Uri uri, boolean localCacheOnly) throws IOException;
 
+  /**
+   * Allows to perform a clean up for this {@link Downloader} including closing the disk cache and
+   * other resources.
+   */
+  void shutdown();
+
   /** Thrown for non-2XX responses. */
   class ResponseException extends IOException {
     public ResponseException(String message) {

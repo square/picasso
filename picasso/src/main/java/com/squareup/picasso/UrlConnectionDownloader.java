@@ -73,6 +73,12 @@ public class UrlConnectionDownloader implements Downloader {
     return new Response(connection.getInputStream(), fromCache, contentLength);
   }
 
+  @Override public void shutdown() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH && cache != null) {
+      ResponseCacheIcs.close(cache);
+    }
+  }
+
   private static void installCacheIfNeeded(Context context) {
     // DCL + volatile should be safe after Java 5.
     if (cache == null) {
@@ -96,6 +102,13 @@ public class UrlConnectionDownloader implements Downloader {
         cache = HttpResponseCache.install(cacheDir, maxSize);
       }
       return cache;
+    }
+
+    static void close(Object cache) {
+      try {
+        ((HttpResponseCache) cache).close();
+      } catch (IOException ignored) {
+      }
     }
   }
 }

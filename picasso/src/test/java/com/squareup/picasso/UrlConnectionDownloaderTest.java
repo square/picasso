@@ -17,6 +17,7 @@ package com.squareup.picasso;
 
 import android.app.Activity;
 import android.net.Uri;
+import android.net.http.HttpResponseCache;
 import com.google.mockwebserver.MockResponse;
 import com.google.mockwebserver.MockWebServer;
 import com.google.mockwebserver.RecordedRequest;
@@ -35,6 +36,8 @@ import static android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH;
 import static com.squareup.picasso.UrlConnectionDownloader.RESPONSE_SOURCE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -72,6 +75,14 @@ public class UrlConnectionDownloaderTest {
     server.enqueue(new MockResponse());
     loader.load(URL, false);
     assertThat(UrlConnectionDownloader.cache).isSameAs(cache);
+  }
+
+  @Config(reportSdk = ICE_CREAM_SANDWICH)
+  @Test public void shutdownClosesCache() throws Exception {
+    HttpResponseCache cache = mock(HttpResponseCache.class);
+    UrlConnectionDownloader.cache = cache;
+    loader.shutdown();
+    verify(cache).close();
   }
 
   @Config(reportSdk = GINGERBREAD)

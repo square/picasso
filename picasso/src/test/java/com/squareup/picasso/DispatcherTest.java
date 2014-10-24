@@ -83,6 +83,11 @@ public class DispatcherTest {
     verify(service).shutdown();
   }
 
+  @Test public void shutdownStopsDownloader() throws Exception {
+    dispatcher.shutdown();
+    verify(downloader).shutdown();
+  }
+
   @Test public void shutdownUnregistersReceiver() throws Exception {
     dispatcher.shutdown();
     verify(context).unregisterReceiver(dispatcher.receiver);
