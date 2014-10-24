@@ -43,7 +43,6 @@ import static com.squareup.picasso.Picasso.Priority.NORMAL;
 import static com.squareup.picasso.TestUtils.ASSET_KEY_1;
 import static com.squareup.picasso.TestUtils.ASSET_URI_1;
 import static com.squareup.picasso.TestUtils.BITMAP_1;
-import static com.squareup.picasso.TestUtils.BITMAP_2;
 import static com.squareup.picasso.TestUtils.CONTACT_KEY_1;
 import static com.squareup.picasso.TestUtils.CONTACT_URI_1;
 import static com.squareup.picasso.TestUtils.CONTENT_1_URL;
@@ -610,8 +609,9 @@ public class BitmapHunterTest {
       }
     };
     List<Transformation> transformations = Arrays.asList(badTransformation);
+    Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
     try {
-      BitmapHunter.applyCustomTransformations(transformations, BITMAP_1);
+      BitmapHunter.applyCustomTransformations(transformations, original);
       fail("Expected exception to be thrown.");
     } catch (RuntimeException e) {
       assertThat(e).hasMessage("Transformation " + badTransformation.key() + " crashed with exception.");
@@ -629,8 +629,9 @@ public class BitmapHunterTest {
       }
     };
     List<Transformation> transformations = Arrays.asList(badTransformation);
+    Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
     try {
-      BitmapHunter.applyCustomTransformations(transformations, BITMAP_1);
+      BitmapHunter.applyCustomTransformations(transformations, original);
       fail("Expected exception to be thrown.");
     } catch (RuntimeException e) {
       assertThat(e).hasMessageContaining(
@@ -642,7 +643,7 @@ public class BitmapHunterTest {
     Transformation badTransformation = new Transformation() {
       @Override public Bitmap transform(Bitmap source) {
         // Should recycle source.
-        return BITMAP_2;
+        return Bitmap.createBitmap(10, 10, ARGB_8888);
       }
 
       @Override public String key() {
@@ -650,8 +651,9 @@ public class BitmapHunterTest {
       }
     };
     List<Transformation> transformations = Arrays.asList(badTransformation);
+    Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
     try {
-      BitmapHunter.applyCustomTransformations(transformations, BITMAP_1);
+      BitmapHunter.applyCustomTransformations(transformations, original);
       fail("Expected exception to be thrown.");
     } catch (RuntimeException e) {
       assertThat(e).hasMessage("Transformation "
@@ -672,8 +674,9 @@ public class BitmapHunterTest {
       }
     };
     List<Transformation> transformations = Arrays.asList(badTransformation);
+    Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
     try {
-      BitmapHunter.applyCustomTransformations(transformations, BITMAP_1);
+      BitmapHunter.applyCustomTransformations(transformations, original);
       fail("Expected exception to be thrown.");
     } catch (RuntimeException e) {
       assertThat(e).hasMessage("Transformation "
