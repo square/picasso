@@ -4,7 +4,7 @@ Change Log
 Version 2.4 *TBD*
 ----------------------------
  * RequestHandler API with support for custom bitmap loading.
- * Add `priorty` API for setting request priority. By default `fetch()` requests are set to `Priority.LOW`.
+ * Add `priority` API for setting request priority. By default `fetch()` requests are set to `Priority.LOW`.
  * Requests can now be grouped with a tag and can be batch paused, resumed, or canceled.
  * Resizing with either height or width of 0 will now maintain aspect ratio.
  * Exposed a setter for global Picasso instance.
