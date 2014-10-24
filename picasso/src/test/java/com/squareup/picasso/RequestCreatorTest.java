@@ -161,6 +161,12 @@ public class RequestCreatorTest {
     }
   }
 
+  public void intoTargetNoPlaceholderCallsWithNull() {
+    Target target = mockTarget();
+    new RequestCreator(picasso, URI_1, 0).noPlaceholder().into(target);
+    verify(target).onPrepareLoad(null);
+  }
+
   @Test
   public void intoTargetWithNullUriAndResourceIdSkipsAndCancels() {
     Target target = mockTarget();
@@ -269,13 +275,28 @@ public class RequestCreatorTest {
   }
 
   @Test
+  public void intoImageViewNoPlaceholderDrawable() {
+    Picasso picasso =
+        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null, IDENTITY,
+            null, mock(Stats.class), false, false));
+    ImageView target = mockImageViewTarget();
+    new RequestCreator(picasso, URI_1, 0).noPlaceholder().into(target);
+    verifyNoMoreInteractions(target);
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue()).isInstanceOf(ImageViewAction.class);
+  }
+
+  @Test
   public void intoImageViewSetsPlaceholderWithResourceId() {
     Picasso picasso =
         spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null,
             IDENTITY, null, mock(Stats.class), false, false));
     ImageView target = mockImageViewTarget();
     new RequestCreator(picasso, URI_1, 0).placeholder(android.R.drawable.picture_frame).into(target);
-    verify(target).setImageResource(android.R.drawable.picture_frame);
+    ArgumentCaptor<Drawable> drawableCaptor = ArgumentCaptor.forClass(Drawable.class);
+    verify(target).setImageDrawable(drawableCaptor.capture());
+    assertThat(Robolectric.shadowOf(drawableCaptor.getValue()).getCreatedFromResId()) //
+        .isEqualTo(android.R.drawable.picture_frame);
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue()).isInstanceOf(ImageViewAction.class);
   }
@@ -598,6 +619,29 @@ public class RequestCreatorTest {
     try {
       new RequestCreator().placeholder(new ColorDrawable(0)).placeholder(1);
       fail("Two placeholders should throw exception.");
+    } catch (IllegalStateException ignored) {
+    }
+  }
+
+  @Test public void invalidNoPlaceholder() {
+    try {
+      new RequestCreator().noPlaceholder().placeholder(new ColorDrawable(0));
+      fail("Placeholder after no placeholder should throw exception.");
+    } catch (IllegalStateException ignored) {
+    }
+    try {
+      new RequestCreator().noPlaceholder().placeholder(1);
+      fail("Placeholder after no placeholder should throw exception.");
+    } catch (IllegalStateException ignored) {
+    }
+    try {
+      new RequestCreator().placeholder(1).noPlaceholder();
+      fail("No placeholder after placeholder should throw exception.");
+    } catch (IllegalStateException ignored) {
+    }
+    try {
+      new RequestCreator().placeholder(new ColorDrawable(0)).noPlaceholder();
+      fail("No placeholder after placeholder should throw exception.");
     } catch (IllegalStateException ignored) {
     }
   }
