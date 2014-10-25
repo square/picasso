@@ -15,6 +15,7 @@
  */
 package com.squareup.picasso;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.NetworkInfo;
@@ -32,10 +33,12 @@ class NetworkRequestHandler extends RequestHandler {
   private static final String SCHEME_HTTP = "http";
   private static final String SCHEME_HTTPS = "https";
 
+  private final Context context;
   private final Downloader downloader;
   private final Stats stats;
 
-  public NetworkRequestHandler(Downloader downloader, Stats stats) {
+  public NetworkRequestHandler(Context context, Downloader downloader, Stats stats) {
+    this.context = context.getApplicationContext();
     this.downloader = downloader;
     this.stats = stats;
   }
@@ -96,7 +99,7 @@ class NetworkRequestHandler extends RequestHandler {
 
     long mark = markStream.savePosition(MARKER);
 
-    final BitmapFactory.Options options = createBitmapOptions(data);
+    final BitmapFactory.Options options = createBitmapOptions(data, context);
     final boolean calculateSize = requiresInSampleSize(options);
 
     boolean isWebPFile = Utils.isWebPFile(stream);

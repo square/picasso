@@ -32,8 +32,10 @@ class AssetRequestHandler extends RequestHandler {
       (SCHEME_FILE + ":///" + ANDROID_ASSET + "/").length();
 
   private final AssetManager assetManager;
+  private final Context context;
 
   public AssetRequestHandler(Context context) {
+    this.context = context.getApplicationContext();
     assetManager = context.getAssets();
   }
 
@@ -49,7 +51,7 @@ class AssetRequestHandler extends RequestHandler {
   }
 
   Bitmap decodeAsset(Request data, String filePath) throws IOException {
-    final BitmapFactory.Options options = createBitmapOptions(data);
+    final BitmapFactory.Options options = createBitmapOptions(data, context);
     if (requiresInSampleSize(options)) {
       InputStream is = null;
       try {

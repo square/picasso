@@ -66,7 +66,7 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
 
       long id = parseId(data.uri);
 
-      BitmapFactory.Options options = createBitmapOptions(data);
+      BitmapFactory.Options options = createBitmapOptions(data, context);
       options.inJustDecodeBounds = true;
 
       calculateInSampleSize(data.targetWidth, data.targetHeight, picassoKind.width,

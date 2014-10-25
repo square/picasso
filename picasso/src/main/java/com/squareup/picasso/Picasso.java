@@ -183,7 +183,7 @@ public class Picasso {
     allRequestHandlers.add(new ContentStreamRequestHandler(context));
     allRequestHandlers.add(new AssetRequestHandler(context));
     allRequestHandlers.add(new FileRequestHandler(context));
-    allRequestHandlers.add(new NetworkRequestHandler(dispatcher.downloader, stats));
+    allRequestHandlers.add(new NetworkRequestHandler(context, dispatcher.downloader, stats));
     requestHandlers = Collections.unmodifiableList(allRequestHandlers);
 
     this.stats = stats;

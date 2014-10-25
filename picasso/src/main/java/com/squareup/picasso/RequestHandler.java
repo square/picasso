@@ -15,6 +15,7 @@
  */
 package com.squareup.picasso;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.NetworkInfo;
@@ -115,17 +116,23 @@ public abstract class RequestHandler {
 
   /**
    * Lazily create {@link BitmapFactory.Options} based in given
-   * {@link Request}, only instantiating them if needed.
+   * {@link Request} and {@link Context}, only instantiating
+   * them if needed.
    */
-  static BitmapFactory.Options createBitmapOptions(Request data) {
+  static BitmapFactory.Options createBitmapOptions(Request data, Context context) {
     final boolean justBounds = data.hasSize();
     final boolean hasConfig = data.config != null;
+    final boolean adjustDensity = (data.originalDensity > 0) && context != null;
     BitmapFactory.Options options = null;
-    if (justBounds || hasConfig) {
+    if (justBounds || hasConfig || adjustDensity) {
       options = new BitmapFactory.Options();
       options.inJustDecodeBounds = justBounds;
       if (hasConfig) {
         options.inPreferredConfig = data.config;
+      }
+      if (adjustDensity) {
+        options.inDensity = data.originalDensity;
+        options.inTargetDensity = context.getResources().getDisplayMetrics().densityDpi;
       }
     }
     return options;

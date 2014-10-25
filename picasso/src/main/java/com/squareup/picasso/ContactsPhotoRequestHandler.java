@@ -108,7 +108,7 @@ class ContactsPhotoRequestHandler extends RequestHandler {
     if (stream == null) {
       return null;
     }
-    final BitmapFactory.Options options = createBitmapOptions(data);
+    final BitmapFactory.Options options = createBitmapOptions(data, context);
     if (requiresInSampleSize(options)) {
       InputStream is = getInputStream(data);
       try {

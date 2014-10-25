@@ -15,8 +15,11 @@
  */
 package com.squareup.picasso;
 
+import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.DisplayMetrics;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -28,6 +31,8 @@ import static com.squareup.picasso.RequestHandler.createBitmapOptions;
 import static com.squareup.picasso.RequestHandler.requiresInSampleSize;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -38,8 +43,8 @@ public class RequestHandlerTest {
       Request data = new Request.Builder(URI_1).config(config).build();
       Request copy = data.buildUpon().build();
 
-      assertThat(createBitmapOptions(data).inPreferredConfig).isSameAs(config);
-      assertThat(createBitmapOptions(copy).inPreferredConfig).isSameAs(config);
+      assertThat(createBitmapOptions(data, null).inPreferredConfig).isSameAs(config);
+      assertThat(createBitmapOptions(copy, null).inPreferredConfig).isSameAs(config);
     }
   }
 
@@ -90,14 +95,14 @@ public class RequestHandlerTest {
   @Test public void nullBitmapOptionsIfNoResizing() {
     // No resize must return no bitmap options
     final Request noResize = new Request.Builder(URI_1).build();
-    final BitmapFactory.Options noResizeOptions = createBitmapOptions(noResize);
+    final BitmapFactory.Options noResizeOptions = createBitmapOptions(noResize, null);
     assertThat(noResizeOptions).isNull();
   }
 
   @Test public void inJustDecodeBoundsIfResizing() {
     // Resize must return bitmap options with inJustDecodeBounds = true
     final Request requiresResize = new Request.Builder(URI_1).resize(20, 15).build();
-    final BitmapFactory.Options resizeOptions = createBitmapOptions(requiresResize);
+    final BitmapFactory.Options resizeOptions = createBitmapOptions(requiresResize, null);
     assertThat(resizeOptions).isNotNull();
     assertThat(resizeOptions.inJustDecodeBounds).isTrue();
   }
@@ -105,8 +110,31 @@ public class RequestHandlerTest {
   @Test public void createWithConfigAndNotInJustDecodeBounds() {
     // Given a config must return bitmap options and false inJustDecodeBounds
     final Request config = new Request.Builder(URI_1).config(RGB_565).build();
-    final BitmapFactory.Options configOptions = createBitmapOptions(config);
+    final BitmapFactory.Options configOptions = createBitmapOptions(config, null);
     assertThat(configOptions).isNotNull();
     assertThat(configOptions.inJustDecodeBounds).isFalse();
+  }
+
+  @Test public void createWithDensity() {
+    Context context = mock(Context.class);
+    Resources resources = mock(Resources.class);
+    DisplayMetrics displayMetrics = new DisplayMetrics();
+    when(context.getResources()).thenReturn(resources);
+    when(resources.getDisplayMetrics()).thenReturn(displayMetrics);
+    displayMetrics.densityDpi = DisplayMetrics.DENSITY_XHIGH;
+
+    int[] densities = {
+      DisplayMetrics.DENSITY_MEDIUM,
+      DisplayMetrics.DENSITY_HIGH,
+      DisplayMetrics.DENSITY_XHIGH,
+      DisplayMetrics.DENSITY_XXHIGH
+    };
+
+    for (int density : densities) {
+      Request data = new Request.Builder(URI_1).originalDensity(density).build();
+      BitmapFactory.Options options = createBitmapOptions(data, context);
+      assertThat(options.inDensity).isEqualTo(density);
+      assertThat(options.inTargetDensity).isEqualTo(DisplayMetrics.DENSITY_XHIGH);
+    }
   }
 }
