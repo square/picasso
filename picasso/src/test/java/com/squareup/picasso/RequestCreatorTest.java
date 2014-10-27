@@ -42,6 +42,8 @@ import static com.squareup.picasso.Picasso.RequestTransformer.IDENTITY;
 import static com.squareup.picasso.RemoteViewsAction.AppWidgetAction;
 import static com.squareup.picasso.RemoteViewsAction.NotificationAction;
 import static com.squareup.picasso.TestUtils.BITMAP_1;
+import static com.squareup.picasso.TestUtils.STEADY_1;
+import static com.squareup.picasso.TestUtils.STEADY_URI_KEY_1;
 import static com.squareup.picasso.TestUtils.TRANSFORM_REQUEST_ANSWER;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
@@ -272,14 +274,14 @@ public class RequestCreatorTest {
 
   @Test
   public void intoImageViewSetsPlaceholderWithResourceId() throws Exception {
-    Picasso picasso =
-        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null,
-            IDENTITY, null, mock(Stats.class), false, false));
-    ImageView target = mockImageViewTarget();
-    new RequestCreator(picasso, URI_1, 0).placeholder(R.drawable.picture_frame).into(target);
-    verify(target).setImageResource(R.drawable.picture_frame);
-    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
-    assertThat(actionCaptor.getValue()).isInstanceOf(ImageViewAction.class);
+        Picasso picasso =
+                spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null,
+                        IDENTITY, null, mock(Stats.class), false, false));
+        ImageView target = mockImageViewTarget();
+        new RequestCreator(picasso, URI_1, 0).placeholder(R.drawable.picture_frame).into(target);
+        verify(target).setImageResource(R.drawable.picture_frame);
+        verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+        assertThat(actionCaptor.getValue()).isInstanceOf(ImageViewAction.class);
   }
 
   @Test
@@ -670,5 +672,11 @@ public class RequestCreatorTest {
       fail("Null Target should throw exception.");
     } catch (IllegalArgumentException expected) {
     }
+  }
+
+  @Test public void imageViewActionWithSteadyKey() throws Exception {
+    new RequestCreator(picasso, URI_1, 0).steadyKey(STEADY_1).into(mockImageViewTarget());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getKey()).isEqualTo(STEADY_URI_KEY_1);
   }
 }
