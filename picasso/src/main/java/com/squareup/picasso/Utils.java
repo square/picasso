@@ -184,7 +184,7 @@ final class Utils {
       }
       builder.append('\n');
     }
-    if (data.targetWidth != 0) {
+    if (data.hasSize()) {
       builder.append("resize:").append(data.targetWidth).append('x').append(data.targetHeight);
       builder.append('\n');
     }
@@ -259,6 +259,15 @@ final class Utils {
     return okHttpClient
         ? OkHttpLoaderCreator.create(context)
         : new UrlConnectionDownloader(context);
+  }
+
+  static void sneakyRethrow(Throwable t) {
+    Utils.<Error>sneakyThrow2(t);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static <T extends Throwable> void sneakyThrow2(Throwable t) throws T {
+    throw (T) t;
   }
 
   static File createDefaultCacheDir(Context context) {

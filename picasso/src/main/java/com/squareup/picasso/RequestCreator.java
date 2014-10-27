@@ -44,6 +44,7 @@ import static com.squareup.picasso.Utils.checkNotMain;
 import static com.squareup.picasso.Utils.createKey;
 import static com.squareup.picasso.Utils.isMain;
 import static com.squareup.picasso.Utils.log;
+import static com.squareup.picasso.Utils.sneakyRethrow;
 
 /** Fluent API for building an image download request. */
 @SuppressWarnings("UnusedDeclaration") // Public API.
@@ -65,12 +66,8 @@ public class RequestCreator {
     });
     try {
       latch.await();
-    } catch (final InterruptedException e) {
-      Picasso.HANDLER.post(new Runnable() {
-        @Override public void run() {
-          throw new RuntimeException(e);
-        }
-      });
+    } catch (InterruptedException e) {
+      sneakyRethrow(e);
     }
     return id.get();
   }
@@ -81,6 +78,7 @@ public class RequestCreator {
   private boolean skipMemoryCache;
   private boolean noFade;
   private boolean deferred;
+  private boolean setPlaceholder = true;
   private int placeholderResId;
   private int errorResId;
   private Drawable placeholderDrawable;
@@ -102,11 +100,32 @@ public class RequestCreator {
   }
 
   /**
+   * Explicitly opt-out to having a placeholder set when calling {@code into}.
+   * <p>
+   * By default, Picasso will either set a supplied placeholder or clear the target
+   * {@link ImageView} in order to ensure behavior in situations where views are recycled. This
+   * method will prevent that behavior and retain any already set image.
+   */
+  public RequestCreator noPlaceholder() {
+    if (placeholderResId != 0) {
+      throw new IllegalStateException("Placeholder resource already set.");
+    }
+    if (placeholderDrawable != null) {
+      throw new IllegalStateException("Placeholder image already set.");
+    }
+    setPlaceholder = false;
+    return this;
+  }
+
+  /**
    * A placeholder drawable to be used while the image is being loaded. If the requested image is
    * not immediately available in the memory cache then this resource will be set on the target
    * {@link ImageView}.
    */
   public RequestCreator placeholder(int placeholderResId) {
+    if (!setPlaceholder) {
+      throw new IllegalStateException("Already explicitly declared as no placeholder.");
+    }
     if (placeholderResId == 0) {
       throw new IllegalArgumentException("Placeholder image resource invalid.");
     }
@@ -126,6 +145,9 @@ public class RequestCreator {
    * used in an {@link android.widget.Adapter adapter}), pass in {@code null}.
    */
   public RequestCreator placeholder(Drawable placeholderDrawable) {
+    if (!setPlaceholder) {
+      throw new IllegalStateException("Already explicitly declared as no placeholder.");
+    }
     if (placeholderResId != 0) {
       throw new IllegalStateException("Placeholder image already set.");
     }
@@ -412,13 +434,9 @@ public class RequestCreator {
       throw new IllegalStateException("Fit cannot be used with a Target.");
     }
 
-    Drawable drawable =
-        placeholderResId != 0 ? picasso.context.getResources().getDrawable(placeholderResId)
-            : placeholderDrawable;
-
     if (!data.hasImage()) {
       picasso.cancelRequest(target);
-      target.onPrepareLoad(drawable);
+      target.onPrepareLoad(setPlaceholder ? getPlaceholderDrawable() : null);
       return;
     }
 
@@ -434,7 +452,7 @@ public class RequestCreator {
       }
     }
 
-    target.onPrepareLoad(drawable);
+    target.onPrepareLoad(setPlaceholder ? getPlaceholderDrawable() : null);
 
     Action action =
         new TargetAction(picasso, target, request, skipMemoryCache, errorResId, errorDrawable,
@@ -460,7 +478,7 @@ public class RequestCreator {
     if (deferred) {
       throw new IllegalStateException("Fit cannot be used with RemoteViews.");
     }
-    if (placeholderDrawable != null || errorDrawable != null) {
+    if (placeholderDrawable != null || placeholderResId != 0 || errorDrawable != null) {
       throw new IllegalArgumentException(
           "Cannot use placeholder or error drawables with remote views.");
     }
@@ -492,7 +510,7 @@ public class RequestCreator {
     if (deferred) {
       throw new IllegalStateException("Fit cannot be used with remote views.");
     }
-    if (placeholderDrawable != null || errorDrawable != null) {
+    if (placeholderDrawable != null || placeholderResId != 0 || errorDrawable != null) {
       throw new IllegalArgumentException(
           "Cannot use placeholder or error drawables with remote views.");
     }
@@ -536,7 +554,9 @@ public class RequestCreator {
 
     if (!data.hasImage()) {
       picasso.cancelRequest(target);
-      setPlaceholder(target, placeholderResId, placeholderDrawable);
+      if (setPlaceholder) {
+        setPlaceholder(target, getPlaceholderDrawable());
+      }
       return;
     }
 
@@ -547,7 +567,9 @@ public class RequestCreator {
       int width = target.getWidth();
       int height = target.getHeight();
       if (width == 0 || height == 0) {
-        setPlaceholder(target, placeholderResId, placeholderDrawable);
+        if (setPlaceholder) {
+          setPlaceholder(target, getPlaceholderDrawable());
+        }
         picasso.defer(target, new DeferredRequestCreator(this, target, callback));
         return;
       }
@@ -572,13 +594,23 @@ public class RequestCreator {
       }
     }
 
-    setPlaceholder(target, placeholderResId, placeholderDrawable);
+    if (setPlaceholder) {
+      setPlaceholder(target, getPlaceholderDrawable());
+    }
 
     Action action =
         new ImageViewAction(picasso, target, request, skipMemoryCache, noFade, errorResId,
             errorDrawable, requestKey, tag, callback);
 
     picasso.enqueueAndSubmit(action);
+  }
+
+  private Drawable getPlaceholderDrawable() {
+    if (placeholderResId != 0) {
+      return picasso.context.getResources().getDrawable(placeholderResId);
+    } else {
+      return placeholderDrawable; // This may be null which is expected and desired behavior.
+    }
   }
 
   /** Create the request optionally passing it through the request transformer. */

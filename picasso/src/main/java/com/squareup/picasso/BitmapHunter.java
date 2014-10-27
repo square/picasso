@@ -85,19 +85,19 @@ class BitmapHunter implements Runnable {
   Priority priority;
 
   BitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats, Action action,
-               RequestHandler requestHandler) {
+      RequestHandler requestHandler) {
     this.sequence = SEQUENCE_GENERATOR.incrementAndGet();
     this.picasso = picasso;
     this.dispatcher = dispatcher;
     this.cache = cache;
     this.stats = stats;
+    this.action = action;
     this.key = action.getKey();
     this.data = action.getRequest();
+    this.priority = action.getPriority();
     this.skipMemoryCache = action.skipCache;
     this.requestHandler = requestHandler;
     this.retryCount = requestHandler.getRetryCount();
-    this.action = action;
-    this.priority = (action != null ? action.getPriority() : LOW);
   }
 
   @Override public void run() {
@@ -242,9 +242,10 @@ class BitmapHunter implements Runnable {
     Priority newPriority = LOW;
 
     boolean hasMultiple = actions != null && !actions.isEmpty();
+    boolean hasAny = action != null || hasMultiple;
 
     // Hunter has no requests, low priority.
-    if (actions == null && !hasMultiple) {
+    if (!hasAny) {
       return newPriority;
     }
 
@@ -253,6 +254,7 @@ class BitmapHunter implements Runnable {
     }
 
     if (hasMultiple) {
+      //noinspection ForLoopReplaceableByForEach
       for (int i = 0, n = actions.size(); i < n; i++) {
         Priority actionPriority = actions.get(i).getPriority();
         if (actionPriority.ordinal() > newPriority.ordinal()) {
@@ -338,8 +340,8 @@ class BitmapHunter implements Runnable {
     Thread.currentThread().setName(builder.toString());
   }
 
-  static BitmapHunter forRequest(Picasso picasso, Dispatcher dispatcher,
-      Cache cache, Stats stats, Action action) {
+  static BitmapHunter forRequest(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats,
+      Action action) {
     Request request = action.getRequest();
     List<RequestHandler> requestHandlers = picasso.getRequestHandlers();
 
@@ -358,7 +360,18 @@ class BitmapHunter implements Runnable {
   static Bitmap applyCustomTransformations(List<Transformation> transformations, Bitmap result) {
     for (int i = 0, count = transformations.size(); i < count; i++) {
       final Transformation transformation = transformations.get(i);
-      Bitmap newResult = transformation.transform(result);
+      Bitmap newResult;
+      try {
+        newResult = transformation.transform(result);
+      } catch (final RuntimeException e) {
+        Picasso.HANDLER.post(new Runnable() {
+          @Override public void run() {
+            throw new RuntimeException(
+                "Transformation " + transformation.key() + " crashed with exception.", e);
+          }
+        });
+        return null;
+      }
 
       if (newResult == null) {
         final StringBuilder builder = new StringBuilder() //
@@ -451,12 +464,15 @@ class BitmapHunter implements Runnable {
         float heightRatio = targetHeight / (float) inHeight;
         float scale = widthRatio < heightRatio ? widthRatio : heightRatio;
         matrix.preScale(scale, scale);
-      } else if (targetWidth != 0 && targetHeight != 0 //
+      } else if ((targetWidth != 0 || targetHeight != 0) //
           && (targetWidth != inWidth || targetHeight != inHeight)) {
         // If an explicit target size has been specified and they do not match the results bounds,
         // pre-scale the existing matrix appropriately.
-        float sx = targetWidth / (float) inWidth;
-        float sy = targetHeight / (float) inHeight;
+        // Keep aspect ratio if one dimension is set to 0.
+        float sx =
+            targetWidth != 0 ? targetWidth / (float) inWidth : targetHeight / (float) inHeight;
+        float sy =
+            targetHeight != 0 ? targetHeight / (float) inHeight : targetWidth / (float) inWidth;
         matrix.preScale(sx, sy);
       }
     }

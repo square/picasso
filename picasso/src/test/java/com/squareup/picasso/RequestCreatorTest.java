@@ -15,12 +15,13 @@
  */
 package com.squareup.picasso;
 
-import android.R;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
+import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,19 +32,14 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
-
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
-import static com.squareup.picasso.Picasso.Priority.LOW;
 import static com.squareup.picasso.Picasso.Priority.HIGH;
+import static com.squareup.picasso.Picasso.Priority.LOW;
 import static com.squareup.picasso.Picasso.Priority.NORMAL;
 import static com.squareup.picasso.Picasso.RequestTransformer.IDENTITY;
 import static com.squareup.picasso.RemoteViewsAction.AppWidgetAction;
 import static com.squareup.picasso.RemoteViewsAction.NotificationAction;
 import static com.squareup.picasso.TestUtils.BITMAP_1;
-import static com.squareup.picasso.TestUtils.STEADY_1;
-import static com.squareup.picasso.TestUtils.STEADY_URI_KEY_1;
 import static com.squareup.picasso.TestUtils.TRANSFORM_REQUEST_ANSWER;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
@@ -76,30 +72,30 @@ public class RequestCreatorTest {
   @Mock Picasso picasso;
   @Captor ArgumentCaptor<Action> actionCaptor;
 
-  @Before public void shutUp() throws Exception {
+  @Before public void shutUp() {
     initMocks(this);
     when(picasso.transformRequest(any(Request.class))).thenAnswer(TRANSFORM_REQUEST_ANSWER);
   }
 
   @Test
-  public void getOnMainCrashes() throws Exception {
+  public void getOnMainCrashes() throws IOException {
     try {
       new RequestCreator(picasso, URI_1, 0).get();
       fail("Calling get() on main thread should throw exception");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
   }
 
-  @Test public void loadWithShutdownCrashes() throws Exception {
+  @Test public void loadWithShutdownCrashes() {
     picasso.shutdown = true;
     try {
       new RequestCreator(picasso, URI_1, 0).fetch();
       fail("Should have crashed with a shutdown picasso.");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
   }
 
-  @Test public void getReturnsNullIfNullUriAndResourceId() throws Exception {
+  @Test public void getReturnsNullIfNullUriAndResourceId() throws InterruptedException {
     final CountDownLatch latch = new CountDownLatch(1);
     final Bitmap[] result = new Bitmap[1];
 
@@ -120,53 +116,59 @@ public class RequestCreatorTest {
     verifyZeroInteractions(picasso);
   }
 
-  @Test public void fetchSubmitsFetchRequest() throws Exception {
+  @Test public void fetchSubmitsFetchRequest() {
     new RequestCreator(picasso, URI_1, 0).fetch();
     verify(picasso).submit(actionCaptor.capture());
     assertThat(actionCaptor.getValue()).isInstanceOf(FetchAction.class);
   }
 
-  @Test public void fetchWithFitThrows() throws Exception {
+  @Test public void fetchWithFitThrows() {
     try {
       new RequestCreator(picasso, URI_1, 0).fit().fetch();
       fail("Calling fetch() with fit() should throw an exception");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
   }
 
-  @Test public void fetchWithDefaultPriority() throws Exception {
+  @Test public void fetchWithDefaultPriority() {
     new RequestCreator(picasso, URI_1, 0).fetch();
     verify(picasso).submit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getPriority()).isEqualTo(LOW);
   }
 
-  @Test public void fetchWithCustomPriority() throws Exception {
+  @Test public void fetchWithCustomPriority() {
     new RequestCreator(picasso, URI_1, 0).priority(HIGH).fetch();
     verify(picasso).submit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getPriority()).isEqualTo(HIGH);
   }
 
   @Test
-  public void intoTargetWithNullThrows() throws Exception {
+  public void intoTargetWithNullThrows() {
     try {
       new RequestCreator(picasso, URI_1, 0).into((Target) null);
       fail("Calling into() with null Target should throw exception");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
   }
 
   @Test
-  public void intoTargetWithFitThrows() throws Exception {
+  public void intoTargetWithFitThrows() {
     try {
       Target target = mockTarget();
       new RequestCreator(picasso, URI_1, 0).fit().into(target);
       fail("Calling into() target with fit() should throw exception");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
   }
 
+  public void intoTargetNoPlaceholderCallsWithNull() {
+    Target target = mockTarget();
+    new RequestCreator(picasso, URI_1, 0).noPlaceholder().into(target);
+    verify(target).onPrepareLoad(null);
+  }
+
   @Test
-  public void intoTargetWithNullUriAndResourceIdSkipsAndCancels() throws Exception {
+  public void intoTargetWithNullUriAndResourceIdSkipsAndCancels() {
     Target target = mockTarget();
     Drawable placeHolderDrawable = mock(Drawable.class);
     new RequestCreator(picasso, null, 0).placeholder(placeHolderDrawable).into(target);
@@ -176,7 +178,7 @@ public class RequestCreatorTest {
   }
 
   @Test
-  public void intoTargetWithQuickMemoryCacheCheckDoesNotSubmit() throws Exception {
+  public void intoTargetWithQuickMemoryCacheCheckDoesNotSubmit() {
     when(picasso.quickMemoryCacheCheck(URI_KEY_1)).thenReturn(BITMAP_1);
     Target target = mockTarget();
     new RequestCreator(picasso, URI_1, 0).into(target);
@@ -186,14 +188,14 @@ public class RequestCreatorTest {
   }
 
   @Test
-  public void intoTargetAndSkipMemoryCacheDoesNotCheckMemoryCache() throws Exception {
+  public void intoTargetAndSkipMemoryCacheDoesNotCheckMemoryCache() {
     Target target = mockTarget();
     new RequestCreator(picasso, URI_1, 0).skipMemoryCache().into(target);
     verify(picasso, never()).quickMemoryCacheCheck(URI_KEY_1);
   }
 
   @Test
-  public void intoTargetAndNotInCacheSubmitsTargetRequest() throws Exception {
+  public void intoTargetAndNotInCacheSubmitsTargetRequest() {
     Target target = mockTarget();
     Drawable placeHolderDrawable = mock(Drawable.class);
     new RequestCreator(picasso, URI_1, 0).placeholder(placeHolderDrawable).into(target);
@@ -202,41 +204,41 @@ public class RequestCreatorTest {
     assertThat(actionCaptor.getValue()).isInstanceOf(TargetAction.class);
   }
 
-  @Test public void targetActionWithDefaultPriority() throws Exception {
+  @Test public void targetActionWithDefaultPriority() {
     new RequestCreator(picasso, URI_1, 0).into(mockTarget());
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getPriority()).isEqualTo(NORMAL);
   }
 
-  @Test public void targetActionWithCustomPriority() throws Exception {
+  @Test public void targetActionWithCustomPriority() {
     new RequestCreator(picasso, URI_1, 0).priority(HIGH).into(mockTarget());
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getPriority()).isEqualTo(HIGH);
   }
 
-  @Test public void targetActionWithDefaultTag() throws Exception {
+  @Test public void targetActionWithDefaultTag() {
     new RequestCreator(picasso, URI_1, 0).into(mockTarget());
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getTag()).isEqualTo(actionCaptor.getValue());
   }
 
-  @Test public void targetActionWithCustomTag() throws Exception {
+  @Test public void targetActionWithCustomTag() {
     new RequestCreator(picasso, URI_1, 0).tag("tag").into(mockTarget());
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getTag()).isEqualTo("tag");
   }
 
   @Test
-  public void intoImageViewWithNullThrows() throws Exception {
+  public void intoImageViewWithNullThrows() {
     try {
       new RequestCreator(picasso, URI_1, 0).into((ImageView) null);
       fail("Calling into() with null ImageView should throw exception");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
   }
 
   @Test
-  public void intoImageViewWithNullUriAndResourceIdSkipsAndCancels() throws Exception {
+  public void intoImageViewWithNullUriAndResourceIdSkipsAndCancels() {
     ImageView target = mockImageViewTarget();
     new RequestCreator(picasso, null, 0).into(target);
     verify(picasso).cancelRequest(target);
@@ -245,7 +247,7 @@ public class RequestCreatorTest {
   }
 
   @Test
-  public void intoImageViewWithQuickMemoryCacheCheckDoesNotSubmit() throws Exception {
+  public void intoImageViewWithQuickMemoryCacheCheckDoesNotSubmit() {
     Picasso picasso =
         spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null,
             IDENTITY, null, mock(Stats.class), false, false));
@@ -260,7 +262,7 @@ public class RequestCreatorTest {
   }
 
   @Test
-  public void intoImageViewSetsPlaceholderDrawable() throws Exception {
+  public void intoImageViewSetsPlaceholderDrawable() {
     Picasso picasso =
         spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null,
             IDENTITY, null, mock(Stats.class), false, false));
@@ -273,19 +275,34 @@ public class RequestCreatorTest {
   }
 
   @Test
-  public void intoImageViewSetsPlaceholderWithResourceId() throws Exception {
-        Picasso picasso =
-                spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null,
-                        IDENTITY, null, mock(Stats.class), false, false));
-        ImageView target = mockImageViewTarget();
-        new RequestCreator(picasso, URI_1, 0).placeholder(R.drawable.picture_frame).into(target);
-        verify(target).setImageResource(R.drawable.picture_frame);
-        verify(picasso).enqueueAndSubmit(actionCaptor.capture());
-        assertThat(actionCaptor.getValue()).isInstanceOf(ImageViewAction.class);
+  public void intoImageViewNoPlaceholderDrawable() {
+    Picasso picasso =
+        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null, IDENTITY,
+            null, mock(Stats.class), false, false));
+    ImageView target = mockImageViewTarget();
+    new RequestCreator(picasso, URI_1, 0).noPlaceholder().into(target);
+    verifyNoMoreInteractions(target);
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue()).isInstanceOf(ImageViewAction.class);
   }
 
   @Test
-  public void cancelNotOnMainThreadCrashes() throws Exception {
+  public void intoImageViewSetsPlaceholderWithResourceId() {
+    Picasso picasso =
+        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null,
+            IDENTITY, null, mock(Stats.class), false, false));
+    ImageView target = mockImageViewTarget();
+    new RequestCreator(picasso, URI_1, 0).placeholder(android.R.drawable.picture_frame).into(target);
+    ArgumentCaptor<Drawable> drawableCaptor = ArgumentCaptor.forClass(Drawable.class);
+    verify(target).setImageDrawable(drawableCaptor.capture());
+    assertThat(Robolectric.shadowOf(drawableCaptor.getValue()).getCreatedFromResId()) //
+        .isEqualTo(android.R.drawable.picture_frame);
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue()).isInstanceOf(ImageViewAction.class);
+  }
+
+  @Test
+  public void cancelNotOnMainThreadCrashes() throws InterruptedException {
     doCallRealMethod().when(picasso).cancelRequest(any(Target.class));
     final CountDownLatch latch = new CountDownLatch(1);
     new Thread(new Runnable() {
@@ -303,7 +320,7 @@ public class RequestCreatorTest {
   }
 
   @Test
-  public void intoNotOnMainThreadCrashes() throws Exception {
+  public void intoNotOnMainThreadCrashes() throws InterruptedException {
     doCallRealMethod().when(picasso).enqueueAndSubmit(any(Action.class));
     final CountDownLatch latch = new CountDownLatch(1);
     new Thread(new Runnable() {
@@ -321,7 +338,7 @@ public class RequestCreatorTest {
   }
 
   @Test
-  public void intoImageViewAndNotInCacheSubmitsImageViewRequest() throws Exception {
+  public void intoImageViewAndNotInCacheSubmitsImageViewRequest() {
     ImageView target = mockImageViewTarget();
     new RequestCreator(picasso, URI_1, 0).into(target);
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
@@ -329,7 +346,7 @@ public class RequestCreatorTest {
   }
 
   @Test
-  public void intoImageViewWithFitAndNoDimensionsQueuesDeferredImageViewRequest() throws Exception {
+  public void intoImageViewWithFitAndNoDimensionsQueuesDeferredImageViewRequest() {
     ImageView target = mockFitImageViewTarget(true);
     when(target.getWidth()).thenReturn(0);
     when(target.getHeight()).thenReturn(0);
@@ -339,7 +356,7 @@ public class RequestCreatorTest {
   }
 
   @Test
-  public void intoImageViewWithFitAndDimensionsQueuesImageViewRequest() throws Exception {
+  public void intoImageViewWithFitAndDimensionsQueuesImageViewRequest() {
     ImageView target = mockFitImageViewTarget(true);
     when(target.getWidth()).thenReturn(100);
     when(target.getHeight()).thenReturn(100);
@@ -349,151 +366,175 @@ public class RequestCreatorTest {
   }
 
   @Test
-  public void intoImageViewAndSkipMemoryCacheDoesNotCheckMemoryCache() throws Exception {
+  public void intoImageViewAndSkipMemoryCacheDoesNotCheckMemoryCache() {
     ImageView target = mockImageViewTarget();
     new RequestCreator(picasso, URI_1, 0).skipMemoryCache().into(target);
     verify(picasso, never()).quickMemoryCacheCheck(URI_KEY_1);
   }
 
   @Test
-  public void intoImageViewWithFitAndResizeThrows() throws Exception {
+  public void intoImageViewWithFitAndResizeThrows() {
     try {
       ImageView target = mockImageViewTarget();
       new RequestCreator(picasso, URI_1, 0).fit().resize(10, 10).into(target);
       fail("Calling into() ImageView with fit() and resize() should throw exception");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
   }
 
-  @Test public void imageViewActionWithDefaultPriority() throws Exception {
+  @Test public void imageViewActionWithDefaultPriority() {
     new RequestCreator(picasso, URI_1, 0).into(mockImageViewTarget());
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getPriority()).isEqualTo(NORMAL);
   }
 
-  @Test public void imageViewActionWithCustomPriority() throws Exception {
+  @Test public void imageViewActionWithCustomPriority() {
     new RequestCreator(picasso, URI_1, 0).priority(HIGH).into(mockImageViewTarget());
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getPriority()).isEqualTo(HIGH);
   }
 
-  @Test public void imageViewActionWithDefaultTag() throws Exception {
+  @Test public void imageViewActionWithDefaultTag() {
     new RequestCreator(picasso, URI_1, 0).into(mockImageViewTarget());
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getTag()).isEqualTo(actionCaptor.getValue());
   }
 
-  @Test public void imageViewActionWithCustomTag() throws Exception {
+  @Test public void imageViewActionWithCustomTag() {
     new RequestCreator(picasso, URI_1, 0).tag("tag").into(mockImageViewTarget());
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getTag()).isEqualTo("tag");
   }
 
-  @Test public void intoRemoteViewsWidgetQueuesAppWidgetAction() throws Exception {
+  @Test public void intoRemoteViewsWidgetQueuesAppWidgetAction() {
     new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, new int[] { 1, 2, 3 });
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue()).isInstanceOf(AppWidgetAction.class);
   }
 
-  @Test public void intoRemoteViewsNotificationQueuesNotificationAction() throws Exception {
+  @Test public void intoRemoteViewsNotificationQueuesNotificationAction() {
     new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, 0, mockNotification());
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue()).isInstanceOf(NotificationAction.class);
   }
 
   @Test
-  public void intoRemoteViewsNotificationWithNullRemoteViewsThrows() throws Exception {
+  public void intoRemoteViewsNotificationWithNullRemoteViewsThrows() {
     try {
       new RequestCreator(picasso, URI_1, 0).into(null, 0, 0, mockNotification());
       fail("Calling into() with null RemoteViews should throw exception");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
   }
 
   @Test
-  public void intoRemoteViewsWidgetWithPlaceholderDrawableThrows() throws Exception {
+  public void intoRemoteViewsWidgetWithPlaceholderDrawableThrows() {
     try {
       new RequestCreator(picasso, URI_1, 0).placeholder(new ColorDrawable(0))
           .into(mockRemoteViews(), 0, new int[] { 1, 2, 3 });
       fail("Calling into() with placeholder drawable should throw exception");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
   }
 
   @Test
-  public void intoRemoteViewsWidgetWithErrorDrawableThrows() throws Exception {
+  public void intoRemoteViewsWidgetWithErrorDrawableThrows() {
     try {
       new RequestCreator(picasso, URI_1, 0).error(new ColorDrawable(0))
           .into(mockRemoteViews(), 0, new int[] { 1, 2, 3 });
       fail("Calling into() with error drawable should throw exception");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
   }
 
   @Test
-  public void intoRemoteViewsNotificationWithPlaceholderDrawableThrows() throws Exception {
+  public void intoRemoteViewsNotificationWithPlaceholderDrawableThrows() {
     try {
       new RequestCreator(picasso, URI_1, 0).placeholder(new ColorDrawable(0))
           .into(mockRemoteViews(), 0, 0, mockNotification());
       fail("Calling into() with error drawable should throw exception");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
   }
 
   @Test
-  public void intoRemoteViewsNotificationWithErrorDrawableThrows() throws Exception {
+  public void intoRemoteViewsNotificationWithErrorDrawableThrows() {
     try {
       new RequestCreator(picasso, URI_1, 0).error(new ColorDrawable(0))
           .into(mockRemoteViews(), 0, 0, mockNotification());
       fail("Calling into() with error drawable should throw exception");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
   }
 
   @Test
-  public void intoRemoteViewsWidgetWithNullRemoteViewsThrows() throws Exception {
+  public void intoRemoteViewsWidgetWithNullRemoteViewsThrows() {
     try {
       new RequestCreator(picasso, URI_1, 0).into(null, 0, new int[] { 1, 2, 3 });
       fail("Calling into() with null RemoteViews should throw exception");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
   }
 
   @Test
-  public void intoRemoteViewsWidgetWithNullAppWidgetIdsThrows() throws Exception {
+  public void intoRemoteViewsWidgetWithNullAppWidgetIdsThrows() {
     try {
       new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, null);
       fail("Calling into() with null appWidgetIds should throw exception");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
   }
 
   @Test
-  public void intoRemoteViewsNotificationWithNullNotificationThrows() throws Exception {
+  public void intoRemoteViewsNotificationWithNullNotificationThrows() {
     try {
       new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, 0, null);
       fail("Calling into() with null Notification should throw exception");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
   }
 
   @Test
-  public void intoRemoteViewsWidgetWithFitThrows() throws Exception {
+  public void intoRemoteViewsWidgetWithFitThrows() {
     try {
       RemoteViews remoteViews = mockRemoteViews();
       new RequestCreator(picasso, URI_1, 0).fit().into(remoteViews, 1, new int[] { 1, 2, 3 });
       fail("Calling fit() into remote views should throw exception");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
   }
 
   @Test
-  public void intoRemoteViewsNotificationWithFitThrows() throws Exception {
+  public void intoRemoteViewsNotificationWithFitThrows() {
     try {
       RemoteViews remoteViews = mockRemoteViews();
       new RequestCreator(picasso, URI_1, 0).fit().into(remoteViews, 1, 1, mockNotification());
       fail("Calling fit() into remote views should throw exception");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
+    }
+  }
+
+  @Test
+  public void intoTargetResizeWith0WithCenterInsideOrCenterCropThrows() {
+    try {
+      new RequestCreator(picasso, URI_1, 0).resize(0, 10).centerInside().into(mockTarget());
+      fail("Center inside with unknown width should throw exception.");
+    } catch (IllegalStateException ignored) {
+    }
+    try {
+      new RequestCreator(picasso, URI_1, 0).resize(10, 0).centerInside().into(mockTarget());
+      fail("Center inside with unknown height should throw exception.");
+    } catch (IllegalStateException ignored) {
+    }
+    try {
+      new RequestCreator(picasso, URI_1, 0).resize(0, 10).centerCrop().into(mockTarget());
+      fail("Center inside with unknown width should throw exception.");
+    } catch (IllegalStateException ignored) {
+    }
+    try {
+      new RequestCreator(picasso, URI_1, 0).resize(10, 0).centerCrop().into(mockTarget());
+      fail("Center inside with unknown height should throw exception.");
+    } catch (IllegalStateException ignored) {
     }
   }
 
@@ -503,177 +544,207 @@ public class RequestCreatorTest {
     assertThat(actionCaptor.getValue().getPriority()).isEqualTo(NORMAL);
   }
 
-  @Test public void appWidgetActionWithCustomPriority() throws Exception {
+  @Test public void appWidgetActionWithCustomPriority() {
     new RequestCreator(picasso, URI_1, 0).priority(HIGH)
         .into(mockRemoteViews(), 0, new int[]{1, 2, 3});
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getPriority()).isEqualTo(HIGH);
   }
 
-  @Test public void notificationActionWithDefaultPriority() throws Exception {
+  @Test public void notificationActionWithDefaultPriority() {
     new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, 0, mockNotification());
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getPriority()).isEqualTo(NORMAL);
   }
 
-  @Test public void notificationActionWithCustomPriority() throws Exception {
+  @Test public void notificationActionWithCustomPriority() {
     new RequestCreator(picasso, URI_1, 0).priority(HIGH)
         .into(mockRemoteViews(), 0, 0, mockNotification());
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getPriority()).isEqualTo(HIGH);
   }
 
-  @Test public void appWidgetActionWithDefaultTag() throws Exception {
+  @Test public void appWidgetActionWithDefaultTag() {
     new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, new int[] { 1, 2, 3 });
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getTag()).isEqualTo(actionCaptor.getValue());
   }
 
-  @Test public void appWidgetActionWithCustomTag() throws Exception {
+  @Test public void appWidgetActionWithCustomTag() {
     new RequestCreator(picasso, URI_1, 0).tag("tag")
         .into(mockRemoteViews(), 0, new int[]{1, 2, 3});
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getTag()).isEqualTo("tag");
   }
 
-  @Test public void notificationActionWithDefaultTag() throws Exception {
+  @Test public void notificationActionWithDefaultTag() {
     new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, 0, mockNotification());
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getTag()).isEqualTo(actionCaptor.getValue());
   }
 
-  @Test public void notificationActionWithCustomTag() throws Exception {
+  @Test public void notificationActionWithCustomTag() {
     new RequestCreator(picasso, URI_1, 0).tag("tag")
         .into(mockRemoteViews(), 0, 0, mockNotification());
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getTag()).isEqualTo("tag");
   }
 
-  @Test public void invalidResize() throws Exception {
+  @Test public void invalidResize() {
     try {
       new RequestCreator().resize(-1, 10);
       fail("Negative width should throw exception.");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
     try {
       new RequestCreator().resize(10, -1);
       fail("Negative height should throw exception.");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
     try {
-      new RequestCreator().resize(0, 10);
-      fail("Zero width should throw exception.");
-    } catch (IllegalArgumentException expected) {
-    }
-    try {
-      new RequestCreator().resize(10, 0);
-      fail("Zero height should throw exception.");
-    } catch (IllegalArgumentException expected) {
+      new RequestCreator().resize(0, 0);
+      fail("Zero dimensions should throw exception.");
+    } catch (IllegalArgumentException ignored) {
     }
   }
 
-  @Test public void invalidCenterCrop() throws Exception {
+  @Test public void invalidCenterCrop() {
     try {
       new RequestCreator().resize(10, 10).centerInside().centerCrop();
       fail("Calling center crop after center inside should throw exception.");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
   }
 
-  @Test public void invalidCenterInside() throws Exception {
+  @Test public void invalidCenterInside() {
     try {
       new RequestCreator().resize(10, 10).centerInside().centerCrop();
       fail("Calling center inside after center crop should throw exception.");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
   }
 
-  @Test public void invalidPlaceholderImage() throws Exception {
+  @Test public void invalidPlaceholderImage() {
     try {
       new RequestCreator().placeholder(0);
       fail("Resource ID of zero should throw exception.");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
     try {
       new RequestCreator().placeholder(1).placeholder(new ColorDrawable(0));
       fail("Two placeholders should throw exception.");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
     try {
       new RequestCreator().placeholder(new ColorDrawable(0)).placeholder(1);
       fail("Two placeholders should throw exception.");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
   }
 
-  @Test public void invalidErrorImage() throws Exception {
+  @Test public void invalidNoPlaceholder() {
+    try {
+      new RequestCreator().noPlaceholder().placeholder(new ColorDrawable(0));
+      fail("Placeholder after no placeholder should throw exception.");
+    } catch (IllegalStateException ignored) {
+    }
+    try {
+      new RequestCreator().noPlaceholder().placeholder(1);
+      fail("Placeholder after no placeholder should throw exception.");
+    } catch (IllegalStateException ignored) {
+    }
+    try {
+      new RequestCreator().placeholder(1).noPlaceholder();
+      fail("No placeholder after placeholder should throw exception.");
+    } catch (IllegalStateException ignored) {
+    }
+    try {
+      new RequestCreator().placeholder(new ColorDrawable(0)).noPlaceholder();
+      fail("No placeholder after placeholder should throw exception.");
+    } catch (IllegalStateException ignored) {
+    }
+  }
+
+  @Test public void invalidErrorImage() {
     try {
       new RequestCreator().error(0);
       fail("Resource ID of zero should throw exception.");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
     try {
       new RequestCreator().error(null);
       fail("Null drawable should throw exception.");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
     try {
       new RequestCreator().error(1).error(new ColorDrawable(0));
       fail("Two placeholders should throw exception.");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
     try {
       new RequestCreator().error(new ColorDrawable(0)).error(1);
       fail("Two placeholders should throw exception.");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
   }
 
-  @Test public void invalidPriority() throws Exception {
+  @Test public void invalidPriority() {
     try {
       new RequestCreator().priority(null);
       fail("Null priority should throw exception.");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
     try {
       new RequestCreator().priority(LOW).priority(HIGH);
       fail("Two priorities should throw exception.");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
   }
 
 
-  @Test public void invalidTag() throws Exception {
+  @Test public void invalidTag() {
     try {
       new RequestCreator().tag(null);
       fail("Null tag should throw exception.");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
     try {
       new RequestCreator().tag("tag1").tag("tag2");
       fail("Two tags should throw exception.");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void nullTransformationsInvalid() throws Exception {
+  public void nullTransformationsInvalid() {
     new RequestCreator().transform(null);
   }
 
-  @Test public void nullTargetsInvalid() throws Exception {
+  @Test(expected = IllegalArgumentException.class)
+  public void nullKeyTransformationInvalid() {
+    new RequestCreator().transform(new Transformation() {
+      @Override public Bitmap transform(Bitmap source) {
+        return source;
+      }
+
+      @Override public String key() {
+        return null;
+      }
+    });
+  }
+
+  @Test public void nullTargetsInvalid() {
     try {
       new RequestCreator().into((ImageView) null);
       fail("Null ImageView should throw exception.");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
     try {
       new RequestCreator().into((Target) null);
       fail("Null Target should throw exception.");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
   }
-
   @Test public void imageViewActionWithSteadyKey() throws Exception {
     new RequestCreator(picasso, URI_1, 0).steadyKey(STEADY_1).into(mockImageViewTarget());
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());

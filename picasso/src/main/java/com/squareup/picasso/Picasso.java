@@ -586,7 +586,9 @@ public class Picasso {
    * </ul>
    * <p>
    * If these settings do not meet the requirements of your application you can construct your own
-   * instance with full control over the configuration by using {@link Picasso.Builder}.
+   * with full control over the configuration by using {@link Picasso.Builder} to create a
+   * {@link Picasso} instance. You can either use this directly or by setting it as the global
+   * instance with {@link #setSingletonInstance}.
    */
   public static Picasso with(Context context) {
     if (singleton == null) {
@@ -597,6 +599,20 @@ public class Picasso {
       }
     }
     return singleton;
+  }
+
+  /**
+   * Set the global instance returned from {@link #with}.
+   * <p>
+   * This method must be called before any calls to {@link #with} and may only be called once.
+   */
+  public static void setSingletonInstance(Picasso picasso) {
+    synchronized (Picasso.class) {
+      if (singleton != null) {
+        throw new IllegalStateException("Singleton instance already exists.");
+      }
+      singleton = picasso;
+    }
   }
 
   /** Fluent API for creating {@link Picasso} instances. */

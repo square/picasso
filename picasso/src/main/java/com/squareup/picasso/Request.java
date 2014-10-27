@@ -167,7 +167,7 @@ public final class Request {
   }
 
   public boolean hasSize() {
-    return targetWidth != 0;
+    return targetWidth != 0 || targetHeight != 0;
   }
 
   boolean needsTransformation() {
@@ -175,7 +175,7 @@ public final class Request {
   }
 
   boolean needsMatrixTransform() {
-    return targetWidth != 0 || rotationDegrees != 0;
+    return hasSize() || rotationDegrees != 0;
   }
 
   boolean hasCustomTransformations() {
@@ -242,7 +242,7 @@ public final class Request {
     }
 
     boolean hasSize() {
-      return targetWidth != 0;
+      return targetWidth != 0 || targetHeight != 0;
     }
 
     boolean hasPriority() {
@@ -285,13 +285,19 @@ public final class Request {
       return this;
     }
 
-    /** Resize the image to the specified size in pixels. */
+    /**
+     * Resize the image to the specified size in pixels.
+     * Use 0 as desired dimension to resize keeping aspect ratio.
+     */
     public Builder resize(int targetWidth, int targetHeight) {
-      if (targetWidth <= 0) {
-        throw new IllegalArgumentException("Width must be positive number.");
+      if (targetWidth < 0) {
+        throw new IllegalArgumentException("Width must be positive number or 0.");
       }
-      if (targetHeight <= 0) {
-        throw new IllegalArgumentException("Height must be positive number.");
+      if (targetHeight < 0) {
+        throw new IllegalArgumentException("Height must be positive number or 0.");
+      }
+      if (targetHeight == 0 && targetWidth == 0) {
+        throw new IllegalArgumentException("At least one dimension has to be positive number.");
       }
       this.targetWidth = targetWidth;
       this.targetHeight = targetHeight;
@@ -395,6 +401,9 @@ public final class Request {
       if (transformation == null) {
         throw new IllegalArgumentException("Transformation must not be null.");
       }
+      if (transformation.key() == null) {
+        throw new IllegalArgumentException("Transformation key must not be null.");
+      }
       if (transformations == null) {
         transformations = new ArrayList<Transformation>(2);
       }
@@ -407,11 +416,13 @@ public final class Request {
       if (centerInside && centerCrop) {
         throw new IllegalStateException("Center crop and center inside can not be used together.");
       }
-      if (centerCrop && targetWidth == 0) {
-        throw new IllegalStateException("Center crop requires calling resize.");
+      if (centerCrop && (targetWidth == 0 || targetHeight == 0)) {
+        throw new IllegalStateException(
+            "Center crop requires calling resize with positive width and height.");
       }
-      if (centerInside && targetWidth == 0) {
-        throw new IllegalStateException("Center inside requires calling resize.");
+      if (centerInside && (targetWidth == 0 || targetHeight == 0)) {
+        throw new IllegalStateException(
+            "Center inside requires calling resize with positive width and height.");
       }
       if (priority == null) {
         priority = Priority.NORMAL;

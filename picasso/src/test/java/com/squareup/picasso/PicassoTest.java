@@ -283,12 +283,60 @@ public class PicassoTest {
   }
 
   @Test public void shutdownDisallowedOnSingletonInstance() throws Exception {
+    Picasso.singleton = null;
     try {
       Picasso picasso = Picasso.with(Robolectric.application);
       picasso.shutdown();
       fail("Calling shutdown() on static singleton instance should throw");
     } catch (UnsupportedOperationException expected) {
     }
+  }
+
+  @Test public void shutdownDisallowedOnCustomSingletonInstance() throws Exception {
+    Picasso.singleton = null;
+    try {
+      Picasso picasso = new Picasso.Builder(Robolectric.application).build();
+      Picasso.setSingletonInstance(picasso);
+      picasso.shutdown();
+      fail("Calling shutdown() on static singleton instance should throw");
+    } catch (UnsupportedOperationException expected) {
+    }
+  }
+
+  @Test public void setSingletonInstanceMayOnlyBeCalledOnce() {
+    Picasso.singleton = null;
+
+    Picasso picasso = new Picasso.Builder(Robolectric.application).build();
+    Picasso.setSingletonInstance(picasso);
+
+    try {
+      Picasso.setSingletonInstance(picasso);
+      fail("Can't set singleton instance twice.");
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessage("Singleton instance already exists.");
+    }
+  }
+
+  @Test public void setSingletonInstanceAfterWithFails() {
+    Picasso.singleton = null;
+
+    // Implicitly create the default singleton instance.
+    Picasso.with(Robolectric.application);
+
+    Picasso picasso = new Picasso.Builder(Robolectric.application).build();
+    try {
+      Picasso.setSingletonInstance(picasso);
+      fail("Can't set singleton instance after with().");
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessage("Singleton instance already exists.");
+    }
+  }
+
+  @Test public void setSingleInstanceReturnedFromWith() {
+    Picasso.singleton = null;
+    Picasso picasso = new Picasso.Builder(Robolectric.application).build();
+    Picasso.setSingletonInstance(picasso);
+    assertThat(Picasso.with(Robolectric.application)).isSameAs(picasso);
   }
 
   @Test public void shutdownClearsDeferredRequests() throws Exception {

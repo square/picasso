@@ -174,7 +174,7 @@ public class BitmapHunterTest {
     try {
       hunter.hunt();
       fail("Unrecognized URI should throw exception.");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
   }
 
@@ -405,6 +405,30 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsOnly("rotate 90.0");
   }
 
+  @Test public void keepsAspectRationWhileResizingWhenDesiredWidthIs0() throws Exception {
+    Request request = new Request.Builder(URI_1).resize(20, 0).build();
+    Bitmap source = Bitmap.createBitmap(40, 20, ARGB_8888);
+
+    Bitmap result = transformResult(request, source, 0);
+
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
+  }
+
+  @Test public void keepsAspectRationWhileResizingWhenDesiredHeighIs0() throws Exception {
+    Request request = new Request.Builder(URI_1).resize(0, 10).build();
+    Bitmap source = Bitmap.createBitmap(40, 20, ARGB_8888);
+
+    Bitmap result = transformResult(request, source, 0);
+
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
+  }
+
   @Test public void exifRotationWithManualRotation() throws Exception {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Request data = new Request.Builder(URI_1).rotate(-45).build();
@@ -596,6 +620,93 @@ public class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, 0);
     assertThat(result).isSameAs(source).isNotRecycled();
+  }
+
+  @Test public void crashingOnTransformationThrows() throws Exception {
+    Transformation badTransformation = new Transformation() {
+      @Override public Bitmap transform(Bitmap source) {
+        throw new NullPointerException("hello");
+      }
+
+      @Override public String key() {
+        return "test";
+      }
+    };
+    List<Transformation> transformations = Arrays.asList(badTransformation);
+    Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
+    try {
+      BitmapHunter.applyCustomTransformations(transformations, original);
+      fail("Expected exception to be thrown.");
+    } catch (RuntimeException e) {
+      assertThat(e).hasMessage("Transformation " + badTransformation.key() + " crashed with exception.");
+    }
+  }
+
+  @Test public void nullResultFromTransformationThrows() throws Exception {
+    Transformation badTransformation = new Transformation() {
+      @Override public Bitmap transform(Bitmap source) {
+        return null;
+      }
+
+      @Override public String key() {
+        return "test";
+      }
+    };
+    List<Transformation> transformations = Arrays.asList(badTransformation);
+    Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
+    try {
+      BitmapHunter.applyCustomTransformations(transformations, original);
+      fail("Expected exception to be thrown.");
+    } catch (RuntimeException e) {
+      assertThat(e).hasMessageContaining(
+          "Transformation " + badTransformation.key() + " returned null");
+    }
+  }
+
+  @Test public void doesNotRecycleOriginalTransformationThrows() throws Exception {
+    Transformation badTransformation = new Transformation() {
+      @Override public Bitmap transform(Bitmap source) {
+        // Should recycle source.
+        return Bitmap.createBitmap(10, 10, ARGB_8888);
+      }
+
+      @Override public String key() {
+        return "test";
+      }
+    };
+    List<Transformation> transformations = Arrays.asList(badTransformation);
+    Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
+    try {
+      BitmapHunter.applyCustomTransformations(transformations, original);
+      fail("Expected exception to be thrown.");
+    } catch (RuntimeException e) {
+      assertThat(e).hasMessage("Transformation "
+          + badTransformation.key()
+          + " mutated input Bitmap but failed to recycle the original.");
+    }
+  }
+
+  @Test public void recycledOriginalTransformationThrows() throws Exception {
+    Transformation badTransformation = new Transformation() {
+      @Override public Bitmap transform(Bitmap source) {
+        source.recycle();
+        return source;
+      }
+
+      @Override public String key() {
+        return "test";
+      }
+    };
+    List<Transformation> transformations = Arrays.asList(badTransformation);
+    Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
+    try {
+      BitmapHunter.applyCustomTransformations(transformations, original);
+      fail("Expected exception to be thrown.");
+    } catch (RuntimeException e) {
+      assertThat(e).hasMessage("Transformation "
+          + badTransformation.key()
+          + " returned input Bitmap but recycled it.");
+    }
   }
 
   private static class TestableBitmapHunter extends BitmapHunter {
