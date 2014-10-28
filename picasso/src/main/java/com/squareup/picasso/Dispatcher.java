@@ -118,7 +118,7 @@ class Dispatcher {
   }
 
   void shutdown() {
-    // shutdown the thread pool only if it is the one created by picasso
+    // Shutdown the thread pool only if it is the one created by Picasso.
     if (service instanceof PicassoExecutorService) {
       service.shutdown();
     }
