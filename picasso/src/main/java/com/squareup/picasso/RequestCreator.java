@@ -282,6 +282,15 @@ public class RequestCreator {
   }
 
   /**
+   * Sets the stable key for this request to be used instead of the URI or resource ID when
+   * caching. Two requests with the same value are considered to be for the same resource.
+   */
+  public RequestCreator stableKey(String stableKey) {
+    data.stableKey(stableKey);
+    return this;
+  }
+
+  /**
    * Set the priority of this request.
    * <p>
    * This will affect the order in which the requests execute but does not guarantee it.
