@@ -66,7 +66,8 @@ public class DispatcherTest {
 
   @Mock Context context;
   @Mock ConnectivityManager connectivityManager;
-  @Mock ExecutorService service;
+  @Mock PicassoExecutorService service;
+  @Mock ExecutorService serviceMock;
   @Mock Handler mainThreadHandler;
   @Mock Downloader downloader;
   @Mock Cache cache;
@@ -329,12 +330,34 @@ public class DispatcherTest {
     assertThat(dispatcher.airplaneMode).isFalse();
   }
 
+  @Test public void performNetworkStateChangeWithNullInfo() throws Exception {
+    dispatcher.performNetworkStateChange(null);
+    verify(service, times(1)).adjustThreadCount(null);
+  }
+    
+  @Test public void performNetworkStateChangeWithDisconnectedInfo() throws Exception {
+    NetworkInfo info = mockNetworkInfo();
+    when(info.isConnectedOrConnecting()).thenReturn(false);
+    dispatcher.performNetworkStateChange(info);
+    verify(service, times(1)).adjustThreadCount(info);
+  }
+    
+  @Test
+  public void performNetworkStateChangeWithConnectedInfoDifferentInstance()
+      throws Exception {
+    NetworkInfo info = mockNetworkInfo(true);
+    dispatcher.performNetworkStateChange(info);
+    verify(service, times(1)).adjustThreadCount(info);
+  }
+
   @Test public void performNetworkStateChangeWithNullInfoIgnores() throws Exception {
+    Dispatcher dispatcher = createDispatcher(serviceMock);
     dispatcher.performNetworkStateChange(null);
     verifyZeroInteractions(service);
   }
 
   @Test public void performNetworkStateChangeWithDisconnectedInfoIgnores() throws Exception {
+    Dispatcher dispatcher = createDispatcher(serviceMock);
     NetworkInfo info = mockNetworkInfo();
     when(info.isConnectedOrConnecting()).thenReturn(false);
     dispatcher.performNetworkStateChange(info);
@@ -344,6 +367,7 @@ public class DispatcherTest {
   @Test
   public void performNetworkStateChangeWithConnectedInfoDifferentInstanceIgnores()
       throws Exception {
+    Dispatcher dispatcher = createDispatcher(serviceMock);
     NetworkInfo info = mockNetworkInfo(true);
     dispatcher.performNetworkStateChange(info);
     verifyZeroInteractions(service);
