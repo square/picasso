@@ -47,6 +47,12 @@ public final class Request {
    * This is mutually exclusive with {@link #uri}.
    */
   public final int resourceId;
+  /**
+   * The optional steady Key for this request to be used instead of a generated cache key.
+   * <p>
+   * null if no steady key is defined.
+   */
+  public final String steadyKey;
   /** List of custom transformations to be applied after the built-in transformations. */
   public final List<Transformation> transformations;
   /** Target image width for resizing. */
@@ -78,12 +84,13 @@ public final class Request {
   /** The priority of this request. */
   public final Priority priority;
 
-  private Request(Uri uri, int resourceId, List<Transformation> transformations, int targetWidth,
-      int targetHeight, boolean centerCrop, boolean centerInside, float rotationDegrees,
-      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot, Bitmap.Config config,
-      Priority priority) {
+  private Request(Uri uri, int resourceId, String steadyKey, List<Transformation> transformations,
+      int targetWidth, int targetHeight, boolean centerCrop, boolean centerInside,
+      float rotationDegrees, float rotationPivotX, float rotationPivotY, boolean hasRotationPivot,
+      Bitmap.Config config, Priority priority) {
     this.uri = uri;
     this.resourceId = resourceId;
+    this.steadyKey = steadyKey;
     if (transformations == null) {
       this.transformations = null;
     } else {
@@ -112,6 +119,9 @@ public final class Request {
       for (Transformation transformation : transformations) {
         sb.append(' ').append(transformation.key());
       }
+    }
+    if (steadyKey != null) {
+       sb.append(" steadyKey(").append(steadyKey).append(')');
     }
     if (targetWidth > 0) {
       sb.append(" resize(").append(targetWidth).append(',').append(targetHeight).append(')');
@@ -180,6 +190,7 @@ public final class Request {
   public static final class Builder {
     private Uri uri;
     private int resourceId;
+    private String steadyKey;
     private int targetWidth;
     private int targetHeight;
     private boolean centerCrop;
@@ -210,6 +221,7 @@ public final class Request {
     private Builder(Request request) {
       uri = request.uri;
       resourceId = request.resourceId;
+      steadyKey = request.steadyKey;
       targetWidth = request.targetWidth;
       targetHeight = request.targetHeight;
       centerCrop = request.centerCrop;
@@ -262,6 +274,14 @@ public final class Request {
       }
       this.resourceId = resourceId;
       this.uri = null;
+      return this;
+    }
+
+    /**
+     * Set the steadyKey for this Request.
+     */
+    public Builder steadyKey(String steadyKey) {
+      this.steadyKey = steadyKey;
       return this;
     }
 
@@ -407,9 +427,9 @@ public final class Request {
       if (priority == null) {
         priority = Priority.NORMAL;
       }
-      return new Request(uri, resourceId, transformations, targetWidth, targetHeight, centerCrop,
-          centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot, config,
-          priority);
+      return new Request(uri, resourceId, steadyKey, transformations, targetWidth, targetHeight,
+          centerCrop, centerInside, rotationDegrees, rotationPivotX, rotationPivotY,
+          hasRotationPivot, config, priority);
     }
   }
 }

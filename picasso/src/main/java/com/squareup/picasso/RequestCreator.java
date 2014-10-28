@@ -282,6 +282,14 @@ public class RequestCreator {
   }
 
   /**
+   * Caches the image under the specified steadyKey or a generated key if steadyKey is null.
+   */
+  public RequestCreator steadyKey(String steadyKey) {
+    data.steadyKey(steadyKey);
+    return this;
+  }
+
+  /**
    * Set the priority of this request.
    * <p>
    * This will affect the order in which the requests execute but does not guarantee it.

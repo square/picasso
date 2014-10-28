@@ -40,6 +40,8 @@ import static com.squareup.picasso.Picasso.RequestTransformer.IDENTITY;
 import static com.squareup.picasso.RemoteViewsAction.AppWidgetAction;
 import static com.squareup.picasso.RemoteViewsAction.NotificationAction;
 import static com.squareup.picasso.TestUtils.BITMAP_1;
+import static com.squareup.picasso.TestUtils.STEADY_1;
+import static com.squareup.picasso.TestUtils.STEADY_URI_KEY_1;
 import static com.squareup.picasso.TestUtils.TRANSFORM_REQUEST_ANSWER;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
@@ -539,7 +541,7 @@ public class RequestCreatorTest {
   }
 
   @Test public void appWidgetActionWithDefaultPriority() throws Exception {
-    new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, new int[] { 1, 2, 3 });
+    new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, new int[]{1, 2, 3});
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getPriority()).isEqualTo(NORMAL);
   }
@@ -565,7 +567,7 @@ public class RequestCreatorTest {
   }
 
   @Test public void appWidgetActionWithDefaultTag() {
-    new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, new int[] { 1, 2, 3 });
+    new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, new int[]{1, 2, 3});
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getTag()).isEqualTo(actionCaptor.getValue());
   }
@@ -744,5 +746,16 @@ public class RequestCreatorTest {
       fail("Null Target should throw exception.");
     } catch (IllegalArgumentException ignored) {
     }
+  }
+  @Test public void imageViewActionWithSteadyKey() throws Exception {
+    new RequestCreator(picasso, URI_1, 0).steadyKey(STEADY_1).into(mockImageViewTarget());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getKey()).isEqualTo(STEADY_URI_KEY_1);
+  }
+
+  @Test public void imageViewActionWithSteadyKeyNull() throws Exception {
+    new RequestCreator(picasso, URI_1, 0).steadyKey(null).into(mockImageViewTarget());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getKey()).isEqualTo(URI_KEY_1);
   }
 }
