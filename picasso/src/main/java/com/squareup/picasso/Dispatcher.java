@@ -118,7 +118,10 @@ class Dispatcher {
   }
 
   void shutdown() {
-    service.shutdown();
+    // shutdown the thread pool only if it is the one created by picasso
+    if (service instanceof PicassoExecutorService) {
+      service.shutdown();
+    }
     downloader.shutdown();
     dispatcherThread.quit();
     // Unregister network broadcast receiver on the main thread.
