@@ -164,7 +164,10 @@ final class Utils {
   }
 
   static String createKey(Request data, StringBuilder builder) {
-    if (data.uri != null) {
+    if (data.stableKey != null) {
+      builder.ensureCapacity(data.stableKey.length() + KEY_PADDING);
+      builder.append(data.stableKey);
+    } else if (data.uri != null) {
       String path = data.uri.toString();
       builder.ensureCapacity(path.length() + KEY_PADDING);
       builder.append(path);

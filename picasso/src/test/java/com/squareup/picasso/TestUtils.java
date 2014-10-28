@@ -51,8 +51,10 @@ class TestUtils {
   };
   static final Uri URI_1 = Uri.parse("http://example.com/1.png");
   static final Uri URI_2 = Uri.parse("http://example.com/2.png");
+  static final String STABLE_1 = "stableExampleKey1";
   static final String URI_KEY_1 = createKey(new Request.Builder(URI_1).build());
   static final String URI_KEY_2 = createKey(new Request.Builder(URI_2).build());
+  static final String STABLE_URI_KEY_1 = createKey(new Request.Builder(URI_1).stableKey(STABLE_1).build());
   static final Bitmap VIDEO_THUMBNAIL_1 = Bitmap.createBitmap(10, 10, null);
   static final Bitmap IMAGE_THUMBNAIL_1 = Bitmap.createBitmap(20, 20, null);
   static final Bitmap BITMAP_1 = Bitmap.createBitmap(10, 10, null);
