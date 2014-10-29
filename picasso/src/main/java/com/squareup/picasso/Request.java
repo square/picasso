@@ -47,6 +47,11 @@ public final class Request {
    * This is mutually exclusive with {@link #uri}.
    */
   public final int resourceId;
+  /**
+   * Optional stable key for this request to be used instead of the URI or resource ID when
+   * caching. Two requests with the same value are considered to be for the same resource.
+   */
+  public final String stableKey;
   /** List of custom transformations to be applied after the built-in transformations. */
   public final List<Transformation> transformations;
   /** Target image width for resizing. */
@@ -78,12 +83,13 @@ public final class Request {
   /** The priority of this request. */
   public final Priority priority;
 
-  private Request(Uri uri, int resourceId, List<Transformation> transformations, int targetWidth,
-      int targetHeight, boolean centerCrop, boolean centerInside, float rotationDegrees,
-      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot, Bitmap.Config config,
-      Priority priority) {
+  private Request(Uri uri, int resourceId, String stableKey, List<Transformation> transformations,
+      int targetWidth, int targetHeight, boolean centerCrop, boolean centerInside,
+      float rotationDegrees, float rotationPivotX, float rotationPivotY, boolean hasRotationPivot,
+      Bitmap.Config config, Priority priority) {
     this.uri = uri;
     this.resourceId = resourceId;
+    this.stableKey = stableKey;
     if (transformations == null) {
       this.transformations = null;
     } else {
@@ -112,6 +118,9 @@ public final class Request {
       for (Transformation transformation : transformations) {
         sb.append(' ').append(transformation.key());
       }
+    }
+    if (stableKey != null) {
+      sb.append(" stableKey(").append(stableKey).append(')');
     }
     if (targetWidth > 0) {
       sb.append(" resize(").append(targetWidth).append(',').append(targetHeight).append(')');
@@ -180,6 +189,7 @@ public final class Request {
   public static final class Builder {
     private Uri uri;
     private int resourceId;
+    private String stableKey;
     private int targetWidth;
     private int targetHeight;
     private boolean centerCrop;
@@ -210,6 +220,7 @@ public final class Request {
     private Builder(Request request) {
       uri = request.uri;
       resourceId = request.resourceId;
+      stableKey = request.stableKey;
       targetWidth = request.targetWidth;
       targetHeight = request.targetHeight;
       centerCrop = request.centerCrop;
@@ -262,6 +273,15 @@ public final class Request {
       }
       this.resourceId = resourceId;
       this.uri = null;
+      return this;
+    }
+
+    /**
+     * Set the stable key to be used instead of the URI or resource ID when caching.
+     * Two requests with the same value are considered to be for the same resource.
+     */
+    public Builder stableKey(String stableKey) {
+      this.stableKey = stableKey;
       return this;
     }
 
@@ -407,9 +427,9 @@ public final class Request {
       if (priority == null) {
         priority = Priority.NORMAL;
       }
-      return new Request(uri, resourceId, transformations, targetWidth, targetHeight, centerCrop,
-          centerInside, rotationDegrees, rotationPivotX, rotationPivotY, hasRotationPivot, config,
-          priority);
+      return new Request(uri, resourceId, stableKey, transformations, targetWidth, targetHeight,
+          centerCrop, centerInside, rotationDegrees, rotationPivotX, rotationPivotY,
+          hasRotationPivot, config, priority);
     }
   }
 }
