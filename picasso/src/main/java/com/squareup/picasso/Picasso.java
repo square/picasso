@@ -649,7 +649,11 @@ public class Picasso {
       return this;
     }
 
-    /** Specify the executor service for loading images in the background. */
+    /**
+     * Specify the executor service for loading images in the background.
+     * <p>
+     * Note: Calling {@link Picasso#shutdown() shutdown()} will not shutdown supplied executors.
+     */
     public Builder executor(ExecutorService executorService) {
       if (executorService == null) {
         throw new IllegalArgumentException("Executor service must not be null.");
