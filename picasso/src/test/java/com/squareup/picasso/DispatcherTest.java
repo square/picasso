@@ -21,7 +21,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.Message;
-
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import org.junit.Before;
@@ -47,6 +46,7 @@ import static com.squareup.picasso.TestUtils.URI_KEY_2;
 import static com.squareup.picasso.TestUtils.mockAction;
 import static com.squareup.picasso.TestUtils.mockHunter;
 import static com.squareup.picasso.TestUtils.mockNetworkInfo;
+import static com.squareup.picasso.TestUtils.mockPicasso;
 import static com.squareup.picasso.TestUtils.mockTarget;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -74,34 +74,34 @@ public class DispatcherTest {
   @Mock Stats stats;
   private Dispatcher dispatcher;
 
-  @Before public void setUp() throws Exception {
+  @Before public void setUp() {
     initMocks(this);
     dispatcher = createDispatcher();
   }
 
-  @Test public void shutdownStopsService() throws Exception {
+  @Test public void shutdownStopsService() {
     dispatcher.shutdown();
     verify(service).shutdown();
   }
 
-  @Test public void shutdownStopsDownloader() throws Exception {
+  @Test public void shutdownStopsDownloader() {
     dispatcher.shutdown();
     verify(downloader).shutdown();
   }
 
-  @Test public void shutdownUnregistersReceiver() throws Exception {
+  @Test public void shutdownUnregistersReceiver() {
     dispatcher.shutdown();
     verify(context).unregisterReceiver(dispatcher.receiver);
   }
 
-  @Test public void performSubmitWithNewRequestQueuesHunter() throws Exception {
+  @Test public void performSubmitWithNewRequestQueuesHunter() {
     Action action = mockAction(URI_KEY_1, URI_1);
     dispatcher.performSubmit(action);
     assertThat(dispatcher.hunterMap).hasSize(1);
     verify(service).submit(any(BitmapHunter.class));
   }
 
-  @Test public void performSubmitWithTwoDifferentRequestsQueuesHunters() throws Exception {
+  @Test public void performSubmitWithTwoDifferentRequestsQueuesHunters() {
     Action action1 = mockAction(URI_KEY_1, URI_1);
     Action action2 = mockAction(URI_KEY_2, URI_2);
     dispatcher.performSubmit(action1);
@@ -110,7 +110,7 @@ public class DispatcherTest {
     verify(service, times(2)).submit(any(BitmapHunter.class));
   }
 
-  @Test public void performSubmitWithExistingRequestAttachesToHunter() throws Exception {
+  @Test public void performSubmitWithExistingRequestAttachesToHunter() {
     Action action1 = mockAction(URI_KEY_1, URI_1);
     Action action2 = mockAction(URI_KEY_1, URI_1);
     dispatcher.performSubmit(action1);
@@ -119,7 +119,7 @@ public class DispatcherTest {
     verify(service).submit(any(BitmapHunter.class));
   }
 
-  @Test public void performSubmitWithShutdownServiceIgnoresRequest() throws Exception {
+  @Test public void performSubmitWithShutdownServiceIgnoresRequest() {
     when(service.isShutdown()).thenReturn(true);
     Action action = mockAction(URI_KEY_1, URI_1);
     dispatcher.performSubmit(action);
@@ -127,7 +127,7 @@ public class DispatcherTest {
     verify(service, never()).submit(any(BitmapHunter.class));
   }
 
-  @Test public void performSubmitWithShutdownAttachesRequest() throws Exception {
+  @Test public void performSubmitWithShutdownAttachesRequest() {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
     dispatcher.hunterMap.put(URI_KEY_1, hunter);
     when(service.isShutdown()).thenReturn(true);
@@ -138,7 +138,24 @@ public class DispatcherTest {
     verify(service, never()).submit(any(BitmapHunter.class));
   }
 
-  @Test public void performCancelDetachesRequestAndCleansUp() throws Exception {
+  @Test public void performSubmitWithFetchAction() {
+    String pausedTag = "pausedTag";
+    dispatcher.pausedTags.add(pausedTag);
+    assertThat(dispatcher.pausedActions).isEmpty();
+
+    FetchAction fetchAction1 =
+        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), false, URI_KEY_1,
+            pausedTag);
+    FetchAction fetchAction2 =
+        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), false, URI_KEY_1,
+            pausedTag);
+    dispatcher.performSubmit(fetchAction1);
+    dispatcher.performSubmit(fetchAction2);
+
+    assertThat(dispatcher.pausedActions).hasSize(2);
+  }
+
+  @Test public void performCancelDetachesRequestAndCleansUp() {
     Target target = mockTarget();
     Action action = mockAction(URI_KEY_1, URI_1, target);
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
@@ -153,7 +170,7 @@ public class DispatcherTest {
     assertThat(dispatcher.failedActions).isEmpty();
   }
 
-  @Test public void performCancelMultipleRequestsDetachesOnly() throws Exception {
+  @Test public void performCancelMultipleRequestsDetachesOnly() {
     Action action1 = mockAction(URI_KEY_1, URI_1);
     Action action2 = mockAction(URI_KEY_1, URI_1);
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
@@ -178,27 +195,27 @@ public class DispatcherTest {
     verify(hunter).detach(action);
   }
 
-  @Test public void performCompleteSetsResultInCache() throws Exception {
+  @Test public void performCompleteSetsResultInCache() {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
     dispatcher.performComplete(hunter);
     verify(cache).set(hunter.getKey(), hunter.getResult());
   }
 
-  @Test public void performCompleteWithSkipCacheDoesNotCache() throws Exception {
+  @Test public void performCompleteWithSkipCacheDoesNotCache() {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, true);
     dispatcher.performComplete(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
     verifyZeroInteractions(cache);
   }
 
-  @Test public void performCompleteCleansUpAndAddsToBatch() throws Exception {
+  @Test public void performCompleteCleansUpAndAddsToBatch() {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
     dispatcher.performComplete(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.batch).hasSize(1);
   }
 
-  @Test public void performCompleteCleansUpAndDoesNotAddToBatchIfCancelled() throws Exception {
+  @Test public void performCompleteCleansUpAndDoesNotAddToBatchIfCancelled() {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
     when(hunter.isCancelled()).thenReturn(true);
     dispatcher.performComplete(hunter);
@@ -206,7 +223,7 @@ public class DispatcherTest {
     assertThat(dispatcher.batch).isEmpty();
   }
 
-  @Test public void performErrorCleansUpAndAddsToBatch() throws Exception {
+  @Test public void performErrorCleansUpAndAddsToBatch() {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
     dispatcher.hunterMap.put(hunter.getKey(), hunter);
     dispatcher.performError(hunter, false);
@@ -214,7 +231,7 @@ public class DispatcherTest {
     assertThat(dispatcher.batch).hasSize(1);
   }
 
-  @Test public void performErrorCleansUpAndDoesNotAddToBatchIfCancelled() throws Exception {
+  @Test public void performErrorCleansUpAndDoesNotAddToBatchIfCancelled() {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
     when(hunter.isCancelled()).thenReturn(true);
     dispatcher.hunterMap.put(hunter.getKey(), hunter);
@@ -223,7 +240,7 @@ public class DispatcherTest {
     assertThat(dispatcher.batch).isEmpty();
   }
 
-  @Test public void performBatchCompleteFlushesHunters() throws Exception {
+  @Test public void performBatchCompleteFlushesHunters() {
     BitmapHunter hunter1 = mockHunter(URI_KEY_2, BITMAP_1, false);
     BitmapHunter hunter2 = mockHunter(URI_KEY_2, BITMAP_2, false);
     dispatcher.batch.add(hunter1);
@@ -232,7 +249,7 @@ public class DispatcherTest {
     assertThat(dispatcher.batch).isEmpty();
   }
 
-  @Test public void performRetrySkipsIfHunterIsCancelled() throws Exception {
+  @Test public void performRetrySkipsIfHunterIsCancelled() {
     BitmapHunter hunter = mockHunter(URI_KEY_2, BITMAP_1, false);
     when(hunter.isCancelled()).thenReturn(true);
     dispatcher.performRetry(hunter);
@@ -241,7 +258,7 @@ public class DispatcherTest {
     assertThat(dispatcher.failedActions).isEmpty();
   }
 
-  @Test public void performRetryDoesNotMarkForReplayIfNotSupported() throws Exception {
+  @Test public void performRetryDoesNotMarkForReplayIfNotSupported() {
     NetworkInfo networkInfo = mockNetworkInfo(true);
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false, mockAction(URI_KEY_1, URI_1));
     when(hunter.supportsReplay()).thenReturn(false);
@@ -253,7 +270,7 @@ public class DispatcherTest {
     verify(service, never()).submit(hunter);
   }
 
-  @Test public void performRetryDoesNotMarkForReplayIfNoNetworkScanning() throws Exception {
+  @Test public void performRetryDoesNotMarkForReplayIfNoNetworkScanning() {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false, mockAction(URI_KEY_1, URI_1));
     when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(false);
     when(hunter.supportsReplay()).thenReturn(true);
@@ -264,8 +281,7 @@ public class DispatcherTest {
     verify(service, never()).submit(hunter);
   }
 
-  @Test public void performRetryMarksForReplayIfSupportedScansNetworkChangesAndShouldNotRetry()
-      throws Exception {
+  @Test public void performRetryMarksForReplayIfSupportedScansNetworkChangesAndShouldNotRetry() {
     NetworkInfo networkInfo = mockNetworkInfo(true);
     Action action = mockAction(URI_KEY_1, URI_1, mockTarget());
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false, action);
@@ -278,7 +294,7 @@ public class DispatcherTest {
     verify(service, never()).submit(hunter);
   }
 
-  @Test public void performRetryRetriesIfNoNetworkScanning() throws Exception {
+  @Test public void performRetryRetriesIfNoNetworkScanning() {
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false, mockAction(URI_KEY_1, URI_1));
     when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(true);
     Dispatcher dispatcher = createDispatcher(false);
@@ -288,7 +304,7 @@ public class DispatcherTest {
     verify(service).submit(hunter);
   }
 
-  @Test public void performRetryMarksForReplayIfSupportsReplayAndNoConnectivity() throws Exception {
+  @Test public void performRetryMarksForReplayIfSupportsReplayAndNoConnectivity() {
     NetworkInfo networkInfo = mockNetworkInfo(false);
     Action action = mockAction(URI_KEY_1, URI_1, mockTarget());
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false, action);
@@ -301,7 +317,7 @@ public class DispatcherTest {
     verify(service, never()).submit(hunter);
   }
 
-  @Test public void performRetryRetriesIfHasConnectivity() throws Exception {
+  @Test public void performRetryRetriesIfHasConnectivity() {
     NetworkInfo networkInfo = mockNetworkInfo(true);
     Action action = mockAction(URI_KEY_1, URI_1, mockTarget());
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false, action);
@@ -313,7 +329,7 @@ public class DispatcherTest {
     verify(service).submit(hunter);
   }
 
-  @Test public void performRetrySkipIfServiceShutdown() throws Exception {
+  @Test public void performRetrySkipIfServiceShutdown() {
     when(service.isShutdown()).thenReturn(true);
     BitmapHunter hunter = mockHunter(URI_KEY_1, BITMAP_1, false);
     dispatcher.performRetry(hunter);
@@ -322,7 +338,7 @@ public class DispatcherTest {
     assertThat(dispatcher.failedActions).isEmpty();
   }
 
-  @Test public void performAirplaneModeChange() throws Exception {
+  @Test public void performAirplaneModeChange() {
     assertThat(dispatcher.airplaneMode).isFalse();
     dispatcher.performAirplaneModeChange(true);
     assertThat(dispatcher.airplaneMode).isTrue();
@@ -330,33 +346,31 @@ public class DispatcherTest {
     assertThat(dispatcher.airplaneMode).isFalse();
   }
 
-  @Test public void performNetworkStateChangeWithNullInfo() throws Exception {
+  @Test public void performNetworkStateChangeWithNullInfo() {
     dispatcher.performNetworkStateChange(null);
     verify(service, times(1)).adjustThreadCount(null);
   }
-    
-  @Test public void performNetworkStateChangeWithDisconnectedInfo() throws Exception {
+
+  @Test public void performNetworkStateChangeWithDisconnectedInfo() {
     NetworkInfo info = mockNetworkInfo();
     when(info.isConnectedOrConnecting()).thenReturn(false);
     dispatcher.performNetworkStateChange(info);
     verify(service, times(1)).adjustThreadCount(info);
   }
-    
-  @Test
-  public void performNetworkStateChangeWithConnectedInfoDifferentInstance()
-      throws Exception {
+
+  @Test public void performNetworkStateChangeWithConnectedInfoDifferentInstance() {
     NetworkInfo info = mockNetworkInfo(true);
     dispatcher.performNetworkStateChange(info);
     verify(service, times(1)).adjustThreadCount(info);
   }
 
-  @Test public void performNetworkStateChangeWithNullInfoIgnores() throws Exception {
+  @Test public void performNetworkStateChangeWithNullInfoIgnores() {
     Dispatcher dispatcher = createDispatcher(serviceMock);
     dispatcher.performNetworkStateChange(null);
     verifyZeroInteractions(service);
   }
 
-  @Test public void performNetworkStateChangeWithDisconnectedInfoIgnores() throws Exception {
+  @Test public void performNetworkStateChangeWithDisconnectedInfoIgnores() {
     Dispatcher dispatcher = createDispatcher(serviceMock);
     NetworkInfo info = mockNetworkInfo();
     when(info.isConnectedOrConnecting()).thenReturn(false);
@@ -364,9 +378,7 @@ public class DispatcherTest {
     verifyZeroInteractions(service);
   }
 
-  @Test
-  public void performNetworkStateChangeWithConnectedInfoDifferentInstanceIgnores()
-      throws Exception {
+  @Test public void performNetworkStateChangeWithConnectedInfoDifferentInstanceIgnores() {
     Dispatcher dispatcher = createDispatcher(serviceMock);
     NetworkInfo info = mockNetworkInfo(true);
     dispatcher.performNetworkStateChange(info);
@@ -438,8 +450,7 @@ public class DispatcherTest {
   }
 
   @Test
-  public void performNetworkStateChangeWithConnectedInfoAndPicassoExecutorServiceAdjustsThreads()
-      throws Exception {
+  public void performNetworkStateChangeWithConnectedInfoAndPicassoExecutorServiceAdjustsThreads() {
     PicassoExecutorService service = mock(PicassoExecutorService.class);
     NetworkInfo info = mockNetworkInfo(true);
     Dispatcher dispatcher = createDispatcher(service);
@@ -448,7 +459,7 @@ public class DispatcherTest {
     verifyZeroInteractions(service);
   }
 
-  @Test public void performNetworkStateChangeFlushesFailedHunters() throws Exception {
+  @Test public void performNetworkStateChangeFlushesFailedHunters() {
     PicassoExecutorService service = mock(PicassoExecutorService.class);
     NetworkInfo info = mockNetworkInfo(true);
     Dispatcher dispatcher = createDispatcher(service);
