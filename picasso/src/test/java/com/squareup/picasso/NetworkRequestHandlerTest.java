@@ -15,7 +15,6 @@
  */
 package com.squareup.picasso;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -135,7 +134,7 @@ public class NetworkRequestHandlerTest {
     final Bitmap expected = Bitmap.createBitmap(10, 10, ARGB_8888);
     Downloader bitmapDownloader = new Downloader() {
       @Override public Response load(Uri uri, boolean localCacheOnly) throws IOException {
-        return new Response(expected, false, 0);
+        return new Response(expected, false);
       }
 
       @Override public void shutdown() {

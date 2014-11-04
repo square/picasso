@@ -60,11 +60,15 @@ public interface Downloader {
      *
      * @param bitmap Image.
      * @param loadedFromCache {@code true} if the source of the image is from a local disk cache.
-     * @deprecated Use {@link Response#Response(android.graphics.Bitmap, boolean, long)} instead.
      */
-    @Deprecated @SuppressWarnings("UnusedDeclaration")
     public Response(Bitmap bitmap, boolean loadedFromCache) {
-      this(bitmap, loadedFromCache, -1);
+      if (bitmap == null) {
+        throw new IllegalArgumentException("Bitmap may not be null.");
+      }
+      this.stream = null;
+      this.bitmap = bitmap;
+      this.cached = loadedFromCache;
+      this.contentLength = -1;
     }
 
     /**
@@ -86,15 +90,12 @@ public interface Downloader {
      * @param loadedFromCache {@code true} if the source of the image is from a local disk cache.
      * @param contentLength The content length of the response, typically derived by the
      * {@code Content-Length} HTTP header.
+     * @deprecated The {@code contentLength} argument value is ignored. Use {@link #Response(Bitmap,
+     * boolean)}.
      */
+    @Deprecated @SuppressWarnings("UnusedDeclaration")
     public Response(Bitmap bitmap, boolean loadedFromCache, long contentLength) {
-      if (bitmap == null) {
-        throw new IllegalArgumentException("Bitmap may not be null.");
-      }
-      this.stream = null;
-      this.bitmap = bitmap;
-      this.cached = loadedFromCache;
-      this.contentLength = contentLength;
+      this(bitmap, loadedFromCache);
     }
 
     /**
@@ -133,7 +134,7 @@ public interface Downloader {
       return bitmap;
     }
 
-    /** Content length of the response. */
+    /** Content length of the response. Only valid when used with {@link #getInputStream()}. */
     public long getContentLength() {
       return contentLength;
     }
