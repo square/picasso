@@ -14,23 +14,23 @@ Download
 
 Download [the latest JAR][2] or grab via Gradle:
 ```groovy
-compile 'com.squareup.picasso:picasso:2.3.4'
+compile 'com.squareup.picasso:picasso:2.4.0'
 ```
 or Maven:
 ```xml
 <dependency>
-    <groupId>com.squareup.picasso</groupId>
-    <artifactId>picasso</artifactId>
-    <version>2.3.4</version>
+  <groupId>com.squareup.picasso</groupId>
+  <artifactId>picasso</artifactId>
+  <version>2.4.0</version>
 </dependency>
 ```
+
 
 
 ProGuard
 --------
 
-If you are using ProGuard make sure you add the following option:
-
+If you are using ProGuard you might need to add the following option:
 ```
 -dontwarn com.squareup.okhttp.**
 ```
