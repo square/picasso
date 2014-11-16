@@ -264,6 +264,11 @@ public class Picasso {
    * @see #load(int)
    */
   public RequestCreator load(Uri uri) {
+    if (uri != null) {
+      String path = uri.getPath();
+      path = Utils.replaceSpacesInPath(path);
+      uri = Uri.parse(path);
+    }
     return new RequestCreator(this, uri, 0);
   }
 
@@ -290,6 +295,7 @@ public class Picasso {
     if (path.trim().length() == 0) {
       throw new IllegalArgumentException("Path must not be empty.");
     }
+    path = Utils.replaceSpacesInPath(path);
     return load(Uri.parse(path));
   }
 

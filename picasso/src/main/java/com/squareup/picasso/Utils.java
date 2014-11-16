@@ -421,4 +421,13 @@ final class Utils {
       return new OkHttpDownloader(context);
     }
   }
+
+  static String replaceSpacesInPath(String path) {
+    if (path != null) {
+      if (path.contains(" ")) {
+        path = path.replace(" ", "%20");
+      }
+    }
+    return path;
+  }
 }
