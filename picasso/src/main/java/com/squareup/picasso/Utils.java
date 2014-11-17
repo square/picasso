@@ -433,12 +433,18 @@ final class Utils {
    * This path may be a remote URL.
    * <p>
    */
-  static String encodeURL(String path) throws URISyntaxException, MalformedURLException {
+  static String encodeURL(String path) {
     if (path != null) {
+      try {
       URL url = new URL(path);
       URI uri = new URI(url.getProtocol(), url.getAuthority(), url.getPath(),
                   url.getQuery(), url.getRef());
       return uri.toASCIIString();
+      } catch (URISyntaxException ex) {
+        ex.printStackTrace();
+      } catch (MalformedURLException ex) {
+        ex.printStackTrace();
+      }
     }
     return path;
   }

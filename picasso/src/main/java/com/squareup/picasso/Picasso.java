@@ -265,7 +265,7 @@ public class Picasso {
    * @see #load(String)
    * @see #load(int)
    */
-  public RequestCreator load(Uri uri) throws URISyntaxException, MalformedURLException {
+  public RequestCreator load(Uri uri) {
     if (uri != null) {
       String path = uri.getPath();
       path = Utils.encodeURL(path);
@@ -290,7 +290,7 @@ public class Picasso {
    * @see #load(int)
    * @throws IllegalArgumentException if {@code path} is empty or blank string.
    */
-  public RequestCreator load(String path) throws URISyntaxException, MalformedURLException {
+  public RequestCreator load(String path) {
     if (path == null) {
       return new RequestCreator(this, null, 0);
     }
