@@ -27,6 +27,8 @@ import android.widget.ImageView;
 import android.widget.RemoteViews;
 import java.io.File;
 import java.lang.ref.ReferenceQueue;
+import java.net.URISyntaxException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -263,10 +265,10 @@ public class Picasso {
    * @see #load(String)
    * @see #load(int)
    */
-  public RequestCreator load(Uri uri) {
+  public RequestCreator load(Uri uri) throws URISyntaxException, MalformedURLException {
     if (uri != null) {
       String path = uri.getPath();
-      path = Utils.replaceSpacesInPath(path);
+      path = Utils.encodeURL(path);
       uri = Uri.parse(path);
     }
     return new RequestCreator(this, uri, 0);
@@ -288,14 +290,14 @@ public class Picasso {
    * @see #load(int)
    * @throws IllegalArgumentException if {@code path} is empty or blank string.
    */
-  public RequestCreator load(String path) {
+  public RequestCreator load(String path) throws URISyntaxException, MalformedURLException {
     if (path == null) {
       return new RequestCreator(this, null, 0);
     }
     if (path.trim().length() == 0) {
       throw new IllegalArgumentException("Path must not be empty.");
     }
-    path = Utils.replaceSpacesInPath(path);
+    path = Utils.encodeURL(path);
     return load(Uri.parse(path));
   }
 
@@ -312,7 +314,7 @@ public class Picasso {
    * @see #load(String)
    * @see #load(int)
    */
-  public RequestCreator load(File file) {
+  public RequestCreator load(File file) throws URISyntaxException, MalformedURLException {
     if (file == null) {
       return new RequestCreator(this, null, 0);
     }

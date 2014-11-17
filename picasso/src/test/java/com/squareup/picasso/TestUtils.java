@@ -54,6 +54,8 @@ class TestUtils {
   static final String STABLE_1 = "stableExampleKey1";
   static final String URI_KEY_1 = createKey(new Request.Builder(URI_1).build());
   static final String URI_KEY_2 = createKey(new Request.Builder(URI_2).build());
+  static final String URL_WITH_SPACE = "http://rentmysport.com/public/facilitycontent/facilityowner_56/facility_146/download (1).jpg";
+  static final String URL_WITH_SPACE_ENCODED = "http://rentmysport.com/public/facilitycontent/facilityowner_56/facility_146/download%20(1).jpg";
   static final String STABLE_URI_KEY_1 = createKey(new Request.Builder(URI_1).stableKey(STABLE_1).build());
   static final Bitmap VIDEO_THUMBNAIL_1 = Bitmap.createBitmap(10, 10, null);
   static final Bitmap IMAGE_THUMBNAIL_1 = Bitmap.createBitmap(20, 20, null);
