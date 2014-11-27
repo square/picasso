@@ -78,6 +78,11 @@
         <artifactId>okhttp-urlconnection</artifactId>
         <version>2.1.0</version>
       </dependency>
+      <dependency>
+        <groupId>com.squareup.okhttp</groupId>
+        <artifactId>mockwebserver</artifactId>
+        <version>2.1.0</version>
+      </dependency>
 
       <dependency>
         <groupId>com.intellij</groupId>
@@ -109,11 +114,6 @@
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
         <version>1.9.5</version>
-      </dependency>
-      <dependency>
-        <groupId>com.google.mockwebserver</groupId>
-        <artifactId>mockwebserver</artifactId>
-        <version>20130505</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

@@ -17,14 +17,13 @@ package com.squareup.picasso;
 
 import android.app.Activity;
 import android.net.Uri;
-import com.google.mockwebserver.MockResponse;
-import com.google.mockwebserver.MockWebServer;
-import com.google.mockwebserver.RecordedRequest;
 import com.squareup.okhttp.Cache;
 import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.mockwebserver.MockResponse;
+import com.squareup.okhttp.mockwebserver.RecordedRequest;
+import com.squareup.okhttp.mockwebserver.rule.MockWebServerRule;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,25 +43,18 @@ import static org.junit.Assert.fail;
 public class OkHttpDownloaderTest {
   private static final Uri URL = Uri.parse("/bees.gif");
 
-  private MockWebServer server;
   private OkHttpDownloader loader;
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  @Rule public MockWebServerRule server = new MockWebServerRule();
 
   @Before public void setUp() throws Exception {
-    server = new MockWebServer();
-    server.play();
-
     Activity activity = Robolectric.buildActivity(Activity.class).get();
     loader = new OkHttpDownloader(activity) {
       @Override protected HttpURLConnection openConnection(Uri path) throws IOException {
         return (HttpURLConnection) server.getUrl(path.toString()).openConnection();
       }
     };
-  }
-
-  @After public void tearDown() throws Exception {
-    server.shutdown();
   }
 
   @Test public void allowExpiredSetsCacheControl() throws Exception {
