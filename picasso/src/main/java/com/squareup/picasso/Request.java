@@ -416,11 +416,11 @@ public final class Request {
       if (centerInside && centerCrop) {
         throw new IllegalStateException("Center crop and center inside can not be used together.");
       }
-      if (centerCrop && (targetWidth == 0 || targetHeight == 0)) {
+      if (centerCrop && (targetWidth == 0 && targetHeight == 0)) {
         throw new IllegalStateException(
             "Center crop requires calling resize with positive width and height.");
       }
-      if (centerInside && (targetWidth == 0 || targetHeight == 0)) {
+      if (centerInside && (targetWidth == 0 && targetHeight == 0)) {
         throw new IllegalStateException(
             "Center inside requires calling resize with positive width and height.");
       }
