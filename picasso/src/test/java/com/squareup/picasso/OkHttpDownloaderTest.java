@@ -20,12 +20,15 @@ import android.net.Uri;
 import com.google.mockwebserver.MockResponse;
 import com.google.mockwebserver.MockWebServer;
 import com.google.mockwebserver.RecordedRequest;
+import com.squareup.okhttp.Cache;
 import com.squareup.okhttp.OkHttpClient;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
@@ -35,8 +38,6 @@ import static com.squareup.picasso.OkHttpDownloader.RESPONSE_SOURCE_ANDROID;
 import static com.squareup.picasso.OkHttpDownloader.RESPONSE_SOURCE_OKHTTP;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -45,6 +46,8 @@ public class OkHttpDownloaderTest {
 
   private MockWebServer server;
   private OkHttpDownloader loader;
+
+  @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Before public void setUp() throws Exception {
     server = new MockWebServer();
@@ -107,9 +110,9 @@ public class OkHttpDownloaderTest {
 
   @Test public void shutdownClosesCache() throws Exception {
     OkHttpClient client = new OkHttpClient();
-    com.squareup.okhttp.Cache cache = mock(com.squareup.okhttp.Cache.class);
+    Cache cache = new Cache(temporaryFolder.getRoot(), 100);
     client.setCache(cache);
     new OkHttpDownloader(client).shutdown();
-    verify(cache).close();
+    assertThat(cache.isClosed()).isTrue();
   }
 }
