@@ -748,7 +748,7 @@ public class RequestCreatorTest {
     }
   }
 
-  @Test public void imageViewActionWithStableyKey() throws Exception {
+  @Test public void imageViewActionWithStableKey() throws Exception {
     new RequestCreator(picasso, URI_1, 0).stableKey(STABLE_1).into(mockImageViewTarget());
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getKey()).isEqualTo(STABLE_URI_KEY_1);
