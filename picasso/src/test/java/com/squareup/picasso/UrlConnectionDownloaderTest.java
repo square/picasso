@@ -18,13 +18,13 @@ package com.squareup.picasso;
 import android.app.Activity;
 import android.net.Uri;
 import android.net.http.HttpResponseCache;
-import com.google.mockwebserver.MockResponse;
-import com.google.mockwebserver.MockWebServer;
-import com.google.mockwebserver.RecordedRequest;
+import com.squareup.okhttp.mockwebserver.MockResponse;
+import com.squareup.okhttp.mockwebserver.RecordedRequest;
+import com.squareup.okhttp.mockwebserver.rule.MockWebServerRule;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -44,23 +44,17 @@ import static org.mockito.Mockito.verify;
 public class UrlConnectionDownloaderTest {
   private static final Uri URL = Uri.parse("/bees.gif");
 
-  private MockWebServer server;
   private UrlConnectionDownloader loader;
 
-  @Before public void setUp() throws Exception {
-    server = new MockWebServer();
-    server.play();
+  @Rule public MockWebServerRule server = new MockWebServerRule();
 
+  @Before public void setUp() throws Exception {
     Activity activity = Robolectric.buildActivity(Activity.class).get();
     loader = new UrlConnectionDownloader(activity) {
       @Override protected HttpURLConnection openConnection(Uri path) throws IOException {
         return (HttpURLConnection) server.getUrl(path.toString()).openConnection();
       }
     };
-  }
-
-  @After public void tearDown() throws Exception {
-    server.shutdown();
   }
 
   @Config(reportSdk = ICE_CREAM_SANDWICH)

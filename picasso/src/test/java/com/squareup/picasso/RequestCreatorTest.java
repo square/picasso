@@ -517,24 +517,14 @@ public class RequestCreatorTest {
   }
 
   @Test
-  public void intoTargetResizeWith0WithCenterInsideOrCenterCropThrows() {
+  public void intoTargetNoResizeWithCenterInsideOrCenterCropThrows() {
     try {
-      new RequestCreator(picasso, URI_1, 0).resize(0, 10).centerInside().into(mockTarget());
+      new RequestCreator(picasso, URI_1, 0).centerInside().into(mockTarget());
       fail("Center inside with unknown width should throw exception.");
     } catch (IllegalStateException ignored) {
     }
     try {
-      new RequestCreator(picasso, URI_1, 0).resize(10, 0).centerInside().into(mockTarget());
-      fail("Center inside with unknown height should throw exception.");
-    } catch (IllegalStateException ignored) {
-    }
-    try {
-      new RequestCreator(picasso, URI_1, 0).resize(0, 10).centerCrop().into(mockTarget());
-      fail("Center inside with unknown width should throw exception.");
-    } catch (IllegalStateException ignored) {
-    }
-    try {
-      new RequestCreator(picasso, URI_1, 0).resize(10, 0).centerCrop().into(mockTarget());
+      new RequestCreator(picasso, URI_1, 0).centerCrop().into(mockTarget());
       fail("Center inside with unknown height should throw exception.");
     } catch (IllegalStateException ignored) {
     }
@@ -748,7 +738,7 @@ public class RequestCreatorTest {
     }
   }
 
-  @Test public void imageViewActionWithStableyKey() throws Exception {
+  @Test public void imageViewActionWithStableKey() throws Exception {
     new RequestCreator(picasso, URI_1, 0).stableKey(STABLE_1).into(mockImageViewTarget());
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getKey()).isEqualTo(STABLE_URI_KEY_1);

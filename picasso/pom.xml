@@ -51,7 +51,7 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.google.mockwebserver</groupId>
+      <groupId>com.squareup.okhttp</groupId>
       <artifactId>mockwebserver</artifactId>
       <scope>test</scope>
     </dependency>
