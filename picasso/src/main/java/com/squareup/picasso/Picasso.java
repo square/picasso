@@ -775,7 +775,7 @@ public class Picasso {
   /** Describes where the image was loaded from. */
   public enum LoadedFrom {
     MEMORY(Color.GREEN),
-    DISK(Color.YELLOW),
+    DISK(Color.BLUE),
     NETWORK(Color.RED);
 
     final int debugColor;
