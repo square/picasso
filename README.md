@@ -1,4 +1,4 @@
-Picasso
+Picasso [![Build Status](https://travis-ci.org/square/picasso.svg?branch=master)](https://travis-ci.org/square/picasso)
 =======
 
 A powerful image downloading and caching library for Android
