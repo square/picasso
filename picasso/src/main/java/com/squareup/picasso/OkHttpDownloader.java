@@ -105,7 +105,8 @@ public class OkHttpDownloader implements Downloader {
     int responseCode = connection.getResponseCode();
     if (responseCode >= 300) {
       connection.disconnect();
-      throw new ResponseException(responseCode + " " + connection.getResponseMessage());
+      throw new ResponseException(responseCode + " " + connection.getResponseMessage(),
+          localCacheOnly, responseCode);
     }
 
     String responseSource = connection.getHeaderField(RESPONSE_SOURCE_OKHTTP);

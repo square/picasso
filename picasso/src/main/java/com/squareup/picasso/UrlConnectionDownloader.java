@@ -64,7 +64,8 @@ public class UrlConnectionDownloader implements Downloader {
     int responseCode = connection.getResponseCode();
     if (responseCode >= 300) {
       connection.disconnect();
-      throw new ResponseException(responseCode + " " + connection.getResponseMessage());
+      throw new ResponseException(responseCode + " " + connection.getResponseMessage(),
+          localCacheOnly, responseCode);
     }
 
     long contentLength = connection.getHeaderFieldInt("Content-Length", -1);

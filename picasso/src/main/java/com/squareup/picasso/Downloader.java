@@ -43,8 +43,13 @@ public interface Downloader {
 
   /** Thrown for non-2XX responses. */
   class ResponseException extends IOException {
-    public ResponseException(String message) {
+    final boolean localCacheOnly;
+    final int responseCode;
+
+    public ResponseException(String message, boolean localCacheOnly, int responseCode) {
       super(message);
+      this.localCacheOnly = localCacheOnly;
+      this.responseCode = responseCode;
     }
   }
 

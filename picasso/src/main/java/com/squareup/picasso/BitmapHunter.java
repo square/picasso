@@ -116,7 +116,9 @@ class BitmapHunter implements Runnable {
         dispatcher.dispatchComplete(this);
       }
     } catch (Downloader.ResponseException e) {
-      exception = e;
+      if (!e.localCacheOnly || e.responseCode != 504) {
+        exception = e;
+      }
       dispatcher.dispatchFailed(this);
     } catch (IOException e) {
       exception = e;
