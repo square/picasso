@@ -26,10 +26,9 @@ import org.robolectric.annotation.Config;
 
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Picasso.RequestTransformer.IDENTITY;
-import static com.squareup.picasso.TestUtils.BITMAP_1;
-import static com.squareup.picasso.TestUtils.BITMAP_3;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
+import static com.squareup.picasso.TestUtils.makeBitmap;
 import static com.squareup.picasso.TestUtils.mockTarget;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -49,11 +48,12 @@ public class TargetActionTest {
 
   @Test
   public void invokesSuccessIfTargetIsNotNull() throws Exception {
+    Bitmap bitmap = makeBitmap();
     Target target = mockTarget();
     TargetAction request =
         new TargetAction(mock(Picasso.class), target, null, false, 0, null, URI_KEY_1, null);
-    request.complete(BITMAP_3, MEMORY);
-    verify(target).onBitmapLoaded(BITMAP_3, MEMORY);
+    request.complete(bitmap, MEMORY);
+    verify(target).onBitmapLoaded(bitmap, MEMORY);
   }
 
   @Test
@@ -100,11 +100,12 @@ public class TargetActionTest {
     };
     Picasso picasso = mock(Picasso.class);
 
+    Bitmap bitmap = makeBitmap();
     TargetAction tr = new TargetAction(picasso, bad, null, false, 0, null, URI_KEY_1, null);
     try {
-      tr.complete(BITMAP_1, MEMORY);
+      tr.complete(bitmap, MEMORY);
       fail();
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
   }
 }

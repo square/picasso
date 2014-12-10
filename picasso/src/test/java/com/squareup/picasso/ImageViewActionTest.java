@@ -15,6 +15,7 @@
  */
 package com.squareup.picasso;
 
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
 import org.junit.Test;
@@ -25,9 +26,9 @@ import org.robolectric.annotation.Config;
 
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Picasso.RequestTransformer.IDENTITY;
-import static com.squareup.picasso.TestUtils.BITMAP_1;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
+import static com.squareup.picasso.TestUtils.makeBitmap;
 import static com.squareup.picasso.TestUtils.mockCallback;
 import static com.squareup.picasso.TestUtils.mockImageViewTarget;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -50,13 +51,14 @@ public class ImageViewActionTest {
 
   @Test
   public void returnsIfTargetIsNullOnComplete() throws Exception {
+    Bitmap bitmap = makeBitmap();
     Picasso picasso = mock(Picasso.class);
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
     ImageViewAction request =
         new ImageViewAction(picasso, target, null, false, false, 0, null, URI_KEY_1, null, callback);
     request.target.clear();
-    request.complete(BITMAP_1, MEMORY);
+    request.complete(bitmap, MEMORY);
     verifyZeroInteractions(target);
     verifyZeroInteractions(callback);
   }
@@ -76,6 +78,7 @@ public class ImageViewActionTest {
 
   @Test
   public void invokesTargetAndCallbackSuccessIfTargetIsNotNull() throws Exception {
+    Bitmap bitmap = makeBitmap();
     Picasso picasso =
         new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null, IDENTITY,
             null, mock(Stats.class), false, false);
@@ -83,7 +86,7 @@ public class ImageViewActionTest {
     Callback callback = mockCallback();
     ImageViewAction request =
         new ImageViewAction(picasso, target, null, false, false, 0, null, URI_KEY_1, null, callback);
-    request.complete(BITMAP_1, MEMORY);
+    request.complete(bitmap, MEMORY);
     verify(target).setImageDrawable(any(PicassoDrawable.class));
     verify(callback).onSuccess();
   }

@@ -39,12 +39,12 @@ import static com.squareup.picasso.Picasso.Priority.NORMAL;
 import static com.squareup.picasso.Picasso.RequestTransformer.IDENTITY;
 import static com.squareup.picasso.RemoteViewsAction.AppWidgetAction;
 import static com.squareup.picasso.RemoteViewsAction.NotificationAction;
-import static com.squareup.picasso.TestUtils.BITMAP_1;
 import static com.squareup.picasso.TestUtils.STABLE_1;
 import static com.squareup.picasso.TestUtils.STABLE_URI_KEY_1;
 import static com.squareup.picasso.TestUtils.TRANSFORM_REQUEST_ANSWER;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
+import static com.squareup.picasso.TestUtils.makeBitmap;
 import static com.squareup.picasso.TestUtils.mockCallback;
 import static com.squareup.picasso.TestUtils.mockFitImageViewTarget;
 import static com.squareup.picasso.TestUtils.mockImageViewTarget;
@@ -74,6 +74,8 @@ public class RequestCreatorTest {
   @Mock Picasso picasso;
   @Captor ArgumentCaptor<Action> actionCaptor;
 
+  final Bitmap bitmap = makeBitmap();
+  
   @Before public void shutUp() {
     initMocks(this);
     when(picasso.transformRequest(any(Request.class))).thenAnswer(TRANSFORM_REQUEST_ANSWER);
@@ -181,10 +183,10 @@ public class RequestCreatorTest {
 
   @Test
   public void intoTargetWithQuickMemoryCacheCheckDoesNotSubmit() {
-    when(picasso.quickMemoryCacheCheck(URI_KEY_1)).thenReturn(BITMAP_1);
+    when(picasso.quickMemoryCacheCheck(URI_KEY_1)).thenReturn(bitmap);
     Target target = mockTarget();
     new RequestCreator(picasso, URI_1, 0).into(target);
-    verify(target).onBitmapLoaded(BITMAP_1, MEMORY);
+    verify(target).onBitmapLoaded(bitmap, MEMORY);
     verify(picasso).cancelRequest(target);
     verify(picasso, never()).enqueueAndSubmit(any(Action.class));
   }
@@ -253,7 +255,7 @@ public class RequestCreatorTest {
     Picasso picasso =
         spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null,
             IDENTITY, null, mock(Stats.class), false, false));
-    doReturn(BITMAP_1).when(picasso).quickMemoryCacheCheck(URI_KEY_1);
+    doReturn(bitmap).when(picasso).quickMemoryCacheCheck(URI_KEY_1);
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
     new RequestCreator(picasso, URI_1, 0).into(target, callback);

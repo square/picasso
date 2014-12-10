@@ -16,6 +16,7 @@
 package com.squareup.picasso;
 
 import android.R;
+import android.graphics.Bitmap;
 import android.widget.RemoteViews;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,8 +27,8 @@ import org.robolectric.annotation.Config;
 
 import static com.squareup.picasso.Picasso.LoadedFrom.NETWORK;
 import static com.squareup.picasso.Picasso.RequestTransformer.IDENTITY;
-import static com.squareup.picasso.TestUtils.BITMAP_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
+import static com.squareup.picasso.TestUtils.makeBitmap;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -47,9 +48,10 @@ public class RemoteViewsActionTest {
   }
 
   @Test public void completeSetsBitmapOnRemoteViews() throws Exception {
+    Bitmap bitmap = makeBitmap();
     RemoteViewsAction action = createAction();
-    action.complete(BITMAP_1, NETWORK);
-    verify(remoteViews).setImageViewBitmap(1, BITMAP_1);
+    action.complete(bitmap, NETWORK);
+    verify(remoteViews).setImageViewBitmap(1, bitmap);
   }
 
   @Test public void errorWithNoResourceIsNoop() throws Exception {
