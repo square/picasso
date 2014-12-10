@@ -5,7 +5,7 @@
     android:versionName="1.0.0"
     package="com.example.picasso">
 
-  <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="19"/>
+  <uses-sdk android:minSdkVersion="9" android:targetSdkVersion="19"/>
 
   <!-- This is required for Picasso to work. -->
   <uses-permission android:name="android.permission.INTERNET"/>
