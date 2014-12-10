@@ -117,7 +117,7 @@ public class BitmapHunterTest {
   @Test public void responseExcpetionDispatchFailed() throws Exception {
     Action action = mockAction(URI_KEY_1, URI_1);
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, null,
-        new Downloader.ResponseException("Test"));
+        new Downloader.ResponseException("Test", false, 504));
     hunter.run();
     verify(dispatcher).dispatchFailed(hunter);
   }
