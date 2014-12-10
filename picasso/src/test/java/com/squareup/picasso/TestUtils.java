@@ -25,6 +25,9 @@ import android.net.Uri;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,11 +58,6 @@ class TestUtils {
   static final String URI_KEY_1 = createKey(new Request.Builder(URI_1).build());
   static final String URI_KEY_2 = createKey(new Request.Builder(URI_2).build());
   static final String STABLE_URI_KEY_1 = createKey(new Request.Builder(URI_1).stableKey(STABLE_1).build());
-  static final Bitmap VIDEO_THUMBNAIL_1 = Bitmap.createBitmap(10, 10, null);
-  static final Bitmap IMAGE_THUMBNAIL_1 = Bitmap.createBitmap(20, 20, null);
-  static final Bitmap BITMAP_1 = Bitmap.createBitmap(10, 10, null);
-  static final Bitmap BITMAP_2 = Bitmap.createBitmap(15, 15, null);
-  static final Bitmap BITMAP_3 = Bitmap.createBitmap(20, 20, null);
   static final File FILE_1 = new File("C:\\windows\\system32\\logo.exe");
   static final String FILE_KEY_1 = createKey(new Request.Builder(Uri.fromFile(FILE_1)).build());
   static final Uri FILE_1_URL = Uri.parse("file:///" + FILE_1.getPath());
@@ -242,7 +240,8 @@ class TestUtils {
     // Mock a RequestHandler that can handle any request.
     RequestHandler requestHandler = mock(RequestHandler.class);
     try {
-      RequestHandler.Result result = new RequestHandler.Result(BITMAP_1, MEMORY);
+      Bitmap defaultResult = makeBitmap();
+      RequestHandler.Result result = new RequestHandler.Result(defaultResult, MEMORY);
       when(requestHandler.load(any(Request.class))).thenReturn(result);
       when(requestHandler.canHandleRequest(any(Request.class))).thenReturn(true);
     } catch (IOException e) {
@@ -256,6 +255,14 @@ class TestUtils {
     Picasso picasso = mock(Picasso.class);
     when(picasso.getRequestHandlers()).thenReturn(Arrays.asList(requestHandler));
     return picasso;
+  }
+
+  static Bitmap makeBitmap() {
+    return makeBitmap(10, 10);
+  }
+
+  static Bitmap makeBitmap(int width, int height) {
+    return Bitmap.createBitmap(width, height, null);
   }
 
   private TestUtils() {

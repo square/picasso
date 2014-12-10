@@ -15,10 +15,9 @@ import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.FULL;
 import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.MICRO;
 import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.MINI;
 import static com.squareup.picasso.MediaStoreRequestHandler.getPicassoKind;
-import static com.squareup.picasso.TestUtils.IMAGE_THUMBNAIL_1;
 import static com.squareup.picasso.TestUtils.MEDIA_STORE_CONTENT_1_URL;
 import static com.squareup.picasso.TestUtils.MEDIA_STORE_CONTENT_KEY_1;
-import static com.squareup.picasso.TestUtils.VIDEO_THUMBNAIL_1;
+import static com.squareup.picasso.TestUtils.makeBitmap;
 import static com.squareup.picasso.TestUtils.mockAction;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -38,19 +37,21 @@ public class MediaStoreRequestHandlerTest {
   }
 
   @Test public void decodesVideoThumbnailWithVideoMimeType() throws Exception {
+    Bitmap bitmap = makeBitmap();
     Request request = new Request.Builder(MEDIA_STORE_CONTENT_1_URL, 0).resize(100, 100).build();
     Action action = mockAction(MEDIA_STORE_CONTENT_KEY_1, request);
-    MediaStoreRequestHandler requestHandler = create("video/", action);
+    MediaStoreRequestHandler requestHandler = create("video/");
     Bitmap result = requestHandler.load(action.getRequest()).getBitmap();
-    assertThat(result).isEqualTo(VIDEO_THUMBNAIL_1);
+    assertThat(result).isEqualTo(bitmap);
   }
 
   @Test public void decodesImageThumbnailWithImageMimeType() throws Exception {
+    Bitmap bitmap = makeBitmap(20, 20);
     Request request = new Request.Builder(MEDIA_STORE_CONTENT_1_URL, 0).resize(100, 100).build();
     Action action = mockAction(MEDIA_STORE_CONTENT_KEY_1, request);
-    MediaStoreRequestHandler requestHandler = create("image/png", action);
+    MediaStoreRequestHandler requestHandler = create("image/png");
     Bitmap result = requestHandler.load(action.getRequest()).getBitmap();
-    assertThat(result).isEqualTo(IMAGE_THUMBNAIL_1);
+    assertThat(result).isEqualTo(bitmap);
   }
 
   @Test public void getPicassoKindMicro() throws Exception {
@@ -71,13 +72,13 @@ public class MediaStoreRequestHandlerTest {
     assertThat(getPicassoKind(96, 1000)).isEqualTo(FULL);
   }
 
-  private MediaStoreRequestHandler create(String mimeType, Action action) {
+  private MediaStoreRequestHandler create(String mimeType) {
     ContentResolver contentResolver = mock(ContentResolver.class);
     when(contentResolver.getType(any(Uri.class))).thenReturn(mimeType);
-    return create(contentResolver, action);
+    return create(contentResolver);
   }
 
-  private MediaStoreRequestHandler create(ContentResolver contentResolver, Action action) {
+  private MediaStoreRequestHandler create(ContentResolver contentResolver) {
     when(context.getContentResolver()).thenReturn(contentResolver);
     return new MediaStoreRequestHandler(context);
   }
