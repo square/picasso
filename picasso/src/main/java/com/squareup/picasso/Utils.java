@@ -307,7 +307,13 @@ final class Utils {
 
   static boolean isAirplaneModeOn(Context context) {
     ContentResolver contentResolver = context.getContentResolver();
-    return Settings.System.getInt(contentResolver, AIRPLANE_MODE_ON, 0) != 0;
+    try {
+      return Settings.System.getInt(contentResolver, AIRPLANE_MODE_ON, 0) != 0;
+    } catch (NullPointerException e) {
+      // https://github.com/square/picasso/issues/761, some devices might crash here, assume that
+      // airplane mode is off.
+      return false;
+    }
   }
 
   @SuppressWarnings("unchecked")
