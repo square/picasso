@@ -57,6 +57,8 @@ class TestUtils {
   static final String STABLE_1 = "stableExampleKey1";
   static final String URI_KEY_1 = createKey(new Request.Builder(URI_1).build());
   static final String URI_KEY_2 = createKey(new Request.Builder(URI_2).build());
+  static final String URL_WITH_SPACE = "http://rentmysport.com/public/facilitycontent/facilityowner_56/facility_146/download (1).jpg";
+  static final String URL_WITH_SPACE_ENCODED = "http://rentmysport.com/public/facilitycontent/facilityowner_56/facility_146/download%20(1).jpg";
   static final String STABLE_URI_KEY_1 = createKey(new Request.Builder(URI_1).stableKey(STABLE_1).build());
   static final File FILE_1 = new File("C:\\windows\\system32\\logo.exe");
   static final String FILE_KEY_1 = createKey(new Request.Builder(Uri.fromFile(FILE_1)).build());

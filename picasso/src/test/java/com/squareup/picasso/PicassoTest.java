@@ -19,6 +19,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
@@ -385,6 +387,10 @@ public class PicassoTest {
       fail("Zero resourceId should throw exception.");
     } catch (IllegalArgumentException expected) {
     }
+  }
+ 
+  @Test public void encodeUrl() throws MalformedURLException, URISyntaxException {
+	assertThat(Utils.encodeURL(TestUtils.URL_WITH_SPACE)).isEqualTo(TestUtils.URL_WITH_SPACE_ENCODED);
   }
 
   @Test public void builderInvalidListener() throws Exception {

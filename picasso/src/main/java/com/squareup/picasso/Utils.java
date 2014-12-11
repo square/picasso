@@ -32,6 +32,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
 import java.util.concurrent.ThreadFactory;
 
@@ -426,5 +430,28 @@ final class Utils {
     static Downloader create(Context context) {
       return new OkHttpDownloader(context);
     }
+  }
+
+  /**
+   * Returns the textual string representation of URI created with specified
+   * code path using the US-ASCII encoding.
+   * <p>
+   * This path may be a remote URL.
+   * <p>
+   */
+  static String encodeURL(String path) {
+    if (path != null) {
+      try {
+      URL url = new URL(path);
+      URI uri = new URI(url.getProtocol(), url.getAuthority(), url.getPath(),
+                  url.getQuery(), url.getRef());
+      return uri.toASCIIString();
+      } catch (URISyntaxException ex) {
+        ex.printStackTrace();
+      } catch (MalformedURLException ex) {
+        ex.printStackTrace();
+      }
+    }
+    return path;
   }
 }
