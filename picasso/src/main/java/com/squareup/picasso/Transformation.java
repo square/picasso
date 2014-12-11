@@ -17,8 +17,10 @@ package com.squareup.picasso;
 
 import android.graphics.Bitmap;
 
+import java.io.Serializable;
+
 /** Image transformation. */
-public interface Transformation {
+public interface Transformation extends Serializable {
   /**
    * Transform the source bitmap into a new bitmap. If you create a new bitmap instance, you must
    * call {@link android.graphics.Bitmap#recycle()} on {@code source}. You may return the original
