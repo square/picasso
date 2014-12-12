@@ -328,6 +328,45 @@ public class Picasso {
   }
 
   /**
+   * Invalidate all memory cached images for the specified {@code uri}.
+   *
+   * @see #invalidate(String)
+   * @see #invalidate(File)
+   */
+  public void invalidate(Uri uri) {
+    if (uri == null) {
+      throw new IllegalArgumentException("uri == null");
+    }
+    cache.clearKeyUri(uri.toString());
+  }
+
+  /**
+   * Invalidate all memory cached images for the specified {@code uri}.
+   *
+   * @see #invalidate(Uri)
+   * @see #invalidate(File)
+   */
+  public void invalidate(String path) {
+    if (path == null) {
+      throw new IllegalArgumentException("path == null");
+    }
+    invalidate(Uri.parse(path));
+  }
+
+  /**
+   * Invalidate all memory cached images for the specified {@code uri}.
+   *
+   * @see #invalidate(Uri)
+   * @see #invalidate(String)
+   */
+  public void invalidate(File file) {
+    if (file == null) {
+      throw new IllegalArgumentException("file == null");
+    }
+    invalidate(Uri.fromFile(file));
+  }
+
+  /**
    * {@code true} if debug display, logging, and statistics are enabled.
    * <p>
    * @deprecated Use {@link #areIndicatorsEnabled()} and {@link #isLoggingEnabled()} instead.

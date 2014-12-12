@@ -158,6 +158,18 @@ public class LruCacheTest {
     assertThat(cache.map).isEmpty();
   }
 
+  @Test public void clearPrefixedKey() {
+    LruCache cache = new LruCache(3);
+
+    cache.set("Hello\nAlice!", A);
+    cache.set("Hello\nBob!", B);
+    cache.set("Hello\nEve!", C);
+    cache.set("Hellos\nWorld!", D);
+
+    cache.clearKeyUri("Hello");
+    assertThat(cache.map).hasSize(1).containsKey("Hellos\nWorld!");
+  }
+
   private void assertHit(LruCache cache, String key, Bitmap value) {
     assertThat(cache.get(key)).isEqualTo(value);
     expectedHitCount++;

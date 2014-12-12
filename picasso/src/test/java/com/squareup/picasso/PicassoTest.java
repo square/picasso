@@ -17,8 +17,10 @@ package com.squareup.picasso;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
@@ -487,5 +489,20 @@ public class PicassoTest {
   @Test public void builderWithDebugIndicators() throws Exception {
     Picasso picasso = new Picasso.Builder(Robolectric.application).indicatorsEnabled(true).build();
     assertThat(picasso.areIndicatorsEnabled()).isTrue();
+  }
+
+  @Test public void invalidateString() {
+    picasso.invalidate("http://example.com");
+    verify(cache).clearKeyUri("http://example.com");
+  }
+
+  @Test public void invalidateFile() {
+    picasso.invalidate(new File("/foo/bar/baz"));
+    verify(cache).clearKeyUri("file:///foo/bar/baz");
+  }
+
+  @Test public void invalidateUri() {
+    picasso.invalidate(Uri.parse("mock://12345"));
+    verify(cache).clearKeyUri("mock://12345");
   }
 }

@@ -40,6 +40,9 @@ public interface Cache {
   /** Clears the cache. */
   void clear();
 
+  /** Remove items whose key is prefixed with {@code keyPrefix}. */
+  void clearKeyUri(String keyPrefix);
+
   /** A cache which does not store any values. */
   Cache NONE = new Cache() {
     @Override public Bitmap get(String key) {
@@ -59,6 +62,9 @@ public interface Cache {
     }
 
     @Override public void clear() {
+    }
+
+    @Override public void clearKeyUri(String keyPrefix) {
     }
   };
 }
