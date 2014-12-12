@@ -341,7 +341,8 @@ public class Picasso {
   }
 
   /**
-   * Invalidate all memory cached images for the specified {@code uri}.
+   * Invalidate all memory cached images for the specified {@code path}. You can also pass a
+   * {@linkplain RequestCreator#stableKey stable key}.
    *
    * @see #invalidate(Uri)
    * @see #invalidate(File)
@@ -354,7 +355,7 @@ public class Picasso {
   }
 
   /**
-   * Invalidate all memory cached images for the specified {@code uri}.
+   * Invalidate all memory cached images for the specified {@code file}.
    *
    * @see #invalidate(Uri)
    * @see #invalidate(String)
