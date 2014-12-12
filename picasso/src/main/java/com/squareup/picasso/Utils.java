@@ -54,6 +54,7 @@ final class Utils {
   private static final int KEY_PADDING = 50; // Determined by exact science.
   private static final int MIN_DISK_CACHE_SIZE = 5 * 1024 * 1024; // 5MB
   private static final int MAX_DISK_CACHE_SIZE = 50 * 1024 * 1024; // 50MB
+  static final char KEY_SEPARATOR = '\n';
 
   /** Thread confined to main thread for key creation. */
   static final StringBuilder MAIN_THREAD_KEY_BUILDER = new StringBuilder();
@@ -175,30 +176,30 @@ final class Utils {
       builder.ensureCapacity(KEY_PADDING);
       builder.append(data.resourceId);
     }
-    builder.append('\n');
+    builder.append(KEY_SEPARATOR);
 
     if (data.rotationDegrees != 0) {
       builder.append("rotation:").append(data.rotationDegrees);
       if (data.hasRotationPivot) {
         builder.append('@').append(data.rotationPivotX).append('x').append(data.rotationPivotY);
       }
-      builder.append('\n');
+      builder.append(KEY_SEPARATOR);
     }
     if (data.hasSize()) {
       builder.append("resize:").append(data.targetWidth).append('x').append(data.targetHeight);
-      builder.append('\n');
+      builder.append(KEY_SEPARATOR);
     }
     if (data.centerCrop) {
-      builder.append("centerCrop\n");
+      builder.append("centerCrop").append(KEY_SEPARATOR);
     } else if (data.centerInside) {
-      builder.append("centerInside\n");
+      builder.append("centerInside").append(KEY_SEPARATOR);
     }
 
     if (data.transformations != null) {
       //noinspection ForLoopReplaceableByForEach
       for (int i = 0, count = data.transformations.size(); i < count; i++) {
         builder.append(data.transformations.get(i).key());
-        builder.append('\n');
+        builder.append(KEY_SEPARATOR);
       }
     }
 
