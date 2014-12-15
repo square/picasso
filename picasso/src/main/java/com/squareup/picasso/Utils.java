@@ -262,15 +262,6 @@ final class Utils {
         : new UrlConnectionDownloader(context);
   }
 
-  static void sneakyRethrow(Throwable t) {
-    Utils.<Error>sneakyThrow2(t);
-  }
-
-  @SuppressWarnings("unchecked")
-  private static <T extends Throwable> void sneakyThrow2(Throwable t) throws T {
-    throw (T) t;
-  }
-
   static File createDefaultCacheDir(Context context) {
     File cache = new File(context.getApplicationContext().getCacheDir(), PICASSO_CACHE);
     if (!cache.exists()) {
