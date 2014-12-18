@@ -19,32 +19,30 @@ import android.graphics.Bitmap;
 
 class FetchAction extends Action<Object> {
 
-    private final Object target;
-    private Callback callback;
+  private final Object target;
+  private Callback callback;
 
+  FetchAction(Picasso picasso, Request data, boolean skipCache, String key, Object tag) {
+    super(picasso, null, data, skipCache, false, 0, null, key, tag);
+    this.target = new Object();
+  }
 
-    FetchAction(Picasso picasso, Request data, boolean skipCache, String key, Object tag) {
-        super(picasso, null, data, skipCache, false, 0, null, key, tag);
-        this.target = new Object();
-    }
+  FetchAction(Picasso picasso, Request data, boolean skipCache, String key, Object tag, Callback callback) {
+    super(picasso, null, data, skipCache, false, 0, null, key, tag);
+    this.target = new Object();
+    this.callback = callback;
+  }
 
-    FetchAction(Picasso picasso, Request data, boolean skipCache, String key, Object tag, Callback callback) {
-        super(picasso, null, data, skipCache, false, 0, null, key, tag);
-        this.target = new Object();
-        this.callback = callback;
-    }
+  @Override
+  void complete(Bitmap result, Picasso.LoadedFrom from) {
+  }
 
+  @Override
+  public void error() {
+  }
 
-    @Override
-    void complete(Bitmap result, Picasso.LoadedFrom from) {
-    }
-
-    @Override
-    public void error() {
-    }
-
-    @Override
-    Object getTarget() {
-        return target;
-    }
+  @Override
+  Object getTarget() {
+    return target;
+  }
 }
