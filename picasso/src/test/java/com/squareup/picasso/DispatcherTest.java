@@ -38,12 +38,14 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
 import static com.squareup.picasso.Dispatcher.NetworkBroadcastReceiver;
 import static com.squareup.picasso.Dispatcher.NetworkBroadcastReceiver.EXTRA_AIRPLANE_STATE;
+import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_2;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_2;
 import static com.squareup.picasso.TestUtils.makeBitmap;
 import static com.squareup.picasso.TestUtils.mockAction;
+import static com.squareup.picasso.TestUtils.mockCallback;
 import static com.squareup.picasso.TestUtils.mockHunter;
 import static com.squareup.picasso.TestUtils.mockNetworkInfo;
 import static com.squareup.picasso.TestUtils.mockPicasso;
@@ -148,14 +150,54 @@ public class DispatcherTest {
 
     FetchAction fetchAction1 =
         new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, 0, pausedTag,
-            URI_KEY_1);
+            URI_KEY_1, null);
     FetchAction fetchAction2 =
         new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, 0, pausedTag,
-            URI_KEY_1);
+            URI_KEY_1, null);
     dispatcher.performSubmit(fetchAction1);
     dispatcher.performSubmit(fetchAction2);
 
     assertThat(dispatcher.pausedActions).hasSize(2);
+  }
+
+  @Test public void performSubmitWithFetchActionWithSuccessCompletionCallback() {
+    String pausedTag = "pausedTag";
+    Callback callback = mockCallback();
+
+    FetchAction fetchAction =
+        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, 0, pausedTag,
+            URI_KEY_1, callback);
+    dispatcher.performSubmit(fetchAction);
+    fetchAction.complete(bitmap1, MEMORY);
+
+    verify(callback).onSuccess();
+  }
+
+  @Test public void performSubmitWithFetchActionWithErrorCompletionCallback() {
+    String pausedTag = "pausedTag";
+    Callback callback = mockCallback();
+
+    FetchAction fetchAction =
+        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, 0, pausedTag,
+            URI_KEY_1, callback);
+    dispatcher.performSubmit(fetchAction, false);
+    fetchAction.error();
+
+    verify(callback).onError();
+  }
+
+  @Test public void performCancelWithFetchActionWithCallback() {
+    String pausedTag = "pausedTag";
+    dispatcher.pausedTags.add(pausedTag);
+    assertThat(dispatcher.pausedActions).isEmpty();
+    Callback callback = mockCallback();
+
+    FetchAction fetchAction1 =
+        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, 0, pausedTag,
+            URI_KEY_1, callback);
+    dispatcher.performCancel(fetchAction1);
+    fetchAction1.cancel();
+    assertThat(dispatcher.pausedActions).isEmpty();
   }
 
   @Test public void performCancelDetachesRequestAndCleansUp() {
