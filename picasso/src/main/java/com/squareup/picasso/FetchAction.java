@@ -19,8 +19,8 @@ import android.graphics.Bitmap;
 
 class FetchAction extends Action<Object> {
 
-    private final Object target;
-    private Callback callback;
+  private final Object target;
+  private Callback callback;
 
   FetchAction(Picasso picasso, Request data, int memoryPolicy, int networkPolicy, Object tag,
       String key) {
@@ -44,4 +44,5 @@ class FetchAction extends Action<Object> {
   @Override Object getTarget() {
     return target;
   }
+    
 }
