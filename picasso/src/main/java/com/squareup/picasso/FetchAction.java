@@ -27,7 +27,8 @@ class FetchAction extends Action<Object> {
     this.target = new Object();
   }
 
-  FetchAction(Picasso picasso, Request data, boolean skipCache, String key, Object tag, Callback callback) {
+  FetchAction(Picasso picasso, Request data, boolean skipCache, String key,
+              Object tag, Callback callback) {
     super(picasso, null, data, skipCache, false, 0, null, key, tag);
     this.target = new Object();
     this.callback = callback;
@@ -36,7 +37,8 @@ class FetchAction extends Action<Object> {
   @Override
   void complete(Bitmap result, Picasso.LoadedFrom from) {
     if (result == null) {
-      throw new AssertionError(String.format("Attempted to complete action with no result!\n%s", this));
+      throw new AssertionError(
+              String.format("Attempted to complete action with no result!\n%s", this));
       }
     if (callback != null) {
       callback.onSuccess();
