@@ -35,10 +35,27 @@ class FetchAction extends Action<Object> {
 
   @Override
   void complete(Bitmap result, Picasso.LoadedFrom from) {
+    if (result == null) {
+      throw new AssertionError(String.format("Attempted to complete action with no result!\n%s", this));
+      }
+    if (callback != null) {
+      callback.onSuccess();
+    }
   }
 
   @Override
   public void error() {
+    if (callback != null) {
+      callback.onError();
+    }
+  }
+
+  @Override
+  void cancel() {
+    super.cancel();
+    if (callback != null) {
+      callback = null;
+    }
   }
 
   @Override

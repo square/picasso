@@ -18,16 +18,20 @@ package com.squareup.picasso;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.ColorDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.Message;
+import android.widget.ImageView;
+
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
@@ -38,17 +42,24 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
 import static com.squareup.picasso.Dispatcher.NetworkBroadcastReceiver;
 import static com.squareup.picasso.Dispatcher.NetworkBroadcastReceiver.EXTRA_AIRPLANE_STATE;
+import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
+import static com.squareup.picasso.Picasso.RequestTransformer.IDENTITY;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_2;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_2;
 import static com.squareup.picasso.TestUtils.makeBitmap;
 import static com.squareup.picasso.TestUtils.mockAction;
+import static com.squareup.picasso.TestUtils.mockCallback;
 import static com.squareup.picasso.TestUtils.mockHunter;
+import static com.squareup.picasso.TestUtils.mockImageViewTarget;
 import static com.squareup.picasso.TestUtils.mockNetworkInfo;
+import static com.squareup.picasso.TestUtils.mockNotification;
 import static com.squareup.picasso.TestUtils.mockPicasso;
+import static com.squareup.picasso.TestUtils.mockRemoteViews;
 import static com.squareup.picasso.TestUtils.mockTarget;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
@@ -156,6 +167,52 @@ public class DispatcherTest {
     dispatcher.performSubmit(fetchAction2);
 
     assertThat(dispatcher.pausedActions).hasSize(2);
+  }
+
+  @Test public void performSubmitWithFetchActionWithSuccessCompletionCallback() {
+    String pausedTag = "pausedTag";
+    dispatcher.pausedTags.add(pausedTag);
+    assertThat(dispatcher.pausedActions).isEmpty();
+    Callback callback = mockCallback();
+
+    FetchAction fetchAction1 =
+      new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), false, URI_KEY_1,
+          pausedTag, callback);
+    dispatcher.performSubmit(fetchAction1);
+    fetchAction1.complete(bitmap1, MEMORY);
+
+    verify(callback).onSuccess();
+    assertThat(dispatcher.pausedActions).hasSize(1);
+  }
+
+  @Test public void performSubmitWithFetchActionWithErrorCompletionCallback() {
+    String pausedTag = "pausedTag";
+    dispatcher.pausedTags.add(pausedTag);
+    assertThat(dispatcher.pausedActions).isEmpty();
+    Callback callback = mockCallback();
+
+    FetchAction fetchAction1 =
+      new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), false, URI_KEY_1,
+          pausedTag, callback);
+    dispatcher.performSubmit(fetchAction1, false);
+    fetchAction1.error();
+
+    verify(callback).onError();
+    assertThat(dispatcher.pausedActions).hasSize(1);
+  }
+
+  @Test public void performCancelWithFetchActionWithCallback() {
+    String pausedTag = "pausedTag";
+    dispatcher.pausedTags.add(pausedTag);
+    assertThat(dispatcher.pausedActions).isEmpty();
+    Callback callback = mockCallback();
+
+    FetchAction fetchAction1 =
+      new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), false, URI_KEY_1,
+          pausedTag, callback);
+    dispatcher.performCancel(fetchAction1);
+    fetchAction1.cancel();
+    assertThat(dispatcher.pausedActions).isEmpty();
   }
 
   @Test public void performCancelDetachesRequestAndCleansUp() {
