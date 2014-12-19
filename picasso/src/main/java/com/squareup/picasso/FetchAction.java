@@ -35,10 +35,36 @@ class FetchAction extends Action<Object> {
     this.callback = callback;
   }
 
+<<<<<<< HEAD
   @Override void complete(Bitmap result, Picasso.LoadedFrom from) {
   }
 
   @Override public void error() {
+=======
+  @Override
+  void complete(Bitmap result, Picasso.LoadedFrom from) {
+    if (result == null) {
+      throw new AssertionError(String.format("Attempted to complete action with no result!\n%s", this));
+      }
+    if (callback != null) {
+      callback.onSuccess();
+    }
+  }
+
+  @Override
+  public void error() {
+    if (callback != null) {
+      callback.onError();
+    }
+  }
+
+  @Override
+  void cancel() {
+    super.cancel();
+    if (callback != null) {
+      callback = null;
+    }
+>>>>>>> Added tests to cover the changes made to FetchAction
   }
 
   @Override Object getTarget() {
