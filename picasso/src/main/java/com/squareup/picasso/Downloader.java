@@ -28,12 +28,14 @@ public interface Downloader {
    * @param uri Remote image URL.
    * @param localCacheOnly If {@code true} the URL should only be loaded if available in a local
    * disk cache.
+   * @param stableKey StableKey of the request. Can be used by the Downloader implementation
+   * for caching or persisting purposes.
    * @return {@link Response} containing either a {@link Bitmap} representation of the request or an
    * {@link InputStream} for the image data. {@code null} can be returned to indicate a problem
    * loading the bitmap.
    * @throws IOException if the requested URL cannot successfully be loaded.
    */
-  Response load(Uri uri, boolean localCacheOnly) throws IOException;
+  Response load(Uri uri, boolean localCacheOnly, String stableKey) throws IOException;
 
   /**
    * Allows to perform a clean up for this {@link Downloader} including closing the disk cache and

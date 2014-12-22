@@ -46,7 +46,7 @@ class NetworkRequestHandler extends RequestHandler {
   }
 
   @Override public Result load(Request data) throws IOException {
-    Response response = downloader.load(data.uri, data.loadFromLocalCacheOnly);
+    Response response = downloader.load(data.uri, data.loadFromLocalCacheOnly, data.stableKey);
     if (response == null) {
       return null;
     }

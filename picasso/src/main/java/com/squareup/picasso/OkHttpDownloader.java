@@ -95,7 +95,8 @@ public class OkHttpDownloader implements Downloader {
     return urlFactory.client();
   }
 
-  @Override public Response load(Uri uri, boolean localCacheOnly) throws IOException {
+  @Override public Response load(Uri uri, boolean localCacheOnly, String stableKey)
+          throws IOException {
     HttpURLConnection connection = openConnection(uri);
     connection.setUseCaches(true);
     if (localCacheOnly) {
