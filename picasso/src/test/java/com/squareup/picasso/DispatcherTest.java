@@ -159,10 +159,10 @@ public class DispatcherTest {
 
     FetchAction fetchAction1 =
         new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), false, URI_KEY_1,
-            pausedTag);
+            pausedTag, null);
     FetchAction fetchAction2 =
         new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), false, URI_KEY_1,
-            pausedTag);
+            pausedTag, null);
     dispatcher.performSubmit(fetchAction1);
     dispatcher.performSubmit(fetchAction2);
 
@@ -170,35 +170,27 @@ public class DispatcherTest {
   }
 
   @Test public void performSubmitWithFetchActionWithSuccessCompletionCallback() {
-    String pausedTag = "pausedTag";
-    dispatcher.pausedTags.add(pausedTag);
-    assertThat(dispatcher.pausedActions).isEmpty();
     Callback callback = mockCallback();
-
-    FetchAction fetchAction1 =
+      
+    FetchAction fetchAction =
       new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), false, URI_KEY_1,
-          pausedTag, callback);
-    dispatcher.performSubmit(fetchAction1);
-    fetchAction1.complete(bitmap1, MEMORY);
+          null, callback);
+    dispatcher.performSubmit(fetchAction);
+    fetchAction.complete(bitmap1, MEMORY);
 
     verify(callback).onSuccess();
-    assertThat(dispatcher.pausedActions).hasSize(1);
   }
 
   @Test public void performSubmitWithFetchActionWithErrorCompletionCallback() {
-    String pausedTag = "pausedTag";
-    dispatcher.pausedTags.add(pausedTag);
-    assertThat(dispatcher.pausedActions).isEmpty();
     Callback callback = mockCallback();
 
-    FetchAction fetchAction1 =
+    FetchAction fetchAction =
       new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), false, URI_KEY_1,
-          pausedTag, callback);
-    dispatcher.performSubmit(fetchAction1, false);
-    fetchAction1.error();
+          null, callback);
+    dispatcher.performSubmit(fetchAction, false);
+    fetchAction.error();
 
     verify(callback).onError();
-    assertThat(dispatcher.pausedActions).hasSize(1);
   }
 
   @Test public void performCancelWithFetchActionWithCallback() {

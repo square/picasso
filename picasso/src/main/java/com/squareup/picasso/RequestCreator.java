@@ -374,7 +374,7 @@ public class RequestCreator {
       Request request = createRequest(started);
       String key = createKey(request, new StringBuilder());
 
-      Action action = new FetchAction(picasso, request, skipMemoryCache, key, tag);
+      Action action = new FetchAction(picasso, request, skipMemoryCache, key, tag, null);
       picasso.submit(action);
     }
   }
