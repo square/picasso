@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.squareup.picasso.MemoryPolicy.shouldReadFromMemoryCache;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Picasso.Priority;
 import static com.squareup.picasso.Picasso.Priority.LOW;
@@ -71,7 +72,7 @@ class BitmapHunter implements Runnable {
   final Stats stats;
   final String key;
   final Request data;
-  final boolean skipMemoryCache;
+  final int memoryPolicy;
   final RequestHandler requestHandler;
 
   Action action;
@@ -95,7 +96,7 @@ class BitmapHunter implements Runnable {
     this.key = action.getKey();
     this.data = action.getRequest();
     this.priority = action.getPriority();
-    this.skipMemoryCache = action.skipCache;
+    this.memoryPolicy = action.memoryPolicy;
     this.requestHandler = requestHandler;
     this.retryCount = requestHandler.getRetryCount();
   }
@@ -139,7 +140,7 @@ class BitmapHunter implements Runnable {
   Bitmap hunt() throws IOException {
     Bitmap bitmap = null;
 
-    if (!skipMemoryCache) {
+    if (shouldReadFromMemoryCache(memoryPolicy)) {
       bitmap = cache.get(key);
       if (bitmap != null) {
         stats.dispatchCacheHit();
@@ -279,10 +280,6 @@ class BitmapHunter implements Runnable {
     return future != null && future.isCancelled();
   }
 
-  boolean shouldSkipMemoryCache() {
-    return skipMemoryCache;
-  }
-
   boolean shouldRetry(boolean airplaneMode, NetworkInfo info) {
     boolean hasRetries = retryCount > 0;
     if (!hasRetries) {
@@ -302,6 +299,10 @@ class BitmapHunter implements Runnable {
 
   String getKey() {
     return key;
+  }
+
+  int getMemoryPolicy() {
+    return memoryPolicy;
   }
 
   Request getData() {

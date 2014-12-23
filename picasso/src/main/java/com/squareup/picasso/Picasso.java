@@ -39,6 +39,7 @@ import static com.squareup.picasso.Action.RequestWeakReference;
 import static com.squareup.picasso.Dispatcher.HUNTER_BATCH_COMPLETE;
 import static com.squareup.picasso.Dispatcher.REQUEST_BATCH_RESUME;
 import static com.squareup.picasso.Dispatcher.REQUEST_GCED;
+import static com.squareup.picasso.MemoryPolicy.shouldReadFromMemoryCache;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Utils.OWNER_MAIN;
 import static com.squareup.picasso.Utils.THREAD_PREFIX;
@@ -126,6 +127,7 @@ public class Picasso {
         }
         case REQUEST_BATCH_RESUME:
           @SuppressWarnings("unchecked") List<Action> batch = (List<Action>) msg.obj;
+          //noinspection ForLoopReplaceableByForEach
           for (int i = 0, n = batch.size(); i < n; i++) {
             Action action = batch.get(i);
             action.picasso.resumeAction(action);
@@ -223,6 +225,7 @@ public class Picasso {
   public void cancelTag(Object tag) {
     checkMain();
     List<Action> actions = new ArrayList<Action>(targetToAction.values());
+    //noinspection ForLoopReplaceableByForEach
     for (int i = 0, n = actions.size(); i < n; i++) {
       Action action = actions.get(i);
       if (action.getTag().equals(tag)) {
@@ -402,6 +405,7 @@ public class Picasso {
    * <b>WARNING:</b> Enabling this will result in excessive object allocation. This should be only
    * be used for debugging Picasso behavior. Do NOT pass {@code BuildConfig.DEBUG}.
    */
+  @SuppressWarnings("UnusedDeclaration") // Public API.
   public void setLoggingEnabled(boolean enabled) {
     loggingEnabled = enabled;
   }
@@ -518,7 +522,7 @@ public class Picasso {
 
   void resumeAction(Action action) {
     Bitmap bitmap = null;
-    if (!action.skipCache) {
+    if (shouldReadFromMemoryCache(action.memoryPolicy)) {
       bitmap = quickMemoryCacheCheck(action.getKey());
     }
 

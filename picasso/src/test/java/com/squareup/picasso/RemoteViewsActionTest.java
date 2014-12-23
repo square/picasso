@@ -15,7 +15,6 @@
  */
 package com.squareup.picasso;
 
-import android.R;
 import android.graphics.Bitmap;
 import android.widget.RemoteViews;
 import org.junit.Before;
@@ -44,7 +43,7 @@ public class RemoteViewsActionTest {
   @Before public void setUp() {
     picasso = createPicasso();
     remoteViews = mock(RemoteViews.class);
-    when(remoteViews.getLayoutId()).thenReturn(R.layout.list_content);
+    when(remoteViews.getLayoutId()).thenReturn(android.R.layout.list_content);
   }
 
   @Test public void completeSetsBitmapOnRemoteViews() throws Exception {
@@ -71,7 +70,7 @@ public class RemoteViewsActionTest {
   }
 
   private TestableRemoteViewsAction createAction(int errorResId) {
-    return new TestableRemoteViewsAction(picasso, null, remoteViews, 1, errorResId, false,
+    return new TestableRemoteViewsAction(picasso, null, remoteViews, 1, errorResId, 0,
         URI_KEY_1, null);
   }
 
@@ -82,8 +81,8 @@ public class RemoteViewsActionTest {
 
   static class TestableRemoteViewsAction extends RemoteViewsAction {
     TestableRemoteViewsAction(Picasso picasso, Request data, RemoteViews remoteViews, int viewId,
-        int errorResId, boolean skipCache, String key, String tag) {
-      super(picasso, data, remoteViews, viewId, errorResId, skipCache, key, tag);
+        int errorResId, int memoryPolicy, String key, String tag) {
+      super(picasso, data, remoteViews, viewId, errorResId, memoryPolicy, key, tag);
     }
 
     @Override void update() {

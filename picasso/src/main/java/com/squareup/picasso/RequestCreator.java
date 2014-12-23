@@ -29,6 +29,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.jetbrains.annotations.TestOnly;
 
 import static com.squareup.picasso.BitmapHunter.forRequest;
+import static com.squareup.picasso.MemoryPolicy.NO_CACHE;
+import static com.squareup.picasso.MemoryPolicy.NO_STORE;
+import static com.squareup.picasso.MemoryPolicy.shouldReadFromMemoryCache;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Picasso.Priority;
 import static com.squareup.picasso.PicassoDrawable.setBitmap;
@@ -75,12 +78,12 @@ public class RequestCreator {
   private final Picasso picasso;
   private final Request.Builder data;
 
-  private boolean skipMemoryCache;
   private boolean noFade;
   private boolean deferred;
   private boolean setPlaceholder = true;
   private int placeholderResId;
   private int errorResId;
+  private int memoryPolicy;
   private Drawable placeholderDrawable;
   private Drawable errorDrawable;
   private Object tag;
@@ -314,12 +317,32 @@ public class RequestCreator {
   }
 
   /**
-   * Indicate that this action should not use the memory cache for attempting to load or save the
-   * image. This can be useful when you know an image will only ever be used once (e.g., loading
-   * an image from the filesystem and uploading to a remote server).
+   * @deprecated Use {@link #memoryPolicy(MemoryPolicy, MemoryPolicy...)} instead.
    */
-  public RequestCreator skipMemoryCache() {
-    skipMemoryCache = true;
+  @Deprecated public RequestCreator skipMemoryCache() {
+    return memoryPolicy(NO_CACHE, NO_STORE);
+  }
+
+  /**
+   * Specifies the {@link MemoryPolicy} to use for this request. You may specify additional policy
+   * options using the varargs parameter.
+   */
+  public RequestCreator memoryPolicy(MemoryPolicy policy, MemoryPolicy... additional) {
+    if (policy == null) {
+      throw new IllegalArgumentException("Memory policy cannot be null.");
+    }
+    this.memoryPolicy |= policy.index;
+    if (additional == null) {
+      throw new IllegalArgumentException("Memory policy cannot be null.");
+    }
+    if (additional.length > 0) {
+      for (MemoryPolicy memoryPolicy : additional) {
+        if (memoryPolicy == null) {
+          throw new IllegalArgumentException("Memory policy cannot be null.");
+        }
+        this.memoryPolicy |= memoryPolicy.index;
+      }
+    }
     return this;
   }
 
@@ -349,7 +372,7 @@ public class RequestCreator {
     Request finalData = createRequest(started);
     String key = createKey(finalData, new StringBuilder());
 
-    Action action = new GetAction(picasso, finalData, skipMemoryCache, key, tag);
+    Action action = new GetAction(picasso, finalData, memoryPolicy, key, tag);
     return forRequest(picasso, picasso.dispatcher, picasso.cache, picasso.stats, action).hunt();
   }
 
@@ -374,7 +397,7 @@ public class RequestCreator {
       Request request = createRequest(started);
       String key = createKey(request, new StringBuilder());
 
-      Action action = new FetchAction(picasso, request, skipMemoryCache, key, tag);
+      Action action = new FetchAction(picasso, request, memoryPolicy, key, tag);
       picasso.submit(action);
     }
   }
@@ -444,7 +467,7 @@ public class RequestCreator {
     Request request = createRequest(started);
     String requestKey = createKey(request);
 
-    if (!skipMemoryCache) {
+    if (shouldReadFromMemoryCache(memoryPolicy)) {
       Bitmap bitmap = picasso.quickMemoryCacheCheck(requestKey);
       if (bitmap != null) {
         picasso.cancelRequest(target);
@@ -456,7 +479,7 @@ public class RequestCreator {
     target.onPrepareLoad(setPlaceholder ? getPlaceholderDrawable() : null);
 
     Action action =
-        new TargetAction(picasso, target, request, skipMemoryCache, errorResId, errorDrawable,
+        new TargetAction(picasso, target, request, memoryPolicy, errorResId, errorDrawable,
             requestKey, tag);
     picasso.enqueueAndSubmit(action);
   }
@@ -489,7 +512,7 @@ public class RequestCreator {
 
     RemoteViewsAction action =
         new NotificationAction(picasso, request, remoteViews, viewId, notificationId, notification,
-            skipMemoryCache, errorResId, key, tag);
+            memoryPolicy, errorResId, key, tag);
 
     performRemoteViewInto(action);
   }
@@ -520,7 +543,7 @@ public class RequestCreator {
     String key = createKey(request);
 
     RemoteViewsAction action =
-        new AppWidgetAction(picasso, request, remoteViews, viewId, appWidgetIds, skipMemoryCache,
+        new AppWidgetAction(picasso, request, remoteViews, viewId, appWidgetIds, memoryPolicy,
             errorResId, key, tag);
 
     performRemoteViewInto(action);
@@ -580,7 +603,7 @@ public class RequestCreator {
     Request request = createRequest(started);
     String requestKey = createKey(request);
 
-    if (!skipMemoryCache) {
+    if (shouldReadFromMemoryCache(memoryPolicy)) {
       Bitmap bitmap = picasso.quickMemoryCacheCheck(requestKey);
       if (bitmap != null) {
         picasso.cancelRequest(target);
@@ -600,7 +623,7 @@ public class RequestCreator {
     }
 
     Action action =
-        new ImageViewAction(picasso, target, request, skipMemoryCache, noFade, errorResId,
+        new ImageViewAction(picasso, target, request, memoryPolicy, noFade, errorResId,
             errorDrawable, requestKey, tag, callback);
 
     picasso.enqueueAndSubmit(action);
@@ -642,7 +665,7 @@ public class RequestCreator {
   }
 
   private void performRemoteViewInto(RemoteViewsAction action) {
-    if (!skipMemoryCache) {
+    if (shouldReadFromMemoryCache(memoryPolicy)) {
       Bitmap bitmap = picasso.quickMemoryCacheCheck(action.getKey());
       if (bitmap != null) {
         action.complete(bitmap, MEMORY);

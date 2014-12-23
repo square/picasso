@@ -25,9 +25,6 @@ import android.net.Uri;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -222,14 +219,18 @@ class TestUtils {
   }
 
   static BitmapHunter mockHunter(String key, Bitmap result, boolean skipCache, Action action) {
+    int memoryPolicy = skipCache ? MemoryPolicy.NO_STORE.index | MemoryPolicy.NO_CACHE.index : 0;
+    return mockHunter(key, result, memoryPolicy, action);
+  }
+
+  static BitmapHunter mockHunter(String key, Bitmap result, int memoryPolicy, Action action) {
     Request data = new Request.Builder(URI_1).build();
     BitmapHunter hunter = mock(BitmapHunter.class);
     when(hunter.getKey()).thenReturn(key);
     when(hunter.getResult()).thenReturn(result);
     when(hunter.getData()).thenReturn(data);
-    when(hunter.shouldSkipMemoryCache()).thenReturn(skipCache);
+    when(hunter.getMemoryPolicy()).thenReturn(memoryPolicy);
     when(hunter.getAction()).thenReturn(action);
-
     Picasso picasso = mockPicasso();
     when(hunter.getPicasso()).thenReturn(picasso);
 

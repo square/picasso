@@ -73,7 +73,7 @@ public class DispatcherTest {
   @Mock Cache cache;
   @Mock Stats stats;
   private Dispatcher dispatcher;
-  
+
   final Bitmap bitmap1 = makeBitmap();
   final Bitmap bitmap2 = makeBitmap();
 
@@ -147,11 +147,9 @@ public class DispatcherTest {
     assertThat(dispatcher.pausedActions).isEmpty();
 
     FetchAction fetchAction1 =
-        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), false, URI_KEY_1,
-            pausedTag);
+        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, URI_KEY_1, pausedTag);
     FetchAction fetchAction2 =
-        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), false, URI_KEY_1,
-            pausedTag);
+        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, URI_KEY_1, pausedTag);
     dispatcher.performSubmit(fetchAction1);
     dispatcher.performSubmit(fetchAction2);
 
@@ -199,13 +197,15 @@ public class DispatcherTest {
   }
 
   @Test public void performCompleteSetsResultInCache() {
-    BitmapHunter hunter = mockHunter(URI_KEY_1, bitmap1, false);
+    BitmapHunter hunter = mockHunter(URI_KEY_1, bitmap1, 0, null);
     dispatcher.performComplete(hunter);
     verify(cache).set(hunter.getKey(), hunter.getResult());
   }
 
-  @Test public void performCompleteWithSkipCacheDoesNotCache() {
-    BitmapHunter hunter = mockHunter(URI_KEY_1, bitmap1, true);
+  @Test public void performCompleteWithNoStoreMemoryPolicy() {
+    int memoryPolicy = 0;
+    memoryPolicy |= MemoryPolicy.NO_STORE.index;
+    BitmapHunter hunter = mockHunter(URI_KEY_1, bitmap1, memoryPolicy, null);
     dispatcher.performComplete(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
     verifyZeroInteractions(cache);
