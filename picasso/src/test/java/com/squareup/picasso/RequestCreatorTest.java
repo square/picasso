@@ -199,6 +199,13 @@ public class RequestCreatorTest {
   }
 
   @Test
+  public void intoTargetWithSkipMemoryPolicy() {
+    Target target = mockTarget();
+    new RequestCreator(picasso, URI_1, 0).memoryPolicy(MemoryPolicy.NO_CACHE).into(target);
+    verify(picasso, never()).quickMemoryCacheCheck(URI_KEY_1);
+  }
+
+  @Test
   public void intoTargetAndNotInCacheSubmitsTargetRequest() {
     Target target = mockTarget();
     Drawable placeHolderDrawable = mock(Drawable.class);
@@ -373,6 +380,13 @@ public class RequestCreatorTest {
   public void intoImageViewAndSkipMemoryCacheDoesNotCheckMemoryCache() {
     ImageView target = mockImageViewTarget();
     new RequestCreator(picasso, URI_1, 0).skipMemoryCache().into(target);
+    verify(picasso, never()).quickMemoryCacheCheck(URI_KEY_1);
+  }
+
+  @Test
+  public void intoImageViewWithSkipMemoryCachePolicy() {
+    ImageView target = mockImageViewTarget();
+    new RequestCreator(picasso, URI_1, 0).memoryPolicy(MemoryPolicy.NO_CACHE).into(target);
     verify(picasso, never()).quickMemoryCacheCheck(URI_KEY_1);
   }
 
@@ -582,6 +596,30 @@ public class RequestCreatorTest {
         .into(mockRemoteViews(), 0, 0, mockNotification());
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getTag()).isEqualTo("tag");
+  }
+
+  @Test public void nullMemoryPolicy() {
+    try {
+      new RequestCreator().memoryPolicy(null);
+      fail("Null memory policy should throw exception.");
+    } catch (IllegalArgumentException ignored) {
+    }
+  }
+
+  @Test public void nullAdditionalMemoryPolicy() {
+    try {
+      new RequestCreator().memoryPolicy(MemoryPolicy.NO_CACHE, null);
+      fail("Null additional memory policy should throw exception.");
+    } catch (IllegalArgumentException ignored) {
+    }
+  }
+
+  @Test public void nullMemoryPolicyAssholeStyle() {
+    try {
+      new RequestCreator().memoryPolicy(MemoryPolicy.NO_CACHE, new MemoryPolicy[] { null });
+      fail("Null additional memory policy should throw exception.");
+    } catch (IllegalArgumentException ignored) {
+    }
   }
 
   @Test public void invalidResize() {
