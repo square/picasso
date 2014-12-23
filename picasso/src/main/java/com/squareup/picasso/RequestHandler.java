@@ -28,7 +28,7 @@ import java.io.IOException;
  * <h2>Usage</h2>
  * <p>{@link RequestHandler} must be subclassed to be used. You will have to
  * override two methods ({@link #canHandleRequest(Request)} and
- * {@link #load(Request)}) with your custom logic to load images.</p>
+ * {@link #load(Request, int)}) with your custom logic to load images.</p>
  *
  * <p>You should then register your {@link RequestHandler} using
  * {@link Picasso.Builder#addRequestHandler(RequestHandler)}</p>
@@ -40,11 +40,11 @@ import java.io.IOException;
  */
 public abstract class RequestHandler {
   /**
-   * {@link Result} represents the result of a {@link #load(Request)} call in a
+   * {@link Result} represents the result of a {@link #load(Request, int)} call in a
    * {@link RequestHandler}.
    *
    * @see RequestHandler
-   * @see #load(Request)
+   * @see #load(Request, int)
    */
   public static final class Result {
     private final Picasso.LoadedFrom loadedFrom;
@@ -63,7 +63,7 @@ public abstract class RequestHandler {
 
     /**
      * Returns the resulting {@link Bitmap} generated
-     * from a {@link #load(Request)} call.
+     * from a {@link #load(Request, int)} call.
      */
     public Bitmap getBitmap() {
       return bitmap;
@@ -71,7 +71,7 @@ public abstract class RequestHandler {
 
     /**
      * Returns the resulting {@link Picasso.LoadedFrom} generated
-     * from a {@link #load(Request)} call.
+     * from a {@link #load(Request, int)} call.
      */
     public Picasso.LoadedFrom getLoadedFrom() {
       return loadedFrom;
@@ -79,7 +79,7 @@ public abstract class RequestHandler {
 
     /**
      * Returns the resulting EXIF orientation generated
-     * from a {@link #load(Request)} call. This is only accessible
+     * from a {@link #load(Request, int)} call. This is only accessible
      * to built-in RequestHandlers.
      */
     int getExifOrientation() {
@@ -97,9 +97,10 @@ public abstract class RequestHandler {
    * Loads an image for the given {@link Request}.
    *
    * @param data the {@link android.net.Uri} to load the image from.
+   * @param networkPolicy the {@link NetworkPolicy} for this request.
    * @return A {@link Result} instance representing the result.
    */
-  public abstract Result load(Request data) throws IOException;
+  public abstract Result load(Request data, int networkPolicy) throws IOException;
 
   int getRetryCount() {
     return 0;

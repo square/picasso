@@ -17,8 +17,10 @@ package com.squareup.picasso;
 
 import android.content.Context;
 import android.net.Uri;
+import com.squareup.okhttp.CacheControl;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.ResponseBody;
+import com.squareup.okhttp.Request;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -90,19 +92,33 @@ public class OkHttpDownloader implements Downloader {
     return client;
   }
 
-  @Override public Response load(Uri uri, boolean localCacheOnly) throws IOException {
-    com.squareup.okhttp.Request.Builder requestBuilder =
-        new com.squareup.okhttp.Request.Builder().url(uri.toString());
-
-    if (localCacheOnly) {
-      requestBuilder.addHeader("Cache-Control", "only-if-cached,max-age=2147483647");
+  @Override public Response load(Uri uri, int networkPolicy) throws IOException {
+    CacheControl cacheControl = null;
+    if (networkPolicy != 0) {
+      if (NetworkPolicy.isOfflineOnly(networkPolicy)) {
+        cacheControl = CacheControl.FORCE_CACHE;
+      } else {
+        CacheControl.Builder builder = new CacheControl.Builder();
+        if (!NetworkPolicy.shouldReadFromDiskCache(networkPolicy)) {
+          builder.noCache();
+        }
+        if (!NetworkPolicy.shouldWriteToDiskCache(networkPolicy)) {
+          builder.noStore();
+        }
+        cacheControl = builder.build();
+      }
     }
 
-    com.squareup.okhttp.Response response = client.newCall(requestBuilder.build()).execute();
+    Request.Builder builder = new Request.Builder().url(uri.toString());
+    if (cacheControl != null) {
+      builder.cacheControl(cacheControl);
+    }
+
+    com.squareup.okhttp.Response response = client.newCall(builder.build()).execute();
     int responseCode = response.code();
     if (responseCode >= 300) {
       response.body().close();
-      throw new ResponseException(responseCode + " " + response.message(), localCacheOnly,
+      throw new ResponseException(responseCode + " " + response.message(), networkPolicy,
           responseCode);
     }
 

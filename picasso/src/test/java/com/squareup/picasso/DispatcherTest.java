@@ -147,9 +147,11 @@ public class DispatcherTest {
     assertThat(dispatcher.pausedActions).isEmpty();
 
     FetchAction fetchAction1 =
-        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, URI_KEY_1, pausedTag);
+        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, 0, pausedTag,
+            URI_KEY_1);
     FetchAction fetchAction2 =
-        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, URI_KEY_1, pausedTag);
+        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, 0, pausedTag,
+            URI_KEY_1);
     dispatcher.performSubmit(fetchAction1);
     dispatcher.performSubmit(fetchAction2);
 

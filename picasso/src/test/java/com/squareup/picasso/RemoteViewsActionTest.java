@@ -71,8 +71,8 @@ public class RemoteViewsActionTest {
   }
 
   private TestableRemoteViewsAction createAction(int errorResId) {
-    return new TestableRemoteViewsAction(picasso, null, remoteViews, 1, errorResId, 0,
-        URI_KEY_1, null);
+    return new TestableRemoteViewsAction(picasso, null, remoteViews, 1, errorResId, 0, 0, null,
+        URI_KEY_1);
   }
 
   private Picasso createPicasso() {
@@ -82,8 +82,8 @@ public class RemoteViewsActionTest {
 
   static class TestableRemoteViewsAction extends RemoteViewsAction {
     TestableRemoteViewsAction(Picasso picasso, Request data, RemoteViews remoteViews, int viewId,
-        int errorResId, int memoryPolicy, String key, String tag) {
-      super(picasso, data, remoteViews, viewId, errorResId, memoryPolicy, key, tag);
+        int errorResId, int memoryPolicy, int networkPolicy, String tag, String key) {
+      super(picasso, data, remoteViews, viewId, errorResId, memoryPolicy, networkPolicy, tag, key);
     }
 
     @Override void update() {

@@ -60,7 +60,7 @@ class BitmapHunter implements Runnable {
       return true;
     }
 
-    @Override public Result load(Request data) throws IOException {
+    @Override public Result load(Request data, int networkPolicy) throws IOException {
       throw new IllegalStateException("Unrecognized type of request: " + data);
     }
   };
@@ -73,6 +73,7 @@ class BitmapHunter implements Runnable {
   final String key;
   final Request data;
   final int memoryPolicy;
+  final int networkPolicy;
   final RequestHandler requestHandler;
 
   Action action;
@@ -96,7 +97,8 @@ class BitmapHunter implements Runnable {
     this.key = action.getKey();
     this.data = action.getRequest();
     this.priority = action.getPriority();
-    this.memoryPolicy = action.memoryPolicy;
+    this.memoryPolicy = action.getMemoryPolicy();
+    this.networkPolicy = action.getNetworkPolicy();
     this.requestHandler = requestHandler;
     this.retryCount = requestHandler.getRetryCount();
   }
@@ -152,8 +154,8 @@ class BitmapHunter implements Runnable {
       }
     }
 
-    data.loadFromLocalCacheOnly = (retryCount == 0);
-    RequestHandler.Result result = requestHandler.load(data);
+    data.networkPolicy = retryCount == 0 ? NetworkPolicy.OFFLINE.index : networkPolicy;
+    RequestHandler.Result result = requestHandler.load(data, networkPolicy);
     if (result != null) {
       bitmap = result.getBitmap();
       loadedFrom = result.getLoadedFrom();

@@ -62,12 +62,12 @@ public class UrlConnectionDownloaderTest {
     UrlConnectionDownloader.cache = null;
 
     server.enqueue(new MockResponse());
-    loader.load(URL, false);
+    loader.load(URL, 0);
     Object cache = UrlConnectionDownloader.cache;
     assertThat(cache).isNotNull();
 
     server.enqueue(new MockResponse());
-    loader.load(URL, false);
+    loader.load(URL, 0);
     assertThat(UrlConnectionDownloader.cache).isSameAs(cache);
   }
 
@@ -84,7 +84,7 @@ public class UrlConnectionDownloaderTest {
     UrlConnectionDownloader.cache = null;
 
     server.enqueue(new MockResponse());
-    loader.load(URL, false);
+    loader.load(URL, 0);
     Object cache = UrlConnectionDownloader.cache;
     assertThat(cache).isNull();
   }
@@ -92,12 +92,12 @@ public class UrlConnectionDownloaderTest {
   @Config(reportSdk = GINGERBREAD)
   @Test public void allowExpiredSetsCacheControl() throws Exception {
     server.enqueue(new MockResponse());
-    loader.load(URL, false);
+    loader.load(URL, 0);
     RecordedRequest request1 = server.takeRequest();
     assertThat(request1.getHeader("Cache-Control")).isNull();
 
     server.enqueue(new MockResponse());
-    loader.load(URL, true);
+    loader.load(URL, NetworkPolicy.OFFLINE.index);
     RecordedRequest request2 = server.takeRequest();
     assertThat(request2.getHeader("Cache-Control")) //
         .isEqualTo("only-if-cached,max-age=" + Integer.MAX_VALUE);
@@ -106,24 +106,49 @@ public class UrlConnectionDownloaderTest {
   @Config(reportSdk = GINGERBREAD)
   @Test public void responseSourceHeaderSetsResponseValue() throws Exception {
     server.enqueue(new MockResponse());
-    Downloader.Response response1 = loader.load(URL, false);
+    Downloader.Response response1 = loader.load(URL, 0);
     assertThat(response1.cached).isFalse();
 
     server.enqueue(new MockResponse().addHeader(RESPONSE_SOURCE, "CACHE 200"));
-    Downloader.Response response2 = loader.load(URL, true);
+    Downloader.Response response2 = loader.load(URL, NetworkPolicy.OFFLINE.index);
     assertThat(response2.cached).isTrue();
+  }
+
+  @Test public void networkPolicyNoCache() throws Exception {
+    server.enqueue(new MockResponse());
+    loader.load(URL, NetworkPolicy.NO_CACHE.index);
+    RecordedRequest request = server.takeRequest();
+    assertThat(request.getHeader("Cache-Control")).isEqualTo("no-cache");
+  }
+
+  @Test public void networkPolicyNoStore() throws Exception {
+    server.enqueue(new MockResponse());
+    loader.load(URL, NetworkPolicy.NO_STORE.index);
+    RecordedRequest request = server.takeRequest();
+    assertThat(request.getHeader("Cache-Control")).isEqualTo("no-store");
+  }
+
+  @Test public void networkPolicyNoCacheNoStore() throws Exception {
+    int networkPolicy = 0;
+    networkPolicy |= MemoryPolicy.NO_CACHE.index;
+    networkPolicy |= MemoryPolicy.NO_STORE.index;
+
+    server.enqueue(new MockResponse());
+    loader.load(URL, networkPolicy);
+    RecordedRequest request = server.takeRequest();
+    assertThat(request.getHeader("Cache-Control")).isEqualTo("no-cache,no-store");
   }
 
   @Test public void readsContentLengthHeader() throws Exception {
     server.enqueue(new MockResponse().addHeader("Content-Length", 1024));
-    Downloader.Response response = loader.load(URL, true);
+    Downloader.Response response = loader.load(URL, 0);
     assertThat(response.contentLength).isEqualTo(1024);
   }
 
   @Test public void throwsResponseException() throws Exception {
     server.enqueue(new MockResponse().setStatus("HTTP/1.1 401 Not Authorized"));
     try {
-      loader.load(URL, false);
+      loader.load(URL, 0);
       fail("Expected ResponseException.");
     } catch (Downloader.ResponseException e) {
       assertThat(e).hasMessage("401 Not Authorized");

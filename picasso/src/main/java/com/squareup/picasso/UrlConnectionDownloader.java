@@ -33,9 +33,16 @@ import static com.squareup.picasso.Utils.parseResponseSourceHeader;
  */
 public class UrlConnectionDownloader implements Downloader {
   static final String RESPONSE_SOURCE = "X-Android-Response-Source";
+  static volatile Object cache;
 
   private static final Object lock = new Object();
-  static volatile Object cache;
+  private static final String FORCE_CACHE = "only-if-cached,max-age=2147483647";
+  private static final ThreadLocal<StringBuilder> CACHE_HEADER_BUILDER =
+      new ThreadLocal<StringBuilder>() {
+        @Override protected StringBuilder initialValue() {
+          return new StringBuilder();
+        }
+      };
 
   private final Context context;
 
@@ -50,22 +57,44 @@ public class UrlConnectionDownloader implements Downloader {
     return connection;
   }
 
-  @Override public Response load(Uri uri, boolean localCacheOnly) throws IOException {
+  @Override public Response load(Uri uri, int networkPolicy) throws IOException {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
       installCacheIfNeeded(context);
     }
 
     HttpURLConnection connection = openConnection(uri);
     connection.setUseCaches(true);
-    if (localCacheOnly) {
-      connection.setRequestProperty("Cache-Control", "only-if-cached,max-age=" + Integer.MAX_VALUE);
+
+    if (networkPolicy != 0) {
+      String headerValue;
+
+      if (NetworkPolicy.isOfflineOnly(networkPolicy)) {
+        headerValue = FORCE_CACHE;
+      } else {
+        StringBuilder builder = CACHE_HEADER_BUILDER.get();
+        builder.setLength(0);
+
+        if (!NetworkPolicy.shouldReadFromDiskCache(networkPolicy)) {
+          builder.append("no-cache");
+        }
+        if (!NetworkPolicy.shouldWriteToDiskCache(networkPolicy)) {
+          if (builder.length() > 0) {
+            builder.append(',');
+          }
+          builder.append("no-store");
+        }
+
+        headerValue = builder.toString();
+      }
+
+      connection.setRequestProperty("Cache-Control", headerValue);
     }
 
     int responseCode = connection.getResponseCode();
     if (responseCode >= 300) {
       connection.disconnect();
       throw new ResponseException(responseCode + " " + connection.getResponseMessage(),
-          localCacheOnly, responseCode);
+          networkPolicy, responseCode);
     }
 
     long contentLength = connection.getHeaderFieldInt("Content-Length", -1);

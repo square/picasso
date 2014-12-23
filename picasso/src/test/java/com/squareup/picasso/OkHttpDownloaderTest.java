@@ -19,6 +19,7 @@ import android.net.Uri;
 import com.squareup.okhttp.Cache;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.mockwebserver.MockResponse;
+import com.squareup.okhttp.mockwebserver.RecordedRequest;
 import com.squareup.okhttp.mockwebserver.rule.MockWebServerRule;
 import okio.Okio;
 import org.junit.Before;
@@ -51,12 +52,12 @@ public class OkHttpDownloaderTest {
         .setHeader("Cache-Control", "max-age=31536000")
         .setBody("Hi"));
 
-    Downloader.Response response1 = downloader.load(uri, false);
+    Downloader.Response response1 = downloader.load(uri, 0);
     assertThat(response1.cached).isFalse();
     // Exhaust input stream to ensure response is cached.
     Okio.buffer(Okio.source(response1.getInputStream())).readByteArray();
 
-    Downloader.Response response2 = downloader.load(uri, true);
+    Downloader.Response response2 = downloader.load(uri, NetworkPolicy.OFFLINE.index);
     assertThat(response2.cached).isTrue();
   }
 
@@ -66,19 +67,44 @@ public class OkHttpDownloaderTest {
         .setHeader("Expires", "Mon, 29 Dec 2014 21:44:55 GMT")
         .setBody("Hi"));
 
-    Downloader.Response response1 = downloader.load(uri, false);
+    Downloader.Response response1 = downloader.load(uri, 0);
     assertThat(response1.cached).isFalse();
     // Exhaust input stream to ensure response is cached.
     Okio.buffer(Okio.source(response1.getInputStream())).readByteArray();
 
-    Downloader.Response response2 = downloader.load(uri, true);
+    Downloader.Response response2 = downloader.load(uri, NetworkPolicy.OFFLINE.index);
     assertThat(response2.cached).isTrue();
+  }
+
+  @Test public void networkPolicyNoCache() throws Exception {
+    MockResponse response =
+        new MockResponse().setHeader("Cache-Control", "max-age=31536000").setBody("Hi");
+    server.enqueue(response);
+
+    Downloader.Response response1 = downloader.load(uri, 0);
+    assertThat(response1.cached).isFalse();
+    // Exhaust input stream to ensure response is cached.
+    Okio.buffer(Okio.source(response1.getInputStream())).readByteArray();
+
+    // Enqueue the same response again but this time use NetworkPolicy.NO_CACHE.
+    server.enqueue(response);
+
+    Downloader.Response response2 = downloader.load(uri, NetworkPolicy.NO_CACHE.index);
+    // Response should not be coming from cache even if it was cached previously.
+    assertThat(response2.cached).isFalse();
+  }
+
+  @Test public void networkPolicyNoStore() throws Exception {
+    server.enqueue(new MockResponse());
+    downloader.load(uri, NetworkPolicy.NO_STORE.index);
+    RecordedRequest request = server.takeRequest();
+    assertThat(request.getHeader("Cache-Control")).isEqualTo("no-store");
   }
 
   @Test public void readsContentLengthHeader() throws Exception {
     server.enqueue(new MockResponse().addHeader("Content-Length", 1024));
 
-    Downloader.Response response = downloader.load(uri, false);
+    Downloader.Response response = downloader.load(uri, 0);
     assertThat(response.contentLength).isEqualTo(1024);
   }
 
@@ -86,7 +112,7 @@ public class OkHttpDownloaderTest {
     server.enqueue(new MockResponse().setStatus("HTTP/1.1 401 Not Authorized"));
 
     try {
-      downloader.load(uri, false);
+      downloader.load(uri, 0);
       fail("Expected ResponseException.");
     } catch (Downloader.ResponseException e) {
       assertThat(e).hasMessage("401 Not Authorized");

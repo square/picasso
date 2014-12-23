@@ -117,7 +117,7 @@ public class BitmapHunterTest {
   @Test public void responseExcpetionDispatchFailed() throws Exception {
     Action action = mockAction(URI_KEY_1, URI_1);
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, null,
-        new Downloader.ResponseException("Test", false, 504));
+        new Downloader.ResponseException("Test", 0, 504));
     hunter.run();
     verify(dispatcher).dispatchFailed(hunter);
   }
@@ -154,7 +154,7 @@ public class BitmapHunterTest {
 
     Bitmap result = hunter.hunt();
     verify(cache).get(URI_KEY_1);
-    verify(hunter.requestHandler).load(action.getRequest());
+    verify(hunter.requestHandler).load(action.getRequest(), 0);
     assertThat(result).isEqualTo(bitmap);
   }
 
@@ -166,7 +166,7 @@ public class BitmapHunterTest {
 
     Bitmap result = hunter.hunt();
     verify(cache).get(URI_KEY_1);
-    verify(hunter.requestHandler, never()).load(action.getRequest());
+    verify(hunter.requestHandler, never()).load(action.getRequest(), 0);
     assertThat(result).isEqualTo(bitmap);
   }
 
@@ -745,7 +745,7 @@ public class BitmapHunterTest {
       return true;
     }
 
-    @Override public Result load(Request data) throws IOException {
+    @Override public Result load(Request data, int networkPolicy) throws IOException {
       if (exception != null) {
         throw exception;
       }
@@ -765,7 +765,7 @@ public class BitmapHunterTest {
       super(null, null);
     }
 
-    @Override public Result load(Request data) throws IOException {
+    @Override public Result load(Request data, int networkPolicy) throws IOException {
       throw new OutOfMemoryError();
     }
   }
@@ -775,7 +775,7 @@ public class BitmapHunterTest {
         return CUSTOM_URI.getScheme().equals(data.uri.getScheme());
     }
 
-    @Override public Result load(Request data) {
+    @Override public Result load(Request data, int networkPolicy) {
       return new Result(bitmap, MEMORY);
     }
   }

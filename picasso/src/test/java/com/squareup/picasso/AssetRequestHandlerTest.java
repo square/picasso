@@ -11,7 +11,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import static com.squareup.picasso.Utils.createKey;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -34,7 +33,7 @@ public class AssetRequestHandlerTest {
     AssetRequestHandler requestHandler = spy(new AssetRequestHandler(context));
     doReturn(null).when(requestHandler).decodeAsset(request, path);
 
-    requestHandler.load(request);
+    requestHandler.load(request, 0);
     verify(requestHandler).decodeAsset(request, path);
   }
 }
