@@ -24,7 +24,6 @@ import android.net.Uri;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.jetbrains.annotations.TestOnly;
 
@@ -42,35 +41,12 @@ import static com.squareup.picasso.Utils.VERB_CREATED;
 import static com.squareup.picasso.Utils.checkMain;
 import static com.squareup.picasso.Utils.checkNotMain;
 import static com.squareup.picasso.Utils.createKey;
-import static com.squareup.picasso.Utils.isMain;
 import static com.squareup.picasso.Utils.log;
-import static com.squareup.picasso.Utils.sneakyRethrow;
 
 /** Fluent API for building an image download request. */
 @SuppressWarnings("UnusedDeclaration") // Public API.
 public class RequestCreator {
-  private static int nextId = 0;
-
-  private static int getRequestId() {
-    if (isMain()) {
-      return nextId++;
-    }
-
-    final CountDownLatch latch = new CountDownLatch(1);
-    final AtomicInteger id = new AtomicInteger();
-    Picasso.HANDLER.post(new Runnable() {
-      @Override public void run() {
-        id.set(getRequestId());
-        latch.countDown();
-      }
-    });
-    try {
-      latch.await();
-    } catch (InterruptedException e) {
-      sneakyRethrow(e);
-    }
-    return id.get();
-  }
+  private static final AtomicInteger nextId = new AtomicInteger();
 
   private final Picasso picasso;
   private final Request.Builder data;
@@ -468,7 +444,6 @@ public class RequestCreator {
   public void into(RemoteViews remoteViews, int viewId, int notificationId,
       Notification notification) {
     long started = System.nanoTime();
-    checkMain();
 
     if (remoteViews == null) {
       throw new IllegalArgumentException("RemoteViews must not be null.");
@@ -485,7 +460,7 @@ public class RequestCreator {
     }
 
     Request request = createRequest(started);
-    String key = createKey(request);
+    String key = createKey(request, new StringBuilder()); // Non-main thread needs own builder.
 
     RemoteViewsAction action =
         new NotificationAction(picasso, request, remoteViews, viewId, notificationId, notification,
@@ -500,7 +475,6 @@ public class RequestCreator {
    */
   public void into(RemoteViews remoteViews, int viewId, int[] appWidgetIds) {
     long started = System.nanoTime();
-    checkMain();
 
     if (remoteViews == null) {
       throw new IllegalArgumentException("remoteViews must not be null.");
@@ -517,7 +491,7 @@ public class RequestCreator {
     }
 
     Request request = createRequest(started);
-    String key = createKey(request);
+    String key = createKey(request, new StringBuilder()); // Non-main thread needs own builder.
 
     RemoteViewsAction action =
         new AppWidgetAction(picasso, request, remoteViews, viewId, appWidgetIds, skipMemoryCache,
@@ -616,7 +590,7 @@ public class RequestCreator {
 
   /** Create the request optionally passing it through the request transformer. */
   private Request createRequest(long started) {
-    int id = getRequestId();
+    int id = nextId.getAndIncrement();
 
     Request request = data.build();
     request.id = id;
