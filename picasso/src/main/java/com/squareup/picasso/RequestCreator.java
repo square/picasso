@@ -383,23 +383,7 @@ public class RequestCreator {
    * <em>Note:</em> It is safe to invoke this method from any thread.
    */
   public void fetch() {
-    long started = System.nanoTime();
-
-    if (deferred) {
-      throw new IllegalStateException("Fit cannot be used with fetch.");
-    }
-    if (data.hasImage()) {
-      // Fetch requests have lower priority by default.
-      if (!data.hasPriority()) {
-        data.priority(Priority.LOW);
-      }
-
-      Request request = createRequest(started);
-      String key = createKey(request, new StringBuilder());
-
-      Action action = new FetchAction(picasso, request, memoryPolicy, networkPolicy, tag, key);
-      picasso.submit(action);
-    }
+    fetch(null);
   }
 
   /**
@@ -438,7 +422,8 @@ public class RequestCreator {
         }
         return;
       }
-      Action action = new FetchAction(picasso, request, skipMemoryCache, key, tag, callback);
+      Action action = new FetchAction(picasso, request, memoryPolicy, networkPolicy, tag,
+              key, callback);
       picasso.submit(action);
     }
   }

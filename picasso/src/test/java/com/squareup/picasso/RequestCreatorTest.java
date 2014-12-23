@@ -142,7 +142,7 @@ public class RequestCreatorTest {
   }
 
   @Test public void fetchWithCustomPriority() {
-     new RequestCreator(picasso, URI_1, 0).priority(HIGH).fetch();
+    new RequestCreator(picasso, URI_1, 0).priority(HIGH).fetch();
     verify(picasso).submit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getPriority()).isEqualTo(HIGH);
   }

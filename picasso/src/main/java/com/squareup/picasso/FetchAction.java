@@ -37,15 +37,14 @@ class FetchAction extends Action<Object> {
 
   @Override void complete(Bitmap result, Picasso.LoadedFrom from) {
     if (result == null) {
-      throw new AssertionError(
-              String.format("Attempted to complete action with no result!\n%s", this));
-      }
+      throw new AssertionError("Attempted to complete action with no result!\n" + this);
+    }
     if (callback != null) {
       callback.onSuccess();
     }
   }
 
-  @Override public void error() {
+  @Override void error() {
     if (callback != null) {
       callback.onError();
     }
@@ -53,9 +52,7 @@ class FetchAction extends Action<Object> {
 
   @Override void cancel() {
     super.cancel();
-    if (callback != null) {
-      callback = null;
-    }
+    callback = null;
   }
 
   @Override Object getTarget() {
