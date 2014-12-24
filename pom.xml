@@ -85,6 +85,12 @@
       </dependency>
 
       <dependency>
+        <groupId>org.apache.sanselan</groupId>
+        <artifactId>sanselan</artifactId>
+        <version>0.97-incubator</version>
+      </dependency>
+
+      <dependency>
         <groupId>com.intellij</groupId>
         <artifactId>annotations</artifactId>
         <version>12.0</version>
