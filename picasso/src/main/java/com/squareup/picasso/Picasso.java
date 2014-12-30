@@ -153,6 +153,7 @@ public class Picasso {
   final Map<Object, Action> targetToAction;
   final Map<ImageView, DeferredRequestCreator> targetToDeferredRequestCreator;
   final ReferenceQueue<Object> referenceQueue;
+  final Bitmap.Config defaultBitmapConfig;
 
   boolean indicatorsEnabled;
   volatile boolean loggingEnabled;
@@ -160,13 +161,14 @@ public class Picasso {
   boolean shutdown;
 
   Picasso(Context context, Dispatcher dispatcher, Cache cache, Listener listener,
-      RequestTransformer requestTransformer, List<RequestHandler> extraRequestHandlers,
-      Stats stats, boolean indicatorsEnabled, boolean loggingEnabled) {
+      RequestTransformer requestTransformer, List<RequestHandler> extraRequestHandlers, Stats stats,
+      Bitmap.Config defaultBitmapConfig, boolean indicatorsEnabled, boolean loggingEnabled) {
     this.context = context;
     this.dispatcher = dispatcher;
     this.cache = cache;
     this.listener = listener;
     this.requestTransformer = requestTransformer;
+    this.defaultBitmapConfig = defaultBitmapConfig;
 
     int builtInHandlers = 7; // Adjust this as internal handlers are added or removed.
     int extraCount = (extraRequestHandlers != null ? extraRequestHandlers.size() : 0);
@@ -669,6 +671,7 @@ public class Picasso {
     private Listener listener;
     private RequestTransformer transformer;
     private List<RequestHandler> requestHandlers;
+    private Bitmap.Config defaultBitmapConfig;
 
     private boolean indicatorsEnabled;
     private boolean loggingEnabled;
@@ -679,6 +682,18 @@ public class Picasso {
         throw new IllegalArgumentException("Context must not be null.");
       }
       this.context = context.getApplicationContext();
+    }
+
+    /**
+     * Specify the default {@link Bitmap.Config} used when decoding images. This can be overridden
+     * on a per-request basis using {@link RequestCreator#config(Bitmap.Config) config(..)}.
+     */
+    public Builder defaultBitmapConfig(Bitmap.Config bitmapConfig) {
+      if (bitmapConfig == null) {
+        throw new IllegalArgumentException("Bitmap config must not be null.");
+      }
+      this.defaultBitmapConfig = bitmapConfig;
+      return this;
     }
 
     /** Specify the {@link Downloader} that will be used for downloading images. */
@@ -811,8 +826,8 @@ public class Picasso {
 
       Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, downloader, cache, stats);
 
-      return new Picasso(context, dispatcher, cache, listener, transformer,
-          requestHandlers, stats, indicatorsEnabled, loggingEnabled);
+      return new Picasso(context, dispatcher, cache, listener, transformer, requestHandlers, stats,
+          defaultBitmapConfig, indicatorsEnabled, loggingEnabled);
     }
   }
 

@@ -32,6 +32,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso.Picasso.Listener;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.RemoteViewsAction.RemoteViewsTarget;
@@ -74,8 +75,8 @@ public class PicassoTest {
 
   @Before public void setUp() {
     initMocks(this);
-    picasso = new Picasso(context, dispatcher, cache, listener, transformer, null,
-        stats, false, false);
+    picasso = new Picasso(context, dispatcher, cache, listener, transformer, null, stats, ARGB_8888,
+        false, false);
   }
 
   @Test public void submitWithNullTargetInvokesDispatcher() throws Exception {
@@ -187,7 +188,6 @@ public class PicassoTest {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = mockHunter(URI_KEY_1, bitmap, false);
     when(hunter.getAction()).thenReturn(action);
-    boolean caught = false;
     try {
       picasso.complete(hunter);
       fail("Calling complete() with null LoadedFrom should throw");

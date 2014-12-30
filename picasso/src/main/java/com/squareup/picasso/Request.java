@@ -212,9 +212,10 @@ public final class Request {
       setResourceId(resourceId);
     }
 
-    Builder(Uri uri, int resourceId) {
+    Builder(Uri uri, int resourceId, Bitmap.Config bitmapConfig) {
       this.uri = uri;
       this.resourceId = resourceId;
+      this.config = bitmapConfig;
     }
 
     private Builder(Request request) {

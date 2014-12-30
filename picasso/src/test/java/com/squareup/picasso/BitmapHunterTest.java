@@ -88,7 +88,7 @@ public class BitmapHunterTest {
   @Mock Downloader downloader;
 
   final Bitmap bitmap = makeBitmap();
-  
+
   @Before public void setUp() throws Exception {
     initMocks(this);
   }
@@ -337,7 +337,7 @@ public class BitmapHunterTest {
     List<RequestHandler> handlers = Arrays.asList(handler);
     // Must use non-mock constructor because that is where Picasso's list of handlers is created.
     Picasso picasso = new Picasso(context, dispatcher, cache, null, null, handlers, stats,
-        false, false);
+        ARGB_8888, false, false);
     BitmapHunter hunter = forRequest(picasso, dispatcher, cache, stats, action);
     assertThat(hunter.requestHandler).isEqualTo(handler);
   }

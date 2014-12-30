@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.FULL;
 import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.MICRO;
 import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.MINI;
@@ -38,7 +39,8 @@ public class MediaStoreRequestHandlerTest {
 
   @Test public void decodesVideoThumbnailWithVideoMimeType() throws Exception {
     Bitmap bitmap = makeBitmap();
-    Request request = new Request.Builder(MEDIA_STORE_CONTENT_1_URL, 0).resize(100, 100).build();
+    Request request =
+        new Request.Builder(MEDIA_STORE_CONTENT_1_URL, 0, ARGB_8888).resize(100, 100).build();
     Action action = mockAction(MEDIA_STORE_CONTENT_KEY_1, request);
     MediaStoreRequestHandler requestHandler = create("video/");
     Bitmap result = requestHandler.load(action.getRequest()).getBitmap();
@@ -47,7 +49,8 @@ public class MediaStoreRequestHandlerTest {
 
   @Test public void decodesImageThumbnailWithImageMimeType() throws Exception {
     Bitmap bitmap = makeBitmap(20, 20);
-    Request request = new Request.Builder(MEDIA_STORE_CONTENT_1_URL, 0).resize(100, 100).build();
+    Request request =
+        new Request.Builder(MEDIA_STORE_CONTENT_1_URL, 0, ARGB_8888).resize(100, 100).build();
     Action action = mockAction(MEDIA_STORE_CONTENT_KEY_1, request);
     MediaStoreRequestHandler requestHandler = create("image/png");
     Bitmap result = requestHandler.load(action.getRequest()).getBitmap();
