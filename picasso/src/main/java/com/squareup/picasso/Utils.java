@@ -48,8 +48,8 @@ import static java.lang.String.format;
 final class Utils {
   static final String THREAD_PREFIX = "Picasso-";
   static final String THREAD_IDLE_NAME = THREAD_PREFIX + "Idle";
-  static final int DEFAULT_READ_TIMEOUT = 20 * 1000; // 20s
-  static final int DEFAULT_CONNECT_TIMEOUT = 15 * 1000; // 15s
+  static final int DEFAULT_READ_TIMEOUT_MILLIS = 20 * 1000; // 20s
+  static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = 15 * 1000; // 15s
   private static final String PICASSO_CACHE = "picasso-cache";
   private static final int KEY_PADDING = 50; // Determined by exact science.
   private static final int MIN_DISK_CACHE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -234,32 +234,12 @@ final class Utils {
   }
 
   static Downloader createDefaultDownloader(Context context) {
-    boolean okUrlFactory = false;
-    try {
-      Class.forName("com.squareup.okhttp.OkUrlFactory");
-      okUrlFactory = true;
-    } catch (ClassNotFoundException ignored) {
-    }
-
-    boolean okHttpClient = false;
     try {
       Class.forName("com.squareup.okhttp.OkHttpClient");
-      okHttpClient = true;
+      return OkHttpLoaderCreator.create(context);
     } catch (ClassNotFoundException ignored) {
     }
-
-    if (okHttpClient != okUrlFactory) {
-      throw new RuntimeException(""
-          + "Picasso detected an unsupported OkHttp on the classpath.\n"
-          + "To use OkHttp with this version of Picasso, you'll need:\n"
-          + "1. com.squareup.okhttp:okhttp:1.6.0 (or newer)\n"
-          + "2. com.squareup.okhttp:okhttp-urlconnection:1.6.0 (or newer)\n"
-          + "Note that OkHttp 2.0.0+ is supported!");
-    }
-
-    return okHttpClient
-        ? OkHttpLoaderCreator.create(context)
-        : new UrlConnectionDownloader(context);
+    return new UrlConnectionDownloader(context);
   }
 
   static File createDefaultCacheDir(Context context) {

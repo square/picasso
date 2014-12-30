@@ -18,20 +18,21 @@ package com.squareup.picasso;
 import android.content.Context;
 import android.net.Uri;
 import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.OkUrlFactory;
+import com.squareup.okhttp.ResponseBody;
 import java.io.File;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-
-import static com.squareup.picasso.Utils.parseResponseSourceHeader;
+import java.util.concurrent.TimeUnit;
 
 /** A {@link Downloader} which uses OkHttp to download images. */
 public class OkHttpDownloader implements Downloader {
-  static final String RESPONSE_SOURCE_ANDROID = "X-Android-Response-Source";
-  static final String RESPONSE_SOURCE_OKHTTP = "OkHttp-Response-Source";
+  private static OkHttpClient defaultOkHttpClient() {
+    OkHttpClient client = new OkHttpClient();
+    client.setConnectTimeout(Utils.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+    client.setReadTimeout(Utils.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+    return client;
+  }
 
-  private final OkUrlFactory urlFactory;
+  private final OkHttpClient client;
 
   /**
    * Create new downloader that uses OkHttp. This will install an image cache into your application
@@ -42,8 +43,8 @@ public class OkHttpDownloader implements Downloader {
   }
 
   /**
-   * Create new downloader that uses OkHttp. This will install an image cache into your application
-   * cache directory.
+   * Create new downloader that uses OkHttp. This will install an image cache into the specified
+   * directory.
    *
    * @param cacheDir The directory in which the cache should be stored
    */
@@ -62,16 +63,16 @@ public class OkHttpDownloader implements Downloader {
   }
 
   /**
-   * Create new downloader that uses OkHttp. This will install an image cache into your application
-   * cache directory.
+   * Create new downloader that uses OkHttp. This will install an image cache into the specified
+   * directory.
    *
    * @param cacheDir The directory in which the cache should be stored
    * @param maxSize The size limit for the cache.
    */
   public OkHttpDownloader(final File cacheDir, final long maxSize) {
-    this(new OkHttpClient());
+    this(defaultOkHttpClient());
     try {
-      urlFactory.client().setCache(new com.squareup.okhttp.Cache(cacheDir, maxSize));
+      client.setCache(new com.squareup.okhttp.Cache(cacheDir, maxSize));
     } catch (IOException ignored) {
     }
   }
@@ -81,47 +82,37 @@ public class OkHttpDownloader implements Downloader {
    * automatically configured.
    */
   public OkHttpDownloader(OkHttpClient client) {
-    this.urlFactory = new OkUrlFactory(client);
+    this.client = client;
   }
 
-  protected HttpURLConnection openConnection(Uri uri) throws IOException {
-    HttpURLConnection connection = urlFactory.open(new URL(uri.toString()));
-    connection.setConnectTimeout(Utils.DEFAULT_CONNECT_TIMEOUT);
-    connection.setReadTimeout(Utils.DEFAULT_READ_TIMEOUT);
-    return connection;
-  }
-
-  protected OkHttpClient getClient() {
-    return urlFactory.client();
+  protected final OkHttpClient getClient() {
+    return client;
   }
 
   @Override public Response load(Uri uri, boolean localCacheOnly) throws IOException {
-    HttpURLConnection connection = openConnection(uri);
-    connection.setUseCaches(true);
+    com.squareup.okhttp.Request.Builder requestBuilder =
+        new com.squareup.okhttp.Request.Builder().url(uri.toString());
+
     if (localCacheOnly) {
-      connection.setRequestProperty("Cache-Control", "only-if-cached,max-age=" + Integer.MAX_VALUE);
+      requestBuilder.addHeader("Cache-Control", "only-if-cached,max-age=" + Integer.MAX_VALUE);
     }
 
-    int responseCode = connection.getResponseCode();
+    com.squareup.okhttp.Response response = client.newCall(requestBuilder.build()).execute();
+    int responseCode = response.code();
     if (responseCode >= 300) {
-      connection.disconnect();
-      throw new ResponseException(responseCode + " " + connection.getResponseMessage(),
-          localCacheOnly, responseCode);
+      response.body().close();
+      throw new ResponseException(responseCode + " " + response.message(), localCacheOnly,
+          responseCode);
     }
 
-    String responseSource = connection.getHeaderField(RESPONSE_SOURCE_OKHTTP);
-    if (responseSource == null) {
-      responseSource = connection.getHeaderField(RESPONSE_SOURCE_ANDROID);
-    }
+    boolean fromCache = response.cacheResponse() != null;
 
-    long contentLength = connection.getHeaderFieldInt("Content-Length", -1);
-    boolean fromCache = parseResponseSourceHeader(responseSource);
-
-    return new Response(connection.getInputStream(), fromCache, contentLength);
+    ResponseBody responseBody = response.body();
+    return new Response(responseBody.byteStream(), fromCache, responseBody.contentLength());
   }
 
   @Override public void shutdown() {
-    com.squareup.okhttp.Cache cache = urlFactory.client().getCache();
+    com.squareup.okhttp.Cache cache = client.getCache();
     if (cache != null) {
       try {
         cache.close();

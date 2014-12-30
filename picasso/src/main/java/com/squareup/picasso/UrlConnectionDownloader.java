@@ -45,8 +45,8 @@ public class UrlConnectionDownloader implements Downloader {
 
   protected HttpURLConnection openConnection(Uri path) throws IOException {
     HttpURLConnection connection = (HttpURLConnection) new URL(path.toString()).openConnection();
-    connection.setConnectTimeout(Utils.DEFAULT_CONNECT_TIMEOUT);
-    connection.setReadTimeout(Utils.DEFAULT_READ_TIMEOUT);
+    connection.setConnectTimeout(Utils.DEFAULT_CONNECT_TIMEOUT_MILLIS);
+    connection.setReadTimeout(Utils.DEFAULT_READ_TIMEOUT_MILLIS);
     return connection;
   }
 
