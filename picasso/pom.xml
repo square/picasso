@@ -19,11 +19,6 @@
       <artifactId>okhttp</artifactId>
       <optional>true</optional>
     </dependency>
-    <dependency>
-      <groupId>com.squareup.okhttp</groupId>
-      <artifactId>okhttp-urlconnection</artifactId>
-      <optional>true</optional>
-    </dependency>
 
     <dependency>
       <groupId>junit</groupId>

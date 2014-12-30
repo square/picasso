@@ -75,11 +75,6 @@
       </dependency>
       <dependency>
         <groupId>com.squareup.okhttp</groupId>
-        <artifactId>okhttp-urlconnection</artifactId>
-        <version>2.1.0</version>
-      </dependency>
-      <dependency>
-        <groupId>com.squareup.okhttp</groupId>
         <artifactId>mockwebserver</artifactId>
         <version>2.1.0</version>
       </dependency>
