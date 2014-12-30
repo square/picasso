@@ -50,7 +50,8 @@ public class UrlConnectionDownloader implements Downloader {
     return connection;
   }
 
-  @Override public Response load(Uri uri, boolean localCacheOnly) throws IOException {
+  @Override public Response load(Uri uri, boolean localCacheOnly, String stableKey)
+          throws IOException {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
       installCacheIfNeeded(context);
     }

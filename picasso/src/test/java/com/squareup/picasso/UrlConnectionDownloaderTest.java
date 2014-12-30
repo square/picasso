@@ -36,6 +36,7 @@ import static android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH;
 import static com.squareup.picasso.UrlConnectionDownloader.RESPONSE_SOURCE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -62,12 +63,12 @@ public class UrlConnectionDownloaderTest {
     UrlConnectionDownloader.cache = null;
 
     server.enqueue(new MockResponse());
-    loader.load(URL, false);
+    loader.load(URL, false, null);
     Object cache = UrlConnectionDownloader.cache;
     assertThat(cache).isNotNull();
 
     server.enqueue(new MockResponse());
-    loader.load(URL, false);
+    loader.load(URL, false, null);
     assertThat(UrlConnectionDownloader.cache).isSameAs(cache);
   }
 
@@ -84,7 +85,7 @@ public class UrlConnectionDownloaderTest {
     UrlConnectionDownloader.cache = null;
 
     server.enqueue(new MockResponse());
-    loader.load(URL, false);
+    loader.load(URL, false, null);
     Object cache = UrlConnectionDownloader.cache;
     assertThat(cache).isNull();
   }
@@ -92,12 +93,12 @@ public class UrlConnectionDownloaderTest {
   @Config(reportSdk = GINGERBREAD)
   @Test public void allowExpiredSetsCacheControl() throws Exception {
     server.enqueue(new MockResponse());
-    loader.load(URL, false);
+    loader.load(URL, false, null);
     RecordedRequest request1 = server.takeRequest();
     assertThat(request1.getHeader("Cache-Control")).isNull();
 
     server.enqueue(new MockResponse());
-    loader.load(URL, true);
+    loader.load(URL, true, null);
     RecordedRequest request2 = server.takeRequest();
     assertThat(request2.getHeader("Cache-Control")) //
         .isEqualTo("only-if-cached,max-age=" + Integer.MAX_VALUE);
@@ -106,24 +107,24 @@ public class UrlConnectionDownloaderTest {
   @Config(reportSdk = GINGERBREAD)
   @Test public void responseSourceHeaderSetsResponseValue() throws Exception {
     server.enqueue(new MockResponse());
-    Downloader.Response response1 = loader.load(URL, false);
+    Downloader.Response response1 = loader.load(URL, false, null);
     assertThat(response1.cached).isFalse();
 
     server.enqueue(new MockResponse().addHeader(RESPONSE_SOURCE, "CACHE 200"));
-    Downloader.Response response2 = loader.load(URL, true);
+    Downloader.Response response2 = loader.load(URL, true, null);
     assertThat(response2.cached).isTrue();
   }
 
   @Test public void readsContentLengthHeader() throws Exception {
     server.enqueue(new MockResponse().addHeader("Content-Length", 1024));
-    Downloader.Response response = loader.load(URL, true);
+    Downloader.Response response = loader.load(URL, true, null);
     assertThat(response.contentLength).isEqualTo(1024);
   }
 
   @Test public void throwsResponseException() throws Exception {
     server.enqueue(new MockResponse().setStatus("HTTP/1.1 401 Not Authorized"));
     try {
-      loader.load(URL, false);
+      loader.load(URL, false, null);
       fail("Expected ResponseException.");
     } catch (Downloader.ResponseException e) {
       assertThat(e).hasMessage("401 Not Authorized");
