@@ -91,12 +91,12 @@ public class RequestCreator {
           "Picasso instance already shut down. Cannot submit new requests.");
     }
     this.picasso = picasso;
-    this.data = new Request.Builder(uri, resourceId);
+    this.data = new Request.Builder(uri, resourceId, picasso.defaultBitmapConfig);
   }
 
   @TestOnly RequestCreator() {
     this.picasso = null;
-    this.data = new Request.Builder(null, 0);
+    this.data = new Request.Builder(null, 0, null);
   }
 
   /**

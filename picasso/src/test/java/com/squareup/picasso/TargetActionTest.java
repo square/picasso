@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Picasso.RequestTransformer.IDENTITY;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_1;
@@ -73,7 +74,7 @@ public class TargetActionTest {
     Context context = mock(Context.class);
     Picasso picasso =
         new Picasso(context, mock(Dispatcher.class), Cache.NONE, null, IDENTITY, null,
-            mock(Stats.class), false, false);
+            mock(Stats.class), ARGB_8888, false, false);
     Resources res = mock(Resources.class);
     TargetAction request =
         new TargetAction(picasso, target, null, false, RESOURCE_ID_1, null, URI_KEY_1, null);

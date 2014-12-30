@@ -25,9 +25,6 @@ import android.net.Uri;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,6 +33,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
+import static android.graphics.Bitmap.Config.ARGB_8888;
 import static android.provider.ContactsContract.Contacts.CONTENT_URI;
 import static android.provider.ContactsContract.Contacts.Photo.CONTENT_DIRECTORY;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
@@ -136,7 +134,7 @@ class TestUtils {
 
   static Action mockAction(String key, Uri uri, Object target, int resourceId, Priority priority,
                            String tag) {
-    Request request = new Request.Builder(uri, resourceId).build();
+    Request request = new Request.Builder(uri, resourceId, ARGB_8888).build();
     return mockAction(key, request, target, priority, tag);
   }
 

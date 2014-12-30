@@ -9,7 +9,7 @@ import org.robolectric.annotation.Implements;
 
 import static com.squareup.picasso.TestUtils.makeBitmap;
 
-public class Shadows {
+final class Shadows {
 
   @Implements(MediaStore.Video.Thumbnails.class)
   public static class ShadowVideoThumbnails {
