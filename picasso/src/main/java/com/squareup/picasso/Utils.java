@@ -49,6 +49,7 @@ final class Utils {
   static final String THREAD_PREFIX = "Picasso-";
   static final String THREAD_IDLE_NAME = THREAD_PREFIX + "Idle";
   static final int DEFAULT_READ_TIMEOUT_MILLIS = 20 * 1000; // 20s
+  static final int DEFAULT_WRITE_TIMEOUT_MILLIS = 20 * 1000; // 20s
   static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = 15 * 1000; // 15s
   private static final String PICASSO_CACHE = "picasso-cache";
   private static final int KEY_PADDING = 50; // Determined by exact science.

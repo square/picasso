@@ -46,9 +46,24 @@ public class OkHttpDownloaderTest {
     uri = Uri.parse(server.getUrl("/").toString());
   }
 
-  @Test public void responseSourceHeaderSetsResponseValue() throws Exception {
+  @Test public void cachedResponse() throws Exception {
     server.enqueue(new MockResponse()
         .setHeader("Cache-Control", "max-age=31536000")
+        .setBody("Hi"));
+
+    Downloader.Response response1 = downloader.load(uri, false);
+    assertThat(response1.cached).isFalse();
+    // Exhaust input stream to ensure response is cached.
+    Okio.buffer(Okio.source(response1.getInputStream())).readByteArray();
+
+    Downloader.Response response2 = downloader.load(uri, true);
+    assertThat(response2.cached).isTrue();
+  }
+
+  @Test public void offlineStaleResponse() throws Exception {
+    server.enqueue(new MockResponse()
+        .setHeader("Cache-Control", "max-age=1")
+        .setHeader("Expires", "Mon, 29 Dec 2014 21:44:55 GMT")
         .setBody("Hi"));
 
     Downloader.Response response1 = downloader.load(uri, false);
