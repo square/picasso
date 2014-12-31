@@ -29,6 +29,7 @@ public class OkHttpDownloader implements Downloader {
     OkHttpClient client = new OkHttpClient();
     client.setConnectTimeout(Utils.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
     client.setReadTimeout(Utils.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+    client.setWriteTimeout(Utils.DEFAULT_WRITE_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
     return client;
   }
 
@@ -94,7 +95,7 @@ public class OkHttpDownloader implements Downloader {
         new com.squareup.okhttp.Request.Builder().url(uri.toString());
 
     if (localCacheOnly) {
-      requestBuilder.addHeader("Cache-Control", "only-if-cached,max-age=" + Integer.MAX_VALUE);
+      requestBuilder.addHeader("Cache-Control", "only-if-cached,max-age=2147483647");
     }
 
     com.squareup.okhttp.Response response = client.newCall(requestBuilder.build()).execute();
