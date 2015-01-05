@@ -43,7 +43,7 @@ class AssetRequestHandler extends RequestHandler {
         && !uri.getPathSegments().isEmpty() && ANDROID_ASSET.equals(uri.getPathSegments().get(0)));
   }
 
-  @Override public Result load(Request data) throws IOException {
+  @Override public Result load(Request data, int networkPolicy) throws IOException {
     String filePath = data.uri.toString().substring(ASSET_PREFIX_LENGTH);
     return new Result(decodeAsset(data, filePath), DISK);
   }

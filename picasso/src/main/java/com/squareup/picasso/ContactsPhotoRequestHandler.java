@@ -70,7 +70,7 @@ class ContactsPhotoRequestHandler extends RequestHandler {
         && !uri.getPathSegments().contains(ContactsContract.Contacts.Photo.CONTENT_DIRECTORY));
   }
 
-  @Override public Result load(Request data) throws IOException {
+  @Override public Result load(Request data, int networkPolicy) throws IOException {
     InputStream is = null;
     try {
       is = getInputStream(data);

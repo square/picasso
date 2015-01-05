@@ -39,7 +39,7 @@ class ResourceRequestHandler extends RequestHandler {
     return SCHEME_ANDROID_RESOURCE.equals(data.uri.getScheme());
   }
 
-  @Override public Result load(Request data) throws IOException {
+  @Override public Result load(Request data, int networkPolicy) throws IOException {
     Resources res = Utils.getResources(context, data);
     int id = Utils.getResourceId(res, data);
     return new Result(decodeResource(res, id, data), DISK);

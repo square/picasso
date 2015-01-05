@@ -45,8 +45,8 @@ class NetworkRequestHandler extends RequestHandler {
     return (SCHEME_HTTP.equals(scheme) || SCHEME_HTTPS.equals(scheme));
   }
 
-  @Override public Result load(Request data) throws IOException {
-    Response response = downloader.load(data.uri, data.loadFromLocalCacheOnly);
+  @Override public Result load(Request data, int networkPolicy) throws IOException {
+    Response response = downloader.load(data.uri, data.networkPolicy);
     if (response == null) {
       return null;
     }

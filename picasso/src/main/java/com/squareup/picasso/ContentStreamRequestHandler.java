@@ -36,7 +36,7 @@ class ContentStreamRequestHandler extends RequestHandler {
     return SCHEME_CONTENT.equals(data.uri.getScheme());
   }
 
-  @Override public Result load(Request data) throws IOException {
+  @Override public Result load(Request data, int networkPolicy) throws IOException {
     return new Result(decodeContentStream(data), DISK);
   }
 

@@ -623,6 +623,30 @@ public class RequestCreatorTest {
     }
   }
 
+  @Test public void nullNetworkPolicy() {
+    try {
+      new RequestCreator().networkPolicy(null);
+      fail("Null network policy should throw exception.");
+    } catch (IllegalArgumentException ignored) {
+    }
+  }
+
+  @Test public void nullAdditionalNetworkPolicy() {
+    try {
+      new RequestCreator().networkPolicy(NetworkPolicy.NO_CACHE, null);
+      fail("Null additional network policy should throw exception.");
+    } catch (IllegalArgumentException ignored) {
+    }
+  }
+
+  @Test public void nullNetworkPolicyAssholeStyle() {
+    try {
+      new RequestCreator().networkPolicy(NetworkPolicy.NO_CACHE, new NetworkPolicy[] { null });
+      fail("Null additional network policy should throw exception.");
+    } catch (IllegalArgumentException ignored) {
+    }
+  }
+
   @Test public void invalidResize() {
     try {
       new RequestCreator().resize(-1, 10);

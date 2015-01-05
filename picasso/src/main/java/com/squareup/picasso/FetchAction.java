@@ -21,8 +21,9 @@ class FetchAction extends Action<Object> {
 
   private final Object target;
 
-  FetchAction(Picasso picasso, Request data, int memoryPolicy, String key, Object tag) {
-    super(picasso, null, data, memoryPolicy, false, 0, null, key, tag);
+  FetchAction(Picasso picasso, Request data, int memoryPolicy, int networkPolicy, Object tag,
+      String key) {
+    super(picasso, null, data, memoryPolicy, networkPolicy, 0, null, key, tag, false);
     this.target = new Object();
   }
 

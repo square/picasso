@@ -32,8 +32,8 @@ public final class Request {
   int id;
   /** The time that the request was first submitted (in nanos). */
   long started;
-  /** Whether or not this request should only load from local cache. */
-  boolean loadFromLocalCacheOnly;
+  /** The {@link NetworkPolicy} to use for this request. */
+  int networkPolicy;
 
   /**
    * The image URI.
