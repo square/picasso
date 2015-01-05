@@ -275,8 +275,8 @@ public class RequestCreator {
    * <p>
    * This will affect the order in which the requests execute but does not guarantee it.
    * By default, all requests have {@link Priority#NORMAL} priority, except for
-   * {@link #fetch(Callback callback)} requests, which have {@link Priority#LOW} 
-   * * priority by default.
+   * {@link #fetch(Callback callback)} requests, which have {@link Priority#LOW}
+   * priority by default.
    */
   public RequestCreator priority(Priority priority) {
     data.priority(priority);
