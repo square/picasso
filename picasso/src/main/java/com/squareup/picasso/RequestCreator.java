@@ -387,16 +387,6 @@ public class RequestCreator {
   }
 
   /**
-   * Asynchronously fulfills the request without a {@link ImageView} or {@link Target}. This is
-   * useful when you want to warm up the cache with an image.
-   * <p>
-   * <em>Note:</em> It is safe to invoke this method from any thread.
-   */
-  public void fetch() {
-    fetch(null);
-  }
-
-  /**
    * Asynchronously fulfills the request without a {@link ImageView} or {@link Target},
    * and invokes the target {@link Callback} if it's not {@code null}. This is
    * useful when you want to warm up the cache with an image,
@@ -423,7 +413,6 @@ public class RequestCreator {
       Bitmap bitmap = picasso.quickMemoryCacheCheck(key);
 
       if (bitmap != null) {
-
         if (picasso.loggingEnabled) {
           log(OWNER_MAIN, VERB_COMPLETED, request.plainId(), "from " + MEMORY);
         }

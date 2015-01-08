@@ -204,6 +204,7 @@ public class DispatcherTest {
     FetchAction fetchAction1 =
               new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, 0, pausedTag,
                       URI_KEY_1, callback);
+
     dispatcher.performCancel(fetchAction1);
     fetchAction1.cancel();
     assertThat(dispatcher.pausedActions).isEmpty();
