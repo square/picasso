@@ -93,7 +93,7 @@ public class RequestCreatorTest {
   @Test public void loadWithShutdownCrashes() {
     picasso.shutdown = true;
     try {
-      new RequestCreator(picasso, URI_1, 0).fetch(null);
+      new RequestCreator(picasso, URI_1, 0).fetch();
       fail("Should have crashed with a shutdown picasso.");
     } catch (IllegalStateException ignored) {
     }
@@ -121,27 +121,27 @@ public class RequestCreatorTest {
   }
 
   @Test public void fetchSubmitsFetchRequest() {
-    new RequestCreator(picasso, URI_1, 0).fetch(null);
+    new RequestCreator(picasso, URI_1, 0).fetch();
     verify(picasso).submit(actionCaptor.capture());
     assertThat(actionCaptor.getValue()).isInstanceOf(FetchAction.class);
   }
 
   @Test public void fetchWithFitThrows() {
     try {
-      new RequestCreator(picasso, URI_1, 0).fit().fetch(null);
+      new RequestCreator(picasso, URI_1, 0).fit().fetch();
       fail("Calling fetch() with fit() should throw an exception");
     } catch (IllegalStateException ignored) {
     }
   }
 
   @Test public void fetchWithDefaultPriority() {
-    new RequestCreator(picasso, URI_1, 0).fetch(null);
+    new RequestCreator(picasso, URI_1, 0).fetch();
     verify(picasso).submit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getPriority()).isEqualTo(LOW);
   }
 
   @Test public void fetchWithCustomPriority() {
-    new RequestCreator(picasso, URI_1, 0).priority(HIGH).fetch(null);
+    new RequestCreator(picasso, URI_1, 0).priority(HIGH).fetch();
     verify(picasso).submit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getPriority()).isEqualTo(HIGH);
   }

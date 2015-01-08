@@ -295,8 +295,7 @@ public class RequestCreator {
    * <p>
    * This will affect the order in which the requests execute but does not guarantee it.
    * By default, all requests have {@link Priority#NORMAL} priority, except for
-   * {@link #fetch(Callback callback)} requests, which have {@link Priority#LOW}
-   * priority by default.
+   * {@link #fetch()} requests, which have {@link Priority#LOW} priority by default.
    */
   public RequestCreator priority(Priority priority) {
     data.priority(priority);
@@ -352,6 +351,16 @@ public class RequestCreator {
 
     Action action = new GetAction(picasso, finalData, skipMemoryCache, key, tag);
     return forRequest(picasso, picasso.dispatcher, picasso.cache, picasso.stats, action).hunt();
+  }
+
+  /**
+   * Asynchronously fulfills the request without a {@link ImageView} or {@link Target}. This is
+   * useful when you want to warm up the cache with an image.
+   * <p>
+   * <em>Note:</em> It is safe to invoke this method from any thread.
+   */
+  public void fetch() {
+    fetch(null);
   }
 
   /**
