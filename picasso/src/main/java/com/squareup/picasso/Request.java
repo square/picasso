@@ -70,6 +70,7 @@ public final class Request {
    * This is mutually exclusive with {@link #centerCrop}.
    */
   public final boolean centerInside;
+  public final boolean onlyScaleDown;
   /** Amount to rotate the image in degrees. */
   public final float rotationDegrees;
   /** Rotation pivot on the X axis. */
@@ -85,8 +86,8 @@ public final class Request {
 
   private Request(Uri uri, int resourceId, String stableKey, List<Transformation> transformations,
       int targetWidth, int targetHeight, boolean centerCrop, boolean centerInside,
-      float rotationDegrees, float rotationPivotX, float rotationPivotY, boolean hasRotationPivot,
-      Bitmap.Config config, Priority priority) {
+      boolean onlyScaleDown, float rotationDegrees, float rotationPivotX, float rotationPivotY,
+      boolean hasRotationPivot, Bitmap.Config config, Priority priority) {
     this.uri = uri;
     this.resourceId = resourceId;
     this.stableKey = stableKey;
@@ -99,6 +100,7 @@ public final class Request {
     this.targetHeight = targetHeight;
     this.centerCrop = centerCrop;
     this.centerInside = centerInside;
+    this.onlyScaleDown = onlyScaleDown;
     this.rotationDegrees = rotationDegrees;
     this.rotationPivotX = rotationPivotX;
     this.rotationPivotY = rotationPivotY;
@@ -194,6 +196,7 @@ public final class Request {
     private int targetHeight;
     private boolean centerCrop;
     private boolean centerInside;
+    private boolean onlyScaleDown;
     private float rotationDegrees;
     private float rotationPivotX;
     private float rotationPivotY;
@@ -230,6 +233,7 @@ public final class Request {
       rotationPivotX = request.rotationPivotX;
       rotationPivotY = request.rotationPivotY;
       hasRotationPivot = request.hasRotationPivot;
+      onlyScaleDown = request.onlyScaleDown;
       if (request.transformations != null) {
         transformations = new ArrayList<Transformation>(request.transformations);
       }
@@ -351,6 +355,24 @@ public final class Request {
       return this;
     }
 
+    /**
+     * Only resize an image if the original image size is bigger than the target size
+     * specified by {@link #resize(int, int)}.
+     */
+    public Builder onlyScaleDown() {
+      if (targetHeight == 0 && targetWidth == 0) {
+        throw new IllegalStateException("onlyScaleDown can not be applied without resize");
+      }
+      onlyScaleDown = true;
+      return this;
+    }
+
+    /** Clear the onlyScaleUp flag, if set. **/
+    public Builder clearOnlyScaleDown() {
+      onlyScaleDown = false;
+      return this;
+    }
+
     /** Rotate the image by the specified degrees. */
     public Builder rotate(float degrees) {
       rotationDegrees = degrees;
@@ -429,7 +451,7 @@ public final class Request {
         priority = Priority.NORMAL;
       }
       return new Request(uri, resourceId, stableKey, transformations, targetWidth, targetHeight,
-          centerCrop, centerInside, rotationDegrees, rotationPivotX, rotationPivotY,
+          centerCrop, centerInside, onlyScaleDown, rotationDegrees, rotationPivotX, rotationPivotY,
           hasRotationPivot, config, priority);
     }
   }
