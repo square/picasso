@@ -72,7 +72,7 @@ class NetworkRequestHandler extends RequestHandler {
       stats.dispatchDownloadFinished(response.getContentLength());
     }
     try {
-      return new Result(decodeStream(is, data), loadedFrom);
+      return new Result(decodeStream(is, data, response.contentLength), loadedFrom);
     } finally {
       Utils.closeQuietly(is);
     }
@@ -90,7 +90,7 @@ class NetworkRequestHandler extends RequestHandler {
     return true;
   }
 
-  private Bitmap decodeStream(InputStream stream, Request data) throws IOException {
+  private Bitmap decodeStream(InputStream stream, Request data, long length) throws IOException {
     MarkableInputStream markStream = new MarkableInputStream(stream);
     stream = markStream;
 
@@ -99,30 +99,17 @@ class NetworkRequestHandler extends RequestHandler {
     final BitmapFactory.Options options = createBitmapOptions(data);
     final boolean calculateSize = requiresInSampleSize(options);
 
-    boolean isWebPFile = Utils.isWebPFile(stream);
     markStream.reset(mark);
     // When decode WebP network stream, BitmapFactory throw JNI Exception and make app crash.
     // Decode byte array instead
-    if (isWebPFile) {
-      byte[] bytes = Utils.toByteArray(stream);
-      if (calculateSize) {
-        BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
-        calculateInSampleSize(data.targetWidth, data.targetHeight, options, data);
-      }
-      return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
-    } else {
-      if (calculateSize) {
-        BitmapFactory.decodeStream(stream, null, options);
-        calculateInSampleSize(data.targetWidth, data.targetHeight, options, data);
-
-        markStream.reset(mark);
-      }
-      Bitmap bitmap = BitmapFactory.decodeStream(stream, null, options);
-      if (bitmap == null) {
-        // Treat null as an IO exception, we will eventually retry.
-        throw new IOException("Failed to decode stream.");
-      }
-      return bitmap;
+    byte[] bytes = Utils.toByteArray(stream);
+    if (calculateSize) {
+      BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+      calculateInSampleSize(data.targetWidth, data.targetHeight, options, data);
     }
-  }
+    if(bytes.length < length){
+      throw new IOException("the content-length err");
+    }
+    return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+  }      
 }
