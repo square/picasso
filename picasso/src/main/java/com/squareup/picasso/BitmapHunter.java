@@ -466,16 +466,14 @@ class BitmapHunter implements Runnable {
           scaleX = targetWidth / (float) drawWidth;
           scaleY = heightRatio;
         }
-        if (!onlyScaleDown || (onlyScaleDown
-            && (inWidth > targetWidth || inHeight > targetHeight))) {
+        if (shouldResize(onlyScaleDown, inWidth, inHeight, targetWidth, targetHeight)) {
           matrix.preScale(scaleX, scaleY);
         }
       } else if (data.centerInside) {
         float widthRatio = targetWidth / (float) inWidth;
         float heightRatio = targetHeight / (float) inHeight;
         float scale = widthRatio < heightRatio ? widthRatio : heightRatio;
-        if (!onlyScaleDown || (onlyScaleDown
-            && (inWidth > targetWidth || inHeight > targetHeight))) {
+        if (shouldResize(onlyScaleDown, inWidth, inHeight, targetWidth, targetHeight)) {
           matrix.preScale(scale, scale);
         }
       } else if ((targetWidth != 0 || targetHeight != 0) //
@@ -487,8 +485,7 @@ class BitmapHunter implements Runnable {
             targetWidth != 0 ? targetWidth / (float) inWidth : targetHeight / (float) inHeight;
         float sy =
             targetHeight != 0 ? targetHeight / (float) inHeight : targetWidth / (float) inWidth;
-        if (!onlyScaleDown || (onlyScaleDown
-            && (inWidth > targetWidth || inHeight > targetHeight))) {
+        if (shouldResize(onlyScaleDown, inWidth, inHeight, targetWidth, targetHeight)) {
           matrix.preScale(sx, sy);
         }
       }
@@ -506,5 +503,17 @@ class BitmapHunter implements Runnable {
     }
 
     return result;
+  }
+
+  /**
+   * We should only resize the image if
+   * 1) onlyScaleDown flag is false,
+   * OR
+   * 2) onlyScaleDown is true and original image size is bigger than target image size.
+   */
+  private static boolean shouldResize(boolean onlyScaleDown, int inWidth, int inHeight,
+          int targetWidth, int targetHeight) {
+    return !onlyScaleDown || (onlyScaleDown
+        && (inWidth > targetWidth || inHeight > targetHeight));
   }
 }
