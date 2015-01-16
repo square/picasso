@@ -392,6 +392,20 @@ public class RequestCreator {
    * <em>Note:</em> It is safe to invoke this method from any thread.
    */
   public void fetch() {
+    fetch(null);
+  }
+
+  /**
+   * Asynchronously fulfills the request without a {@link ImageView} or {@link Target},
+   * and invokes the target {@link Callback} if it's not {@code null}. This is
+   * useful when you want to warm up the cache with an image,
+   * Use this when you want a callback after the image has been processed.
+   * <p>
+   *<em>Note:</em> The {@link Callback} param is a strong reference and will prevent your
+   * {@link android.app.Activity} or {@link android.app.Fragment} from being garbage collected. If
+   * you use this method, it is <b>strongly</b> recommended you invoke an adjacent
+   */
+  public void fetch(Callback callback) {
     long started = System.nanoTime();
 
     if (deferred) {
@@ -405,8 +419,19 @@ public class RequestCreator {
 
       Request request = createRequest(started);
       String key = createKey(request, new StringBuilder());
+      Bitmap bitmap = picasso.quickMemoryCacheCheck(key);
 
-      Action action = new FetchAction(picasso, request, memoryPolicy, networkPolicy, tag, key);
+      if (bitmap != null) {
+        if (picasso.loggingEnabled) {
+          log(OWNER_MAIN, VERB_COMPLETED, request.plainId(), "from " + MEMORY);
+        }
+        if (callback != null) {
+          callback.onSuccess();
+        }
+        return;
+      }
+      Action action = new FetchAction(picasso, request, memoryPolicy, networkPolicy, tag,
+              key, callback);
       picasso.submit(action);
     }
   }
