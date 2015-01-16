@@ -637,6 +637,31 @@ public class BitmapHunterTest {
 
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
   }
+  
+  @Test public void onlyScaleDownOriginalBigger() throws Exception {
+    Bitmap source = Bitmap.createBitmap(100, 100, ARGB_8888);
+    Request data = new Request.Builder(URI_1).resize(50, 50).onlyScaleDown().build();
+    Bitmap result = transformResult(data, source, 0);
+    
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
+  }
+  
+  @Test public void onlyScaleDownOriginalSmaller() throws Exception {
+    Bitmap source = Bitmap.createBitmap(50, 50, ARGB_8888);
+    Request data = new Request.Builder(URI_1).resize(100, 100).onlyScaleDown().build();
+    Bitmap result = transformResult(data, source, 0);
+    assertThat(result).isSameAs(source);
+    
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isNull();
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isNotSameAs(source);
+  }
 
   @Test public void reusedBitmapIsNotRecycled() throws Exception {
     Request data = new Request.Builder(URI_1).build();

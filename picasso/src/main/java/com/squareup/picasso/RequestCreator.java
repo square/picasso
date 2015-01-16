@@ -238,6 +238,15 @@ public class RequestCreator {
     return this;
   }
 
+  /**
+   * Only resize an image if the original image size is bigger than the target size
+   * specified by {@link #resize(int, int)}.
+   */
+  public RequestCreator onlyScaleDown() {
+      data.onlyScaleDown();
+      return this;
+  }
+
   /** Rotate the image by the specified degrees. */
   public RequestCreator rotate(float degrees) {
     data.rotate(degrees);
