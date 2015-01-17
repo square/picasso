@@ -505,15 +505,8 @@ class BitmapHunter implements Runnable {
     return result;
   }
 
-  /**
-   * We should only resize the image if
-   * 1) onlyScaleDown flag is false,
-   * OR
-   * 2) onlyScaleDown is true and original image size is bigger than target image size.
-   */
   private static boolean shouldResize(boolean onlyScaleDown, int inWidth, int inHeight,
-          int targetWidth, int targetHeight) {
-    return !onlyScaleDown || (onlyScaleDown
-        && (inWidth > targetWidth || inHeight > targetHeight));
+      int targetWidth, int targetHeight) {
+    return !onlyScaleDown || ((inWidth > targetWidth || inHeight > targetHeight));
   }
 }
