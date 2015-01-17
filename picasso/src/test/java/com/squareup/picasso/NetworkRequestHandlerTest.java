@@ -108,9 +108,9 @@ public class NetworkRequestHandlerTest {
     verify(stats).dispatchDownloadFinished(response.contentLength);
   }
 
-  @Test public void unknownContentLengthThrows() throws Exception {
+  @Test public void unknownContentLengthFromDiskThrows() throws Exception {
     InputStream stream = mockInputStream();
-    Downloader.Response response = new Downloader.Response(stream, false, 0);
+    Downloader.Response response = new Downloader.Response(stream, true, 0);
     when(downloader.load(any(Uri.class), anyInt())).thenReturn(response);
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     try {
