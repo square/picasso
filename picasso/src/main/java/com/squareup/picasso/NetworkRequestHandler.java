@@ -64,9 +64,9 @@ class NetworkRequestHandler extends RequestHandler {
     }
     // Sometimes response content length is zero when requests are being replayed. Haven't found
     // root cause to this but retrying the request seems safe to do so.
-    if (response.getContentLength() == 0) {
+    if (loadedFrom == DISK && response.getContentLength() == 0) {
       Utils.closeQuietly(is);
-      throw new IOException("Received response with 0 content-length header.");
+      throw new ContentLengthException("Received response with 0 content-length header.");
     }
     if (loadedFrom == NETWORK && response.getContentLength() > 0) {
       stats.dispatchDownloadFinished(response.getContentLength());
@@ -123,6 +123,12 @@ class NetworkRequestHandler extends RequestHandler {
         throw new IOException("Failed to decode stream.");
       }
       return bitmap;
+    }
+  }
+
+  static class ContentLengthException extends IOException {
+    public ContentLengthException(String message) {
+      super(message);
     }
   }
 }

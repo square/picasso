@@ -89,32 +89,32 @@ public class BitmapHunterTest {
 
   final Bitmap bitmap = makeBitmap();
 
-  @Before public void setUp() throws Exception {
+  @Before public void setUp() {
     initMocks(this);
   }
 
-  @Test public void nullDecodeResponseIsError() throws Exception {
+  @Test public void nullDecodeResponseIsError() {
     Action action = mockAction(URI_KEY_1, URI_1);
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, null);
     hunter.run();
     verify(dispatcher).dispatchFailed(hunter);
   }
 
-  @Test public void runWithResultDispatchComplete() throws Exception {
+  @Test public void runWithResultDispatchComplete() {
     Action action = mockAction(URI_KEY_1, URI_1);
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, bitmap);
     hunter.run();
     verify(dispatcher).dispatchComplete(hunter);
   }
 
-  @Test public void runWithNoResultDispatchFailed() throws Exception {
+  @Test public void runWithNoResultDispatchFailed() {
     Action action = mockAction(URI_KEY_1, URI_1);
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action);
     hunter.run();
     verify(dispatcher).dispatchFailed(hunter);
   }
 
-  @Test public void responseExcpetionDispatchFailed() throws Exception {
+  @Test public void responseExcpetionDispatchFailed() {
     Action action = mockAction(URI_KEY_1, URI_1);
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, null,
         new Downloader.ResponseException("Test", 0, 504));
@@ -122,7 +122,7 @@ public class BitmapHunterTest {
     verify(dispatcher).dispatchFailed(hunter);
   }
 
-  @Test public void outOfMemoryDispatchFailed() throws Exception {
+  @Test public void outOfMemoryDispatchFailed() {
     when(stats.createSnapshot()).thenReturn(mock(StatsSnapshot.class));
 
     Action action = mockAction(URI_KEY_1, URI_1);
@@ -139,7 +139,7 @@ public class BitmapHunterTest {
     }
   }
 
-  @Test public void runWithIoExceptionDispatchRetry() throws Exception {
+  @Test public void runWithIoExceptionDispatchRetry() {
     Action action = mockAction(URI_KEY_1, URI_1);
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, null,
         new IOException());
@@ -188,7 +188,7 @@ public class BitmapHunterTest {
     assertThat(result).isEqualTo(bitmap);
   }
 
-  @Test public void attachSingleRequest() throws Exception {
+  @Test public void attachSingleRequest() {
     Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action1);
     assertThat(hunter.action).isEqualTo(action1);
@@ -198,7 +198,7 @@ public class BitmapHunterTest {
     assertThat(hunter.actions).isNull();
   }
 
-  @Test public void attachMultipleRequests() throws Exception {
+  @Test public void attachMultipleRequests() {
     Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     Action action2 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action1);
@@ -207,7 +207,7 @@ public class BitmapHunterTest {
     assertThat(hunter.actions).isNotNull().hasSize(1);
   }
 
-  @Test public void detachSingleRequest() throws Exception {
+  @Test public void detachSingleRequest() {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action);
     assertThat(hunter.action).isNotNull();
@@ -215,7 +215,7 @@ public class BitmapHunterTest {
     assertThat(hunter.action).isNull();
   }
 
-  @Test public void detachMutlipleRequests() throws Exception {
+  @Test public void detachMutlipleRequests() {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     Action action2 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action);
@@ -227,7 +227,7 @@ public class BitmapHunterTest {
     assertThat(hunter.action).isNull();
   }
 
-  @Test public void cancelSingleRequest() throws Exception {
+  @Test public void cancelSingleRequest() {
     Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action1);
     hunter.future = new FutureTask<Object>(mock(Runnable.class), mock(Object.class));
@@ -238,7 +238,7 @@ public class BitmapHunterTest {
     assertThat(hunter.isCancelled()).isTrue();
   }
 
-  @Test public void cancelMultipleRequests() throws Exception {
+  @Test public void cancelMultipleRequests() {
     Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     Action action2 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action1);
@@ -254,56 +254,56 @@ public class BitmapHunterTest {
 
   // ---------------------------------------
 
-  @Test public void forContentProviderRequest() throws Exception {
+  @Test public void forContentProviderRequest() {
     Action action = mockAction(CONTENT_KEY_1, CONTENT_1_URL);
     BitmapHunter hunter = forRequest(mockPicasso(new ContentStreamRequestHandler(context)),
         dispatcher, cache, stats, action);
     assertThat(hunter.requestHandler).isInstanceOf(ContentStreamRequestHandler.class);
   }
 
-  @Test public void forMediaStoreRequest() throws Exception {
+  @Test public void forMediaStoreRequest() {
     Action action = mockAction(MEDIA_STORE_CONTENT_KEY_1, MEDIA_STORE_CONTENT_1_URL);
     BitmapHunter hunter = forRequest(mockPicasso(new MediaStoreRequestHandler(context)), dispatcher,
         cache, stats, action);
     assertThat(hunter.requestHandler).isInstanceOf(MediaStoreRequestHandler.class);
   }
 
-  @Test public void forContactsPhotoRequest() throws Exception {
+  @Test public void forContactsPhotoRequest() {
     Action action = mockAction(CONTACT_KEY_1, CONTACT_URI_1);
     BitmapHunter hunter = forRequest(mockPicasso(new ContactsPhotoRequestHandler(context)),
         dispatcher, cache, stats, action);
     assertThat(hunter.requestHandler).isInstanceOf(ContactsPhotoRequestHandler.class);
   }
 
-  @Test public void forNetworkRequest() throws Exception {
+  @Test public void forNetworkRequest() {
     Action action = mockAction(URI_KEY_1, URI_1);
     BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
         dispatcher, cache, stats, action);
     assertThat(hunter.requestHandler).isInstanceOf(NetworkRequestHandler.class);
   }
 
-  @Test public void forFileWithAuthorityRequest() throws Exception {
+  @Test public void forFileWithAuthorityRequest() {
     Action action = mockAction(FILE_KEY_1, FILE_1_URL);
     BitmapHunter hunter = forRequest(mockPicasso(new FileRequestHandler(context)), dispatcher,
         cache, stats, action);
     assertThat(hunter.requestHandler).isInstanceOf(FileRequestHandler.class);
   }
 
-  @Test public void forAndroidResourceRequest() throws Exception {
+  @Test public void forAndroidResourceRequest() {
     Action action = mockAction(RESOURCE_ID_KEY_1, null, null, RESOURCE_ID_1);
     BitmapHunter hunter = forRequest(mockPicasso(new ResourceRequestHandler(context)), dispatcher,
         cache, stats, action);
     assertThat(hunter.requestHandler).isInstanceOf(ResourceRequestHandler.class);
   }
 
-  @Test public void forAndroidResourceUriWithId() throws Exception {
+  @Test public void forAndroidResourceUriWithId() {
     Action action = mockAction(RESOURCE_ID_URI_KEY, RESOURCE_ID_URI);
     BitmapHunter hunter = forRequest(mockPicasso(new ResourceRequestHandler(context)), dispatcher,
         cache, stats, action);
     assertThat(hunter.requestHandler).isInstanceOf(ResourceRequestHandler.class);
   }
 
-  @Test public void forAndroidResourceUriWithType() throws Exception {
+  @Test public void forAndroidResourceUriWithType() {
     Action action = mockAction(RESOURCE_TYPE_URI_KEY, RESOURCE_TYPE_URI);
     BitmapHunter hunter = forRequest(mockPicasso(new ResourceRequestHandler(context)), dispatcher,
         cache, stats, action);
@@ -342,7 +342,7 @@ public class BitmapHunterTest {
     assertThat(hunter.requestHandler).isEqualTo(handler);
   }
 
-  @Test public void sequenceIsIncremented() throws Exception {
+  @Test public void sequenceIsIncremented() {
     Action action = mockAction(URI_KEY_1, URI_1);
     Picasso picasso = mockPicasso();
     BitmapHunter hunter1 = forRequest(picasso, dispatcher, cache, stats, action);
@@ -350,7 +350,7 @@ public class BitmapHunterTest {
     assertThat(hunter2.sequence).isGreaterThan(hunter1.sequence);
   }
 
-  @Test public void getPriorityWithNoRequests() throws Exception {
+  @Test public void getPriorityWithNoRequests() {
     Action action = mockAction(URI_KEY_1, URI_1);
     BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
         dispatcher, cache, stats, action);
@@ -360,7 +360,7 @@ public class BitmapHunterTest {
     assertThat(hunter.getPriority()).isEqualTo(LOW);
   }
 
-  @Test public void getPriorityWithSingleRequest() throws Exception {
+  @Test public void getPriorityWithSingleRequest() {
     Action action = mockAction(URI_KEY_1, URI_1, HIGH);
     BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
         dispatcher, cache, stats, action);
@@ -369,7 +369,7 @@ public class BitmapHunterTest {
     assertThat(hunter.getPriority()).isEqualTo(HIGH);
   }
 
-  @Test public void getPriorityWithMultipleRequests() throws Exception {
+  @Test public void getPriorityWithMultipleRequests() {
     Action action1 = mockAction(URI_KEY_1, URI_1, NORMAL);
     Action action2 = mockAction(URI_KEY_1, URI_1, HIGH);
     BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
@@ -380,7 +380,7 @@ public class BitmapHunterTest {
     assertThat(hunter.getPriority()).isEqualTo(HIGH);
   }
 
-  @Test public void getPriorityAfterDetach() throws Exception {
+  @Test public void getPriorityAfterDetach() {
     Action action1 = mockAction(URI_KEY_1, URI_1, NORMAL);
     Action action2 = mockAction(URI_KEY_1, URI_1, HIGH);
     BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
@@ -395,7 +395,7 @@ public class BitmapHunterTest {
     assertThat(hunter.getPriority()).isEqualTo(NORMAL);
   }
 
-  @Test public void exifRotation() throws Exception {
+  @Test public void exifRotation() {
     Request data = new Request.Builder(URI_1).rotate(-45).build();
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, 90);
@@ -407,7 +407,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsOnly("rotate 90.0");
   }
 
-  @Test public void keepsAspectRationWhileResizingWhenDesiredWidthIs0() throws Exception {
+  @Test public void keepsAspectRationWhileResizingWhenDesiredWidthIs0() {
     Request request = new Request.Builder(URI_1).resize(20, 0).build();
     Bitmap source = Bitmap.createBitmap(40, 20, ARGB_8888);
 
@@ -419,7 +419,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
   }
 
-  @Test public void keepsAspectRationWhileResizingWhenDesiredHeighIs0() throws Exception {
+  @Test public void keepsAspectRationWhileResizingWhenDesiredHeighIs0() {
     Request request = new Request.Builder(URI_1).resize(0, 10).build();
     Bitmap source = Bitmap.createBitmap(40, 20, ARGB_8888);
 
@@ -431,7 +431,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
   }
 
-  @Test public void centerCropResultMatchesTargetSize() throws Exception {
+  @Test public void centerCropResultMatchesTargetSize() {
     Request request = new Request.Builder(URI_1).resize(1080, 642).centerCrop().build();
     Bitmap source = Bitmap.createBitmap(640, 640, ARGB_8888);
 
@@ -452,7 +452,7 @@ public class BitmapHunterTest {
     assertThat(transformedHeight).isEqualTo(642);
   }
 
-  @Test public void exifRotationWithManualRotation() throws Exception {
+  @Test public void exifRotationWithManualRotation() {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Request data = new Request.Builder(URI_1).rotate(-45).build();
 
@@ -467,7 +467,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getSetOperations()).contains(entry("rotate", "-45.0"));
   }
 
-  @Test public void rotation() throws Exception {
+  @Test public void rotation() {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Request data = new Request.Builder(URI_1).rotate(-45).build();
 
@@ -481,7 +481,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getSetOperations()).contains(entry("rotate", "-45.0"));
   }
 
-  @Test public void pivotRotation() throws Exception {
+  @Test public void pivotRotation() {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Request data = new Request.Builder(URI_1).rotate(-45, 10, 10).build();
 
@@ -495,7 +495,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getSetOperations()).contains(entry("rotate", "-45.0 10.0 10.0"));
   }
 
-  @Test public void resize() throws Exception {
+  @Test public void resize() {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Request data = new Request.Builder(URI_1).resize(20, 15).build();
 
@@ -509,7 +509,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 2.0 1.5");
   }
 
-  @Test public void centerCropTallTooSmall() throws Exception {
+  @Test public void centerCropTallTooSmall() {
     Bitmap source = Bitmap.createBitmap(10, 20, ARGB_8888);
     Request data = new Request.Builder(URI_1).resize(40, 40).centerCrop().build();
 
@@ -527,7 +527,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 4.0 4.0");
   }
 
-  @Test public void centerCropTallTooLarge() throws Exception {
+  @Test public void centerCropTallTooLarge() {
     Bitmap source = Bitmap.createBitmap(100, 200, ARGB_8888);
     Request data = new Request.Builder(URI_1).resize(50, 50).centerCrop().build();
 
@@ -545,7 +545,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
   }
 
-  @Test public void centerCropWideTooSmall() throws Exception {
+  @Test public void centerCropWideTooSmall() {
     Bitmap source = Bitmap.createBitmap(20, 10, ARGB_8888);
     Request data = new Request.Builder(URI_1).resize(40, 40).centerCrop().build();
 
@@ -563,7 +563,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 4.0 4.0");
   }
 
-  @Test public void centerCropWideTooLarge() throws Exception {
+  @Test public void centerCropWideTooLarge() {
     Bitmap source = Bitmap.createBitmap(200, 100, ARGB_8888);
     Request data = new Request.Builder(URI_1).resize(50, 50).centerCrop().build();
 
@@ -581,7 +581,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
   }
 
-  @Test public void centerInsideTallTooSmall() throws Exception {
+  @Test public void centerInsideTallTooSmall() {
     Bitmap source = Bitmap.createBitmap(20, 10, ARGB_8888);
     Request data = new Request.Builder(URI_1).resize(50, 50).centerInside().build();
 
@@ -595,7 +595,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 2.5 2.5");
   }
 
-  @Test public void centerInsideTallTooLarge() throws Exception {
+  @Test public void centerInsideTallTooLarge() {
     Bitmap source = Bitmap.createBitmap(100, 50, ARGB_8888);
     Request data = new Request.Builder(URI_1).resize(50, 50).centerInside().build();
 
@@ -609,7 +609,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
   }
 
-  @Test public void centerInsideWideTooSmall() throws Exception {
+  @Test public void centerInsideWideTooSmall() {
     Bitmap source = Bitmap.createBitmap(10, 20, ARGB_8888);
     Request data = new Request.Builder(URI_1).resize(50, 50).centerInside().build();
 
@@ -623,7 +623,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 2.5 2.5");
   }
 
-  @Test public void centerInsideWideTooLarge() throws Exception {
+  @Test public void centerInsideWideTooLarge() {
     Bitmap source = Bitmap.createBitmap(50, 100, ARGB_8888);
     Request data = new Request.Builder(URI_1).resize(50, 50).centerInside().build();
 
@@ -638,7 +638,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
   }
   
-  @Test public void onlyScaleDownOriginalBigger() throws Exception {
+  @Test public void onlyScaleDownOriginalBigger() {
     Bitmap source = Bitmap.createBitmap(100, 100, ARGB_8888);
     Request data = new Request.Builder(URI_1).resize(50, 50).onlyScaleDown().build();
     Bitmap result = transformResult(data, source, 0);
@@ -652,7 +652,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
   }
   
-  @Test public void onlyScaleDownOriginalSmaller() throws Exception {
+  @Test public void onlyScaleDownOriginalSmaller() {
     Bitmap source = Bitmap.createBitmap(50, 50, ARGB_8888);
     Request data = new Request.Builder(URI_1).resize(100, 100).onlyScaleDown().build();
     Bitmap result = transformResult(data, source, 0);
@@ -663,14 +663,14 @@ public class BitmapHunterTest {
     assertThat(shadowBitmap.getCreatedFromBitmap()).isNotSameAs(source);
   }
 
-  @Test public void reusedBitmapIsNotRecycled() throws Exception {
+  @Test public void reusedBitmapIsNotRecycled() {
     Request data = new Request.Builder(URI_1).build();
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, 0);
     assertThat(result).isSameAs(source).isNotRecycled();
   }
 
-  @Test public void crashingOnTransformationThrows() throws Exception {
+  @Test public void crashingOnTransformationThrows() {
     Transformation badTransformation = new Transformation() {
       @Override public Bitmap transform(Bitmap source) {
         throw new NullPointerException("hello");
@@ -690,7 +690,7 @@ public class BitmapHunterTest {
     }
   }
 
-  @Test public void nullResultFromTransformationThrows() throws Exception {
+  @Test public void nullResultFromTransformationThrows() {
     Transformation badTransformation = new Transformation() {
       @Override public Bitmap transform(Bitmap source) {
         return null;
@@ -711,7 +711,7 @@ public class BitmapHunterTest {
     }
   }
 
-  @Test public void doesNotRecycleOriginalTransformationThrows() throws Exception {
+  @Test public void doesNotRecycleOriginalTransformationThrows() {
     Transformation badTransformation = new Transformation() {
       @Override public Bitmap transform(Bitmap source) {
         // Should recycle source.
@@ -734,7 +734,7 @@ public class BitmapHunterTest {
     }
   }
 
-  @Test public void recycledOriginalTransformationThrows() throws Exception {
+  @Test public void recycledOriginalTransformationThrows() {
     Transformation badTransformation = new Transformation() {
       @Override public Bitmap transform(Bitmap source) {
         source.recycle();

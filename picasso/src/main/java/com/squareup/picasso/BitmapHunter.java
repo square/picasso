@@ -73,7 +73,7 @@ class BitmapHunter implements Runnable {
   final String key;
   final Request data;
   final int memoryPolicy;
-  final int networkPolicy;
+  int networkPolicy;
   final RequestHandler requestHandler;
 
   Action action;
@@ -123,6 +123,9 @@ class BitmapHunter implements Runnable {
         exception = e;
       }
       dispatcher.dispatchFailed(this);
+    } catch (NetworkRequestHandler.ContentLengthException e) {
+      exception = e;
+      dispatcher.dispatchRetry(this);
     } catch (IOException e) {
       exception = e;
       dispatcher.dispatchRetry(this);

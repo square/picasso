@@ -22,6 +22,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.Message;
+import com.squareup.picasso.NetworkRequestHandler.ContentLengthException;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import org.junit.Before;
@@ -303,6 +304,16 @@ public class DispatcherTest {
     verifyZeroInteractions(service);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.failedActions).isEmpty();
+  }
+
+  @Test public void performRetryForContentLengthResetsNetworkPolicy() {
+    NetworkInfo networkInfo = mockNetworkInfo(true);
+    BitmapHunter hunter = mockHunter(URI_KEY_2, bitmap1, false);
+    when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(true);
+    when(hunter.getException()).thenReturn(new ContentLengthException("304 error"));
+    when(connectivityManager.getActiveNetworkInfo()).thenReturn(networkInfo);
+    dispatcher.performRetry(hunter);
+    assertThat(NetworkPolicy.shouldReadFromDiskCache(hunter.networkPolicy)).isFalse();
   }
 
   @Test public void performRetryDoesNotMarkForReplayIfNotSupported() {
