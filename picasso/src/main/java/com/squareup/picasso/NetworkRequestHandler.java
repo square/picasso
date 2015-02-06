@@ -16,7 +16,6 @@
 package com.squareup.picasso;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.NetworkInfo;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,7 +26,6 @@ import static com.squareup.picasso.Picasso.LoadedFrom.NETWORK;
 
 class NetworkRequestHandler extends RequestHandler {
   static final int RETRY_COUNT = 2;
-  private static final int MARKER = 65536;
 
   private static final String SCHEME_HTTP = "http";
   private static final String SCHEME_HTTPS = "https";
@@ -45,8 +43,8 @@ class NetworkRequestHandler extends RequestHandler {
     return (SCHEME_HTTP.equals(scheme) || SCHEME_HTTPS.equals(scheme));
   }
 
-  @Override public Result load(Request data, int networkPolicy) throws IOException {
-    Response response = downloader.load(data.uri, data.networkPolicy);
+  @Override public Result load(Request request, int networkPolicy) throws IOException {
+    Response response = downloader.load(request.uri, request.networkPolicy);
     if (response == null) {
       return null;
     }
@@ -71,11 +69,7 @@ class NetworkRequestHandler extends RequestHandler {
     if (loadedFrom == NETWORK && response.getContentLength() > 0) {
       stats.dispatchDownloadFinished(response.getContentLength());
     }
-    try {
-      return new Result(decodeStream(is, data), loadedFrom);
-    } finally {
-      Utils.closeQuietly(is);
-    }
+    return new Result(is, loadedFrom);
   }
 
   @Override int getRetryCount() {
@@ -88,42 +82,6 @@ class NetworkRequestHandler extends RequestHandler {
 
   @Override boolean supportsReplay() {
     return true;
-  }
-
-  private Bitmap decodeStream(InputStream stream, Request data) throws IOException {
-    MarkableInputStream markStream = new MarkableInputStream(stream);
-    stream = markStream;
-
-    long mark = markStream.savePosition(MARKER);
-
-    final BitmapFactory.Options options = createBitmapOptions(data);
-    final boolean calculateSize = requiresInSampleSize(options);
-
-    boolean isWebPFile = Utils.isWebPFile(stream);
-    markStream.reset(mark);
-    // When decode WebP network stream, BitmapFactory throw JNI Exception and make app crash.
-    // Decode byte array instead
-    if (isWebPFile) {
-      byte[] bytes = Utils.toByteArray(stream);
-      if (calculateSize) {
-        BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
-        calculateInSampleSize(data.targetWidth, data.targetHeight, options, data);
-      }
-      return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
-    } else {
-      if (calculateSize) {
-        BitmapFactory.decodeStream(stream, null, options);
-        calculateInSampleSize(data.targetWidth, data.targetHeight, options, data);
-
-        markStream.reset(mark);
-      }
-      Bitmap bitmap = BitmapFactory.decodeStream(stream, null, options);
-      if (bitmap == null) {
-        // Treat null as an IO exception, we will eventually retry.
-        throw new IOException("Failed to decode stream.");
-      }
-      return bitmap;
-    }
   }
 
   static class ContentLengthException extends IOException {

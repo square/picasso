@@ -16,9 +16,11 @@
 package com.squareup.picasso;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.NetworkInfo;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -60,8 +62,8 @@ class BitmapHunter implements Runnable {
       return true;
     }
 
-    @Override public Result load(Request data, int networkPolicy) throws IOException {
-      throw new IllegalStateException("Unrecognized type of request: " + data);
+    @Override public Result load(Request request, int networkPolicy) throws IOException {
+      throw new IllegalStateException("Unrecognized type of request: " + request);
     }
   };
 
@@ -101,6 +103,49 @@ class BitmapHunter implements Runnable {
     this.networkPolicy = action.getNetworkPolicy();
     this.requestHandler = requestHandler;
     this.retryCount = requestHandler.getRetryCount();
+  }
+
+  /**
+   * Decode a byte stream into a Bitmap. This method will take into account additional information
+   * about the supplied request in order to do the decoding efficiently (such as through leveraging
+   * {@code inSampleSize}).
+   */
+  static Bitmap decodeStream(InputStream stream, Request request) throws IOException {
+    MarkableInputStream markStream = new MarkableInputStream(stream);
+    stream = markStream;
+
+    long mark = markStream.savePosition(65536); // TODO fix this crap.
+
+    final BitmapFactory.Options options = RequestHandler.createBitmapOptions(request);
+    final boolean calculateSize = RequestHandler.requiresInSampleSize(options);
+
+    boolean isWebPFile = Utils.isWebPFile(stream);
+    markStream.reset(mark);
+    // When decode WebP network stream, BitmapFactory throw JNI Exception and make app crash.
+    // Decode byte array instead
+    if (isWebPFile) {
+      byte[] bytes = Utils.toByteArray(stream);
+      if (calculateSize) {
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+        RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight, options,
+            request);
+      }
+      return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+    } else {
+      if (calculateSize) {
+        BitmapFactory.decodeStream(stream, null, options);
+        RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight, options,
+            request);
+
+        markStream.reset(mark);
+      }
+      Bitmap bitmap = BitmapFactory.decodeStream(stream, null, options);
+      if (bitmap == null) {
+        // Treat null as an IO exception, we will eventually retry.
+        throw new IOException("Failed to decode stream.");
+      }
+      return bitmap;
+    }
   }
 
   @Override public void run() {
@@ -160,9 +205,20 @@ class BitmapHunter implements Runnable {
     data.networkPolicy = retryCount == 0 ? NetworkPolicy.OFFLINE.index : networkPolicy;
     RequestHandler.Result result = requestHandler.load(data, networkPolicy);
     if (result != null) {
-      bitmap = result.getBitmap();
       loadedFrom = result.getLoadedFrom();
       exifRotation = result.getExifOrientation();
+
+      bitmap = result.getBitmap();
+
+      // If there was no Bitmap then we need to decode it from the stream.
+      if (bitmap == null) {
+        InputStream is = result.getStream();
+        try {
+          bitmap = decodeStream(is, data);
+        } finally {
+          Utils.closeQuietly(is);
+        }
+      }
     }
 
     if (bitmap != null) {
@@ -510,6 +566,6 @@ class BitmapHunter implements Runnable {
 
   private static boolean shouldResize(boolean onlyScaleDown, int inWidth, int inHeight,
       int targetWidth, int targetHeight) {
-    return !onlyScaleDown || ((inWidth > targetWidth || inHeight > targetHeight));
+    return !onlyScaleDown || inWidth > targetWidth || inHeight > targetHeight;
   }
 }

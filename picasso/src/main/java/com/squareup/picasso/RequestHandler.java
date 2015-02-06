@@ -18,23 +18,25 @@ package com.squareup.picasso;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.NetworkInfo;
-
 import java.io.IOException;
+import java.io.InputStream;
+
+import static com.squareup.picasso.Utils.checkNotNull;
 
 /**
- * {@link RequestHandler} allows you to extend Picasso to load images
- * in ways that are not supported by default in the library.
+ * {@code RequestHandler} allows you to extend Picasso to load images in ways that are not
+ * supported by default in the library.
  * <p>
  * <h2>Usage</h2>
- * <p>{@link RequestHandler} must be subclassed to be used. You will have to
- * override two methods ({@link #canHandleRequest(Request)} and
- * {@link #load(Request, int)}) with your custom logic to load images.</p>
- *
- * <p>You should then register your {@link RequestHandler} using
- * {@link Picasso.Builder#addRequestHandler(RequestHandler)}</p>
- *
- * <b>NOTE:</b> This is a beta feature. The API is subject to change in a backwards
- * incompatible way at any time.
+ * {@code RequestHandler} must be subclassed to be used. You will have to override two methods
+ * ({@link #canHandleRequest(Request)} and {@link #load(Request, int)}) with your custom logic to
+ * load images.</p>
+ * <p>
+ * You should then register your {@link RequestHandler} using
+ * {@link Picasso.Builder#addRequestHandler(RequestHandler)}
+ * <p>
+ * <b>Note:</b> This is a beta feature. The API is subject to change in a backwards incompatible
+ * way at any time.
  *
  * @see Picasso.Builder#addRequestHandler(RequestHandler)
  */
@@ -49,38 +51,48 @@ public abstract class RequestHandler {
   public static final class Result {
     private final Picasso.LoadedFrom loadedFrom;
     private final Bitmap bitmap;
+    private final InputStream stream;
     private final int exifOrientation;
 
     public Result(Bitmap bitmap, Picasso.LoadedFrom loadedFrom) {
-      this(bitmap, loadedFrom, 0);
+      this(checkNotNull(bitmap, "bitmap == null"), null, loadedFrom, 0);
     }
 
-    Result(Bitmap bitmap, Picasso.LoadedFrom loadedFrom, int exifOrientation) {
+    public Result(InputStream stream, Picasso.LoadedFrom loadedFrom) {
+      this(null, checkNotNull(stream, "stream == null"), loadedFrom, 0);
+    }
+
+    Result(Bitmap bitmap, InputStream stream, Picasso.LoadedFrom loadedFrom, int exifOrientation) {
+      if (!(bitmap != null ^ stream != null)) {
+        throw new AssertionError();
+      }
       this.bitmap = bitmap;
-      this.loadedFrom = loadedFrom;
+      this.stream = stream;
+      this.loadedFrom = checkNotNull(loadedFrom, "loadedFrom == null");
       this.exifOrientation = exifOrientation;
     }
 
-    /**
-     * Returns the resulting {@link Bitmap} generated
-     * from a {@link #load(Request, int)} call.
-     */
+    /** The loaded {@link Bitmap}. Mutually exclusive with {@link #getStream()}. */
     public Bitmap getBitmap() {
       return bitmap;
     }
 
+    /** A stream of image data. Mutually exclusive with {@link #getBitmap()}. */
+    public InputStream getStream() {
+      return stream;
+    }
+
     /**
-     * Returns the resulting {@link Picasso.LoadedFrom} generated
-     * from a {@link #load(Request, int)} call.
+     * Returns the resulting {@link Picasso.LoadedFrom} generated from a
+     * {@link #load(Request, int)} call.
      */
     public Picasso.LoadedFrom getLoadedFrom() {
       return loadedFrom;
     }
 
     /**
-     * Returns the resulting EXIF orientation generated
-     * from a {@link #load(Request, int)} call. This is only accessible
-     * to built-in RequestHandlers.
+     * Returns the resulting EXIF orientation generated from a {@link #load(Request, int)} call.
+     * This is only accessible to built-in RequestHandlers.
      */
     int getExifOrientation() {
       return exifOrientation;
@@ -88,19 +100,17 @@ public abstract class RequestHandler {
   }
 
   /**
-   * Whether or not this {@link RequestHandler} can handle a request with the
-   * given {@link Request}.
+   * Whether or not this {@link RequestHandler} can handle a request with the given {@link Request}.
    */
   public abstract boolean canHandleRequest(Request data);
 
   /**
    * Loads an image for the given {@link Request}.
    *
-   * @param data the {@link android.net.Uri} to load the image from.
+   * @param request the data from which the image should be resolved.
    * @param networkPolicy the {@link NetworkPolicy} for this request.
-   * @return A {@link Result} instance representing the result.
    */
-  public abstract Result load(Request data, int networkPolicy) throws IOException;
+  public abstract Result load(Request request, int networkPolicy) throws IOException;
 
   int getRetryCount() {
     return 0;

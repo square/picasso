@@ -64,7 +64,9 @@ public interface Downloader {
      *
      * @param bitmap Image.
      * @param loadedFromCache {@code true} if the source of the image is from a local disk cache.
+     * @deprecated Use {@link RequestHandler} for directly loading {@link Bitmap} instances.
      */
+    @Deprecated
     public Response(Bitmap bitmap, boolean loadedFromCache) {
       if (bitmap == null) {
         throw new IllegalArgumentException("Bitmap may not be null.");
@@ -133,7 +135,10 @@ public interface Downloader {
      * Bitmap representing the image.
      * <p>
      * If this returns {@code null}, image data will be available via {@link #getInputStream()}.
+     *
+     * @deprecated Use {@link RequestHandler} for directly loading {@link Bitmap} instances.
      */
+    @Deprecated
     public Bitmap getBitmap() {
       return bitmap;
     }
