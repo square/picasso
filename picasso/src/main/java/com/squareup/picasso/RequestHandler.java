@@ -30,7 +30,7 @@ import static com.squareup.picasso.Utils.checkNotNull;
  * <h2>Usage</h2>
  * {@code RequestHandler} must be subclassed to be used. You will have to override two methods
  * ({@link #canHandleRequest(Request)} and {@link #load(Request, int)}) with your custom logic to
- * load images.</p>
+ * load images.
  * <p>
  * You should then register your {@link RequestHandler} using
  * {@link Picasso.Builder#addRequestHandler(RequestHandler)}
