@@ -39,10 +39,10 @@ class ResourceRequestHandler extends RequestHandler {
     return SCHEME_ANDROID_RESOURCE.equals(data.uri.getScheme());
   }
 
-  @Override public Result load(Request data, int networkPolicy) throws IOException {
-    Resources res = Utils.getResources(context, data);
-    int id = Utils.getResourceId(res, data);
-    return new Result(decodeResource(res, id, data), DISK);
+  @Override public Result load(Request request, int networkPolicy) throws IOException {
+    Resources res = Utils.getResources(context, request);
+    int id = Utils.getResourceId(res, request);
+    return new Result(decodeResource(res, id, request), DISK);
   }
 
   private static Bitmap decodeResource(Resources resources, int id, Request data) {

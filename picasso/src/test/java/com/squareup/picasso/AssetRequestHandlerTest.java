@@ -10,10 +10,7 @@ import org.mockito.Mock;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import static com.squareup.picasso.Utils.createKey;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(RobolectricTestRunner.class)
@@ -26,14 +23,10 @@ public class AssetRequestHandlerTest {
   }
 
   @Test public void truncatesFilePrefix() throws IOException {
-    String path = "foo/bar.png";
-    Uri uri = Uri.parse("file:///android_asset/" + path);
+    Uri uri = Uri.parse("file:///android_asset/foo/bar.png");
     Request request = new Request.Builder(uri).build();
 
-    AssetRequestHandler requestHandler = spy(new AssetRequestHandler(context));
-    doReturn(null).when(requestHandler).decodeAsset(request, path);
-
-    requestHandler.load(request, 0);
-    verify(requestHandler).decodeAsset(request, path);
+    String actual = AssetRequestHandler.getFilePath(request);
+    assertThat(actual).isEqualTo("foo/bar.png");
   }
 }

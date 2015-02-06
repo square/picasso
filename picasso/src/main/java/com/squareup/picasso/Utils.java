@@ -115,6 +115,13 @@ final class Utils {
     return result;
   }
 
+  static <T> T checkNotNull(T value, String message) {
+    if (value == null) {
+      throw new NullPointerException(message);
+    }
+    return value;
+  }
+
   static void checkNotMain() {
     if (isMain()) {
       throw new IllegalStateException("Method call should not happen from the main thread.");

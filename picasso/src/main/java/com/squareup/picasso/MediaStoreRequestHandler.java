@@ -51,26 +51,26 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
             && MediaStore.AUTHORITY.equals(uri.getAuthority()));
   }
 
-  @Override public Result load(Request data, int networkPolicy) throws IOException {
+  @Override public Result load(Request request, int networkPolicy) throws IOException {
     ContentResolver contentResolver = context.getContentResolver();
-    int exifOrientation = getExifOrientation(contentResolver, data.uri);
+    int exifOrientation = getExifOrientation(contentResolver, request.uri);
 
-    String mimeType = contentResolver.getType(data.uri);
+    String mimeType = contentResolver.getType(request.uri);
     boolean isVideo = mimeType != null && mimeType.startsWith("video/");
 
-    if (data.hasSize()) {
-      PicassoKind picassoKind = getPicassoKind(data.targetWidth, data.targetHeight);
+    if (request.hasSize()) {
+      PicassoKind picassoKind = getPicassoKind(request.targetWidth, request.targetHeight);
       if (!isVideo && picassoKind == FULL) {
-        return new Result(decodeContentStream(data), DISK, exifOrientation);
+        return new Result(null, getInputStream(request), DISK, exifOrientation);
       }
 
-      long id = parseId(data.uri);
+      long id = parseId(request.uri);
 
-      BitmapFactory.Options options = createBitmapOptions(data);
+      BitmapFactory.Options options = createBitmapOptions(request);
       options.inJustDecodeBounds = true;
 
-      calculateInSampleSize(data.targetWidth, data.targetHeight, picassoKind.width,
-              picassoKind.height, options, data);
+      calculateInSampleSize(request.targetWidth, request.targetHeight, picassoKind.width,
+              picassoKind.height, options, request);
 
       Bitmap bitmap;
 
@@ -85,11 +85,11 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
       }
 
       if (bitmap != null) {
-        return new Result(bitmap, DISK, exifOrientation);
+        return new Result(bitmap, null, DISK, exifOrientation);
       }
     }
 
-    return new Result(decodeContentStream(data), DISK, exifOrientation);
+    return new Result(null, getInputStream(request), DISK, exifOrientation);
   }
 
   static PicassoKind getPicassoKind(int targetWidth, int targetHeight) {

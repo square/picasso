@@ -17,8 +17,6 @@ package com.squareup.picasso;
 
 import android.content.Context;
 import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,28 +41,12 @@ class AssetRequestHandler extends RequestHandler {
         && !uri.getPathSegments().isEmpty() && ANDROID_ASSET.equals(uri.getPathSegments().get(0)));
   }
 
-  @Override public Result load(Request data, int networkPolicy) throws IOException {
-    String filePath = data.uri.toString().substring(ASSET_PREFIX_LENGTH);
-    return new Result(decodeAsset(data, filePath), DISK);
+  @Override public Result load(Request request, int networkPolicy) throws IOException {
+    InputStream is = assetManager.open(getFilePath(request));
+    return new Result(is, DISK);
   }
 
-  Bitmap decodeAsset(Request data, String filePath) throws IOException {
-    final BitmapFactory.Options options = createBitmapOptions(data);
-    if (requiresInSampleSize(options)) {
-      InputStream is = null;
-      try {
-        is = assetManager.open(filePath);
-        BitmapFactory.decodeStream(is, null, options);
-      } finally {
-        Utils.closeQuietly(is);
-      }
-      calculateInSampleSize(data.targetWidth, data.targetHeight, options, data);
-    }
-    InputStream is = assetManager.open(filePath);
-    try {
-      return BitmapFactory.decodeStream(is, null, options);
-    } finally {
-      Utils.closeQuietly(is);
-    }
+  static String getFilePath(Request request) {
+    return request.uri.toString().substring(ASSET_PREFIX_LENGTH);
   }
 }

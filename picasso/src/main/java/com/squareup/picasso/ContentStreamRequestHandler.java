@@ -17,8 +17,7 @@ package com.squareup.picasso;
 
 import android.content.ContentResolver;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -36,28 +35,12 @@ class ContentStreamRequestHandler extends RequestHandler {
     return SCHEME_CONTENT.equals(data.uri.getScheme());
   }
 
-  @Override public Result load(Request data, int networkPolicy) throws IOException {
-    return new Result(decodeContentStream(data), DISK);
+  @Override public Result load(Request request, int networkPolicy) throws IOException {
+    return new Result(getInputStream(request), DISK);
   }
 
-  protected Bitmap decodeContentStream(Request data) throws IOException {
+  InputStream getInputStream(Request request) throws FileNotFoundException {
     ContentResolver contentResolver = context.getContentResolver();
-    final BitmapFactory.Options options = createBitmapOptions(data);
-    if (requiresInSampleSize(options)) {
-      InputStream is = null;
-      try {
-        is = contentResolver.openInputStream(data.uri);
-        BitmapFactory.decodeStream(is, null, options);
-      } finally {
-        Utils.closeQuietly(is);
-      }
-      calculateInSampleSize(data.targetWidth, data.targetHeight, options, data);
-    }
-    InputStream is = contentResolver.openInputStream(data.uri);
-    try {
-      return BitmapFactory.decodeStream(is, null, options);
-    } finally {
-      Utils.closeQuietly(is);
-    }
+    return contentResolver.openInputStream(request.uri);
   }
 }

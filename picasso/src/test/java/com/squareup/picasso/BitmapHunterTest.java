@@ -21,7 +21,7 @@ import android.graphics.Matrix;
 import android.net.Uri;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.FutureTask;
 import org.junit.Before;
@@ -114,7 +114,7 @@ public class BitmapHunterTest {
     verify(dispatcher).dispatchFailed(hunter);
   }
 
-  @Test public void responseExcpetionDispatchFailed() {
+  @Test public void responseExceptionDispatchFailed() {
     Action action = mockAction(URI_KEY_1, URI_1);
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, null,
         new Downloader.ResponseException("Test", 0, 504));
@@ -334,7 +334,7 @@ public class BitmapHunterTest {
   @Test public void forOverrideRequest() {
     Action action = mockAction(ASSET_KEY_1, ASSET_URI_1);
     RequestHandler handler = new AssetRequestHandler(context);
-    List<RequestHandler> handlers = Arrays.asList(handler);
+    List<RequestHandler> handlers = Collections.singletonList(handler);
     // Must use non-mock constructor because that is where Picasso's list of handlers is created.
     Picasso picasso = new Picasso(context, dispatcher, cache, null, null, handlers, stats,
         ARGB_8888, false, false);
@@ -637,27 +637,27 @@ public class BitmapHunterTest {
 
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
   }
-  
+
   @Test public void onlyScaleDownOriginalBigger() {
     Bitmap source = Bitmap.createBitmap(100, 100, ARGB_8888);
     Request data = new Request.Builder(URI_1).resize(50, 50).onlyScaleDown().build();
     Bitmap result = transformResult(data, source, 0);
-    
+
     ShadowBitmap shadowBitmap = shadowOf(result);
     assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
-    
+
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
-    
+
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
   }
-  
+
   @Test public void onlyScaleDownOriginalSmaller() {
     Bitmap source = Bitmap.createBitmap(50, 50, ARGB_8888);
     Request data = new Request.Builder(URI_1).resize(100, 100).onlyScaleDown().build();
     Bitmap result = transformResult(data, source, 0);
     assertThat(result).isSameAs(source);
-    
+
     ShadowBitmap shadowBitmap = shadowOf(result);
     assertThat(shadowBitmap.getCreatedFromBitmap()).isNull();
     assertThat(shadowBitmap.getCreatedFromBitmap()).isNotSameAs(source);
@@ -680,7 +680,7 @@ public class BitmapHunterTest {
         return "test";
       }
     };
-    List<Transformation> transformations = Arrays.asList(badTransformation);
+    List<Transformation> transformations = Collections.singletonList(badTransformation);
     Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
     try {
       BitmapHunter.applyCustomTransformations(transformations, original);
@@ -700,7 +700,7 @@ public class BitmapHunterTest {
         return "test";
       }
     };
-    List<Transformation> transformations = Arrays.asList(badTransformation);
+    List<Transformation> transformations = Collections.singletonList(badTransformation);
     Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
     try {
       BitmapHunter.applyCustomTransformations(transformations, original);
@@ -722,7 +722,7 @@ public class BitmapHunterTest {
         return "test";
       }
     };
-    List<Transformation> transformations = Arrays.asList(badTransformation);
+    List<Transformation> transformations = Collections.singletonList(badTransformation);
     Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
     try {
       BitmapHunter.applyCustomTransformations(transformations, original);
@@ -745,7 +745,7 @@ public class BitmapHunterTest {
         return "test";
       }
     };
-    List<Transformation> transformations = Arrays.asList(badTransformation);
+    List<Transformation> transformations = Collections.singletonList(badTransformation);
     Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
     try {
       BitmapHunter.applyCustomTransformations(transformations, original);
@@ -791,7 +791,7 @@ public class BitmapHunterTest {
       return true;
     }
 
-    @Override public Result load(Request data, int networkPolicy) throws IOException {
+    @Override public Result load(Request request, int networkPolicy) throws IOException {
       if (exception != null) {
         throw exception;
       }
@@ -811,7 +811,7 @@ public class BitmapHunterTest {
       super(null, null);
     }
 
-    @Override public Result load(Request data, int networkPolicy) throws IOException {
+    @Override public Result load(Request request, int networkPolicy) throws IOException {
       throw new OutOfMemoryError();
     }
   }
@@ -821,7 +821,7 @@ public class BitmapHunterTest {
         return CUSTOM_URI.getScheme().equals(data.uri.getScheme());
     }
 
-    @Override public Result load(Request data, int networkPolicy) {
+    @Override public Result load(Request request, int networkPolicy) {
       return new Result(bitmap, MEMORY);
     }
   }

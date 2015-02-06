@@ -19,11 +19,8 @@ import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.UriMatcher;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.ContactsContract;
-
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -70,14 +67,8 @@ class ContactsPhotoRequestHandler extends RequestHandler {
         && !uri.getPathSegments().contains(ContactsContract.Contacts.Photo.CONTENT_DIRECTORY));
   }
 
-  @Override public Result load(Request data, int networkPolicy) throws IOException {
-    InputStream is = null;
-    try {
-      is = getInputStream(data);
-      return new Result(decodeStream(is, data), DISK);
-    } finally {
-      Utils.closeQuietly(is);
-    }
+  @Override public Result load(Request request, int networkPolicy) throws IOException {
+    return new Result(getInputStream(request), DISK);
   }
 
   private InputStream getInputStream(Request data) throws IOException {
@@ -102,23 +93,6 @@ class ContactsPhotoRequestHandler extends RequestHandler {
       default:
         throw new IllegalStateException("Invalid uri: " + uri);
     }
-  }
-
-  private Bitmap decodeStream(InputStream stream, Request data) throws IOException {
-    if (stream == null) {
-      return null;
-    }
-    final BitmapFactory.Options options = createBitmapOptions(data);
-    if (requiresInSampleSize(options)) {
-      InputStream is = getInputStream(data);
-      try {
-        BitmapFactory.decodeStream(is, null, options);
-      } finally {
-        Utils.closeQuietly(is);
-      }
-      calculateInSampleSize(data.targetWidth, data.targetHeight, options, data);
-    }
-    return BitmapFactory.decodeStream(stream, null, options);
   }
 
   @TargetApi(ICE_CREAM_SANDWICH)
