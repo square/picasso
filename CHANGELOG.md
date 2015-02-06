@@ -1,7 +1,23 @@
 Change Log
 ==========
 
-Version 2.4 *(2014-11-04)*
+Version 2.5.0 *(2015-02-06)*
+--------------------------
+
+ * Update to OkHttp 2.x's native API. If you are using OkHttp you must use version 2.0 or newer (the latest is 2.2 at time of writing) and you no longer need to use the `okhttp-urlconnection` shim.
+ * Memory and Network policy API controls reading and storing bitmaps in memory and/or disk cache.
+ * Allow returning `InputStream` from `RequestHandler`.
+ * Allow removing items from memory cache using `clearKeyUri`.
+ * `fetch()` can now accept a `Callback`.
+ * Provide option with `onlyScaleDown` to perform scaling only if the source bitmap is larger than the target.
+ * Fix: Potential workaround handling improperly cached responses with unknown `Content-Length`. (#632)
+ * Fix: Ensure resized images completely fill ImageView (#769)
+ * Fix: Properly report correct exception when disk cache fails to load (504 gateway error).
+ * Fix: Resize now properly maintains aspect ratio if width or height is 0.
+ * Fix: Update debug indicators for the visually impaired (blue color instead of yellow for disk cache hits).
+
+
+Version 2.4.0 *(2014-11-04)*
 --------------------------
 
  * New `RequestHandler` beta API adds support for custom bitmap loading.
