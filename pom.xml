@@ -117,9 +117,9 @@
     <pluginManagement>
       <plugins>
         <plugin>
-          <groupId>com.jayway.maven.plugins.android.generation2</groupId>
+          <groupId>com.simpligility.maven.plugins</groupId>
           <artifactId>android-maven-plugin</artifactId>
-          <version>3.8.1</version>
+          <version>4.1.1</version>
           <configuration>
             <sdk>
               <platform>17</platform>
