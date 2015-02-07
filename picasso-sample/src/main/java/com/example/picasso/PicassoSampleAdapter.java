@@ -38,7 +38,7 @@ final class PicassoSampleAdapter extends BaseAdapter {
                 .setContentIntent(PendingIntent.getActivity(activity, -1, intent, 0))
                 .setContent(remoteViews);
 
-        Notification notification = builder.getNotification();
+        Notification notification = builder.build();
         // Bug in NotificationCompat that does not set the content.
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1) {
           notification.contentView = remoteViews;

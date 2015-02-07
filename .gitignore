@@ -11,11 +11,12 @@ build
 out
 lib
 
-# Maven
-target
-pom.xml.*
-release.properties
-coverage.ec
+# Gradle
+.gradle
+jniLibs
+build
+local.properties
+reports
 
 # IntelliJ
 .idea

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <style name="Widget.PicassoSample.Button" parent="android:Widget.Button">
     <item name="android:background">@drawable/button_selector</item>
     <item name="android:minHeight">48dip</item>
@@ -20,7 +20,7 @@
     <item name="android:gravity">center_vertical</item>
     <item name="android:singleLine">true</item>
     <item name="android:ellipsize">end</item>
-    <item name="android:fontFamily">sans-serif-light</item>
+    <item name="android:fontFamily" tools:ignore="NewApi">sans-serif-light</item>
     <item name="android:textStyle">italic</item>
   </style>
 
