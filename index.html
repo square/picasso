@@ -104,7 +104,8 @@
             <h4>Resource Loading</h4>
             <p>Resources, assets, files, content providers are all supported as image sources.</p>
             <pre class="prettyprint">Picasso.with(context).load(R.drawable.landing_screen).into(imageView1);
-Picasso.with(context).load(new File(...)).into(imageView2);</pre>
+Picasso.with(context).load("file:///android_asset/DvpvklR.png").into(imageView2);
+Picasso.with(context).load(new File(...)).into(imageView3);</pre>
 
             <h4>Debug Indicators</h4>
             <p>For development you can enable the display of a colored ribbon which indicates the image source. Call <code>setIndicatorsEnabled(true)</code> on the Picasso instance.</p>
