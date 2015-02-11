@@ -139,7 +139,7 @@ public class Picasso {
     }
   };
 
-  static Picasso singleton = null;
+  static volatile Picasso singleton = null;
 
   private final Listener listener;
   private final RequestTransformer requestTransformer;
