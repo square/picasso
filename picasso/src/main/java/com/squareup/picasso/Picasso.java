@@ -295,7 +295,7 @@ public class Picasso {
     if (path.trim().length() == 0) {
       throw new IllegalArgumentException("Path must not be empty.");
     }
-    return load(Uri.parse(path));
+    return load(Uri.parse(path.trim()));
   }
 
   /**
@@ -356,7 +356,10 @@ public class Picasso {
     if (path == null) {
       throw new IllegalArgumentException("path == null");
     }
-    invalidate(Uri.parse(path));
+    if (path.trim().length() == 0) {
+      throw new IllegalArgumentException("Path must not be empty.");
+    }
+    invalidate(Uri.parse(path.trim()));
   }
 
   /**
