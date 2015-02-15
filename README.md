@@ -14,14 +14,14 @@ Download
 
 Download [the latest JAR][2] or grab via Gradle:
 ```groovy
-compile 'com.squareup.picasso:picasso:2.4.0'
+compile 'com.squareup.picasso:picasso:2.5.0'
 ```
 or Maven:
 ```xml
 <dependency>
   <groupId>com.squareup.picasso</groupId>
   <artifactId>picasso</artifactId>
-  <version>2.4.0</version>
+  <version>2.5.0</version>
 </dependency>
 ```
 
