@@ -398,7 +398,8 @@ public class RequestCreator {
   /**
    * Asynchronously fulfills the request without a {@link ImageView} or {@link Target},
    * and invokes the target {@link Callback} with the result. This is useful when you want to warm
-   * up the cache with an image.
+   * up the cache with an image. You can use the target {@link Callback.ResultCallback} to retrieve
+   * the requested {@link Bitmap} and the {@link Picasso.LoadedFrom}.
    * <p>
    * <em>Note:</em> The {@link Callback} param is a strong reference and will prevent your
    * {@link android.app.Activity} or {@link android.app.Fragment} from being garbage collected
@@ -426,6 +427,13 @@ public class RequestCreator {
         }
         if (callback != null) {
           callback.onSuccess();
+
+          if (callback instanceof Callback.ResultCallback) {
+            ((Callback.ResultCallback) callback).onSuccess(bitmap, MEMORY);
+            if (bitmap.isRecycled()) {
+                throw new IllegalStateException("Callback must not recycle bitmap!");
+            }
+          }
         }
       } else {
         Action action =
@@ -598,6 +606,8 @@ public class RequestCreator {
    * {@link android.app.Activity} or {@link android.app.Fragment} from being garbage collected. If
    * you use this method, it is <b>strongly</b> recommended you invoke an adjacent
    * {@link Picasso#cancelRequest(android.widget.ImageView)} call to prevent temporary leaking.
+   * You can use the target {@link Callback.ResultCallback} to retrieve the requested
+   * {@link Bitmap} and the {@link Picasso.LoadedFrom}.
    */
   public void into(ImageView target, Callback callback) {
     long started = System.nanoTime();
@@ -644,6 +654,13 @@ public class RequestCreator {
         }
         if (callback != null) {
           callback.onSuccess();
+
+          if (callback instanceof Callback.ResultCallback) {
+            ((Callback.ResultCallback) callback).onSuccess(bitmap, MEMORY);
+            if (bitmap.isRecycled()) {
+                throw new IllegalStateException("Callback must not recycle bitmap!");
+            }
+          }
         }
         return;
       }
