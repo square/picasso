@@ -49,6 +49,13 @@ class ImageViewAction extends Action<ImageView> {
 
     if (callback != null) {
       callback.onSuccess();
+
+      if (callback instanceof Callback.ResultCallback) {
+        ((Callback.ResultCallback) callback).onSuccess(result, from);
+        if (result.isRecycled()) {
+            throw new IllegalStateException("Callback must not recycle bitmap!");
+        }
+      }
     }
   }
 

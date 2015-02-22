@@ -15,6 +15,8 @@
  */
 package com.squareup.picasso;
 
+import android.graphics.Bitmap;
+
 public interface Callback {
   void onSuccess();
 
@@ -28,4 +30,25 @@ public interface Callback {
     @Override public void onError() {
     }
   }
+
+  public interface ResultCallback extends Callback {
+    /**
+     * Callback called after {@link #onSuccess()} with the requested {@link Bitmap} and the
+     * {@link Picasso.LoadedFrom} .
+     */
+    void onSuccess(Bitmap bitmap, Picasso.LoadedFrom from);
+  }
+
+  public static class EmptyResultCallback implements ResultCallback {
+
+    @Override public void onSuccess() {
+    }
+
+    @Override public void onError() {
+    }
+
+    @Override public void onSuccess(Bitmap bitmap, Picasso.LoadedFrom from) {
+    }
+  }
+
 }
