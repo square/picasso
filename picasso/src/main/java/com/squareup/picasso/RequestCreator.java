@@ -708,6 +708,6 @@ public class RequestCreator {
       action.setImageResource(placeholderResId);
     }
 
-    picasso.enqueueAndSubmit(action);
+    picasso.submit(action);
   }
 }
