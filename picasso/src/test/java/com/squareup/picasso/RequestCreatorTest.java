@@ -21,6 +21,8 @@ import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Test;
@@ -301,8 +303,8 @@ public class RequestCreatorTest {
   @Test
   public void intoImageViewSetsPlaceholderWithResourceId() {
     Picasso picasso =
-        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null,
-            IDENTITY, null, mock(Stats.class), ARGB_8888, false, false));
+        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null, IDENTITY,
+            null, mock(Stats.class), ARGB_8888, false, false));
     ImageView target = mockImageViewTarget();
     new RequestCreator(picasso, URI_1, 0).placeholder(android.R.drawable.picture_frame).into(target);
     ArgumentCaptor<Drawable> drawableCaptor = ArgumentCaptor.forClass(Drawable.class);
@@ -581,7 +583,7 @@ public class RequestCreatorTest {
 
   @Test public void appWidgetActionWithCustomTag() {
     new RequestCreator(picasso, URI_1, 0).tag("tag")
-        .into(mockRemoteViews(), 0, new int[]{1, 2, 3});
+        .into(mockRemoteViews(), 0, new int[] { 1, 2, 3 });
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getTag()).isEqualTo("tag");
   }
@@ -774,7 +776,12 @@ public class RequestCreatorTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void nullTransformationsInvalid() {
-    new RequestCreator().transform(null);
+    new RequestCreator().transform((Transformation) null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void nullTransformationListInvalid() {
+    new RequestCreator().transform((List<Transformation>) null);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -788,6 +795,28 @@ public class RequestCreatorTest {
         return null;
       }
     });
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void nullKeyInTransformationListInvalid() {
+    List<? extends Transformation> transformations =
+        Collections.singletonList(new Transformation() {
+          @Override public Bitmap transform(Bitmap source) {
+            return source;
+          }
+
+          @Override public String key() {
+            return null;
+          }
+        });
+    new RequestCreator().transform(transformations);
+  }
+
+  @Test public void transformationListImplementationValid() {
+    List<TestTransformation> transformations =
+        Collections.singletonList(new TestTransformation("test"));
+    new RequestCreator().transform(transformations);
+    // TODO verify something!
   }
 
   @Test public void nullTargetsInvalid() {

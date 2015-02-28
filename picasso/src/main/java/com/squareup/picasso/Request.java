@@ -434,6 +434,21 @@ public final class Request {
       return this;
     }
 
+    /**
+     * Add a list of custom transformations to be applied to the image.
+     * <p>
+     * Custom transformations will always be run after the built-in transformations.
+     */
+    public Builder transform(List<? extends Transformation> transformations) {
+      if (transformations == null) {
+        throw new IllegalArgumentException("Transformation list must not be null.");
+      }
+      for (int i = 0, size = transformations.size(); i < size; i++) {
+        transform(transformations.get(i));
+      }
+      return this;
+    }
+
     /** Create the immutable {@link Request} object. */
     public Request build() {
       if (centerInside && centerCrop) {
