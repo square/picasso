@@ -792,7 +792,8 @@ public class RequestCreatorTest {
     });
   }
 
-  @Test public void nullTransformationsValid() {
+  @Test(expected = IllegalArgumentException.class)
+  public void nullTransformationListInvalid() {
     new RequestCreator().setTransformations(null);
   }
 

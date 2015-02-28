@@ -447,13 +447,12 @@ public final class Request {
      * Custom transformations will always be run after the built-in transformations.
      */
     public Builder setTransformations(List<Transformation> transformations) {
-      if (transformations != null) {
-        this.transformations = new ArrayList<Transformation>(transformations.size());
-        for (Transformation transformation : transformations) {
-          transform(transformation);
-        }
-      } else {
-        this.transformations = null;
+      if (transformations == null) {
+        throw new IllegalArgumentException("Transformation list must not be null.");
+      }
+      this.transformations = new ArrayList<Transformation>(transformations.size());
+      for (Transformation transformation : transformations) {
+        transform(transformation);
       }
       return this;
     }
