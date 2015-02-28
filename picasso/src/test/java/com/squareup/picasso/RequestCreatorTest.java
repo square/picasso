@@ -775,6 +775,16 @@ public class RequestCreatorTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
+  public void nullTransformationsInvalid() {
+    new RequestCreator().transform((Transformation)null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void nullTransformationListInvalid() {
+    new RequestCreator().transform((List<Transformation>)null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
   public void nullKeyTransformationInvalid() {
     new RequestCreator().transform(new Transformation() {
       @Override public Bitmap transform(Bitmap source) {
