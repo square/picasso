@@ -293,9 +293,7 @@ public class RequestCreator {
   }
 
   /**
-   * Add a custom transformation to be applied to the image.  May not be null.
-   * <p>
-   * Use {@link #setTransformations(java.util.List)} to set a list of transformations.
+   * Add a custom transformation to be applied to the image.
    * <p>
    * Custom transformations will always be run after the built-in transformations.
    */
@@ -306,16 +304,12 @@ public class RequestCreator {
   }
 
   /**
-   * Set a list of transformations to be applied to the image.  These transformations will
-   * overwrite any existing transformations.
-   * <p>
-   * Use {@link #transform(Transformation)} to add a transformation without overwriting existing
-   * transformations.
+   * Add a list of custom transformations to be applied to the image.
    * <p>
    * Custom transformations will always be run after the built-in transformations.
    */
-  public RequestCreator setTransformations(List<Transformation> transformations) {
-    data.setTransformations(transformations);
+  public RequestCreator transform(List<? extends Transformation> transformations) {
+    data.transform(transformations);
     return this;
   }
 

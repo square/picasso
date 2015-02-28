@@ -775,11 +775,6 @@ public class RequestCreatorTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void nullTransformationsInvalid() {
-    new RequestCreator().transform(null);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
   public void nullKeyTransformationInvalid() {
     new RequestCreator().transform(new Transformation() {
       @Override public Bitmap transform(Bitmap source) {
@@ -790,11 +785,6 @@ public class RequestCreatorTest {
         return null;
       }
     });
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void nullTransformationListInvalid() {
-    new RequestCreator().setTransformations(null);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -809,7 +799,14 @@ public class RequestCreatorTest {
         return null;
       }
     });
-    new RequestCreator().setTransformations(transformations);
+    new RequestCreator().transform(transformations);
+  }
+
+  @Test
+  public void transformationListImplementationValid() {
+    List<TestTransformation> transformations = new ArrayList<TestTransformation>();
+    transformations.add(new TestTransformation("test"));
+    new RequestCreator().transform(transformations);
   }
 
   @Test public void nullTargetsInvalid() {

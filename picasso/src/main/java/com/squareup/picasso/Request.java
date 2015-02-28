@@ -418,8 +418,6 @@ public final class Request {
     /**
      * Add a custom transformation to be applied to the image.
      * <p>
-     * Use {@link #setTransformations(java.util.List)} to set a list of transformations.
-     * <p>
      * Custom transformations will always be run after the built-in transformations.
      */
     public Builder transform(Transformation transformation) {
@@ -436,27 +434,20 @@ public final class Request {
       return this;
     }
 
-
     /**
-     * Set a list of transformations to be applied to the image.  These transformations will
-     * overwrite any existing transformations.
-     * <p>
-     * Use {@link #transform(Transformation)} to add a transformation without overwriting existing
-     * transformations.
+     * Add a list of custom transformations to be applied to the image.
      * <p>
      * Custom transformations will always be run after the built-in transformations.
      */
-    public Builder setTransformations(List<Transformation> transformations) {
+    public Builder transform(List<? extends Transformation> transformations) {
       if (transformations == null) {
         throw new IllegalArgumentException("Transformation list must not be null.");
       }
-      this.transformations = new ArrayList<Transformation>(transformations.size());
-      for (Transformation transformation : transformations) {
-        transform(transformation);
+      for (Object transformation : transformations) {
+        transform((Transformation) transformation);
       }
       return this;
     }
-
 
     /** Create the immutable {@link Request} object. */
     public Request build() {
