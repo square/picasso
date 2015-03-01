@@ -443,8 +443,8 @@ public final class Request {
       if (transformations == null) {
         throw new IllegalArgumentException("Transformation list must not be null.");
       }
-      for (Object transformation : transformations) {
-        transform((Transformation) transformation);
+      for (Transformation transformation : transformations) {
+        transform(transformation);
       }
       return this;
     }
