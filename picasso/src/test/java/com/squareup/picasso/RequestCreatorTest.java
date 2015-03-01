@@ -22,6 +22,7 @@ import android.widget.ImageView;
 import android.widget.RemoteViews;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
@@ -799,13 +800,14 @@ public class RequestCreatorTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void nullKeyInTransformationListInvalid() {
-    List<Transformation> transformations = new ArrayList<Transformation>();
-    transformations.add(new Transformation() {
-      @Override public Bitmap transform(Bitmap source) {
+    List<? extends Transformation> transformations = Collections.singletonList(new Transformation() {
+      @Override
+      public Bitmap transform(Bitmap source) {
         return source;
       }
 
-      @Override public String key() {
+      @Override
+      public String key() {
         return null;
       }
     });
