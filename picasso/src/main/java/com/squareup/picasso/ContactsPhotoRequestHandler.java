@@ -54,7 +54,7 @@ class ContactsPhotoRequestHandler extends RequestHandler {
     matcher.addURI(ContactsContract.AUTHORITY, "display_photo/#", ID_DISPLAY_PHOTO);
   }
 
-  final Context context;
+  private final Context context;
 
   ContactsPhotoRequestHandler(Context context) {
     this.context = context;
@@ -64,7 +64,7 @@ class ContactsPhotoRequestHandler extends RequestHandler {
     final Uri uri = data.uri;
     return (SCHEME_CONTENT.equals(uri.getScheme())
         && ContactsContract.Contacts.CONTENT_URI.getHost().equals(uri.getHost())
-        && !uri.getPathSegments().contains(ContactsContract.Contacts.Photo.CONTENT_DIRECTORY));
+        && matcher.match(data.uri) != UriMatcher.NO_MATCH);
   }
 
   @Override public Result load(Request request, int networkPolicy) throws IOException {

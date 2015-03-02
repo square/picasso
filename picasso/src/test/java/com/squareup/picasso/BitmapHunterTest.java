@@ -46,6 +46,8 @@ import static com.squareup.picasso.TestUtils.CONTACT_KEY_1;
 import static com.squareup.picasso.TestUtils.CONTACT_URI_1;
 import static com.squareup.picasso.TestUtils.CONTENT_1_URL;
 import static com.squareup.picasso.TestUtils.CONTENT_KEY_1;
+import static com.squareup.picasso.TestUtils.CONTACT_PHOTO_KEY_1;
+import static com.squareup.picasso.TestUtils.CONTACT_PHOTO_URI_1;
 import static com.squareup.picasso.TestUtils.CUSTOM_URI;
 import static com.squareup.picasso.TestUtils.CUSTOM_URI_KEY;
 import static com.squareup.picasso.TestUtils.FILE_1_URL;
@@ -272,6 +274,13 @@ public class BitmapHunterTest {
     Action action = mockAction(CONTACT_KEY_1, CONTACT_URI_1);
     BitmapHunter hunter = forRequest(mockPicasso(new ContactsPhotoRequestHandler(context)),
         dispatcher, cache, stats, action);
+    assertThat(hunter.requestHandler).isInstanceOf(ContactsPhotoRequestHandler.class);
+  }
+
+  @Test public void forContactsThumbnailPhotoRequest() {
+    Action action = mockAction(CONTACT_PHOTO_KEY_1, CONTACT_PHOTO_URI_1);
+    BitmapHunter hunter = forRequest(mockPicasso(new ContactsPhotoRequestHandler(context)),
+      dispatcher, cache, stats, action);
     assertThat(hunter.requestHandler).isInstanceOf(ContactsPhotoRequestHandler.class);
   }
 
