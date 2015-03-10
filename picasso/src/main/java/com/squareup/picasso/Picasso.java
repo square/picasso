@@ -596,10 +596,15 @@ public class Picasso {
 
     @Override public void run() {
       Process.setThreadPriority(THREAD_PRIORITY_BACKGROUND);
+      // Don't inline message. It's important to make sure we keep no local ref.
+      Message message = null;
       while (true) {
         try {
+          // Blocking.
           RequestWeakReference<?> remove = (RequestWeakReference<?>) referenceQueue.remove();
-          handler.sendMessage(handler.obtainMessage(REQUEST_GCED, remove.action));
+          message = handler.obtainMessage(REQUEST_GCED, remove.action);
+          handler.sendMessage(message);
+          message = null;
         } catch (InterruptedException e) {
           break;
         } catch (final Exception e) {
