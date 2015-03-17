@@ -100,6 +100,7 @@ class Dispatcher {
       Downloader downloader, Cache cache, Stats stats) {
     this.dispatcherThread = new DispatcherThread();
     this.dispatcherThread.start();
+    Utils.flushStackLocalLeaks(dispatcherThread.getLooper());
     this.context = context;
     this.service = service;
     this.hunterMap = new LinkedHashMap<String, BitmapHunter>();
