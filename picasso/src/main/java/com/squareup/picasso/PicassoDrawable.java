@@ -18,25 +18,24 @@ package com.squareup.picasso;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.ColorFilter;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
-import android.os.SystemClock;
+import android.graphics.drawable.TransitionDrawable;
 import android.widget.ImageView;
 
 import static android.graphics.Color.WHITE;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 
-final class PicassoDrawable extends BitmapDrawable {
+final class PicassoDrawable extends TransitionDrawable {
   // Only accessed from main thread.
   private static final Paint DEBUG_PAINT = new Paint();
-  private static final float FADE_DURATION = 200f; //ms
+  private static final int FADE_DURATION = 200; //ms
 
   /**
    * Create or update the drawable on the target {@link ImageView} to display the supplied bitmap
@@ -68,15 +67,12 @@ final class PicassoDrawable extends BitmapDrawable {
   private final float density;
   private final Picasso.LoadedFrom loadedFrom;
 
-  Drawable placeholder;
-
-  long startTimeMillis;
-  boolean animating;
-  int alpha = 0xFF;
-
   PicassoDrawable(Context context, Bitmap bitmap, Drawable placeholder,
       Picasso.LoadedFrom loadedFrom, boolean noFade, boolean debugging) {
-    super(context.getResources(), bitmap);
+    super(new Drawable[] {
+      placeholder == null ? new ColorDrawable(Color.TRANSPARENT) : placeholder,
+      new BitmapDrawable(context.getResources(), bitmap)
+    });
 
     this.debugging = debugging;
     this.density = context.getResources().getDisplayMetrics().density;
@@ -85,61 +81,19 @@ final class PicassoDrawable extends BitmapDrawable {
 
     boolean fade = loadedFrom != MEMORY && !noFade;
     if (fade) {
-      this.placeholder = placeholder;
-      animating = true;
-      startTimeMillis = SystemClock.uptimeMillis();
+      startTransition(FADE_DURATION);
+    } else {
+      // Transition straight to the final drawable.
+      startTransition(0);
     }
   }
 
   @Override public void draw(Canvas canvas) {
-    if (!animating) {
-      super.draw(canvas);
-    } else {
-      float normalized = (SystemClock.uptimeMillis() - startTimeMillis) / FADE_DURATION;
-      if (normalized >= 1f) {
-        animating = false;
-        placeholder = null;
-        super.draw(canvas);
-      } else {
-        if (placeholder != null) {
-          placeholder.draw(canvas);
-        }
-
-        int partialAlpha = (int) (alpha * normalized);
-        super.setAlpha(partialAlpha);
-        super.draw(canvas);
-        super.setAlpha(alpha);
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1) {
-          invalidateSelf();
-        }
-      }
-    }
+    super.draw(canvas);
 
     if (debugging) {
       drawDebugIndicator(canvas);
     }
-  }
-
-  @Override public void setAlpha(int alpha) {
-    this.alpha = alpha;
-    if (placeholder != null) {
-      placeholder.setAlpha(alpha);
-    }
-    super.setAlpha(alpha);
-  }
-
-  @Override public void setColorFilter(ColorFilter cf) {
-    if (placeholder != null) {
-      placeholder.setColorFilter(cf);
-    }
-    super.setColorFilter(cf);
-  }
-
-  @Override protected void onBoundsChange(Rect bounds) {
-    if (placeholder != null) {
-      placeholder.setBounds(bounds);
-    }
-    super.onBoundsChange(bounds);
   }
 
   private void drawDebugIndicator(Canvas canvas) {
