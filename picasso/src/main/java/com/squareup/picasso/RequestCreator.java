@@ -24,6 +24,7 @@ import android.net.Uri;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.jetbrains.annotations.TestOnly;
 
@@ -243,8 +244,8 @@ public class RequestCreator {
    * specified by {@link #resize(int, int)}.
    */
   public RequestCreator onlyScaleDown() {
-      data.onlyScaleDown();
-      return this;
+    data.onlyScaleDown();
+    return this;
   }
 
   /** Rotate the image by the specified degrees. */
@@ -299,6 +300,16 @@ public class RequestCreator {
   // TODO show example of calling resize after a transform in the javadoc
   public RequestCreator transform(Transformation transformation) {
     data.transform(transformation);
+    return this;
+  }
+
+  /**
+   * Add a list of custom transformations to be applied to the image.
+   * <p>
+   * Custom transformations will always be run after the built-in transformations.
+   */
+  public RequestCreator transform(List<? extends Transformation> transformations) {
+    data.transform(transformations);
     return this;
   }
 

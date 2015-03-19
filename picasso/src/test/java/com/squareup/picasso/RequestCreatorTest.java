@@ -21,6 +21,9 @@ import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Test;
@@ -774,7 +777,12 @@ public class RequestCreatorTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void nullTransformationsInvalid() {
-    new RequestCreator().transform(null);
+    new RequestCreator().transform((Transformation)null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void nullTransformationListInvalid() {
+    new RequestCreator().transform((List<Transformation>)null);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -788,6 +796,29 @@ public class RequestCreatorTest {
         return null;
       }
     });
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void nullKeyInTransformationListInvalid() {
+    List<? extends Transformation> transformations = Collections.singletonList(new Transformation() {
+      @Override
+      public Bitmap transform(Bitmap source) {
+        return source;
+      }
+
+      @Override
+      public String key() {
+        return null;
+      }
+    });
+    new RequestCreator().transform(transformations);
+  }
+
+  @Test
+  public void transformationListImplementationValid() {
+    List<TestTransformation> transformations = new ArrayList<TestTransformation>();
+    transformations.add(new TestTransformation("test"));
+    new RequestCreator().transform(transformations);
   }
 
   @Test public void nullTargetsInvalid() {
