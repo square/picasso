@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+Version 2.5.2 *(2015-03-20)*
+----------------------------
+
+ * Fix: Correct problems with adapter-based recycling of drawables and interop with external libraries like RoundImageView.
+
+
 Version 2.5.1 *(2015-03-19)*
 ----------------------------
 
