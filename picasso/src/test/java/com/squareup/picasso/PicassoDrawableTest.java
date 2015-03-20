@@ -17,7 +17,6 @@ package com.squareup.picasso;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import org.junit.Test;
@@ -41,21 +40,22 @@ public class PicassoDrawableTest {
   
   @Test public void createWithNoPlaceholderAnimation() {
     PicassoDrawable pd = new PicassoDrawable(context, bitmap, null, DISK, false, false);
-    assertThat(pd.getNumberOfLayers()).isEqualTo(2);
-    assertThat(((BitmapDrawable) pd.getDrawable(1)).getBitmap()).isSameAs(bitmap);
+    assertThat(pd.getBitmap()).isSameAs(bitmap);
+    assertThat(pd.placeholder).isNull();
+    assertThat(pd.animating).isTrue();
   }
 
   @Test public void createWithPlaceholderAnimation() {
     PicassoDrawable pd = new PicassoDrawable(context, bitmap, placeholder, DISK, false, false);
-    assertThat(pd.getNumberOfLayers()).isEqualTo(2);
-    assertThat(((BitmapDrawable) pd.getDrawable(1)).getBitmap()).isSameAs(bitmap);
-    assertThat(pd.getDrawable(0)).isSameAs(placeholder);
+    assertThat(pd.getBitmap()).isSameAs(bitmap);
+    assertThat(pd.placeholder).isSameAs(placeholder);
+    assertThat(pd.animating).isTrue();
   }
 
   @Test public void createWithBitmapCacheHit() {
     PicassoDrawable pd = new PicassoDrawable(context, bitmap, placeholder, MEMORY, false, false);
-    assertThat(pd.getNumberOfLayers()).isEqualTo(2);
-    assertThat(((BitmapDrawable) pd.getDrawable(1)).getBitmap()).isSameAs(bitmap);
-    assertThat(pd.getDrawable(0)).isSameAs(placeholder);
+    assertThat(pd.getBitmap()).isSameAs(bitmap);
+    assertThat(pd.placeholder).isNull();
+    assertThat(pd.animating).isFalse();
   }
 }
