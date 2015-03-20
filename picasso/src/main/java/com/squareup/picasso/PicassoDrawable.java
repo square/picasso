@@ -44,6 +44,12 @@ final class PicassoDrawable extends TransitionDrawable {
   static void setBitmap(ImageView target, Context context, Bitmap bitmap,
       Picasso.LoadedFrom loadedFrom, boolean noFade, boolean debugging) {
     Drawable placeholder = target.getDrawable();
+
+    // Avoid infinite nesting of placeholders.
+    if (placeholder instanceof PicassoDrawable) {
+      placeholder = ((PicassoDrawable) placeholder).getDrawable(0);
+    }
+
     if (placeholder instanceof AnimationDrawable) {
       ((AnimationDrawable) placeholder).stop();
     }
@@ -73,6 +79,8 @@ final class PicassoDrawable extends TransitionDrawable {
       placeholder == null ? new ColorDrawable(Color.TRANSPARENT) : placeholder,
       new BitmapDrawable(context.getResources(), bitmap)
     });
+
+    setCrossFadeEnabled(true);
 
     this.debugging = debugging;
     this.density = context.getResources().getDisplayMetrics().density;
