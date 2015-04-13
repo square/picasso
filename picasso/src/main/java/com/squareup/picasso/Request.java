@@ -79,6 +79,7 @@ public final class Request {
   public final float rotationPivotY;
   /** Whether or not {@link #rotationPivotX} and {@link #rotationPivotY} are set. */
   public final boolean hasRotationPivot;
+  public final boolean purgeable;
   /** Target image config for decoding. */
   public final Bitmap.Config config;
   /** The priority of this request. */
@@ -87,7 +88,7 @@ public final class Request {
   private Request(Uri uri, int resourceId, String stableKey, List<Transformation> transformations,
       int targetWidth, int targetHeight, boolean centerCrop, boolean centerInside,
       boolean onlyScaleDown, float rotationDegrees, float rotationPivotX, float rotationPivotY,
-      boolean hasRotationPivot, Bitmap.Config config, Priority priority) {
+      boolean hasRotationPivot, boolean purgeable, Bitmap.Config config, Priority priority) {
     this.uri = uri;
     this.resourceId = resourceId;
     this.stableKey = stableKey;
@@ -105,6 +106,7 @@ public final class Request {
     this.rotationPivotX = rotationPivotX;
     this.rotationPivotY = rotationPivotY;
     this.hasRotationPivot = hasRotationPivot;
+    this.purgeable = purgeable;
     this.config = config;
     this.priority = priority;
   }
@@ -201,6 +203,7 @@ public final class Request {
     private float rotationPivotX;
     private float rotationPivotY;
     private boolean hasRotationPivot;
+    private boolean purgeable;
     private List<Transformation> transformations;
     private Bitmap.Config config;
     private Priority priority;
@@ -397,6 +400,11 @@ public final class Request {
       return this;
     }
 
+    public Builder purgeable() {
+      purgeable = true;
+      return this;
+    }
+
     /** Decode the image using the specified config. */
     public Builder config(Bitmap.Config config) {
       this.config = config;
@@ -467,7 +475,7 @@ public final class Request {
       }
       return new Request(uri, resourceId, stableKey, transformations, targetWidth, targetHeight,
           centerCrop, centerInside, onlyScaleDown, rotationDegrees, rotationPivotX, rotationPivotY,
-          hasRotationPivot, config, priority);
+          hasRotationPivot, purgeable, config, priority);
     }
   }
 }

@@ -843,4 +843,16 @@ public class RequestCreatorTest {
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getKey()).isEqualTo(URI_KEY_1);
   }
+
+  @Test public void notPurgeable() {
+    new RequestCreator(picasso, URI_1, 0).into(mockImageViewTarget());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getRequest().purgeable).isFalse();
+  }
+
+  @Test public void purgeable() {
+    new RequestCreator(picasso, URI_1, 0).purgeable().into(mockImageViewTarget());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getRequest().purgeable).isTrue();
+  }
 }

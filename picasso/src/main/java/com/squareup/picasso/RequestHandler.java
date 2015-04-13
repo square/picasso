@@ -132,9 +132,11 @@ public abstract class RequestHandler {
     final boolean justBounds = data.hasSize();
     final boolean hasConfig = data.config != null;
     BitmapFactory.Options options = null;
-    if (justBounds || hasConfig) {
+    if (justBounds || hasConfig || data.purgeable) {
       options = new BitmapFactory.Options();
       options.inJustDecodeBounds = justBounds;
+      options.inInputShareable = data.purgeable;
+      options.inPurgeable = data.purgeable;
       if (hasConfig) {
         options.inPreferredConfig = data.config;
       }
