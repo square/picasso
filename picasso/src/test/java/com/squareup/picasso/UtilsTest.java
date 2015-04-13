@@ -20,9 +20,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import static android.os.Build.VERSION_CODES.FROYO;
+import static android.os.Build.VERSION_CODES.GINGERBREAD;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_1;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_URI;
 import static com.squareup.picasso.TestUtils.RESOURCE_TYPE_URI;
@@ -115,5 +118,15 @@ public class UtilsTest {
     Resources resources = Utils.getResources(mockPackageResourceContext(), request);
     int id = Utils.getResourceId(resources, request);
     assertThat(id).isEqualTo(RESOURCE_ID_1);
+  }
+
+  @Test @Config(reportSdk=GINGERBREAD) public void useOkHttpByDefault() throws Exception {
+    Downloader downloader = Utils.createDefaultDownloader(Robolectric.application);
+    assertThat(downloader).isInstanceOf(OkHttpDownloader.class);
+  }
+
+  @Test @Config(reportSdk=FROYO) public void noOkHttpInFroyo() throws Exception {
+    Downloader downloader = Utils.createDefaultDownloader(Robolectric.application);
+    assertThat(downloader).isNotInstanceOf(OkHttpDownloader.class);
   }
 }
