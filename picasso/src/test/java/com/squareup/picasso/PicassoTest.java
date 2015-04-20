@@ -20,10 +20,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.concurrent.ExecutorService;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,11 +29,20 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso.Picasso.Listener;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.RemoteViewsAction.RemoteViewsTarget;
 import static com.squareup.picasso.TestUtils.URI_1;
+import static com.squareup.picasso.TestUtils.URI_2;
+import static com.squareup.picasso.TestUtils.URI_3;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.makeBitmap;
 import static com.squareup.picasso.TestUtils.mockAction;
@@ -75,8 +81,10 @@ public class PicassoTest {
 
   @Before public void setUp() {
     initMocks(this);
-    picasso = new Picasso(context, dispatcher, cache, listener, transformer, null, stats, ARGB_8888,
-        false, false);
+    List<Picasso.RequestTransformer> transformers = new ArrayList<Picasso.RequestTransformer>();
+    transformers.add(transformer);
+    picasso = new Picasso(context, dispatcher, cache, listener, transformers, null, stats,
+        ARGB_8888, false, false);
   }
 
   @Test public void submitWithNullTargetInvokesDispatcher() throws Exception {
@@ -360,6 +368,24 @@ public class PicassoTest {
     }
   }
 
+  @Test public void multipleRequestTransformersAppliedInOrder() throws Exception {
+    List<Picasso.RequestTransformer> transformers = new ArrayList<Picasso.RequestTransformer>();
+    transformers.add(transformer);
+    Picasso.RequestTransformer additionalTransformer = mock(Picasso.RequestTransformer.class);
+    transformers.add(additionalTransformer);
+    Picasso picasso = new Picasso(context, dispatcher, cache, listener, transformers, null, stats,
+        ARGB_8888, false, false);
+    Request request1 = new Request.Builder(URI_1).build();
+    Request request2 = new Request.Builder(URI_2).build();
+    Request request3 = new Request.Builder(URI_3).build();
+    when(transformer.transformRequest(request1)).thenReturn(request2);
+    when(additionalTransformer.transformRequest(request2)).thenReturn(request3);
+
+    Request transformed = picasso.transformRequest(request1);
+
+    assertThat(transformed).isEqualTo(request3);
+  }
+
   @Test public void getSnapshotInvokesStats() throws Exception {
     picasso.getSnapshot();
     verify(stats).createSnapshot();
@@ -450,6 +476,16 @@ public class PicassoTest {
     }
     try {
       new Picasso.Builder(context).requestTransformer(transformer).requestTransformer(transformer);
+      fail("Setting request transformer twice should throw exception.");
+    } catch (IllegalStateException expected) {
+    }
+    try {
+      new Picasso.Builder(context).addRequestTransformer(null);
+      fail("Null request transformer should throw exception.");
+    } catch (IllegalArgumentException expected) {
+    }
+    try {
+      new Picasso.Builder(context).addRequestTransformer(transformer).addRequestTransformer(transformer);
       fail("Setting request transformer twice should throw exception.");
     } catch (IllegalStateException expected) {
     }

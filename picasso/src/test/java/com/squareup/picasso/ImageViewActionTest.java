@@ -18,6 +18,7 @@ package com.squareup.picasso;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -25,7 +26,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
-import static com.squareup.picasso.Picasso.RequestTransformer.IDENTITY;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.makeBitmap;
@@ -82,7 +82,7 @@ public class ImageViewActionTest {
   public void invokesTargetAndCallbackSuccessIfTargetIsNotNull() throws Exception {
     Bitmap bitmap = makeBitmap();
     Picasso picasso =
-        new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null, IDENTITY,
+        new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null, null,
             null, mock(Stats.class), Bitmap.Config.ARGB_8888, false, false);
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
