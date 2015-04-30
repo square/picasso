@@ -429,20 +429,23 @@ public class RequestCreator {
 
       Request request = createRequest(started);
       String key = createKey(request, new StringBuilder());
-      Bitmap bitmap = picasso.quickMemoryCacheCheck(key);
 
-      if (bitmap != null) {
-        if (picasso.loggingEnabled) {
-          log(OWNER_MAIN, VERB_COMPLETED, request.plainId(), "from " + MEMORY);
+      if (shouldReadFromMemoryCache(memoryPolicy)) {
+        Bitmap bitmap = picasso.quickMemoryCacheCheck(key);
+        if (bitmap != null) {
+          if (picasso.loggingEnabled) {
+            log(OWNER_MAIN, VERB_COMPLETED, request.plainId(), "from " + MEMORY);
+          }
+          if (callback != null) {
+            callback.onSuccess();
+          }
+          return;
         }
-        if (callback != null) {
-          callback.onSuccess();
-        }
-      } else {
-        Action action =
-            new FetchAction(picasso, request, memoryPolicy, networkPolicy, tag, key, callback);
-        picasso.submit(action);
       }
+
+      Action action =
+          new FetchAction(picasso, request, memoryPolicy, networkPolicy, tag, key, callback);
+      picasso.submit(action);
     }
   }
 

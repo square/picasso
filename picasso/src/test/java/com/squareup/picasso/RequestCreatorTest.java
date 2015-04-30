@@ -149,6 +149,19 @@ public class RequestCreatorTest {
     assertThat(actionCaptor.getValue().getPriority()).isEqualTo(HIGH);
   }
 
+  @Test public void fetchWithCache() {
+    when(picasso.quickMemoryCacheCheck(URI_KEY_1)).thenReturn(bitmap);
+    new RequestCreator(picasso, URI_1, 0).memoryPolicy(MemoryPolicy.NO_CACHE).fetch();
+    verify(picasso).submit(actionCaptor.capture());
+    verify(picasso, never()).enqueueAndSubmit(any(Action.class));
+  }
+
+  @Test public void fetchWithMemoryPolicyNoCache() {
+    when(picasso.quickMemoryCacheCheck(URI_KEY_1)).thenReturn(bitmap);
+    new RequestCreator(picasso, URI_1, 0).memoryPolicy(MemoryPolicy.NO_CACHE).fetch();
+    verify(picasso).submit(actionCaptor.capture());
+  }
+
   @Test
   public void intoTargetWithNullThrows() {
     try {
