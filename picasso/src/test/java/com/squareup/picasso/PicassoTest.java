@@ -306,6 +306,17 @@ public class PicassoTest {
     }
   }
 
+  @Test public void setSingletonInstanceRejectsNull() {
+    Picasso.singleton = null;
+
+    try {
+      Picasso.setSingletonInstance(null);
+      fail("Can't set singleton instance to null.");
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessage("Picasso must not be null.");
+    }
+  }
+
   @Test public void setSingletonInstanceMayOnlyBeCalledOnce() {
     Picasso.singleton = null;
 
@@ -462,7 +473,8 @@ public class PicassoTest {
     } catch (IllegalArgumentException expected) {
     }
     try {
-      new Picasso.Builder(context).addRequestHandler(requestHandler).addRequestHandler(requestHandler);
+      new Picasso.Builder(context).addRequestHandler(requestHandler)
+          .addRequestHandler(requestHandler);
       fail("Registering same request handler twice should throw exception.");
     } catch (IllegalStateException expected) {
     }
@@ -474,7 +486,8 @@ public class PicassoTest {
   }
 
   @Test public void builderWithRequestHandler() throws Exception {
-    Picasso picasso = new Picasso.Builder(Robolectric.application).addRequestHandler(requestHandler).build();
+    Picasso picasso = new Picasso.Builder(Robolectric.application)
+        .addRequestHandler(requestHandler).build();
     assertThat(picasso.getRequestHandlers()).isNotNull().isNotEmpty().contains(requestHandler);
   }
 
