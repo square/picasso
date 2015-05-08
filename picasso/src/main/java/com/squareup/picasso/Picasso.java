@@ -672,6 +672,9 @@ public class Picasso {
    * This method must be called before any calls to {@link #with} and may only be called once.
    */
   public static void setSingletonInstance(Picasso picasso) {
+    if (picasso == null) {
+      throw new IllegalArgumentException("Picasso must not be null.");
+    }
     synchronized (Picasso.class) {
       if (singleton != null) {
         throw new IllegalStateException("Singleton instance already exists.");
