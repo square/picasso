@@ -79,6 +79,7 @@ public final class Request {
   public final float rotationPivotY;
   /** Whether or not {@link #rotationPivotX} and {@link #rotationPivotY} are set. */
   public final boolean hasRotationPivot;
+  /** True if image should be decoded with inPurgeable and inInputShareable. */
   public final boolean purgeable;
   /** Target image config for decoding. */
   public final Bitmap.Config config;
@@ -141,6 +142,9 @@ public final class Request {
         sb.append(" @ ").append(rotationPivotX).append(',').append(rotationPivotY);
       }
       sb.append(')');
+    }
+    if (purgeable) {
+      sb.append(" purgeable");
     }
     if (config != null) {
       sb.append(' ').append(config);
@@ -236,6 +240,7 @@ public final class Request {
       rotationPivotX = request.rotationPivotX;
       rotationPivotY = request.rotationPivotY;
       hasRotationPivot = request.hasRotationPivot;
+      purgeable = request.purgeable;
       onlyScaleDown = request.onlyScaleDown;
       if (request.transformations != null) {
         transformations = new ArrayList<Transformation>(request.transformations);
