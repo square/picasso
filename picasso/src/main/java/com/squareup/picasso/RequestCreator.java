@@ -366,6 +366,17 @@ public class RequestCreator {
     return this;
   }
 
+  /** Set inPurgeable and inInputShareable when decoding. This will force the bitmap to be decoded
+   * from a byte array instead of a stream, since inPurgeable only affects the former.
+   * <p>
+   * <em>Note</em>: as of API level 21 (Lollipop), the inPurgeable field is deprecated and will be
+   * ignored.
+   */
+  public RequestCreator purgeable() {
+    data.purgeable();
+    return this;
+  }
+
   /** Disable brief fade in of images loaded from the disk cache or network. */
   public RequestCreator noFade() {
     noFade = true;

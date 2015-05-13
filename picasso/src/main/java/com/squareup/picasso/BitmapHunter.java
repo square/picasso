@@ -120,10 +120,12 @@ class BitmapHunter implements Runnable {
     final boolean calculateSize = RequestHandler.requiresInSampleSize(options);
 
     boolean isWebPFile = Utils.isWebPFile(stream);
+    boolean isPurgeable = request.purgeable && android.os.Build.VERSION.SDK_INT < 21;
     markStream.reset(mark);
-    // When decode WebP network stream, BitmapFactory throw JNI Exception and make app crash.
-    // Decode byte array instead
-    if (isWebPFile) {
+    // We decode from a byte array because, a) when decoding a WebP network stream, BitmapFactory
+    // throws a JNI Exception, so we workaround by decoding a byte array, or b) user requested
+    // purgeable, which only affects bitmaps decoded from byte arrays.
+    if (isWebPFile || isPurgeable) {
       byte[] bytes = Utils.toByteArray(stream);
       if (calculateSize) {
         BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
