@@ -28,6 +28,14 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static android.media.ExifInterface.ORIENTATION_ROTATE_180;
+import static android.media.ExifInterface.ORIENTATION_ROTATE_270;
+import static android.media.ExifInterface.ORIENTATION_ROTATE_90;
+import static android.media.ExifInterface.ORIENTATION_FLIP_HORIZONTAL;
+import static android.media.ExifInterface.ORIENTATION_FLIP_VERTICAL;
+import static android.media.ExifInterface.ORIENTATION_TRANSPOSE;
+import static android.media.ExifInterface.ORIENTATION_TRANSVERSE;
+
 import static com.squareup.picasso.MemoryPolicy.shouldReadFromMemoryCache;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Picasso.Priority;
@@ -84,7 +92,7 @@ class BitmapHunter implements Runnable {
   Future<?> future;
   Picasso.LoadedFrom loadedFrom;
   Exception exception;
-  int exifRotation; // Determined during decoding of original resource.
+  int exifOrientation; // Determined during decoding of original resource.
   int retryCount;
   Priority priority;
 
@@ -208,8 +216,7 @@ class BitmapHunter implements Runnable {
     RequestHandler.Result result = requestHandler.load(data, networkPolicy);
     if (result != null) {
       loadedFrom = result.getLoadedFrom();
-      exifRotation = result.getExifOrientation();
-
+      exifOrientation = result.getExifOrientation();
       bitmap = result.getBitmap();
 
       // If there was no Bitmap then we need to decode it from the stream.
@@ -228,10 +235,10 @@ class BitmapHunter implements Runnable {
         log(OWNER_HUNTER, VERB_DECODED, data.logId());
       }
       stats.dispatchBitmapDecoded(bitmap);
-      if (data.needsTransformation() || exifRotation != 0) {
+      if (data.needsTransformation() || exifOrientation != 0) {
         synchronized (DECODE_LOCK) {
-          if (data.needsMatrixTransform() || exifRotation != 0) {
-            bitmap = transformResult(data, bitmap, exifRotation);
+          if (data.needsMatrixTransform() || exifOrientation != 0) {
+            bitmap = transformResult(data, bitmap, exifOrientation);
             if (picasso.loggingEnabled) {
               log(OWNER_HUNTER, VERB_TRANSFORMED, data.logId());
             }
@@ -485,7 +492,7 @@ class BitmapHunter implements Runnable {
     return result;
   }
 
-  static Bitmap transformResult(Request data, Bitmap result, int exifRotation) {
+  static Bitmap transformResult(Request data, Bitmap result, int exifOrientation) {
     int inWidth = result.getWidth();
     int inHeight = result.getHeight();
     boolean onlyScaleDown = data.onlyScaleDown;
@@ -552,8 +559,12 @@ class BitmapHunter implements Runnable {
       }
     }
 
-    if (exifRotation != 0) {
-      matrix.preRotate(exifRotation);
+    if (exifOrientation != 0) {
+      matrix.preRotate(getExifRotation(exifOrientation));
+      int exifTranslation = getExifTranslation(exifOrientation);
+      if (exifTranslation != 1) {
+        matrix.postScale(exifTranslation, 1);
+      }
     }
 
     Bitmap newResult =
@@ -570,4 +581,41 @@ class BitmapHunter implements Runnable {
       int targetWidth, int targetHeight) {
     return !onlyScaleDown || inWidth > targetWidth || inHeight > targetHeight;
   }
+
+  static int getExifRotation(int orientation) {
+    int rotation;
+    switch (orientation) {
+      case ORIENTATION_ROTATE_90:
+      case ORIENTATION_TRANSPOSE:
+        rotation = 90;
+        break;
+      case ORIENTATION_ROTATE_180:
+      case ORIENTATION_FLIP_VERTICAL:
+        rotation = 180;
+        break;
+      case ORIENTATION_ROTATE_270:
+      case ORIENTATION_TRANSVERSE:
+        rotation = 270;
+        break;
+      default:
+        rotation = 0;
+    }
+    return rotation;
+  }
+
+ static int getExifTranslation(int orientation)  {
+    int translation;
+    switch (orientation) {
+      case ORIENTATION_FLIP_HORIZONTAL:
+      case ORIENTATION_FLIP_VERTICAL:
+      case ORIENTATION_TRANSPOSE:
+      case ORIENTATION_TRANSVERSE:
+        translation = -1;
+        break;
+      default:
+        translation = 1;
+    }
+    return translation;
+  }
 }
+

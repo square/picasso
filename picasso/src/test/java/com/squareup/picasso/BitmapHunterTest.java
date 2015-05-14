@@ -78,6 +78,12 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.robolectric.Robolectric.shadowOf;
 
+import static android.media.ExifInterface.ORIENTATION_ROTATE_90;
+import static android.media.ExifInterface.ORIENTATION_FLIP_HORIZONTAL ;
+import static android.media.ExifInterface.ORIENTATION_FLIP_VERTICAL;
+import static android.media.ExifInterface.ORIENTATION_TRANSPOSE;
+import static android.media.ExifInterface.ORIENTATION_TRANSVERSE;
+
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class BitmapHunterTest {
@@ -407,13 +413,67 @@ public class BitmapHunterTest {
   @Test public void exifRotation() {
     Request data = new Request.Builder(URI_1).rotate(-45).build();
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
-    Bitmap result = transformResult(data, source, 90);
+    Bitmap result = transformResult(data, source, ORIENTATION_ROTATE_90);
     ShadowBitmap shadowBitmap = shadowOf(result);
     assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
     assertThat(shadowMatrix.getPreOperations()).containsOnly("rotate 90.0");
+  }
+
+  @Test public void exifVerticalFlip() {
+    Request data = new Request.Builder(URI_1).rotate(-45).build();
+    Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
+    Bitmap result = transformResult(data, source, ORIENTATION_FLIP_VERTICAL);
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPostOperations()).containsOnly("scale -1.0 1.0");
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("rotate 180.0");
+  }
+
+  @Test public void exifHorizontalFlip() {
+    Request data = new Request.Builder(URI_1).rotate(-45).build();
+    Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
+    Bitmap result = transformResult(data, source, ORIENTATION_FLIP_HORIZONTAL);
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPostOperations()).containsOnly("scale -1.0 1.0");
+    assertThat(shadowMatrix.getPreOperations()).doesNotContain("rotate 180.0");
+    assertThat(shadowMatrix.getPreOperations()).doesNotContain("rotate 90.0");
+    assertThat(shadowMatrix.getPreOperations()).doesNotContain("rotate 270.0");
+  }
+
+  @Test public void exifTranspose() {
+    Request data = new Request.Builder(URI_1).rotate(-45).build();
+    Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
+    Bitmap result = transformResult(data, source, ORIENTATION_TRANSPOSE);
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPostOperations()).containsOnly("scale -1.0 1.0");
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("rotate 90.0");
+  }
+
+  @Test public void exifTransverse() {
+    Request data = new Request.Builder(URI_1).rotate(-45).build();
+    Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
+    Bitmap result = transformResult(data, source, ORIENTATION_TRANSVERSE);
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPostOperations()).containsOnly("scale -1.0 1.0");
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("rotate 270.0");
   }
 
   @Test public void keepsAspectRationWhileResizingWhenDesiredWidthIs0() {
@@ -465,7 +525,7 @@ public class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Request data = new Request.Builder(URI_1).rotate(-45).build();
 
-    Bitmap result = transformResult(data, source, 90);
+    Bitmap result = transformResult(data, source, ORIENTATION_ROTATE_90);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
     assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
