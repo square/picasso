@@ -461,6 +461,48 @@ public class BitmapHunterTest {
     assertThat(transformedHeight).isEqualTo(642);
   }
 
+  @Test public void centerCropResultMatchesTargetSizeWhileDesiredWidthIs0() {
+    Request request = new Request.Builder(URI_1).resize(0, 642).centerCrop().build();
+    Bitmap source = Bitmap.createBitmap(640, 640, ARGB_8888);
+
+    Bitmap result = transformResult(request, source, 0);
+
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    String scalePreOperation = shadowMatrix.getPreOperations().get(0);
+
+    assertThat(scalePreOperation).startsWith("scale ");
+    float scaleX = Float.valueOf(scalePreOperation.split(" ")[1]);
+    float scaleY = Float.valueOf(scalePreOperation.split(" ")[2]);
+
+    int transformedWidth = Math.round(result.getWidth() * scaleX);
+    int transformedHeight = Math.round(result.getHeight() * scaleY);
+    assertThat(transformedWidth).isEqualTo(642);
+    assertThat(transformedHeight).isEqualTo(642);
+  }
+
+  @Test public void centerCropResultMatchesTargetSizeWhileDesiredHeightIs0() {
+    Request request = new Request.Builder(URI_1).resize(1080, 0).centerCrop().build();
+    Bitmap source = Bitmap.createBitmap(640, 640, ARGB_8888);
+
+    Bitmap result = transformResult(request, source, 0);
+
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    String scalePreOperation = shadowMatrix.getPreOperations().get(0);
+
+    assertThat(scalePreOperation).startsWith("scale ");
+    float scaleX = Float.valueOf(scalePreOperation.split(" ")[1]);
+    float scaleY = Float.valueOf(scalePreOperation.split(" ")[2]);
+
+    int transformedWidth = Math.round(result.getWidth() * scaleX);
+    int transformedHeight = Math.round(result.getHeight() * scaleY);
+    assertThat(transformedWidth).isEqualTo(1080);
+    assertThat(transformedHeight).isEqualTo(1080);
+  }
+
   @Test public void exifRotationWithManualRotation() {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Request data = new Request.Builder(URI_1).rotate(-45).build();
