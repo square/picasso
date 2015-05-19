@@ -62,6 +62,10 @@ public abstract class RequestHandler {
       this(null, checkNotNull(stream, "stream == null"), loadedFrom, 0);
     }
 
+    public Result(InputStream stream, Picasso.LoadedFrom loadedFrom, int exifOrientation) {
+      this(null, checkNotNull(stream, "stream == null"), loadedFrom, exifOrientation);
+    }
+
     Result(Bitmap bitmap, InputStream stream, Picasso.LoadedFrom loadedFrom, int exifOrientation) {
       if (!(bitmap != null ^ stream != null)) {
         throw new AssertionError();
