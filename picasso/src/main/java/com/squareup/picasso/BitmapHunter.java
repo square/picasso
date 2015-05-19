@@ -511,8 +511,11 @@ class BitmapHunter implements Runnable {
       }
 
       if (data.centerCrop) {
-        float widthRatio = targetWidth / (float) inWidth;
-        float heightRatio = targetHeight / (float) inHeight;
+        // Keep aspect ratio if one dimension is set to 0
+        float widthRatio =
+            targetWidth != 0 ? targetWidth / (float) inWidth : targetHeight / (float) inHeight;
+        float heightRatio =
+            targetHeight != 0 ? targetHeight / (float) inHeight : targetWidth / (float) inWidth;
         float scaleX, scaleY;
         if (widthRatio > heightRatio) {
           int newSize = (int) Math.ceil(inHeight * (heightRatio / widthRatio));
@@ -520,19 +523,26 @@ class BitmapHunter implements Runnable {
           drawHeight = newSize;
           scaleX = widthRatio;
           scaleY = targetHeight / (float) drawHeight;
-        } else {
+        } else if (widthRatio < heightRatio) {
           int newSize = (int) Math.ceil(inWidth * (widthRatio / heightRatio));
           drawX = (inWidth - newSize) / 2;
           drawWidth = newSize;
           scaleX = targetWidth / (float) drawWidth;
           scaleY = heightRatio;
+        } else {
+          drawX = 0;
+          drawWidth = inWidth;
+          scaleX = scaleY = heightRatio;
         }
         if (shouldResize(onlyScaleDown, inWidth, inHeight, targetWidth, targetHeight)) {
           matrix.preScale(scaleX, scaleY);
         }
       } else if (data.centerInside) {
-        float widthRatio = targetWidth / (float) inWidth;
-        float heightRatio = targetHeight / (float) inHeight;
+        // Keep aspect ratio if one dimension is set to 0
+        float widthRatio =
+            targetWidth != 0 ? targetWidth / (float) inWidth : targetHeight / (float) inHeight;
+        float heightRatio =
+            targetHeight != 0 ? targetHeight / (float) inHeight : targetWidth / (float) inWidth;
         float scale = widthRatio < heightRatio ? widthRatio : heightRatio;
         if (shouldResize(onlyScaleDown, inWidth, inHeight, targetWidth, targetHeight)) {
           matrix.preScale(scale, scale);
