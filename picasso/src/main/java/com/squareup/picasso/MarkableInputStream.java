@@ -151,8 +151,8 @@ final class MarkableInputStream extends InputStream {
   }
 
   @Override public int read(byte[] buffer, int offset, int length) throws IOException {
-    if (!allowExpire && (offset + length > limit)) {
-      setLimit(offset + length + limitIncrement);
+    if (!allowExpire && (this.offset + length > limit)) {
+      setLimit(this.offset + length + limitIncrement);
     }
     int count = in.read(buffer, offset, length);
     if (count != -1) {
