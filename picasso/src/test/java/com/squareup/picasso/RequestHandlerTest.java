@@ -55,35 +55,35 @@ public class RequestHandlerTest {
   @Test public void calculateInSampleSizeNoResize() {
     final BitmapFactory.Options options = new BitmapFactory.Options();
     Request data = new Request.Builder(URI_1).build();
-    calculateInSampleSize(100, 100, 150, 150, options, data);
+    calculateInSampleSize(100, 100, 150, 150, options, data, 0);
     assertThat(options.inSampleSize).isEqualTo(1);
   }
 
   @Test public void calculateInSampleSizeResize() {
     final BitmapFactory.Options options = new BitmapFactory.Options();
     Request data = new Request.Builder(URI_1).build();
-    calculateInSampleSize(100, 100, 200, 200, options, data);
+    calculateInSampleSize(100, 100, 200, 200, options, data, 0);
     assertThat(options.inSampleSize).isEqualTo(2);
   }
 
   @Test public void calculateInSampleSizeResizeCenterInside() {
     final BitmapFactory.Options options = new BitmapFactory.Options();
     Request data = new Request.Builder(URI_1).centerInside().resize(100, 100).build();
-    calculateInSampleSize(data.targetWidth, data.targetHeight, 400, 200, options, data);
+    calculateInSampleSize(data.targetWidth, data.targetHeight, 400, 200, options, data, 0);
     assertThat(options.inSampleSize).isEqualTo(4);
   }
 
   @Test public void calculateInSampleSizeKeepAspectRatioWithWidth() {
     final BitmapFactory.Options options = new BitmapFactory.Options();
     Request data = new Request.Builder(URI_1).resize(400, 0).build();
-    calculateInSampleSize(data.targetWidth, data.targetHeight, 800, 200, options, data);
+    calculateInSampleSize(data.targetWidth, data.targetHeight, 800, 200, options, data, 0);
     assertThat(options.inSampleSize).isEqualTo(2);
   }
 
   @Test public void calculateInSampleSizeKeepAspectRatioWithHeight() {
     final BitmapFactory.Options options = new BitmapFactory.Options();
     Request data = new Request.Builder(URI_1).resize(0, 100).build();
-    calculateInSampleSize(data.targetWidth, data.targetHeight, 800, 200, options, data);
+    calculateInSampleSize(data.targetWidth, data.targetHeight, 800, 200, options, data, 0);
     assertThat(options.inSampleSize).isEqualTo(2);
   }
 
