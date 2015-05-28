@@ -496,6 +496,7 @@ class BitmapHunter implements Runnable {
     int inWidth = result.getWidth();
     int inHeight = result.getHeight();
     boolean onlyScaleDown = data.onlyScaleDown;
+    int exifRotation = getExifRotation(exifOrientation);
 
     int drawX = 0;
     int drawY = 0;
@@ -507,6 +508,12 @@ class BitmapHunter implements Runnable {
     if (data.needsMatrixTransform()) {
       int targetWidth = data.targetWidth;
       int targetHeight = data.targetHeight;
+      
+      if (exifRotation == 90 || exifRotation == 270) {
+        int tmpHeight = targetHeight;
+        targetHeight = targetWidth;
+        targetWidth = tmpHeight;
+      }
 
       float targetRotation = data.rotationDegrees;
       if (targetRotation != 0) {
@@ -559,18 +566,22 @@ class BitmapHunter implements Runnable {
         // If an explicit target size has been specified and they do not match the results bounds,
         // pre-scale the existing matrix appropriately.
         // Keep aspect ratio if one dimension is set to 0.
-        float sx =
+        float scaleX =
             targetWidth != 0 ? targetWidth / (float) inWidth : targetHeight / (float) inHeight;
-        float sy =
+        float scaleY =
             targetHeight != 0 ? targetHeight / (float) inHeight : targetWidth / (float) inWidth;
         if (shouldResize(onlyScaleDown, inWidth, inHeight, targetWidth, targetHeight)) {
-          matrix.preScale(sx, sy);
+          if (exifRotation == 90 || exifRotation == 270) {
+            matrix.preScale(scaleY, scaleX);
+          } else {
+            matrix.preScale(scaleX, scaleY);
+          }
         }
       }
     }
 
     if (exifOrientation != 0) {
-      matrix.preRotate(getExifRotation(exifOrientation));
+      matrix.preRotate(exifRotation);
       int exifTranslation = getExifTranslation(exifOrientation);
       if (exifTranslation != 1) {
         matrix.postScale(exifTranslation, 1);
