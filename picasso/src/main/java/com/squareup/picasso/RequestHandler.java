@@ -149,14 +149,19 @@ public abstract class RequestHandler {
   }
 
   static void calculateInSampleSize(int reqWidth, int reqHeight, BitmapFactory.Options options,
-      Request request) {
+      Request request, int exifRotation) {
     calculateInSampleSize(reqWidth, reqHeight, options.outWidth, options.outHeight, options,
-        request);
+        request, exifRotation);
   }
 
   static void calculateInSampleSize(int reqWidth, int reqHeight, int width, int height,
-      BitmapFactory.Options options, Request request) {
+      BitmapFactory.Options options, Request request, int exifRotation) {
     int sampleSize = 1;
+    if (exifRotation == 90 || exifRotation == 270) {
+      int tmpHeight = height;
+      height = width;
+      width = tmpHeight;
+    }
     if (height > reqHeight || width > reqWidth) {
       final int heightRatio;
       final int widthRatio;
