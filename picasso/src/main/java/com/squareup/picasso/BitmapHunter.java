@@ -118,7 +118,7 @@ class BitmapHunter implements Runnable {
    * about the supplied request in order to do the decoding efficiently (such as through leveraging
    * {@code inSampleSize}).
    */
-  static Bitmap decodeStream(InputStream stream, Request request) throws IOException {
+  static Bitmap decodeStream(InputStream stream, Request request, int exifRotation) throws IOException {
     MarkableInputStream markStream = new MarkableInputStream(stream);
     stream = markStream;
 
@@ -138,14 +138,14 @@ class BitmapHunter implements Runnable {
       if (calculateSize) {
         BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
         RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight, options,
-            request);
+            request, exifRotation);
       }
       return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
     } else {
       if (calculateSize) {
         BitmapFactory.decodeStream(stream, null, options);
         RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight, options,
-            request);
+            request, exifRotation);
 
         markStream.reset(mark);
       }
@@ -223,7 +223,7 @@ class BitmapHunter implements Runnable {
       if (bitmap == null) {
         InputStream is = result.getStream();
         try {
-          bitmap = decodeStream(is, data);
+          bitmap = decodeStream(is, data, getExifRotation(exifOrientation));
         } finally {
           Utils.closeQuietly(is);
         }
