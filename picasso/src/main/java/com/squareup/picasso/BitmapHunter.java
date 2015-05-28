@@ -118,7 +118,8 @@ class BitmapHunter implements Runnable {
    * about the supplied request in order to do the decoding efficiently (such as through leveraging
    * {@code inSampleSize}).
    */
-  static Bitmap decodeStream(InputStream stream, Request request, int exifRotation) throws IOException {
+  static Bitmap decodeStream(InputStream stream, Request request,
+      int exifRotation) throws IOException {
     MarkableInputStream markStream = new MarkableInputStream(stream);
     stream = markStream;
 
@@ -508,7 +509,7 @@ class BitmapHunter implements Runnable {
     if (data.needsMatrixTransform()) {
       int targetWidth = data.targetWidth;
       int targetHeight = data.targetHeight;
-      
+
       if (exifRotation == 90 || exifRotation == 270) {
         int tmpHeight = targetHeight;
         targetHeight = targetWidth;
