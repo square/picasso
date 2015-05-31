@@ -61,6 +61,7 @@ class DeferredRequestCreator implements ViewTreeObserver.OnPreDrawListener {
   }
 
   void cancel() {
+    creator.clearTag();
     callback = null;
     ImageView target = this.target.get();
     if (target == null) {
@@ -71,5 +72,9 @@ class DeferredRequestCreator implements ViewTreeObserver.OnPreDrawListener {
       return;
     }
     vto.removeOnPreDrawListener(this);
+  }
+
+  Object getTag() {
+    return creator.getTag();
   }
 }
