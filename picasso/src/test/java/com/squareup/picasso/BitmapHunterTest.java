@@ -422,6 +422,66 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsOnly("rotate 90.0");
   }
 
+ @Test public void exifRotationSizing() throws Exception {
+    Request data = new Request.Builder(URI_1).resize(5, 10).build();
+    Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
+    Bitmap result = transformResult(data, source, ORIENTATION_ROTATE_90);
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).contains("scale 1.0 0.5");
+  }
+
+ @Test public void exifRotationNoSizing() throws Exception {
+    Request data = new Request.Builder(URI_1).build();
+    Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
+    Bitmap result = transformResult(data, source, ORIENTATION_ROTATE_90);
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).contains("rotate 90.0");
+  }
+
+ @Test public void rotation90Sizing() throws Exception {
+    Request data = new Request.Builder(URI_1).rotate(90).resize(5, 10).build();
+    Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
+    Bitmap result = transformResult(data, source, 0);
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).contains("scale 1.0 0.5");
+  }
+
+ @Test public void rotation180Sizing() throws Exception {
+    Request data = new Request.Builder(URI_1).rotate(180).resize(5, 10).build();
+    Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
+    Bitmap result = transformResult(data, source, 0);
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).contains("scale 0.5 1.0");
+  }
+
+ @Test public void rotation90WithPivotSizing() throws Exception {
+    Request data = new Request.Builder(URI_1).rotate(90,0,10).resize(5, 10).build();
+    Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
+    Bitmap result = transformResult(data, source, 0);
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).contains("scale 1.0 0.5");
+  }
+
   @Test public void exifVerticalFlip() {
     Request data = new Request.Builder(URI_1).rotate(-45).build();
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
