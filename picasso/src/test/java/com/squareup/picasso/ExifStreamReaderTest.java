@@ -38,4 +38,10 @@ public class ExifStreamReaderTest {
       assertThat(ExifStreamReader.getOrientation(is)).isEqualTo(i);    
     }
   }
+
+  @Test
+  public void NonJpgExifReaderTest() throws IOException {
+     InputStream is = getClass().getClassLoader().getResourceAsStream("Portrait_5.png");
+     assertThat(ExifStreamReader.getOrientation(is)).isEqualTo(0);    
+  }
 }
