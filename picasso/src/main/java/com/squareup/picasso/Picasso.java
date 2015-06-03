@@ -85,13 +85,6 @@ public class Picasso {
      * @return The original request or a new request to replace it. Must not be null.
      */
     Request transformRequest(Request request);
-
-    /** A {@link RequestTransformer} which returns the original request. */
-    RequestTransformer IDENTITY = new RequestTransformer() {
-      @Override public Request transformRequest(Request request) {
-        return request;
-      }
-    };
   }
 
   /**
@@ -143,9 +136,9 @@ public class Picasso {
   static volatile Picasso singleton = null;
 
   private final Listener listener;
-  private final RequestTransformer requestTransformer;
   private final CleanupThread cleanupThread;
   private final List<RequestHandler> requestHandlers;
+  private final List<RequestTransformer> requestTransformers;
 
   final Context context;
   final Dispatcher dispatcher;
@@ -162,13 +155,18 @@ public class Picasso {
   boolean shutdown;
 
   Picasso(Context context, Dispatcher dispatcher, Cache cache, Listener listener,
-      RequestTransformer requestTransformer, List<RequestHandler> extraRequestHandlers, Stats stats,
-      Bitmap.Config defaultBitmapConfig, boolean indicatorsEnabled, boolean loggingEnabled) {
+      List<RequestTransformer> requestTransformers, List<RequestHandler> extraRequestHandlers,
+      Stats stats, Bitmap.Config defaultBitmapConfig, boolean indicatorsEnabled,
+      boolean loggingEnabled) {
     this.context = context;
     this.dispatcher = dispatcher;
     this.cache = cache;
     this.listener = listener;
-    this.requestTransformer = requestTransformer;
+    if (requestTransformers == null) {
+      this.requestTransformers = Collections.emptyList();
+    } else {
+      this.requestTransformers = Collections.unmodifiableList(requestTransformers);
+    }
     this.defaultBitmapConfig = defaultBitmapConfig;
 
     int builtInHandlers = 7; // Adjust this as internal handlers are added or removed.
@@ -452,14 +450,17 @@ public class Picasso {
   }
 
   Request transformRequest(Request request) {
-    Request transformed = requestTransformer.transformRequest(request);
-    if (transformed == null) {
-      throw new IllegalStateException("Request transformer "
-          + requestTransformer.getClass().getCanonicalName()
-          + " returned null for "
-          + request);
+    for (RequestTransformer transformer : requestTransformers) {
+      Request transformed = transformer.transformRequest(request);
+      if (transformed == null) {
+        throw new IllegalStateException("Request transformer "
+            + transformer.getClass().getCanonicalName()
+            + " returned null for "
+            + request);
+      }
+      request = transformed;
     }
-    return transformed;
+    return request;
   }
 
   void defer(ImageView view, DeferredRequestCreator request) {
@@ -691,7 +692,7 @@ public class Picasso {
     private ExecutorService service;
     private Cache cache;
     private Listener listener;
-    private RequestTransformer transformer;
+    private List<RequestTransformer> transformers;
     private List<RequestHandler> requestHandlers;
     private Bitmap.Config defaultBitmapConfig;
 
@@ -780,10 +781,30 @@ public class Picasso {
       if (transformer == null) {
         throw new IllegalArgumentException("Transformer must not be null.");
       }
-      if (this.transformer != null) {
+      if (this.transformers != null) {
         throw new IllegalStateException("Transformer already set.");
       }
-      this.transformer = transformer;
+      return addRequestTransformer(transformer);
+    }
+
+    /**
+     * Register a {@link RequestTransformer}. If you register multiple transformers, they are
+     * applied in order of registration.
+     * <p>
+     * <b>NOTE:</b> This is a beta feature. The API is subject to change in a backwards incompatible
+     * way at any time.
+     */
+    public Builder addRequestTransformer(RequestTransformer transformer) {
+      if (transformer == null) {
+        throw new IllegalArgumentException("Transformer must not be null.");
+      }
+      if (this.transformers == null) {
+        transformers = new ArrayList<RequestTransformer>();
+      }
+      if (transformers.contains(transformer)) {
+        throw new IllegalStateException("RequestTransformer already registered.");
+      }
+      transformers.add(transformer);
       return this;
     }
 
@@ -840,15 +861,15 @@ public class Picasso {
       if (service == null) {
         service = new PicassoExecutorService();
       }
-      if (transformer == null) {
-        transformer = RequestTransformer.IDENTITY;
+      if (transformers == null) {
+        transformers = Collections.emptyList();
       }
 
       Stats stats = new Stats(cache);
 
       Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, downloader, cache, stats);
 
-      return new Picasso(context, dispatcher, cache, listener, transformer, requestHandlers, stats,
+      return new Picasso(context, dispatcher, cache, listener, transformers, requestHandlers, stats,
           defaultBitmapConfig, indicatorsEnabled, loggingEnabled);
     }
   }

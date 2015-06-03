@@ -25,12 +25,14 @@ import android.net.Uri;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
+
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static android.graphics.Bitmap.Config.ARGB_8888;
@@ -53,6 +55,7 @@ class TestUtils {
   };
   static final Uri URI_1 = Uri.parse("http://example.com/1.png");
   static final Uri URI_2 = Uri.parse("http://example.com/2.png");
+  static final Uri URI_3 = Uri.parse("http://example.com/3.png");
   static final String STABLE_1 = "stableExampleKey1";
   static final String URI_KEY_1 = createKey(new Request.Builder(URI_1).build());
   static final String URI_KEY_2 = createKey(new Request.Builder(URI_2).build());
