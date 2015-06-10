@@ -79,14 +79,14 @@ public class PicassoTest {
         false, false);
   }
 
-  @Test public void submitWithNullTargetInvokesDispatcher() throws Exception {
+  @Test public void submitWithNullTargetInvokesDispatcher() {
     Action action = mockAction(URI_KEY_1, URI_1);
     picasso.enqueueAndSubmit(action);
     assertThat(picasso.targetToAction).isEmpty();
     verify(dispatcher).dispatchSubmit(action);
   }
 
-  @Test public void submitWithTargetInvokesDispatcher() throws Exception {
+  @Test public void submitWithTargetInvokesDispatcher() {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     assertThat(picasso.targetToAction).isEmpty();
     picasso.enqueueAndSubmit(action);
@@ -94,7 +94,7 @@ public class PicassoTest {
     verify(dispatcher).dispatchSubmit(action);
   }
 
-  @Test public void submitWithSameActionDoesNotCancel() throws Exception {
+  @Test public void submitWithSameActionDoesNotCancel() {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     picasso.enqueueAndSubmit(action);
     verify(dispatcher).dispatchSubmit(action);
@@ -104,20 +104,20 @@ public class PicassoTest {
     verify(dispatcher, never()).dispatchCancel(action);
   }
 
-  @Test public void quickMemoryCheckReturnsBitmapIfInCache() throws Exception {
+  @Test public void quickMemoryCheckReturnsBitmapIfInCache() {
     when(cache.get(URI_KEY_1)).thenReturn(bitmap);
     Bitmap cached = picasso.quickMemoryCacheCheck(URI_KEY_1);
     assertThat(cached).isEqualTo(bitmap);
     verify(stats).dispatchCacheHit();
   }
 
-  @Test public void quickMemoryCheckReturnsNullIfNotInCache() throws Exception {
+  @Test public void quickMemoryCheckReturnsNullIfNotInCache() {
     Bitmap cached = picasso.quickMemoryCacheCheck(URI_KEY_1);
     assertThat(cached).isNull();
     verify(stats).dispatchCacheMiss();
   }
 
-  @Test public void completeInvokesSuccessOnAllSuccessfulRequests() throws Exception {
+  @Test public void completeInvokesSuccessOnAllSuccessfulRequests() {
     Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     Action action2 = mockCanceledAction();
     BitmapHunter hunter = mockHunter(URI_KEY_1, bitmap, false);
@@ -128,7 +128,7 @@ public class PicassoTest {
     verify(action2, never()).complete(eq(bitmap), any(Picasso.LoadedFrom.class));
   }
 
-  @Test public void completeInvokesErrorOnAllFailedRequests() throws Exception {
+  @Test public void completeInvokesErrorOnAllFailedRequests() {
     Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     Action action2 = mockCanceledAction();
     Exception exception = mock(Exception.class);
@@ -141,7 +141,7 @@ public class PicassoTest {
     verify(listener).onImageLoadFailed(picasso, URI_1, exception);
   }
 
-  @Test public void completeDeliversToSingle() throws Exception {
+  @Test public void completeDeliversToSingle() {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = mockHunter(URI_KEY_1, bitmap, false);
     when(hunter.getLoadedFrom()).thenReturn(MEMORY);
@@ -151,7 +151,7 @@ public class PicassoTest {
     verify(action).complete(bitmap, MEMORY);
   }
 
-  @Test public void completeWithReplayDoesNotRemove() throws Exception {
+  @Test public void completeWithReplayDoesNotRemove() {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     when(action.willReplay()).thenReturn(true);
     BitmapHunter hunter = mockHunter(URI_KEY_1, bitmap, false);
@@ -164,7 +164,7 @@ public class PicassoTest {
     verify(action).complete(bitmap, MEMORY);
   }
 
-  @Test public void completeDeliversToSingleAndMultiple() throws Exception {
+  @Test public void completeDeliversToSingleAndMultiple() {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     Action action2 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = mockHunter(URI_KEY_1, bitmap, false);
@@ -176,7 +176,7 @@ public class PicassoTest {
     verify(action2).complete(bitmap, MEMORY);
   }
 
-  @Test public void completeSkipsIfNoActions() throws Exception {
+  @Test public void completeSkipsIfNoActions() {
     BitmapHunter hunter = mockHunter(URI_KEY_1, bitmap, false);
     picasso.complete(hunter);
     verify(hunter).getAction();
@@ -184,7 +184,7 @@ public class PicassoTest {
     verifyNoMoreInteractions(hunter);
   }
 
-  @Test public void loadedFromIsNullThrows() throws Exception {
+  @Test public void loadedFromIsNullThrows() {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = mockHunter(URI_KEY_1, bitmap, false);
     when(hunter.getAction()).thenReturn(action);
@@ -208,14 +208,14 @@ public class PicassoTest {
     verify(action).complete(bitmap, MEMORY);
   }
 
-  @Test public void cancelExistingRequestWithUnknownTarget() throws Exception {
+  @Test public void cancelExistingRequestWithUnknownTarget() {
     ImageView target = mockImageViewTarget();
     Action action = mockAction(URI_KEY_1, URI_1, target);
     picasso.cancelRequest(target);
     verifyZeroInteractions(action, dispatcher);
   }
 
-  @Test public void cancelExistingRequestWithImageViewTarget() throws Exception {
+  @Test public void cancelExistingRequestWithImageViewTarget() {
     ImageView target = mockImageViewTarget();
     Action action = mockAction(URI_KEY_1, URI_1, target);
     picasso.enqueueAndSubmit(action);
@@ -226,7 +226,7 @@ public class PicassoTest {
     verify(dispatcher).dispatchCancel(action);
   }
 
-  @Test public void cancelExistingRequestWithDeferredImageViewTarget() throws Exception {
+  @Test public void cancelExistingRequestWithDeferredImageViewTarget() {
     ImageView target = mockImageViewTarget();
     DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator();
     picasso.targetToDeferredRequestCreator.put(target, deferredRequestCreator);
@@ -235,7 +235,7 @@ public class PicassoTest {
     assertThat(picasso.targetToDeferredRequestCreator).isEmpty();
   }
 
-  @Test public void cancelExistingRequestWithTarget() throws Exception {
+  @Test public void cancelExistingRequestWithTarget() {
     Target target = mockTarget();
     Action action = mockAction(URI_KEY_1, URI_1, target);
     picasso.enqueueAndSubmit(action);
@@ -246,7 +246,7 @@ public class PicassoTest {
     verify(dispatcher).dispatchCancel(action);
   }
 
-  @Test public void cancelExistingRequestWithRemoteViewTarget() throws Exception {
+  @Test public void cancelExistingRequestWithRemoteViewTarget() {
     int layoutId = 0;
     int viewId = 1;
     RemoteViews remoteViews = new RemoteViews("packageName", layoutId);
@@ -260,7 +260,34 @@ public class PicassoTest {
     verify(dispatcher).dispatchCancel(action);
   }
 
-  @Test public void deferAddsToMap() throws Exception {
+  @Test public void cancelNullTagThrows() {
+    try {
+      picasso.cancelTag(null);
+      fail("Canceling with a null tag should throw exception.");
+    } catch (IllegalArgumentException expected) {
+    }
+  }
+
+  @Test public void cancelTagAllActions() {
+    ImageView target = mockImageViewTarget();
+    Action action = mockAction(URI_KEY_1, URI_1, target, "TAG");
+    picasso.enqueueAndSubmit(action);
+    assertThat(picasso.targetToAction).hasSize(1);
+    picasso.cancelTag("TAG");
+    assertThat(picasso.targetToAction).isEmpty();
+    verify(action).cancel();
+  }
+
+  @Test public void cancelTagAllDeferredRequests() {
+    ImageView target = mockImageViewTarget();
+    DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator();
+    when(deferredRequestCreator.getTag()).thenReturn("TAG");
+    picasso.defer(target, deferredRequestCreator);
+    picasso.cancelTag("TAG");
+    verify(deferredRequestCreator).cancel();
+  }
+
+  @Test public void deferAddsToMap() {
     ImageView target = mockImageViewTarget();
     DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator();
     assertThat(picasso.targetToDeferredRequestCreator).isEmpty();
@@ -268,7 +295,7 @@ public class PicassoTest {
     assertThat(picasso.targetToDeferredRequestCreator).hasSize(1);
   }
 
-  @Test public void shutdown() throws Exception {
+  @Test public void shutdown() {
     picasso.shutdown();
     verify(cache).clear();
     verify(stats).shutdown();
@@ -276,7 +303,7 @@ public class PicassoTest {
     assertThat(picasso.shutdown).isTrue();
   }
 
-  @Test public void shutdownTwice() throws Exception {
+  @Test public void shutdownTwice() {
     picasso.shutdown();
     picasso.shutdown();
     verify(cache).clear();
@@ -285,7 +312,7 @@ public class PicassoTest {
     assertThat(picasso.shutdown).isTrue();
   }
 
-  @Test public void shutdownDisallowedOnSingletonInstance() throws Exception {
+  @Test public void shutdownDisallowedOnSingletonInstance() {
     Picasso.singleton = null;
     try {
       Picasso picasso = Picasso.with(Robolectric.application);
@@ -295,7 +322,7 @@ public class PicassoTest {
     }
   }
 
-  @Test public void shutdownDisallowedOnCustomSingletonInstance() throws Exception {
+  @Test public void shutdownDisallowedOnCustomSingletonInstance() {
     Picasso.singleton = null;
     try {
       Picasso picasso = new Picasso.Builder(Robolectric.application).build();
@@ -353,7 +380,7 @@ public class PicassoTest {
     assertThat(Picasso.with(Robolectric.application)).isSameAs(picasso);
   }
 
-  @Test public void shutdownClearsDeferredRequests() throws Exception {
+  @Test public void shutdownClearsDeferredRequests() {
     DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator();
     ImageView target = mockImageViewTarget();
     picasso.targetToDeferredRequestCreator.put(target, deferredRequestCreator);
@@ -362,7 +389,7 @@ public class PicassoTest {
     assertThat(picasso.targetToDeferredRequestCreator).isEmpty();
   }
 
-  @Test public void whenTransformRequestReturnsNullThrows() throws Exception {
+  @Test public void whenTransformRequestReturnsNullThrows() {
     try {
       when(transformer.transformRequest(any(Request.class))).thenReturn(null);
       picasso.transformRequest(new Request.Builder(URI_1).build());
@@ -371,18 +398,18 @@ public class PicassoTest {
     }
   }
 
-  @Test public void getSnapshotInvokesStats() throws Exception {
+  @Test public void getSnapshotInvokesStats() {
     picasso.getSnapshot();
     verify(stats).createSnapshot();
   }
 
-  @Test public void enableIndicators() throws Exception {
+  @Test public void enableIndicators() {
     assertThat(picasso.areIndicatorsEnabled()).isFalse();
     picasso.setIndicatorsEnabled(true);
     assertThat(picasso.areIndicatorsEnabled()).isTrue();
   }
 
-  @Test public void loadThrowsWithInvalidInput() throws Exception {
+  @Test public void loadThrowsWithInvalidInput() {
     try {
       picasso.load("");
       fail("Empty URL should throw exception.");
@@ -400,7 +427,7 @@ public class PicassoTest {
     }
   }
 
-  @Test public void builderInvalidListener() throws Exception {
+  @Test public void builderInvalidListener() {
     try {
       new Picasso.Builder(context).listener(null);
       fail("Null listener should throw exception.");
@@ -413,7 +440,7 @@ public class PicassoTest {
     }
   }
 
-  @Test public void builderInvalidLoader() throws Exception {
+  @Test public void builderInvalidLoader() {
     try {
       new Picasso.Builder(context).downloader(null);
       fail("Null Downloader should throw exception.");
@@ -426,7 +453,7 @@ public class PicassoTest {
     }
   }
 
-  @Test public void builderInvalidExecutor() throws Exception {
+  @Test public void builderInvalidExecutor() {
     try {
       new Picasso.Builder(context).executor(null);
       fail("Null Executor should throw exception.");
@@ -440,7 +467,7 @@ public class PicassoTest {
     }
   }
 
-  @Test public void builderInvalidCache() throws Exception {
+  @Test public void builderInvalidCache() {
     try {
       new Picasso.Builder(context).memoryCache(null);
       fail("Null Cache should throw exception.");
@@ -453,7 +480,7 @@ public class PicassoTest {
     }
   }
 
-  @Test public void builderInvalidRequestTransformer() throws Exception {
+  @Test public void builderInvalidRequestTransformer() {
     try {
       new Picasso.Builder(context).requestTransformer(null);
       fail("Null request transformer should throw exception.");
@@ -466,7 +493,7 @@ public class PicassoTest {
     }
   }
 
-  @Test public void builderInvalidRequestHandler() throws Exception {
+  @Test public void builderInvalidRequestHandler() {
     try {
       new Picasso.Builder(context).addRequestHandler(null);
       fail("Null request handler should throw exception.");
@@ -480,18 +507,18 @@ public class PicassoTest {
     }
   }
 
-  @Test public void builderWithoutRequestHandler() throws Exception {
+  @Test public void builderWithoutRequestHandler() {
     Picasso picasso = new Picasso.Builder(Robolectric.application).build();
     assertThat(picasso.getRequestHandlers()).isNotEmpty().doesNotContain(requestHandler);
   }
 
-  @Test public void builderWithRequestHandler() throws Exception {
+  @Test public void builderWithRequestHandler() {
     Picasso picasso = new Picasso.Builder(Robolectric.application)
         .addRequestHandler(requestHandler).build();
     assertThat(picasso.getRequestHandlers()).isNotNull().isNotEmpty().contains(requestHandler);
   }
 
-  @Test public void builderInvalidContext() throws Exception {
+  @Test public void builderInvalidContext() {
     try {
       new Picasso.Builder(null);
       fail("Null context should throw exception.");
@@ -499,7 +526,7 @@ public class PicassoTest {
     }
   }
 
-  @Test public void builderWithDebugIndicators() throws Exception {
+  @Test public void builderWithDebugIndicators() {
     Picasso picasso = new Picasso.Builder(Robolectric.application).indicatorsEnabled(true).build();
     assertThat(picasso.areIndicatorsEnabled()).isTrue();
   }
