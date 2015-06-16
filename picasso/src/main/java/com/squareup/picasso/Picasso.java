@@ -477,6 +477,10 @@ public class Picasso {
   }
 
   void defer(ImageView view, DeferredRequestCreator request) {
+    // If there is already a deferred request, cancel it.
+    if (targetToDeferredRequestCreator.containsKey(view)) {
+      cancelExistingRequest(view);
+    }
     targetToDeferredRequestCreator.put(view, request);
   }
 
