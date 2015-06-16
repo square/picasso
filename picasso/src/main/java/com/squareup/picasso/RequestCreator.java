@@ -23,10 +23,12 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
+
+import org.jetbrains.annotations.TestOnly;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.jetbrains.annotations.TestOnly;
 
 import static com.squareup.picasso.BitmapHunter.forRequest;
 import static com.squareup.picasso.MemoryPolicy.NO_CACHE;
@@ -238,6 +240,16 @@ public class RequestCreator {
    */
   public RequestCreator centerCrop() {
     data.centerCrop();
+    return this;
+  }
+
+  /**
+   * This adds an alternative treatment for a center crop when the image to be cropped has a portrait
+   * aspect ratio and would have vertical space trimmed. Instead of trimming equally at the top and
+   * bottom, instead 2x the amount is trimmed at the bottom to preserve the top part of the picture.
+   */
+  public RequestCreator topCropPortrait() {
+    data.topCropPortrait();
     return this;
   }
 
