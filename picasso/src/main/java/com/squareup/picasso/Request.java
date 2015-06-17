@@ -65,6 +65,14 @@ public final class Request {
    */
   public final boolean centerCrop;
   /**
+   * This is an alternate cropping treatment applied if the image is a portrait image and would be
+   * center cropped vertically. Instead of cutting an equal amount off the top and bottom, the top
+   * of the image would be preserved and only excess along the bottom would be hidden.
+   * <p>
+   * This is ignored if {@link #centerCrop} is not also selected.
+   */
+  public final boolean topCropPortrait;
+  /**
    * True if the final image should use the 'centerInside' scale technique.
    * <p>
    * This is mutually exclusive with {@link #centerCrop}.
@@ -87,7 +95,7 @@ public final class Request {
   public final Priority priority;
 
   private Request(Uri uri, int resourceId, String stableKey, List<Transformation> transformations,
-      int targetWidth, int targetHeight, boolean centerCrop, boolean centerInside,
+      int targetWidth, int targetHeight, boolean centerCrop, boolean topCropPortrait, boolean centerInside,
       boolean onlyScaleDown, float rotationDegrees, float rotationPivotX, float rotationPivotY,
       boolean hasRotationPivot, boolean purgeable, Bitmap.Config config, Priority priority) {
     this.uri = uri;
@@ -101,6 +109,7 @@ public final class Request {
     this.targetWidth = targetWidth;
     this.targetHeight = targetHeight;
     this.centerCrop = centerCrop;
+    this.topCropPortrait = topCropPortrait;
     this.centerInside = centerInside;
     this.onlyScaleDown = onlyScaleDown;
     this.rotationDegrees = rotationDegrees;
@@ -132,6 +141,9 @@ public final class Request {
     }
     if (centerCrop) {
       sb.append(" centerCrop");
+    }
+    if (topCropPortrait) {
+      sb.append(" topCropPortrait");
     }
     if (centerInside) {
       sb.append(" centerInside");
@@ -201,6 +213,7 @@ public final class Request {
     private int targetWidth;
     private int targetHeight;
     private boolean centerCrop;
+    private boolean topCropPortrait;
     private boolean centerInside;
     private boolean onlyScaleDown;
     private float rotationDegrees;
@@ -235,6 +248,7 @@ public final class Request {
       targetWidth = request.targetWidth;
       targetHeight = request.targetHeight;
       centerCrop = request.centerCrop;
+      topCropPortrait = request.topCropPortrait;
       centerInside = request.centerInside;
       rotationDegrees = request.rotationDegrees;
       rotationPivotX = request.rotationPivotX;
@@ -322,6 +336,7 @@ public final class Request {
       targetWidth = 0;
       targetHeight = 0;
       centerCrop = false;
+      topCropPortrait = false;
       centerInside = false;
       return this;
     }
@@ -342,6 +357,22 @@ public final class Request {
     /** Clear the center crop transformation flag, if set. */
     public Builder clearCenterCrop() {
       centerCrop = false;
+      return this;
+    }
+
+    /**
+     * This adds an alternative treatment for a center crop when the image to be cropped has a portrait
+     * aspect ratio and would have vertical space trimmed. Instead of trimming equally at the top and
+     * bottom, instead 2x the amount is trimmed at the bottom to preserve the top part of the picture.
+     */
+    public Builder topCropPortrait() {
+      topCropPortrait = true;
+      return this;
+    }
+
+    /** Clear the top crop portrait transformation flag, if set. */
+    public Builder clearTopCropPortrait() {
+      topCropPortrait = false;
       return this;
     }
 
@@ -479,7 +510,7 @@ public final class Request {
         priority = Priority.NORMAL;
       }
       return new Request(uri, resourceId, stableKey, transformations, targetWidth, targetHeight,
-          centerCrop, centerInside, onlyScaleDown, rotationDegrees, rotationPivotX, rotationPivotY,
+          centerCrop, topCropPortrait, centerInside, onlyScaleDown, rotationDegrees, rotationPivotX, rotationPivotY,
           hasRotationPivot, purgeable, config, priority);
     }
   }

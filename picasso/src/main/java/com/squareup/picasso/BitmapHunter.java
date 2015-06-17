@@ -577,13 +577,16 @@ class BitmapHunter implements Runnable {
         float heightRatio =
             targetHeight != 0 ? targetHeight / (float) inHeight : targetWidth / (float) inWidth;
         float scaleX, scaleY;
+        boolean shouldTopCrop = data.topCropPortrait && (inHeight > inWidth);
         if (widthRatio > heightRatio) {
+          // Need to scale and some vertical portions will not be visible
           int newSize = (int) Math.ceil(inHeight * (heightRatio / widthRatio));
-          drawY = (inHeight - newSize) / 2;
+          drawY = shouldTopCrop ? 0 : (inHeight - newSize) / 2;
           drawHeight = newSize;
           scaleX = widthRatio;
           scaleY = targetHeight / (float) drawHeight;
         } else if (widthRatio < heightRatio) {
+          // Need to scale and some horizontal portions will not be visible
           int newSize = (int) Math.ceil(inWidth * (widthRatio / heightRatio));
           drawX = (inWidth - newSize) / 2;
           drawWidth = newSize;
