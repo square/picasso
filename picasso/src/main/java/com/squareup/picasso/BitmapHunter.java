@@ -19,6 +19,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.NetworkInfo;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -35,7 +36,6 @@ import static android.media.ExifInterface.ORIENTATION_FLIP_HORIZONTAL;
 import static android.media.ExifInterface.ORIENTATION_FLIP_VERTICAL;
 import static android.media.ExifInterface.ORIENTATION_TRANSPOSE;
 import static android.media.ExifInterface.ORIENTATION_TRANSVERSE;
-
 import static com.squareup.picasso.MemoryPolicy.shouldReadFromMemoryCache;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Picasso.Priority;
@@ -240,7 +240,7 @@ class BitmapHunter implements Runnable {
           if (data.needsMatrixTransform() || exifOrientation != 0) {
             bitmap = transformResult(data, bitmap, exifOrientation);
             if (picasso.loggingEnabled) {
-              log(OWNER_HUNTER, VERB_TRANSFORMED, data.logId());
+              log(OWNER_HUNTER, VERB_TRANSFORMED, data.logId(), "orientation: " + exifOrientation);
             }
           }
           if (data.hasCustomTransformations()) {
