@@ -16,6 +16,7 @@
 package com.squareup.picasso;
 
 import android.graphics.Bitmap;
+import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
 import org.junit.Test;
@@ -36,6 +37,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -144,5 +146,18 @@ public class ImageViewActionTest {
             callback, false);
     request.cancel();
     assertThat(request.callback).isNull();
+  }
+
+  @Test
+  public void stopPlaceholderAnimationOnError() throws Exception {
+    Picasso picasso = mock(Picasso.class);
+    AnimationDrawable placeholder = mock(AnimationDrawable.class);
+    ImageView target = mockImageViewTarget();
+    when(target.getDrawable()).thenReturn(placeholder);
+    ImageViewAction request =
+        new ImageViewAction(picasso, target, null, 0, 0, 0, null, URI_KEY_1, null,
+            null, false);
+    request.error();
+    verify(placeholder).stop();
   }
 }
