@@ -227,12 +227,26 @@ public class Picasso {
    */
   public void cancelTag(Object tag) {
     checkMain();
+    if (tag == null) {
+      throw new IllegalArgumentException("Cannot cancel requests with null tag.");
+    }
+
     List<Action> actions = new ArrayList<Action>(targetToAction.values());
     //noinspection ForLoopReplaceableByForEach
     for (int i = 0, n = actions.size(); i < n; i++) {
       Action action = actions.get(i);
-      if (action.getTag().equals(tag)) {
+      if (tag.equals(action.getTag())) {
         cancelExistingRequest(action.getTarget());
+      }
+    }
+
+    List<DeferredRequestCreator> deferredRequestCreators =
+        new ArrayList<DeferredRequestCreator>(targetToDeferredRequestCreator.values());
+    //noinspection ForLoopReplaceableByForEach
+    for (int i = 0, n = deferredRequestCreators.size(); i < n; i++) {
+      DeferredRequestCreator deferredRequestCreator = deferredRequestCreators.get(i);
+      if (tag.equals(deferredRequestCreator.getTag())) {
+        deferredRequestCreator.cancel();
       }
     }
   }
@@ -463,6 +477,10 @@ public class Picasso {
   }
 
   void defer(ImageView view, DeferredRequestCreator request) {
+    // If there is already a deferred request, cancel it.
+    if (targetToDeferredRequestCreator.containsKey(view)) {
+      cancelExistingRequest(view);
+    }
     targetToDeferredRequestCreator.put(view, request);
   }
 

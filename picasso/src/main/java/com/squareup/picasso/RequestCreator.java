@@ -206,6 +206,17 @@ public class RequestCreator {
     return this;
   }
 
+  /** Internal use only. Used by {@link DeferredRequestCreator}. */
+  RequestCreator clearTag() {
+    this.tag = null;
+    return this;
+  }
+
+  /** Internal use only. Used by {@link DeferredRequestCreator}. */
+  Object getTag() {
+    return tag;
+  }
+
   /** Resize the image to the specified dimension size. */
   public RequestCreator resizeDimen(int targetWidthResId, int targetHeightResId) {
     Resources resources = picasso.context.getResources();

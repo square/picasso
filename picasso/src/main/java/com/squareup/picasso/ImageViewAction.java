@@ -17,6 +17,7 @@ package com.squareup.picasso;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
 
@@ -56,6 +57,10 @@ class ImageViewAction extends Action<ImageView> {
     ImageView target = this.target.get();
     if (target == null) {
       return;
+    }
+    Drawable placeholder = target.getDrawable();
+    if (placeholder instanceof AnimationDrawable) {
+      ((AnimationDrawable) placeholder).stop();
     }
     if (errorResId != 0) {
       target.setImageResource(errorResId);
