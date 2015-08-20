@@ -634,7 +634,7 @@ class BitmapHunter implements Runnable {
 
   private static boolean shouldResize(boolean onlyScaleDown, int inWidth, int inHeight,
       int targetWidth, int targetHeight) {
-    return !onlyScaleDown || inWidth > targetWidth || inHeight > targetHeight;
+    return !onlyScaleDown || inWidth > targetWidth && targetWidth != 0 || inHeight > targetHeight && targetHeight != 0;
   }
 
   static int getExifRotation(int orientation) {
