@@ -853,7 +853,8 @@ public class Picasso {
         downloader = Utils.createDefaultDownloader(context);
       }
       if (cache == null) {
-        cache = new LruCache(context);
+        //cache = new TwoQCacheImpl<String,Bitmap>(Utils.calculateMemoryCacheSize(context));
+        cache = new TwoQCacheImpl(Utils.calculateMemoryCacheSize(context));
       }
       if (service == null) {
         service = new PicassoExecutorService();
