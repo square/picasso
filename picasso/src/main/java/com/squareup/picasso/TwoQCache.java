@@ -424,7 +424,7 @@ public class TwoQCache<K, V> {
   /**
    * Clear the cache, calling {@link #entryRemoved} on each removed entry.
    */
-  public synchronized final void evictAll() {
+  public final synchronized void evictAll() {
     Iterator<K> it = map.keySet().iterator();
     while (it.hasNext()) {
       K key = it.next();
@@ -444,7 +444,7 @@ public class TwoQCache<K, V> {
    * of entries in the cache. For all other caches, this returns the sum of
    * the sizes of the entries in this cache.
    */
-  public synchronized final int size() {
+  public final synchronized int size() {
     return sizeIn + sizeOut + sizeHot;
   }
 
@@ -453,7 +453,7 @@ public class TwoQCache<K, V> {
    * number of entries in the cache. For all other caches, this returns the
    * maximum sum of the sizes of the entries in this cache.
    */
-  public synchronized final int maxSize() {
+  public final synchronized int maxSize() {
     return maxSizeIn + maxSizeOut + maxSizeHot;
   }
 
@@ -461,7 +461,7 @@ public class TwoQCache<K, V> {
    * Returns the number of times {@link #get} returned a value that was
    * already present in the cache.
    */
-  public synchronized final int hitCount() {
+  public final synchronized int hitCount() {
     return hitCount;
   }
 
@@ -469,28 +469,28 @@ public class TwoQCache<K, V> {
    * Returns the number of times {@link #get} returned null or required a new
    * value to be created.
    */
-  public synchronized final int missCount() {
+  public final synchronized int missCount() {
     return missCount;
   }
 
   /**
    * Returns the number of times {@link #create(Object)} returned a value.
    */
-  public synchronized final int createCount() {
+  public final synchronized int createCount() {
     return createCount;
   }
 
   /**
    * Returns the number of times {@link #put} was called.
    */
-  public synchronized final int putCount() {
+  public final synchronized int putCount() {
     return putCount;
   }
 
   /**
    * Returns the number of values that have been evicted.
    */
-  public synchronized final int evictionCount() {
+  public final synchronized int evictionCount() {
     return evictionCount;
   }
 
@@ -498,16 +498,15 @@ public class TwoQCache<K, V> {
    * Returns a copy of the current contents of the cache, ordered from least
    * recently accessed to most recently accessed.
    */
-  public synchronized final Map<K, V> snapshot() {
+  public final synchronized Map<K, V> snapshot() {
     return new HashMap<K, V>(map);
   }
 
   @Override
-  public synchronized final String toString() {
+  public final synchronized String toString() {
     int accesses = hitCount + missCount;
     int hitPercent = accesses != 0 ? (100 * hitCount / accesses) : 0;
-    return String.format("Cache[size=%d,maxSize=%d,hits=%d,misses=%d,hitRate=%d%%," +
-                    "]",
+    return String.format("Cache[size=%d,maxSize=%d,hits=%d,misses=%d,hitRate=%d%%,]",
             size(), maxSize(), hitCount, missCount, hitPercent)
             + "\n map:" + map.toString();
   }

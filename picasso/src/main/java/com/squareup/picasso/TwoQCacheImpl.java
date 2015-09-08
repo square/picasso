@@ -1,11 +1,8 @@
 package com.squareup.picasso;
 
 import android.graphics.Bitmap;
-
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-
 import static com.squareup.picasso.Utils.KEY_SEPARATOR;
 
 /**
