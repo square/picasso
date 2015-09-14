@@ -83,13 +83,16 @@ public final class Request {
   public final boolean purgeable;
   /** Target image config for decoding. */
   public final Bitmap.Config config;
+  /** True if image should be decoded with inDither. */
+  public final boolean dither;
   /** The priority of this request. */
   public final Priority priority;
 
   private Request(Uri uri, int resourceId, String stableKey, List<Transformation> transformations,
       int targetWidth, int targetHeight, boolean centerCrop, boolean centerInside,
       boolean onlyScaleDown, float rotationDegrees, float rotationPivotX, float rotationPivotY,
-      boolean hasRotationPivot, boolean purgeable, Bitmap.Config config, Priority priority) {
+      boolean hasRotationPivot, boolean purgeable, Bitmap.Config config, boolean dither,
+      Priority priority) {
     this.uri = uri;
     this.resourceId = resourceId;
     this.stableKey = stableKey;
@@ -109,6 +112,7 @@ public final class Request {
     this.hasRotationPivot = hasRotationPivot;
     this.purgeable = purgeable;
     this.config = config;
+    this.dither = dither;
     this.priority = priority;
   }
 
@@ -148,6 +152,9 @@ public final class Request {
     }
     if (config != null) {
       builder.append(' ').append(config);
+    }
+    if (dither) {
+      builder.append(" dither");
     }
     builder.append('}');
 
@@ -210,6 +217,7 @@ public final class Request {
     private boolean purgeable;
     private List<Transformation> transformations;
     private Bitmap.Config config;
+    private boolean dither;
     private Priority priority;
 
     /** Start building a request using the specified {@link Uri}. */
@@ -246,6 +254,7 @@ public final class Request {
         transformations = new ArrayList<Transformation>(request.transformations);
       }
       config = request.config;
+      dither = request.dither;
       priority = request.priority;
     }
 
@@ -416,6 +425,12 @@ public final class Request {
       return this;
     }
 
+    /** Attempt to dither the decoded image. */
+    public Builder dither() {
+      this.dither = true;
+      return this;
+    }
+
     /** Execute request using the specified priority. */
     public Builder priority(Priority priority) {
       if (priority == null) {
@@ -480,7 +495,7 @@ public final class Request {
       }
       return new Request(uri, resourceId, stableKey, transformations, targetWidth, targetHeight,
           centerCrop, centerInside, onlyScaleDown, rotationDegrees, rotationPivotX, rotationPivotY,
-          hasRotationPivot, purgeable, config, priority);
+          hasRotationPivot, purgeable, config, dither, priority);
     }
   }
 }

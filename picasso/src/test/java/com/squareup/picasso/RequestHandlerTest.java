@@ -102,6 +102,7 @@ public class RequestHandlerTest {
     assertThat(resizeOptions.inJustDecodeBounds).isTrue();
     assertThat(resizeOptions.inPurgeable).isFalse();
     assertThat(resizeOptions.inInputShareable).isFalse();
+    assertThat(resizeOptions.inDither).isFalse();
   }
 
   @Test public void inPurgeableIfInPurgeable() {
@@ -111,6 +112,7 @@ public class RequestHandlerTest {
     assertThat(options.inPurgeable).isTrue();
     assertThat(options.inInputShareable).isTrue();
     assertThat(options.inJustDecodeBounds).isFalse();
+    assertThat(options.inDither).isFalse();
   }
 
   @Test public void createWithConfigAndNotInJustDecodeBoundsOrInPurgeable() {
@@ -121,5 +123,17 @@ public class RequestHandlerTest {
     assertThat(configOptions.inJustDecodeBounds).isFalse();
     assertThat(configOptions.inPurgeable).isFalse();
     assertThat(configOptions.inInputShareable).isFalse();
+    assertThat(configOptions.inDither).isFalse();
+  }
+
+  @Test public void inDitherIfDither() {
+    // Dither must return bitmap options with inDither = true
+    final Request config = new Request.Builder(URI_1).dither().build();
+    final BitmapFactory.Options ditherOptions = createBitmapOptions(config);
+    assertThat(ditherOptions).isNotNull();
+    assertThat(ditherOptions.inJustDecodeBounds).isFalse();
+    assertThat(ditherOptions.inPurgeable).isFalse();
+    assertThat(ditherOptions.inInputShareable).isFalse();
+    assertThat(ditherOptions.inDither).isTrue();
   }
 }

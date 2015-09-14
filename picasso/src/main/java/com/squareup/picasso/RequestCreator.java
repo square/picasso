@@ -282,6 +282,12 @@ public class RequestCreator {
     return this;
   }
 
+  /** Attempt to dither the decoded image. */
+  public RequestCreator dither() {
+    data.dither();
+    return this;
+  }
+
   /**
    * Sets the stable key for this request to be used instead of the URI or resource ID when
    * caching. Two requests with the same value are considered to be for the same resource.

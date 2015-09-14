@@ -867,4 +867,16 @@ public class RequestCreatorTest {
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getRequest().purgeable).isTrue();
   }
+
+  @Test public void noDither() {
+    new RequestCreator(picasso, URI_1, 0).into(mockImageViewTarget());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getRequest().dither).isFalse();
+  }
+
+  @Test public void dither() {
+    new RequestCreator(picasso, URI_1, 0).dither().into(mockImageViewTarget());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getRequest().dither).isTrue();
+  }
 }
