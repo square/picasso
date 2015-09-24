@@ -420,7 +420,8 @@ class BitmapHunter implements Runnable {
 
     // Index-based loop to avoid allocating an iterator.
     //noinspection ForLoopReplaceableByForEach
-    for (int i = 0, count = requestHandlers.size(); i < count; i++) {
+    int size = requestHandlers.size()
+    for (int i = 0, count = size; i < count; i++) {
       RequestHandler requestHandler = requestHandlers.get(i);
       if (requestHandler.canHandleRequest(request)) {
         return new BitmapHunter(picasso, dispatcher, cache, stats, action, requestHandler);
@@ -431,7 +432,8 @@ class BitmapHunter implements Runnable {
   }
 
   static Bitmap applyCustomTransformations(List<Transformation> transformations, Bitmap result) {
-    for (int i = 0, count = transformations.size(); i < count; i++) {
+	int size = transformations.size();
+    for (int i = 0, count = size; i < count; i++) {
       final Transformation transformation = transformations.get(i);
       Bitmap newResult;
       try {

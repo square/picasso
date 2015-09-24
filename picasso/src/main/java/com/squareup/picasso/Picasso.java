@@ -112,7 +112,8 @@ public class Picasso {
         case HUNTER_BATCH_COMPLETE: {
           @SuppressWarnings("unchecked") List<BitmapHunter> batch = (List<BitmapHunter>) msg.obj;
           //noinspection ForLoopReplaceableByForEach
-          for (int i = 0, n = batch.size(); i < n; i++) {
+          int size = batch.size();
+          for (int i = 0, n = size; i < n; i++) {
             BitmapHunter hunter = batch.get(i);
             hunter.picasso.complete(hunter);
           }
@@ -243,7 +244,8 @@ public class Picasso {
     List<DeferredRequestCreator> deferredRequestCreators =
         new ArrayList<DeferredRequestCreator>(targetToDeferredRequestCreator.values());
     //noinspection ForLoopReplaceableByForEach
-    for (int i = 0, n = deferredRequestCreators.size(); i < n; i++) {
+    int size = deferredRequestCreators.size();
+    for (int i = 0, n = size; i < n; i++) {
       DeferredRequestCreator deferredRequestCreator = deferredRequestCreators.get(i);
       if (tag.equals(deferredRequestCreator.getTag())) {
         deferredRequestCreator.cancel();
@@ -530,7 +532,8 @@ public class Picasso {
 
     if (hasMultiple) {
       //noinspection ForLoopReplaceableByForEach
-      for (int i = 0, n = joined.size(); i < n; i++) {
+      int size = joined.size();
+      for (int i = 0, n = size; i < n; i++) {
         Action join = joined.get(i);
         deliverAction(result, from, join);
       }
