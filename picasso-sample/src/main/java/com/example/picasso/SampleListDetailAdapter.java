@@ -37,6 +37,7 @@ final class SampleListDetailAdapter extends BaseAdapter {
     String url = getItem(position);
 
     holder.text.setText(url);
+    Picasso.with(context).recycle(holder.image);
 
     // Trigger the download of the URL asynchronously into the image view.
     Picasso.with(context)

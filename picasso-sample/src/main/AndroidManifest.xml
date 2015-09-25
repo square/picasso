@@ -22,7 +22,8 @@
   <application
       android:label="@string/app_name"
       android:icon="@drawable/icon"
-      android:theme="@style/Theme.PicassoSample">
+      android:theme="@style/Theme.PicassoSample"
+      android:name="com.example.picasso.SampleApplication">
 
     <activity
         android:label="@string/app_name"

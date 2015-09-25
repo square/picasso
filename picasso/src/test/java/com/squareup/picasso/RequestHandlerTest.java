@@ -91,7 +91,7 @@ public class RequestHandlerTest {
     // No resize must return no bitmap options
     final Request noResize = new Request.Builder(URI_1).build();
     final BitmapFactory.Options noResizeOptions = createBitmapOptions(noResize);
-    assertThat(noResizeOptions).isNull();
+    assertThat(noResizeOptions.inMutable).isTrue();
   }
 
   @Test public void inJustDecodeBoundsIfResizing() {

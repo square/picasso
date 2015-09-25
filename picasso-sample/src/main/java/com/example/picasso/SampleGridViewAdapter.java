@@ -38,6 +38,7 @@ final class SampleGridViewAdapter extends BaseAdapter {
     // Get the image URL for the current position.
     String url = getItem(position);
 
+    Picasso.with(context).recycle(view);
     // Trigger the download of the URL asynchronously into the image view.
     Picasso.with(context) //
         .load(url) //

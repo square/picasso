@@ -24,10 +24,11 @@ import java.util.Map;
 import static com.squareup.picasso.Utils.KEY_SEPARATOR;
 
 /** A memory cache which uses a least-recently used eviction policy. */
-public class LruCache implements Cache {
+public class LruCache implements Cache, BitmapPoolAware {
   final LinkedHashMap<String, Bitmap> map;
   private final int maxSize;
 
+  private BitmapPool bitmapPool;
   private int size;
   private int putCount;
   private int evictionCount;
@@ -75,9 +76,15 @@ public class LruCache implements Cache {
     synchronized (this) {
       putCount++;
       size += Utils.getBitmapBytes(bitmap);
+        if (bitmapPool != null) {
+            bitmapPool.incrementRefCount(bitmap);
+        }
       previous = map.put(key, bitmap);
       if (previous != null) {
         size -= Utils.getBitmapBytes(previous);
+          if (bitmapPool != null) {
+              bitmapPool.decrementRefCount(previous);
+          }
       }
     }
 
@@ -103,6 +110,9 @@ public class LruCache implements Cache {
         value = toEvict.getValue();
         map.remove(key);
         size -= Utils.getBitmapBytes(value);
+          if (bitmapPool != null) {
+              bitmapPool.decrementRefCount(value);
+          }
         evictionCount++;
       }
     }
@@ -136,6 +146,9 @@ public class LruCache implements Cache {
       if (newlineIndex == uriLength && key.substring(0, newlineIndex).equals(uri)) {
         i.remove();
         size -= Utils.getBitmapBytes(value);
+        if (bitmapPool != null) {
+          bitmapPool.decrementRefCount(value);
+        }
         sizeChanged = true;
       }
     }
@@ -162,5 +175,10 @@ public class LruCache implements Cache {
   /** Returns the number of values that have been evicted. */
   public final synchronized int evictionCount() {
     return evictionCount;
+  }
+
+  @Override
+  public void setBitmapPool(BitmapPool bitmapPool) {
+    this.bitmapPool = bitmapPool;
   }
 }

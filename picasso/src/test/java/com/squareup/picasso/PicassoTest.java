@@ -67,6 +67,7 @@ public class PicassoTest {
   @Mock Picasso.RequestTransformer transformer;
   @Mock RequestHandler requestHandler;
   @Mock Cache cache;
+  @Mock BitmapPool bitmapPool;
   @Mock Listener listener;
   @Mock Stats stats;
 
@@ -75,7 +76,7 @@ public class PicassoTest {
 
   @Before public void setUp() {
     initMocks(this);
-    picasso = new Picasso(context, dispatcher, cache, listener, transformer, null, stats, ARGB_8888,
+    picasso = new Picasso(context, dispatcher, cache, bitmapPool, listener, transformer, null, stats, ARGB_8888,
         false, false);
   }
 
