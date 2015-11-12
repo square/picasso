@@ -21,13 +21,16 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
 import android.os.StatFs;
 import android.provider.Settings;
+import android.provider.MediaStore;
 import android.util.Log;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -60,6 +63,10 @@ final class Utils {
   private static final int MAX_DISK_CACHE_SIZE = 50 * 1024 * 1024; // 50MB
   static final int THREAD_LEAK_CLEANING_MS = 1000;
   static final char KEY_SEPARATOR = '\n';
+
+  static final String[] CONTENT_ORIENTATION = new String[] {
+          MediaStore.Images.ImageColumns.ORIENTATION
+  };
 
   /** Thread confined to main thread for key creation. */
   static final StringBuilder MAIN_THREAD_KEY_BUILDER = new StringBuilder();
@@ -412,6 +419,24 @@ final class Utils {
     @Override public void run() {
       Process.setThreadPriority(THREAD_PRIORITY_BACKGROUND);
       super.run();
+    }
+  }
+
+  static int getExifOrientation(ContentResolver contentResolver, Uri uri) {
+    Cursor cursor = null;
+    try {
+      cursor = contentResolver.query(uri, CONTENT_ORIENTATION, null, null, null);
+      if (cursor == null || !cursor.moveToFirst()) {
+        return 0;
+      }
+      return cursor.getInt(0);
+    } catch (RuntimeException ignored) {
+      // If the orientation column doesn't exist, assume no rotation.
+      return 0;
+    } finally {
+      if (cursor != null) {
+        cursor.close();
+      }
     }
   }
 
