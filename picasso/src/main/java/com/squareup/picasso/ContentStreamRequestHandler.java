@@ -37,7 +37,7 @@ class ContentStreamRequestHandler extends RequestHandler {
 
   @Override public Result load(Request request, int networkPolicy) throws IOException {
     int exifOrientation = 0;
-    if(Utils.GOOGLE_PHOTOS_APP_URI_AUTHORITY.equals(request.uri.getAuthority())) {
+    if (Utils.PHOTOS_APP_URI_AUTHORITY.equals(request.uri.getAuthority())) {
       exifOrientation = Utils.getExifOrientation(context.getContentResolver(), request.uri);
     }
     return new Result(null, getInputStream(request), DISK, exifOrientation);
