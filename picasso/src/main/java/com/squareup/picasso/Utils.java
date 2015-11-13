@@ -66,7 +66,7 @@ final class Utils {
   static final String GOOGLE_PHOTOS_APP_URI_AUTHORITY = "com.google.android.apps.photos.contentprovider";
 
   static final String[] CONTENT_ORIENTATION = new String[] {
-          MediaStore.Images.ImageColumns.ORIENTATION
+      MediaStore.Images.ImageColumns.ORIENTATION
   };
 
   /** Thread confined to main thread for key creation. */
