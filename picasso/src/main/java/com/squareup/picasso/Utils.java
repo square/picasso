@@ -63,6 +63,7 @@ final class Utils {
   private static final int MAX_DISK_CACHE_SIZE = 50 * 1024 * 1024; // 50MB
   static final int THREAD_LEAK_CLEANING_MS = 1000;
   static final char KEY_SEPARATOR = '\n';
+  static final String GOOGLE_PHOTOS_APP_URI_AUTHORITY = "com.google.android.apps.photos.contentprovider";
 
   static final String[] CONTENT_ORIENTATION = new String[] {
           MediaStore.Images.ImageColumns.ORIENTATION
