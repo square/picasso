@@ -56,10 +56,14 @@ class ImageViewAction extends Action<ImageView> {
     if (target == null) {
       return;
     }
-    if (errorResId != 0) {
-      target.setImageResource(errorResId);
-    } else if (errorDrawable != null) {
-      target.setImageDrawable(errorDrawable);
+    try {
+      if (errorResId != 0) {
+        target.setImageResource(errorResId);
+      } else if (errorDrawable != null) {
+        target.setImageDrawable(errorDrawable);
+      }
+    } catch (OutOfMemoryError e) {
+      // Not much we can do here, better to swallow the OOM than to crash
     }
 
     if (callback != null) {
