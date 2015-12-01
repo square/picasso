@@ -52,6 +52,38 @@ public class MarkableInputStreamTest {
     }
   }
 
+  @Test
+  public void bufferGrowthTest() throws Exception {
+    MarkableInputStream in = new MarkableInputStream(new ByteArrayInputStream(
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ".getBytes(Charset.forName("US-ASCII"))));
+
+    assertThat(readBytes(in, 3)).isEqualTo("ABC");
+
+    long posA = in.savePosition(3);// DEFGHIJ
+
+    in.startGrowingBuffer();
+
+    // Read past our buffer
+    assertThat(readBytes(in, 5)).isEqualTo("DEFGH");
+
+    // Assure that buffer was valid and no exception is thrown for
+    // Rewinding past our stated buffer size
+    in.reset(posA);
+    assertThat(readBytes(in, 5)).isEqualTo("DEFGH");
+
+    in.stopGrowingBuffer();
+
+    // Read past the buffer
+    assertThat(readBytes(in, 3)).isEqualTo("IJK");
+
+    // Buffer should be invalid now
+    try {
+      in.reset(posA);
+      fail();
+    } catch (IOException expected) {
+    }
+  }
+
   private String readBytes(InputStream in, int count) throws IOException {
     byte[] result = new byte[count];
     assertThat(in.read(result)).isEqualTo(count);

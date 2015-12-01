@@ -122,7 +122,7 @@ class BitmapHunter implements Runnable {
     MarkableInputStream markStream = new MarkableInputStream(stream);
     stream = markStream;
 
-    long mark = markStream.savePosition(65536); // TODO fix this crap.
+    long mark = markStream.savePosition(2048); // TODO fix this crap.
 
     final BitmapFactory.Options options = RequestHandler.createBitmapOptions(request);
     final boolean calculateSize = RequestHandler.requiresInSampleSize(options);
@@ -143,7 +143,9 @@ class BitmapHunter implements Runnable {
       return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
     } else {
       if (calculateSize) {
+        markStream.startGrowingBuffer();
         BitmapFactory.decodeStream(stream, null, options);
+        markStream.stopGrowingBuffer();
         RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight, options,
             request);
 
