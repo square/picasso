@@ -299,6 +299,9 @@ final class Utils {
       // https://github.com/square/picasso/issues/761, some devices might crash here, assume that
       // airplane mode is off.
       return false;
+    } catch (SecurityException e) {
+      //https://github.com/square/picasso/issues/1197
+      return false;
     }
   }
 
