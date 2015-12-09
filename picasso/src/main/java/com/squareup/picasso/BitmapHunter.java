@@ -19,6 +19,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.NetworkInfo;
+import android.view.Gravity;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -570,7 +572,7 @@ class BitmapHunter implements Runnable {
         }
       }
 
-      if (data.centerCrop) {
+      if (data.crop) {
         // Keep aspect ratio if one dimension is set to 0
         float widthRatio =
             targetWidth != 0 ? targetWidth / (float) inWidth : targetHeight / (float) inHeight;
@@ -579,13 +581,17 @@ class BitmapHunter implements Runnable {
         float scaleX, scaleY;
         if (widthRatio > heightRatio) {
           int newSize = (int) Math.ceil(inHeight * (heightRatio / widthRatio));
-          drawY = (inHeight - newSize) / 2;
+          drawY = (data.cropGravity & Gravity.TOP) == Gravity.TOP ? 0
+              : (data.cropGravity & Gravity.BOTTOM) == Gravity.BOTTOM ? inHeight - newSize
+                  : (inHeight - newSize) / 2;
           drawHeight = newSize;
           scaleX = widthRatio;
           scaleY = targetHeight / (float) drawHeight;
         } else if (widthRatio < heightRatio) {
           int newSize = (int) Math.ceil(inWidth * (widthRatio / heightRatio));
-          drawX = (inWidth - newSize) / 2;
+          drawX = (data.cropGravity & Gravity.LEFT) == Gravity.LEFT ? 0
+              : (data.cropGravity & Gravity.RIGHT) == Gravity.RIGHT ? inWidth - newSize
+                  : (inWidth - newSize) / 2;
           drawWidth = newSize;
           scaleX = targetWidth / (float) drawWidth;
           scaleY = heightRatio;

@@ -242,6 +242,16 @@ public class RequestCreator {
   }
 
   /**
+   * Crops an image inside of the bounds specified by {@link #resize(int, int)} rather than
+   * distorting the aspect ratio. This cropping technique scales the image so that it fills the
+   * requested bounds and then crops the extra using gravity to position image.
+   */
+  public RequestCreator crop(int gravity) {
+    data.crop(gravity);
+    return this;
+  }
+
+  /**
    * Centers an image inside of the bounds specified by {@link #resize(int, int)}. This scales
    * the image so that both dimensions are equal to or less than the requested bounds.
    */

@@ -17,6 +17,7 @@ package com.squareup.picasso;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.view.Gravity;
 import com.squareup.picasso.Picasso.Priority;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,15 +60,16 @@ public final class Request {
   /** Target image height for resizing. */
   public final int targetHeight;
   /**
-   * True if the final image should use the 'centerCrop' scale technique.
+   * True if the final image should use the 'crop' scale technique.
    * <p>
    * This is mutually exclusive with {@link #centerInside}.
    */
-  public final boolean centerCrop;
+  public final boolean crop;
+  public final int cropGravity;
   /**
    * True if the final image should use the 'centerInside' scale technique.
    * <p>
-   * This is mutually exclusive with {@link #centerCrop}.
+   * This is mutually exclusive with {@link #crop}.
    */
   public final boolean centerInside;
   public final boolean onlyScaleDown;
@@ -87,7 +89,7 @@ public final class Request {
   public final Priority priority;
 
   private Request(Uri uri, int resourceId, String stableKey, List<Transformation> transformations,
-      int targetWidth, int targetHeight, boolean centerCrop, boolean centerInside,
+      int targetWidth, int targetHeight, boolean crop, int cropGravity, boolean centerInside,
       boolean onlyScaleDown, float rotationDegrees, float rotationPivotX, float rotationPivotY,
       boolean hasRotationPivot, boolean purgeable, Bitmap.Config config, Priority priority) {
     this.uri = uri;
@@ -100,7 +102,8 @@ public final class Request {
     }
     this.targetWidth = targetWidth;
     this.targetHeight = targetHeight;
-    this.centerCrop = centerCrop;
+    this.crop = crop;
+    this.cropGravity = cropGravity;
     this.centerInside = centerInside;
     this.onlyScaleDown = onlyScaleDown;
     this.rotationDegrees = rotationDegrees;
@@ -130,8 +133,8 @@ public final class Request {
     if (targetWidth > 0) {
       builder.append(" resize(").append(targetWidth).append(',').append(targetHeight).append(')');
     }
-    if (centerCrop) {
-      builder.append(" centerCrop");
+    if (crop) {
+      builder.append(" crop(").append(cropGravity).append(')');
     }
     if (centerInside) {
       builder.append(" centerInside");
@@ -200,7 +203,8 @@ public final class Request {
     private String stableKey;
     private int targetWidth;
     private int targetHeight;
-    private boolean centerCrop;
+    private boolean crop;
+    private int cropGravity;
     private boolean centerInside;
     private boolean onlyScaleDown;
     private float rotationDegrees;
@@ -234,7 +238,8 @@ public final class Request {
       stableKey = request.stableKey;
       targetWidth = request.targetWidth;
       targetHeight = request.targetHeight;
-      centerCrop = request.centerCrop;
+      crop = request.crop;
+      cropGravity = request.cropGravity;
       centerInside = request.centerInside;
       rotationDegrees = request.rotationDegrees;
       rotationPivotX = request.rotationPivotX;
@@ -321,7 +326,8 @@ public final class Request {
     public Builder clearResize() {
       targetWidth = 0;
       targetHeight = 0;
-      centerCrop = false;
+      crop = false;
+      cropGravity = Gravity.NO_GRAVITY;
       centerInside = false;
       return this;
     }
@@ -332,16 +338,32 @@ public final class Request {
      * requested bounds and then crops the extra.
      */
     public Builder centerCrop() {
+      return crop(Gravity.CENTER);
+    }
+
+    /**
+     * Crops an image inside of the bounds specified by {@link #resize(int, int)} rather than
+     * distorting the aspect ratio. This cropping technique scales the image so that it fills the
+     * requested bounds and then crops the extra using gravity to position image.
+     */
+    public Builder crop(int cropGravity) {
       if (centerInside) {
-        throw new IllegalStateException("Center crop can not be used after calling centerInside");
+        throw new IllegalStateException("Crop can not be used after calling centerInside");
       }
-      centerCrop = true;
+      this.crop = true;
+      this.cropGravity = cropGravity;
       return this;
     }
 
     /** Clear the center crop transformation flag, if set. */
     public Builder clearCenterCrop() {
-      centerCrop = false;
+      return clearCrop();
+    }
+
+    /** Clear the crop transformation flag, if set. */
+    public Builder clearCrop() {
+      crop = false;
+      cropGravity = Gravity.NO_GRAVITY;
       return this;
     }
 
@@ -350,8 +372,8 @@ public final class Request {
      * the image so that both dimensions are equal to or less than the requested bounds.
      */
     public Builder centerInside() {
-      if (centerCrop) {
-        throw new IllegalStateException("Center inside can not be used after calling centerCrop");
+      if (crop) {
+        throw new IllegalStateException("Center inside can not be used after calling crop");
       }
       centerInside = true;
       return this;
@@ -464,10 +486,10 @@ public final class Request {
 
     /** Create the immutable {@link Request} object. */
     public Request build() {
-      if (centerInside && centerCrop) {
+      if (centerInside && crop) {
         throw new IllegalStateException("Center crop and center inside can not be used together.");
       }
-      if (centerCrop && (targetWidth == 0 && targetHeight == 0)) {
+      if (crop && (targetWidth == 0 && targetHeight == 0)) {
         throw new IllegalStateException(
             "Center crop requires calling resize with positive width and height.");
       }
@@ -479,8 +501,8 @@ public final class Request {
         priority = Priority.NORMAL;
       }
       return new Request(uri, resourceId, stableKey, transformations, targetWidth, targetHeight,
-          centerCrop, centerInside, onlyScaleDown, rotationDegrees, rotationPivotX, rotationPivotY,
-          hasRotationPivot, purgeable, config, priority);
+          crop, cropGravity, centerInside, onlyScaleDown, rotationDegrees, rotationPivotX,
+          rotationPivotY, hasRotationPivot, purgeable, config, priority);
     }
   }
 }

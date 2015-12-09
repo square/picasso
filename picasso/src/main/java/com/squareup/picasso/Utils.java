@@ -201,8 +201,8 @@ final class Utils {
       builder.append("resize:").append(data.targetWidth).append('x').append(data.targetHeight);
       builder.append(KEY_SEPARATOR);
     }
-    if (data.centerCrop) {
-      builder.append("centerCrop").append(KEY_SEPARATOR);
+    if (data.crop) {
+      builder.append("crop:").append(data.cropGravity).append(KEY_SEPARATOR);
     } else if (data.centerInside) {
       builder.append("centerInside").append(KEY_SEPARATOR);
     }

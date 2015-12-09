@@ -56,7 +56,7 @@ public class PollexorRequestTransformerTest {
     Request output = transformer.transformRequest(input);
     assertThat(output).isNotSameAs(input);
     assertThat(output.hasSize()).isFalse();
-    assertThat(output.centerCrop).isFalse();
+    assertThat(output.crop).isFalse();
 
     String expected = Thumbor.create(HOST).buildImage(IMAGE).resize(50, 50).toUrl();
     assertThat(output.uri.toString()).isEqualTo(expected);
