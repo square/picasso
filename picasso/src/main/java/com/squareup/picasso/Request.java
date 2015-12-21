@@ -17,6 +17,7 @@ package com.squareup.picasso;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.view.Gravity;
 import com.squareup.picasso.Picasso.Priority;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +65,8 @@ public final class Request {
    * This is mutually exclusive with {@link #centerInside}.
    */
   public final boolean centerCrop;
+  /** If centerCrop is set, controls alignment of centered image */
+  public final int centerCropGravity;
   /**
    * True if the final image should use the 'centerInside' scale technique.
    * <p>
@@ -88,8 +91,9 @@ public final class Request {
 
   private Request(Uri uri, int resourceId, String stableKey, List<Transformation> transformations,
       int targetWidth, int targetHeight, boolean centerCrop, boolean centerInside,
-      boolean onlyScaleDown, float rotationDegrees, float rotationPivotX, float rotationPivotY,
-      boolean hasRotationPivot, boolean purgeable, Bitmap.Config config, Priority priority) {
+      int centerCropGravity, boolean onlyScaleDown, float rotationDegrees,
+      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot,
+      boolean purgeable, Bitmap.Config config, Priority priority) {
     this.uri = uri;
     this.resourceId = resourceId;
     this.stableKey = stableKey;
@@ -102,6 +106,7 @@ public final class Request {
     this.targetHeight = targetHeight;
     this.centerCrop = centerCrop;
     this.centerInside = centerInside;
+    this.centerCropGravity = centerCropGravity;
     this.onlyScaleDown = onlyScaleDown;
     this.rotationDegrees = rotationDegrees;
     this.rotationPivotX = rotationPivotX;
@@ -201,6 +206,7 @@ public final class Request {
     private int targetWidth;
     private int targetHeight;
     private boolean centerCrop;
+    private int centerCropGravity;
     private boolean centerInside;
     private boolean onlyScaleDown;
     private float rotationDegrees;
@@ -236,6 +242,7 @@ public final class Request {
       targetHeight = request.targetHeight;
       centerCrop = request.centerCrop;
       centerInside = request.centerInside;
+      centerCropGravity = request.centerCropGravity;
       rotationDegrees = request.rotationDegrees;
       rotationPivotX = request.rotationPivotX;
       rotationPivotY = request.rotationPivotY;
@@ -332,16 +339,27 @@ public final class Request {
      * requested bounds and then crops the extra.
      */
     public Builder centerCrop() {
+      return centerCrop(Gravity.CENTER);
+    }
+
+    /**
+     * Crops an image inside of the bounds specified by {@link #resize(int, int)} rather than
+     * distorting the aspect ratio. This cropping technique scales the image so that it fills the
+     * requested bounds, aligns it using provided gravity parameter and then crops the extra.
+     */
+    public Builder centerCrop(int alignGravity) {
       if (centerInside) {
         throw new IllegalStateException("Center crop can not be used after calling centerInside");
       }
       centerCrop = true;
+      centerCropGravity = alignGravity;
       return this;
     }
 
     /** Clear the center crop transformation flag, if set. */
     public Builder clearCenterCrop() {
       centerCrop = false;
+      centerCropGravity = Gravity.CENTER;
       return this;
     }
 
@@ -479,8 +497,8 @@ public final class Request {
         priority = Priority.NORMAL;
       }
       return new Request(uri, resourceId, stableKey, transformations, targetWidth, targetHeight,
-          centerCrop, centerInside, onlyScaleDown, rotationDegrees, rotationPivotX, rotationPivotY,
-          hasRotationPivot, purgeable, config, priority);
+          centerCrop, centerInside, centerCropGravity, onlyScaleDown, rotationDegrees,
+          rotationPivotX, rotationPivotY, hasRotationPivot, purgeable, config, priority);
     }
   }
 }

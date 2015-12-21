@@ -21,6 +21,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.view.Gravity;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 import java.io.IOException;
@@ -237,7 +238,12 @@ public class RequestCreator {
    * requested bounds and then crops the extra.
    */
   public RequestCreator centerCrop() {
-    data.centerCrop();
+    data.centerCrop(Gravity.CENTER);
+    return this;
+  }
+
+  public RequestCreator centerCrop(int alignGravity) {
+    data.centerCrop(alignGravity);
     return this;
   }
 
