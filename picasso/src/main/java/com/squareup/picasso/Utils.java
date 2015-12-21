@@ -206,7 +206,7 @@ final class Utils {
       builder.append(KEY_SEPARATOR);
     }
     if (data.centerCrop) {
-      builder.append("centerCrop").append(KEY_SEPARATOR);
+      builder.append("centerCrop:").append(data.centerCropGravity).append(KEY_SEPARATOR);
     } else if (data.centerInside) {
       builder.append("centerInside").append(KEY_SEPARATOR);
     }
