@@ -35,15 +35,15 @@ import static org.junit.Assert.fail;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-public class OkHttpDownloaderTest {
+public class OkHttp3DownloaderTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   @Rule public MockWebServer server = new MockWebServer();
 
-  private OkHttpDownloader downloader;
+  private OkHttp3Downloader downloader;
   private Uri uri;
 
   @Before public void setUp() throws Exception {
-    downloader = new OkHttpDownloader(temporaryFolder.getRoot());
+    downloader = new OkHttp3Downloader(temporaryFolder.getRoot());
     uri = Uri.parse(server.url("/").toString());
   }
 
