@@ -247,11 +247,16 @@ final class Utils {
 
   static Downloader createDefaultDownloader(Context context) {
     if (SDK_INT >= GINGERBREAD) {
-        try {
-          Class.forName("com.squareup.okhttp.OkHttpClient");
-          return OkHttpLoaderCreator.create(context);
-        } catch (ClassNotFoundException ignored) {
-        }
+      try {
+        Class.forName("okhttp3.OkHttpClient");
+        return OkHttp3DownloaderCreator.create(context);
+      } catch (ClassNotFoundException ignored) {
+      }
+      try {
+        Class.forName("com.squareup.okhttp.OkHttpClient");
+        return OkHttpDownloaderCreator.create(context);
+      } catch (ClassNotFoundException ignored) {
+      }
     }
     return new UrlConnectionDownloader(context);
   }
@@ -425,9 +430,15 @@ final class Utils {
     }
   }
 
-  private static class OkHttpLoaderCreator {
+  private static class OkHttpDownloaderCreator {
     static Downloader create(Context context) {
       return new OkHttpDownloader(context);
+    }
+  }
+
+  private static class OkHttp3DownloaderCreator {
+    static Downloader create(Context context) {
+      return new OkHttp3Downloader(context);
     }
   }
 }
