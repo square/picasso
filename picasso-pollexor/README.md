@@ -19,7 +19,7 @@ Pass the transformer when creating a `Picasso` instance.
 
 ```java
 Picasso p = new Picasso.Builder(context)
-    .setRequestTransformer(transformer)
+    .requestTransformer(transformer)
     .build();
 ```
 
