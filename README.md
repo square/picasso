@@ -25,6 +25,12 @@ or Maven:
 </dependency>
 ```
 
+or for SBT:
+
+```scala
+libraryDependencies += "com.squareup.picasso" % "picasso" % "2.5.2"
+```
+
 Snapshots of the development version are available in [Sonatype's `snapshots` repository][snap].
 
 
