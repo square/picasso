@@ -156,6 +156,7 @@ public class Picasso {
   final ReferenceQueue<Object> referenceQueue;
   final Bitmap.Config defaultBitmapConfig;
 
+  boolean noFade;
   boolean indicatorsEnabled;
   volatile boolean loggingEnabled;
 
@@ -385,6 +386,16 @@ public class Picasso {
       throw new IllegalArgumentException("file == null");
     }
     invalidate(Uri.fromFile(file));
+  }
+
+  /** Enable brief fade in of images loaded from the disk cache or network. */
+  public void enableFade() {
+    noFade = false;
+  }
+
+  /** Disable brief fade in of images loaded from the disk cache or network. */
+  public void disableFade() {
+    noFade = true;
   }
 
   /**
