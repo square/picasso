@@ -20,6 +20,7 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.net.Uri;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -153,6 +154,14 @@ public class BitmapHunterTest {
         new IOException());
     hunter.run();
     verify(dispatcher).dispatchRetry(hunter);
+  }
+
+  @Test public void runWithFileNotFoundExceptionDispatchFailed() {
+    Action action = mockAction(URI_KEY_1, URI_1);
+    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, null,
+        new FileNotFoundException());
+    hunter.run();
+    verify(dispatcher).dispatchFailed(hunter);
   }
 
   @Test public void huntDecodesWhenNotInCache() throws Exception {

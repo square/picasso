@@ -19,6 +19,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.NetworkInfo;
+
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -181,6 +183,9 @@ class BitmapHunter implements Runnable {
     } catch (NetworkRequestHandler.ContentLengthException e) {
       exception = e;
       dispatcher.dispatchRetry(this);
+    } catch (FileNotFoundException e) {
+      exception = e;
+      dispatcher.dispatchFailed(this);
     } catch (IOException e) {
       exception = e;
       dispatcher.dispatchRetry(this);
