@@ -138,7 +138,7 @@ class BitmapHunter implements Runnable {
       if (request.optionsTransformer != null) {
           options = request.optionsTransformer.transformOptions(bytes, options);
       }
-      if (calculateSize) {
+      if (options != null && calculateSize) {
         if (options.outWidth == -0 || options.outHeight == 0) {
             BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
         }
@@ -151,14 +151,14 @@ class BitmapHunter implements Runnable {
           options = request.optionsTransformer.transformOptions(stream, options);
       }
       if (calculateSize) {
-        if (options.outWidth == 0 || options.outHeight == 0) {
+        if (options != null && options.outWidth == 0 || options.outHeight == 0) {
             BitmapFactory.decodeStream(stream, null, options);
         }
         RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight, options,
             request);
 
-        markStream.reset(mark);
       }
+      markStream.reset(mark);
       Bitmap bitmap = BitmapFactory.decodeStream(stream, null, options);
       if (bitmap == null) {
         // Treat null as an IO exception, we will eventually retry.
