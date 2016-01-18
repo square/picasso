@@ -17,6 +17,7 @@ package com.squareup.picasso;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ExifInterface;
 import android.net.NetworkInfo;
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,11 +56,13 @@ public abstract class RequestHandler {
     private final int exifOrientation;
 
     public Result(Bitmap bitmap, Picasso.LoadedFrom loadedFrom) {
-      this(checkNotNull(bitmap, "bitmap == null"), null, loadedFrom, 0);
+      this(checkNotNull(bitmap, "bitmap == null"), null, loadedFrom,
+              ExifInterface.ORIENTATION_UNDEFINED);
     }
 
     public Result(InputStream stream, Picasso.LoadedFrom loadedFrom) {
-      this(null, checkNotNull(stream, "stream == null"), loadedFrom, 0);
+      this(null, checkNotNull(stream, "stream == null"), loadedFrom,
+              ExifInterface.ORIENTATION_UNDEFINED);
     }
 
     Result(Bitmap bitmap, InputStream stream, Picasso.LoadedFrom loadedFrom, int exifOrientation) {
@@ -93,6 +96,8 @@ public abstract class RequestHandler {
     /**
      * Returns the resulting EXIF orientation generated from a {@link #load(Request, int)} call.
      * This is only accessible to built-in RequestHandlers.
+     *
+     * @return MUST return one from values defined as android.media.ExifInterface.ORIENTATION_*
      */
     int getExifOrientation() {
       return exifOrientation;
