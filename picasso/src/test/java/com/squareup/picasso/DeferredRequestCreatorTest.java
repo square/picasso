@@ -145,7 +145,7 @@ public class DeferredRequestCreatorTest {
     verify(target.getViewTreeObserver(), never()).removeOnPreDrawListener(request);
   }
 
-  @Test public void onGlobalLayoutSubmitsRequestAndCleansUp() {
+  @Test public void preDrawSubmitsRequestAndCleansUp() {
     Picasso picasso = mock(Picasso.class);
     when(picasso.transformRequest(any(Request.class))).thenAnswer(TRANSFORM_REQUEST_ANSWER);
 
@@ -169,7 +169,7 @@ public class DeferredRequestCreatorTest {
     assertThat(value.getRequest().targetHeight).isEqualTo(100);
   }
 
-  @Test public void multipleLayoutsOnlyTriggersOnce() {
+  @Test public void multiplePreDrawsOnlyTriggersOnce() {
     Picasso picasso = mock(Picasso.class);
     when(picasso.transformRequest(any(Request.class))).thenAnswer(TRANSFORM_REQUEST_ANSWER);
 
