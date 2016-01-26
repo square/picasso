@@ -65,6 +65,15 @@ public class DeferredRequestCreatorTest {
     verify(observer).removeOnPreDrawListener(request);
   }
 
+  @Test public void cancelTwiceOnlyPerformsOnce() {
+    ImageView target = mockFitImageViewTarget(true);
+    ViewTreeObserver observer = target.getViewTreeObserver();
+    DeferredRequestCreator request = new DeferredRequestCreator(mock(RequestCreator.class), target);
+    request.cancel();
+    request.cancel();
+    verify(observer).removeOnPreDrawListener(request);
+  }
+
   @Test public void cancelClearsCallback() {
     ImageView target = mockFitImageViewTarget(true);
     Callback callback = mockCallback();
@@ -158,5 +167,25 @@ public class DeferredRequestCreatorTest {
     assertThat(value).isInstanceOf(ImageViewAction.class);
     assertThat(value.getRequest().targetWidth).isEqualTo(100);
     assertThat(value.getRequest().targetHeight).isEqualTo(100);
+  }
+
+  @Test public void multipleLayoutsOnlyTriggersOnce() {
+    Picasso picasso = mock(Picasso.class);
+    when(picasso.transformRequest(any(Request.class))).thenAnswer(TRANSFORM_REQUEST_ANSWER);
+
+    RequestCreator creator = new RequestCreator(picasso, URI_1, 0);
+
+    ImageView target = mockFitImageViewTarget(true);
+    when(target.getWidth()).thenReturn(100);
+    when(target.getHeight()).thenReturn(100);
+
+    ViewTreeObserver observer = target.getViewTreeObserver();
+
+    DeferredRequestCreator request = new DeferredRequestCreator(creator, target);
+    request.onPreDraw();
+    request.onPreDraw();
+
+    verify(observer).removeOnPreDrawListener(request);
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
   }
 }
