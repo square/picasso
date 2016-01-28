@@ -34,6 +34,8 @@ final class MarkableInputStream extends InputStream {
   private long limit;
   private long defaultMark = -1;
 
+  private boolean shouldGrowLimit = false;
+
   public MarkableInputStream(InputStream in) {
     this(in, DEFAULT_BUFFER_SIZE);
   }
@@ -54,7 +56,8 @@ final class MarkableInputStream extends InputStream {
    * Returns an opaque token representing the current position in the stream.
    * Call {@link #reset(long)} to return to this position in the stream later.
    * It is an error to call {@link #reset(long)} after consuming more than
-   * {@code readLimit} bytes from this stream.
+   * {@code readLimit} bytes from this stream, unless startGrowingBuffer is
+   * called first.
    */
   public long savePosition(int readLimit) {
     long offsetLimit = offset + readLimit;
@@ -62,6 +65,24 @@ final class MarkableInputStream extends InputStream {
       setLimit(offsetLimit);
     }
     return offset;
+  }
+
+  /**
+   * Tell this input stream to automatically allocate enough buffer to rewind
+   * to {@code reset} as data is read from it. Useful if an acceptable {@code limit}
+   * cannot be determined at compile time. Calling this method without
+   * calling the stopGrowingBuffer() is not recommended.
+   */
+  public void startGrowingBuffer() {
+    shouldGrowLimit = true;
+  }
+
+  /**
+   * Tell this input stream that you no longer wish to automatically grow the
+   * underlying buffer.
+   */
+  public void stopGrowingBuffer() {
+    shouldGrowLimit = false;
   }
 
   /**
@@ -85,6 +106,19 @@ final class MarkableInputStream extends InputStream {
       this.limit = limit;
     } catch (IOException e) {
       throw new IllegalStateException("Unable to mark: " + e);
+    }
+  }
+
+  /**
+   * Call with projected maximum read bytes to ensure the underlying stream
+   * will still be able to backtrack to {@code reset} after a read or skip
+   * operation happens
+   */
+  private void ensureBuffer(long bytes) {
+    long newLimit = offset + bytes;
+    if (newLimit > this.limit) {
+      long bestLimit = Math.max(newLimit, this.reset + ((this.limit - this.reset) * 2));
+      setLimit(bestLimit);
     }
   }
 
@@ -119,6 +153,10 @@ final class MarkableInputStream extends InputStream {
   }
 
   @Override public int read() throws IOException {
+
+    if (shouldGrowLimit)
+      ensureBuffer(1);
+
     int result = in.read();
     if (result != -1) {
       offset++;
@@ -127,6 +165,10 @@ final class MarkableInputStream extends InputStream {
   }
 
   @Override public int read(byte[] buffer) throws IOException {
+
+    if (shouldGrowLimit)
+      ensureBuffer(buffer.length);
+
     int count = in.read(buffer);
     if (count != -1) {
       offset += count;
@@ -135,6 +177,9 @@ final class MarkableInputStream extends InputStream {
   }
 
   @Override public int read(byte[] buffer, int offset, int length) throws IOException {
+    if (shouldGrowLimit)
+      ensureBuffer(length);
+
     int count = in.read(buffer, offset, length);
     if (count != -1) {
       this.offset += count;
@@ -143,6 +188,9 @@ final class MarkableInputStream extends InputStream {
   }
 
   @Override public long skip(long byteCount) throws IOException {
+    if (shouldGrowLimit)
+      ensureBuffer(byteCount);
+
     long skipped = in.skip(byteCount);
     offset += skipped;
     return skipped;
