@@ -1,0 +1,36 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+
+    defaultConfig {
+        applicationId "com.example.picasso"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0.0"
+    }
+
+    packagingOptions {
+        exclude 'LICENSE.txt'
+        exclude 'APK LICENSE.txt'
+    }
+
+    compileOptions {
+        sourceCompatibility rootProject.ext.sourceCompatibilityVersion
+        targetCompatibility rootProject.ext.targetCompatibilityVersion
+    }
+
+    lintOptions {
+        // https://github.com/square/okhttp/issues/896
+        ignore 'InvalidPackage'
+    }
+}
+
+description = 'Picasso Sample'
+dependencies {
+    compile project(':picasso')
+    compile deps.supportv4
+    compile deps.okhttp
+}

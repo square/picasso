@@ -275,7 +275,7 @@ public class RequestCreatorTest {
   @Test
   public void intoImageViewWithQuickMemoryCacheCheckDoesNotSubmit() {
     Picasso picasso =
-        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null,
+        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null, null,
             IDENTITY, null, mock(Stats.class), ARGB_8888, false, false));
     doReturn(bitmap).when(picasso).quickMemoryCacheCheck(URI_KEY_1);
     ImageView target = mockImageViewTarget();
@@ -290,7 +290,7 @@ public class RequestCreatorTest {
   @Test
   public void intoImageViewSetsPlaceholderDrawable() {
     Picasso picasso =
-        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null,
+        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null, null,
             IDENTITY, null, mock(Stats.class), ARGB_8888, false, false));
     ImageView target = mockImageViewTarget();
     Drawable placeHolderDrawable = mock(Drawable.class);
@@ -303,8 +303,8 @@ public class RequestCreatorTest {
   @Test
   public void intoImageViewNoPlaceholderDrawable() {
     Picasso picasso =
-        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null, IDENTITY,
-            null, mock(Stats.class), ARGB_8888, false, false));
+        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null, null,
+            IDENTITY, null, mock(Stats.class), ARGB_8888, false, false));
     ImageView target = mockImageViewTarget();
     new RequestCreator(picasso, URI_1, 0).noPlaceholder().into(target);
     verifyNoMoreInteractions(target);
@@ -315,8 +315,8 @@ public class RequestCreatorTest {
   @Test
   public void intoImageViewSetsPlaceholderWithResourceId() {
     Picasso picasso =
-        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null, IDENTITY,
-            null, mock(Stats.class), ARGB_8888, false, false));
+        spy(new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null, null,
+            IDENTITY, null, mock(Stats.class), ARGB_8888, false, false));
     ImageView target = mockImageViewTarget();
     new RequestCreator(picasso, URI_1, 0).placeholder(android.R.drawable.picture_frame).into(target);
     ArgumentCaptor<Drawable> drawableCaptor = ArgumentCaptor.forClass(Drawable.class);

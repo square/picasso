@@ -29,3 +29,10 @@ gen-external-apklibs
 tmp
 
 .DS_Store
+
+# Gradle
+.gradle
+jniLibs
+build
+local.properties
+reports

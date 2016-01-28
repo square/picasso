@@ -19,6 +19,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.NetworkInfo;
+import android.util.Log;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -28,18 +31,18 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static android.media.ExifInterface.ORIENTATION_FLIP_HORIZONTAL;
+import static android.media.ExifInterface.ORIENTATION_FLIP_VERTICAL;
 import static android.media.ExifInterface.ORIENTATION_ROTATE_180;
 import static android.media.ExifInterface.ORIENTATION_ROTATE_270;
 import static android.media.ExifInterface.ORIENTATION_ROTATE_90;
-import static android.media.ExifInterface.ORIENTATION_FLIP_HORIZONTAL;
-import static android.media.ExifInterface.ORIENTATION_FLIP_VERTICAL;
 import static android.media.ExifInterface.ORIENTATION_TRANSPOSE;
 import static android.media.ExifInterface.ORIENTATION_TRANSVERSE;
-
 import static com.squareup.picasso.MemoryPolicy.shouldReadFromMemoryCache;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Picasso.Priority;
 import static com.squareup.picasso.Picasso.Priority.LOW;
+import static com.squareup.picasso.Picasso.TAG;
 import static com.squareup.picasso.Utils.OWNER_HUNTER;
 import static com.squareup.picasso.Utils.VERB_DECODED;
 import static com.squareup.picasso.Utils.VERB_EXECUTING;
@@ -79,6 +82,7 @@ class BitmapHunter implements Runnable {
   final Picasso picasso;
   final Dispatcher dispatcher;
   final Cache cache;
+  @Nullable final BitmapPool bitmapPool;
   final Stats stats;
   final String key;
   final Request data;
@@ -102,6 +106,7 @@ class BitmapHunter implements Runnable {
     this.picasso = picasso;
     this.dispatcher = dispatcher;
     this.cache = cache;
+    this.bitmapPool = picasso.bitmapPool;
     this.stats = stats;
     this.action = action;
     this.key = action.getKey();
@@ -118,7 +123,8 @@ class BitmapHunter implements Runnable {
    * about the supplied request in order to do the decoding efficiently (such as through leveraging
    * {@code inSampleSize}).
    */
-  static Bitmap decodeStream(InputStream stream, Request request) throws IOException {
+  private static Bitmap decodeStream(InputStream stream, Request request,
+                                     final BitmapPool bitmapPool) throws IOException {
     MarkableInputStream markStream = new MarkableInputStream(stream);
     stream = markStream;
 
@@ -126,6 +132,9 @@ class BitmapHunter implements Runnable {
 
     final BitmapFactory.Options options = RequestHandler.createBitmapOptions(request);
     final boolean calculateSize = RequestHandler.requiresInSampleSize(options);
+    if (bitmapPool != null) {
+      options.inJustDecodeBounds = true;
+    }
 
     boolean isWebPFile = Utils.isWebPFile(stream);
     boolean isPurgeable = request.purgeable && android.os.Build.VERSION.SDK_INT < 21;
@@ -135,24 +144,41 @@ class BitmapHunter implements Runnable {
     // purgeable, which only affects bitmaps decoded from byte arrays.
     if (isWebPFile || isPurgeable) {
       byte[] bytes = Utils.toByteArray(stream);
-      if (calculateSize) {
+      if (options.inJustDecodeBounds) {
         BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
-        RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight, options,
-            request);
+        options.inJustDecodeBounds = false;
       }
+      if (calculateSize) {
+        RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight, options,
+                                             request);
+      }
+
       return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
     } else {
-      if (calculateSize) {
+      if (options.inJustDecodeBounds) {
         BitmapFactory.decodeStream(stream, null, options);
+        markStream.reset(mark);
+        options.inJustDecodeBounds = false;
+      }
+      if (calculateSize) {
         RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight, options,
             request);
-
-        markStream.reset(mark);
       }
-      Bitmap bitmap = BitmapFactory.decodeStream(stream, null, options);
+      if (bitmapPool != null) {
+        options.inBitmap = bitmapPool.tryFindBitmap(options);
+      }
+      Bitmap bitmap = null;
+      try {
+        bitmap = BitmapFactory.decodeStream(stream, null, options);
+      } catch (IllegalArgumentException e) {
+        Log.e(TAG, "BitmapFactory.decodeStream", e);
+      }
       if (bitmap == null) {
         // Treat null as an IO exception, we will eventually retry.
         throw new IOException("Failed to decode stream.");
+      }
+      if (bitmapPool != null) {
+        bitmapPool.incrementRefCount(bitmap);
       }
       return bitmap;
     }
@@ -223,7 +249,7 @@ class BitmapHunter implements Runnable {
       if (bitmap == null) {
         InputStream is = result.getStream();
         try {
-          bitmap = decodeStream(is, data);
+          bitmap = decodeStream(is, data, bitmapPool);
         } finally {
           Utils.closeQuietly(is);
         }
@@ -238,7 +264,7 @@ class BitmapHunter implements Runnable {
       if (data.needsTransformation() || exifOrientation != 0) {
         synchronized (DECODE_LOCK) {
           if (data.needsMatrixTransform() || exifOrientation != 0) {
-            bitmap = transformResult(data, bitmap, exifOrientation);
+            bitmap = transformResult(data, bitmap, exifOrientation, bitmapPool);
             if (picasso.loggingEnabled) {
               log(OWNER_HUNTER, VERB_TRANSFORMED, data.logId());
             }
@@ -414,7 +440,7 @@ class BitmapHunter implements Runnable {
   }
 
   static BitmapHunter forRequest(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats,
-      Action action) {
+                                 Action action) {
     Request request = action.getRequest();
     List<RequestHandler> requestHandlers = picasso.getRequestHandlers();
 
@@ -493,6 +519,11 @@ class BitmapHunter implements Runnable {
   }
 
   static Bitmap transformResult(Request data, Bitmap result, int exifOrientation) {
+    return transformResult(data, result, exifOrientation, null);
+  }
+
+  private static Bitmap transformResult(Request data, Bitmap result, int exifOrientation,
+                                        @Nullable BitmapPool bitmapPool) {
     int inWidth = result.getWidth();
     int inHeight = result.getHeight();
     boolean onlyScaleDown = data.onlyScaleDown;
@@ -625,7 +656,10 @@ class BitmapHunter implements Runnable {
     Bitmap newResult =
         Bitmap.createBitmap(result, drawX, drawY, drawWidth, drawHeight, matrix, true);
     if (newResult != result) {
-      result.recycle();
+      if (bitmapPool != null) {
+          bitmapPool.incrementRefCount(newResult);
+          bitmapPool.decrementRefCount(result);
+      }
       result = newResult;
     }
 

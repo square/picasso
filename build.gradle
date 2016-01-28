@@ -1,0 +1,133 @@
+allprojects {
+    apply plugin: 'maven'
+
+    group = 'com.squareup.picasso'
+    version = '2.5.3-SNAPSHOT'
+}
+
+subprojects { subProject ->
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+    buildscript {
+        repositories {
+            mavenLocal()
+            mavenCentral()
+            maven {
+                url "https://plugins.gradle.org/m2/"
+                name "gradle-plugins repo"
+            }
+        }
+        dependencies {
+            classpath 'com.android.tools.build:gradle:1.2.3'
+            classpath 'com.jakewharton.sdkmanager:gradle-plugin:0.12.0'
+        }
+    }
+
+    afterEvaluate {
+        if (subProject.plugins.hasPlugin('com.android.library')) {
+            android.libraryVariants.all { variant ->
+                println variant.javaCompile.classpath.files
+                task("generate${variant.name.capitalize()}Javadoc", type: Javadoc) {
+                    dependsOn tasks["assemble${variant.name.capitalize()}"]
+                    description "Generates Javadoc for $variant.name."
+                    source = variant.javaCompile.source
+                    classpath = files(variant.javaCompile.classpath.files, subProject.android.getBootClasspath())
+                    options.links("http://d.android.com/reference/");
+                    options.links("http://docs.oracle.com/javase/7/docs/api/");
+                    exclude '**/BuildConfig.java'
+                    exclude '**/R.java'
+                }
+            }
+
+            task javadocJar(type: Jar) {
+                classifier = 'javadoc'
+                from { subProject.tasks.generateReleaseJavadoc }
+            }
+
+            task sourcesJar(type: Jar) {
+                classifier = 'sources'
+                from android.sourceSets.main.java.srcDirs
+            }
+
+            uploadArchives {
+                repositories {
+                    mavenDeployer {
+                        repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                            authentication(userName: "${System.env.CI_DEPLOY_USERNAME}", password: "${System.env.CI_DEPLOY_PASSWORD}")
+                        }
+                        snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                            authentication(userName: "${System.env.CI_DEPLOY_USERNAME}", password: "${System.env.CI_DEPLOY_PASSWORD}")
+                        }
+                        pom.project {
+                            licenses {
+                                license {
+                                    name 'The Apache Software License, Version 2.0'
+                                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                                    distribution 'repo'
+                                }
+                            }
+                            scm {
+                                url 'http://github.com/square/picasso/'
+                                connection 'scm:git:git://github.com/square/picasso.git'
+                                developerConnection 'scm:git:ssh://git@github.com/square/picasso.git'
+                            }
+                        }
+                    }
+                }
+            }
+
+            artifacts {
+                archives javadocJar, sourcesJar
+            }
+        }
+    }
+    apply plugin: 'checkstyle'
+
+    task checkstyle(type: Checkstyle) {
+        configFile rootProject.file('checkstyle.xml')
+        source file('src/main/java')
+        ignoreFailures false
+        showViolations true
+        include '**/*.java'
+
+        classpath = files()
+    }
+
+    afterEvaluate {
+        if (project.tasks.findByName('check')) {
+            check.dependsOn('checkstyle')
+        }
+    }
+}
+
+ext {
+    minSdkVersion = 15
+    targetSdkVersion = 21
+    compileSdkVersion = 21
+    buildToolsVersion = '21.1.2'
+    sourceCompatibilityVersion = JavaVersion.VERSION_1_7
+    targetCompatibilityVersion = JavaVersion.VERSION_1_7
+}
+
+ext.deps = [
+        // Android
+        supportv4          : "com.android.support:support-v4:21.0.2",
+
+        // Square
+        okhttp             : "com.squareup.okhttp:okhttp:2.2.0",
+        pollexor           : "com.squareup:pollexor:2.0.0",
+
+        // Test dependencies
+        junit              : "junit:junit:4.11",
+        festassert         : "org.easytesting:fest-assert-core:2.0M10",
+        festandroid        : "com.squareup:fest-android:1.0.7",
+        mockitocore        : "org.mockito:mockito-core:1.9.5",
+        robolectric        : "org.robolectric:robolectric:2.2",
+        mockwebserver      : "com.squareup.okhttp:mockwebserver:2.1.0",
+
+        // Other
+        intellijannotations: "com.intellij:annotations:12.0",
+]

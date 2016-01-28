@@ -18,6 +18,7 @@ package com.squareup.picasso;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.NetworkInfo;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -131,9 +132,8 @@ public abstract class RequestHandler {
   static BitmapFactory.Options createBitmapOptions(Request data) {
     final boolean justBounds = data.hasSize();
     final boolean hasConfig = data.config != null;
-    BitmapFactory.Options options = null;
+    BitmapFactory.Options options = new BitmapFactory.Options();
     if (justBounds || hasConfig || data.purgeable) {
-      options = new BitmapFactory.Options();
       options.inJustDecodeBounds = justBounds;
       options.inInputShareable = data.purgeable;
       options.inPurgeable = data.purgeable;
@@ -141,6 +141,7 @@ public abstract class RequestHandler {
         options.inPreferredConfig = data.config;
       }
     }
+    options.inMutable = true;
     return options;
   }
 
@@ -172,7 +173,16 @@ public abstract class RequestHandler {
             : Math.min(heightRatio, widthRatio);
       }
     }
-    options.inSampleSize = sampleSize;
+    sampleSize = Math.max(1, sampleSize);
+    options.inSampleSize = roundToLowerPowerOfTwo(sampleSize);
     options.inJustDecodeBounds = false;
+  }
+  static int roundToLowerPowerOfTwo(int x) {
+    x = x | (x >> 1);
+    x = x | (x >> 2);
+    x = x | (x >> 4);
+    x = x | (x >> 8);
+    x = x | (x >> 16);
+    return x - (x >> 1);
   }
 }

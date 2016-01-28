@@ -351,7 +351,7 @@ public class BitmapHunterTest {
     RequestHandler handler = new AssetRequestHandler(context);
     List<RequestHandler> handlers = Collections.singletonList(handler);
     // Must use non-mock constructor because that is where Picasso's list of handlers is created.
-    Picasso picasso = new Picasso(context, dispatcher, cache, null, null, handlers, stats,
+    Picasso picasso = new Picasso(context, dispatcher, cache, null, null, null, handlers, stats,
         ARGB_8888, false, false);
     BitmapHunter hunter = forRequest(picasso, dispatcher, cache, stats, action);
     assertThat(hunter.requestHandler).isEqualTo(handler);

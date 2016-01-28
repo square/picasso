@@ -1,0 +1,37 @@
+apply plugin: 'com.android.library'
+
+description = 'Picasso Pollexor'
+
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0"
+    }
+
+    compileOptions {
+        sourceCompatibility rootProject.ext.sourceCompatibilityVersion
+        targetCompatibility rootProject.ext.targetCompatibilityVersion
+    }
+
+    lintOptions {
+        // https://github.com/square/okhttp/issues/896
+        ignore 'InvalidPackage'
+    }
+}
+
+dependencies {
+    compile project(':picasso')
+    compile deps.pollexor
+
+    testCompile deps.junit
+    testCompile deps.festassert
+    testCompile(deps.robolectric) {
+        exclude module: "commons-logging"
+        exclude module: "httpclient"
+    }
+}

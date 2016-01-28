@@ -79,7 +79,8 @@ public class SampleListDetailActivity extends PicassoSampleActivity {
 
       Bundle arguments = getArguments();
       String url = arguments.getString(KEY_URL);
-
+      Picasso.with(activity).setLoggingEnabled(true);
+      Picasso.with(activity).setIndicatorsEnabled(true);
       urlView.setText(url);
       Picasso.with(activity)
           .load(url)

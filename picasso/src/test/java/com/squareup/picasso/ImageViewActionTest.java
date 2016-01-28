@@ -84,7 +84,7 @@ public class ImageViewActionTest {
   public void invokesTargetAndCallbackSuccessIfTargetIsNotNull() throws Exception {
     Bitmap bitmap = makeBitmap();
     Picasso picasso =
-        new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null, IDENTITY,
+        new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null, null, IDENTITY,
             null, mock(Stats.class), Bitmap.Config.ARGB_8888, false, false);
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
