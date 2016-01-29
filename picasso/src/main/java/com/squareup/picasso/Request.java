@@ -16,17 +16,33 @@
 package com.squareup.picasso;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import com.squareup.picasso.Picasso.Priority;
+import com.squareup.picasso.Picasso.RequestTransformer;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Collections.unmodifiableList;
 
+import java.io.InputStream;
+
 /** Immutable data about an image and the transformations that will be applied to it. */
 public final class Request {
   private static final long TOO_LONG_LOG = TimeUnit.SECONDS.toNanos(5);
+  
+  public interface BitmapOptionsTransformer {
+      /**
+       * Transform bitmap options used to create a bitmap.
+       *
+       * @return The original request or a new request to replace it. Must not be null.
+       */
+      BitmapFactory.Options transformOptions(byte[] bytes, BitmapFactory.Options options);
+
+      BitmapFactory.Options transformOptions(InputStream stream, BitmapFactory.Options options);
+    }
 
   /** A unique ID for the request. */
   int id;
@@ -85,11 +101,14 @@ public final class Request {
   public final Bitmap.Config config;
   /** The priority of this request. */
   public final Priority priority;
+  
+  public BitmapOptionsTransformer optionsTransformer;
 
   private Request(Uri uri, int resourceId, String stableKey, List<Transformation> transformations,
       int targetWidth, int targetHeight, boolean centerCrop, boolean centerInside,
       boolean onlyScaleDown, float rotationDegrees, float rotationPivotX, float rotationPivotY,
-      boolean hasRotationPivot, boolean purgeable, Bitmap.Config config, Priority priority) {
+      boolean hasRotationPivot, boolean purgeable, Bitmap.Config config, Priority priority,
+      BitmapOptionsTransformer optionsTransformer) {
     this.uri = uri;
     this.resourceId = resourceId;
     this.stableKey = stableKey;
@@ -110,6 +129,7 @@ public final class Request {
     this.purgeable = purgeable;
     this.config = config;
     this.priority = priority;
+    this.optionsTransformer = optionsTransformer;
   }
 
   @Override public String toString() {
@@ -211,6 +231,7 @@ public final class Request {
     private List<Transformation> transformations;
     private Bitmap.Config config;
     private Priority priority;
+    public BitmapOptionsTransformer optionsTransformer;
 
     /** Start building a request using the specified {@link Uri}. */
     public Builder(Uri uri) {
@@ -427,6 +448,12 @@ public final class Request {
       this.priority = priority;
       return this;
     }
+    
+    /** Decode the image using the specified config. */
+    public Builder transformBitmapOptions(BitmapOptionsTransformer transformer) {
+      this.optionsTransformer = transformer;
+      return this;
+    }
 
     /**
      * Add a custom transformation to be applied to the image.
@@ -480,7 +507,7 @@ public final class Request {
       }
       return new Request(uri, resourceId, stableKey, transformations, targetWidth, targetHeight,
           centerCrop, centerInside, onlyScaleDown, rotationDegrees, rotationPivotX, rotationPivotY,
-          hasRotationPivot, purgeable, config, priority);
+          hasRotationPivot, purgeable, config, priority, optionsTransformer);
     }
   }
 }

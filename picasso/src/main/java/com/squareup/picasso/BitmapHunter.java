@@ -124,7 +124,7 @@ class BitmapHunter implements Runnable {
 
     long mark = markStream.savePosition(65536); // TODO fix this crap.
 
-    final BitmapFactory.Options options = RequestHandler.createBitmapOptions(request);
+    BitmapFactory.Options options = RequestHandler.createBitmapOptions(request);
     final boolean calculateSize = RequestHandler.requiresInSampleSize(options);
 
     boolean isWebPFile = Utils.isWebPFile(stream);
@@ -135,20 +135,30 @@ class BitmapHunter implements Runnable {
     // purgeable, which only affects bitmaps decoded from byte arrays.
     if (isWebPFile || isPurgeable) {
       byte[] bytes = Utils.toByteArray(stream);
-      if (calculateSize) {
-        BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+      if (request.optionsTransformer != null) {
+          options = request.optionsTransformer.transformOptions(bytes, options);
+      }
+      if (options != null && calculateSize) {
+        if (options.outWidth == -0 || options.outHeight == 0) {
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+        }
         RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight, options,
             request);
       }
       return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
     } else {
+      if (request.optionsTransformer != null) {
+          options = request.optionsTransformer.transformOptions(stream, options);
+      }
       if (calculateSize) {
-        BitmapFactory.decodeStream(stream, null, options);
+        if (options != null && options.outWidth == 0 || options.outHeight == 0) {
+            BitmapFactory.decodeStream(stream, null, options);
+        }
         RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight, options,
             request);
 
-        markStream.reset(mark);
       }
+      markStream.reset(mark);
       Bitmap bitmap = BitmapFactory.decodeStream(stream, null, options);
       if (bitmap == null) {
         // Treat null as an IO exception, we will eventually retry.
