@@ -92,6 +92,7 @@ final class PicassoDrawable extends BitmapDrawable {
 
   @Override public void draw(Canvas canvas) {
     if (!animating) {
+      placeholder = null;
       super.draw(canvas);
     } else {
       float normalized = (SystemClock.uptimeMillis() - startTimeMillis) / FADE_DURATION;
