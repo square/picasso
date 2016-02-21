@@ -122,11 +122,13 @@ public class UtilsTest {
 
   @Test @Config(reportSdk=GINGERBREAD) public void useOkHttpByDefault() throws Exception {
     Downloader downloader = Utils.createDefaultDownloader(Robolectric.application);
-    assertThat(downloader).isInstanceOf(OkHttpDownloader.class);
+    assertThat(downloader).isInstanceOf(OkHttp3Downloader.class);
   }
 
   @Test @Config(reportSdk=FROYO) public void noOkHttpInFroyo() throws Exception {
     Downloader downloader = Utils.createDefaultDownloader(Robolectric.application);
-    assertThat(downloader).isNotInstanceOf(OkHttpDownloader.class);
+    assertThat(downloader)
+        .isNotInstanceOf(OkHttpDownloader.class)
+        .isNotInstanceOf(OkHttp3Downloader.class);
   }
 }

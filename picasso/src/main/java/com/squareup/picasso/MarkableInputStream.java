@@ -26,23 +26,30 @@ import java.io.InputStream;
  */
 final class MarkableInputStream extends InputStream {
   private static final int DEFAULT_BUFFER_SIZE = 4096;
-
+  private static final int DEFAULT_LIMIT_INCREMENT = 1024;
   private final InputStream in;
 
   private long offset;
   private long reset;
   private long limit;
   private long defaultMark = -1;
+  private boolean allowExpire = true;
+  private int limitIncrement = -1;
 
   public MarkableInputStream(InputStream in) {
     this(in, DEFAULT_BUFFER_SIZE);
   }
 
   public MarkableInputStream(InputStream in, int size) {
+    this(in, size, DEFAULT_LIMIT_INCREMENT);
+  }
+
+  private MarkableInputStream(InputStream in, int size, int limitIncrement) {
     if (!in.markSupported()) {
       in = new BufferedInputStream(in, size);
     }
     this.in = in;
+    this.limitIncrement = limitIncrement;
   }
 
   /** Marks this place in the stream so we can reset back to it later. */
@@ -64,6 +71,9 @@ final class MarkableInputStream extends InputStream {
     return offset;
   }
 
+  public void allowMarksToExpire(boolean allowExpire) {
+      this.allowExpire = allowExpire;
+  }
   /**
    * Makes sure that the underlying stream can backtrack the full range from
    * {@code reset} thru {@code limit}. Since we can't call {@code mark()}
@@ -119,6 +129,9 @@ final class MarkableInputStream extends InputStream {
   }
 
   @Override public int read() throws IOException {
+    if (!allowExpire && (offset + 1 > limit)) {
+      setLimit(limit + limitIncrement);
+    }
     int result = in.read();
     if (result != -1) {
       offset++;
@@ -127,6 +140,9 @@ final class MarkableInputStream extends InputStream {
   }
 
   @Override public int read(byte[] buffer) throws IOException {
+    if (!allowExpire && (offset + buffer.length > limit)) {
+      setLimit(offset + buffer.length + limitIncrement);
+    }
     int count = in.read(buffer);
     if (count != -1) {
       offset += count;
@@ -135,6 +151,9 @@ final class MarkableInputStream extends InputStream {
   }
 
   @Override public int read(byte[] buffer, int offset, int length) throws IOException {
+    if (!allowExpire && (this.offset + length > limit)) {
+      setLimit(this.offset + length + limitIncrement);
+    }
     int count = in.read(buffer, offset, length);
     if (count != -1) {
       this.offset += count;
@@ -143,6 +162,9 @@ final class MarkableInputStream extends InputStream {
   }
 
   @Override public long skip(long byteCount) throws IOException {
+    if (!allowExpire && (offset + byteCount > limit)) {
+      setLimit(offset + byteCount + limitIncrement);
+    }
     long skipped = in.skip(byteCount);
     offset += skipped;
     return skipped;

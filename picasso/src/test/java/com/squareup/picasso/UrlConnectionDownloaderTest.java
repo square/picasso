@@ -18,11 +18,11 @@ package com.squareup.picasso;
 import android.app.Activity;
 import android.net.Uri;
 import android.net.http.HttpResponseCache;
-import com.squareup.okhttp.mockwebserver.MockResponse;
-import com.squareup.okhttp.mockwebserver.RecordedRequest;
-import com.squareup.okhttp.mockwebserver.rule.MockWebServerRule;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,13 +46,13 @@ public class UrlConnectionDownloaderTest {
 
   private UrlConnectionDownloader loader;
 
-  @Rule public MockWebServerRule server = new MockWebServerRule();
+  @Rule public MockWebServer server = new MockWebServer();
 
   @Before public void setUp() throws Exception {
     Activity activity = Robolectric.buildActivity(Activity.class).get();
     loader = new UrlConnectionDownloader(activity) {
       @Override protected HttpURLConnection openConnection(Uri path) throws IOException {
-        return (HttpURLConnection) server.getUrl(path.toString()).openConnection();
+        return (HttpURLConnection) server.url(path.toString()).url().openConnection();
       }
     };
   }
