@@ -106,6 +106,31 @@ final class Utils {
     // No instances.
   }
 
+  /**
+   * remove picasso all cache files
+   * @return delete success
+   */
+  public static boolean clearPicassoCache() {
+    File cache = new File(BaseApplication.getBaseApplication().getCacheDir(), "picasso-cache");
+    if (cache.exists() && cache.isDirectory()) {
+      return deleteDir(cache);
+    }
+    return false;
+  }
+
+  static boolean deleteDir(File dir) {
+    if (dir.isDirectory()) {
+      String[] children = dir.list();
+      for (int i = 0; i < children.length; i++) {
+        boolean success = deleteDir(new File(dir, children[i]));
+        if (!success) {
+          return false;
+        }
+      }
+    }
+    return dir.delete();
+  }
+
   static int getBitmapBytes(Bitmap bitmap) {
     int result;
     if (SDK_INT >= HONEYCOMB_MR1) {
