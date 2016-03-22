@@ -78,8 +78,8 @@ class PicassoExecutorService extends ThreadPoolExecutor {
   }
 
   private void setThreadCount(int threadCount) {
-    setCorePoolSize(threadCount);
     setMaximumPoolSize(threadCount);
+    setCorePoolSize(threadCount);
   }
 
   @Override
