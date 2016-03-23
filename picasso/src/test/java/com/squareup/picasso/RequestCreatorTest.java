@@ -282,7 +282,7 @@ public class RequestCreatorTest {
     Callback callback = mockCallback();
     new RequestCreator(picasso, URI_1, 0).into(target, callback);
     verify(target).setImageDrawable(any(PicassoDrawable.class));
-    verify(callback).onSuccess();
+    verify(callback).onSuccess(target);
     verify(picasso).cancelRequest(target);
     verify(picasso, never()).enqueueAndSubmit(any(Action.class));
   }

@@ -15,17 +15,19 @@
  */
 package com.squareup.picasso;
 
-public interface Callback {
-  void onSuccess();
+import android.widget.ImageView;
 
-  void onError();
+public interface Callback {
+  void onSuccess(ImageView source);
+
+  void onError(ImageView source);
 
   public static class EmptyCallback implements Callback {
 
-    @Override public void onSuccess() {
+    @Override public void onSuccess(ImageView source) {
     }
 
-    @Override public void onError() {
+    @Override public void onError(ImageView source) {
     }
   }
 }

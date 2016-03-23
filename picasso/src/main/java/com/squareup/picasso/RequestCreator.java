@@ -688,7 +688,7 @@ public class RequestCreator {
           log(OWNER_MAIN, VERB_COMPLETED, request.plainId(), "from " + MEMORY);
         }
         if (callback != null) {
-          callback.onSuccess();
+          callback.onSuccess(target);
         }
         return;
       }
