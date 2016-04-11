@@ -71,7 +71,7 @@ public class SampleGalleryActivity extends PicassoSampleActivity {
     // Index 1 is the progress bar. Show it while we're loading the image.
     animator.setDisplayedChild(1);
 
-    Picasso.with(this).load(image).into(imageView, new EmptyCallback() {
+    Picasso.with(this).load(image).fit().centerInside().into(imageView, new EmptyCallback() {
       @Override public void onSuccess() {
         // Index 0 is the image view.
         animator.setDisplayedChild(0);

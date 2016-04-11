@@ -29,10 +29,12 @@ class AssetRequestHandler extends RequestHandler {
   private static final int ASSET_PREFIX_LENGTH =
       (SCHEME_FILE + ":///" + ANDROID_ASSET + "/").length();
 
-  private final AssetManager assetManager;
+  private final Context context;
+  private final Object lock = new Object();
+  private AssetManager assetManager;
 
   public AssetRequestHandler(Context context) {
-    assetManager = context.getAssets();
+    this.context = context;
   }
 
   @Override public boolean canHandleRequest(Request data) {
@@ -42,6 +44,13 @@ class AssetRequestHandler extends RequestHandler {
   }
 
   @Override public Result load(Request request, int networkPolicy) throws IOException {
+    if (assetManager == null) {
+      synchronized (lock) {
+        if (assetManager == null) {
+          assetManager = context.getAssets();
+        }
+      }
+    }
     InputStream is = assetManager.open(getFilePath(request));
     return new Result(is, DISK);
   }
