@@ -20,6 +20,10 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-core:2.0.46-beta'
+    testCompile 'org.robolectric:robolectric:2.4'
+    testCompile 'com.squareup:fest-android:1.0.8@aar'
+    testCompile 'org.easytesting:fest-assert-core:2.0M10'
     compile 'com.android.support:appcompat-v7:23.3.0'
     compile 'org.jetbrains:annotations:13.0'
     compile 'com.squareup.okhttp:okhttp:2.7.5'
