@@ -203,11 +203,19 @@ public class Picasso {
 
   /** Cancel any existing requests for the specified target {@link ImageView}. */
   public void cancelRequest(ImageView view) {
+    // checkMain() is called from cancelExistingRequest()
+    if (view == null) {
+      throw new IllegalArgumentException("view cannot be null.");
+    }
     cancelExistingRequest(view);
   }
 
   /** Cancel any existing requests for the specified {@link Target} instance. */
   public void cancelRequest(Target target) {
+    // checkMain() is called from cancelExistingRequest()
+    if (target == null) {
+      throw new IllegalArgumentException("target cannot be null.");
+    }
     cancelExistingRequest(target);
   }
 
@@ -216,6 +224,10 @@ public class Picasso {
    * viewId}.
    */
   public void cancelRequest(RemoteViews remoteViews, int viewId) {
+    // checkMain() is called from cancelExistingRequest()
+    if (remoteViews == null) {
+      throw new IllegalArgumentException("remoteViews cannot be null.");
+    }
     cancelExistingRequest(new RemoteViewsAction.RemoteViewsTarget(remoteViews, viewId));
   }
 
