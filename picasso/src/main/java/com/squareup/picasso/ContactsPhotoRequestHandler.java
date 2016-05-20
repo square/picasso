@@ -67,7 +67,7 @@ class ContactsPhotoRequestHandler extends RequestHandler {
         && matcher.match(data.uri) != UriMatcher.NO_MATCH);
   }
 
-  @Override public Result load(Request request, int networkPolicy) throws IOException {
+  @Override public Result load(Request request) throws IOException {
     InputStream is = getInputStream(request);
     return is != null ? new Result(is, DISK) : null;
   }

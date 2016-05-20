@@ -108,9 +108,8 @@ public abstract class RequestHandler {
    * Loads an image for the given {@link Request}.
    *
    * @param request the data from which the image should be resolved.
-   * @param networkPolicy the {@link NetworkPolicy} for this request.
    */
-  public abstract Result load(Request request, int networkPolicy) throws IOException;
+  public abstract Result load(Request request) throws IOException;
 
   int getRetryCount() {
     return 0;
