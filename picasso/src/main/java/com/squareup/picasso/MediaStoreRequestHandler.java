@@ -51,7 +51,7 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
             && MediaStore.AUTHORITY.equals(uri.getAuthority()));
   }
 
-  @Override public Result load(Request request, int networkPolicy) throws IOException {
+  @Override public Result load(Request request) throws IOException {
     ContentResolver contentResolver = context.getContentResolver();
     int exifOrientation = getExifOrientation(contentResolver, request.uri);
 

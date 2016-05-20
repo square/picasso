@@ -162,7 +162,7 @@ public class BitmapHunterTest {
 
     Bitmap result = hunter.hunt();
     verify(cache).get(URI_KEY_1);
-    verify(hunter.requestHandler).load(action.getRequest(), 0);
+    verify(hunter.requestHandler).load(action.getRequest());
     assertThat(result).isEqualTo(bitmap);
   }
 
@@ -174,7 +174,7 @@ public class BitmapHunterTest {
 
     Bitmap result = hunter.hunt();
     verify(cache).get(URI_KEY_1);
-    verify(hunter.requestHandler, never()).load(action.getRequest(), 0);
+    verify(hunter.requestHandler, never()).load(action.getRequest());
     assertThat(result).isEqualTo(bitmap);
   }
 
@@ -1004,7 +1004,7 @@ public class BitmapHunterTest {
       return true;
     }
 
-    @Override public Result load(Request request, int networkPolicy) throws IOException {
+    @Override public Result load(Request request) throws IOException {
       if (exception != null) {
         throw exception;
       }
@@ -1024,7 +1024,7 @@ public class BitmapHunterTest {
       super(null, null);
     }
 
-    @Override public Result load(Request request, int networkPolicy) throws IOException {
+    @Override public Result load(Request request) throws IOException {
       throw new OutOfMemoryError();
     }
   }
@@ -1034,7 +1034,7 @@ public class BitmapHunterTest {
         return CUSTOM_URI.getScheme().equals(data.uri.getScheme());
     }
 
-    @Override public Result load(Request request, int networkPolicy) {
+    @Override public Result load(Request request) {
       return new Result(bitmap, MEMORY);
     }
   }

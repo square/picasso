@@ -35,7 +35,7 @@ class FileRequestHandler extends ContentStreamRequestHandler {
     return SCHEME_FILE.equals(data.uri.getScheme());
   }
 
-  @Override public Result load(Request request, int networkPolicy) throws IOException {
+  @Override public Result load(Request request) throws IOException {
     return new Result(null, getInputStream(request), DISK, getFileExifRotation(request.uri));
   }
 

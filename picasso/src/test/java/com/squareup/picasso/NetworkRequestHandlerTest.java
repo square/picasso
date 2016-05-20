@@ -62,7 +62,7 @@ public class NetworkRequestHandlerTest {
 
   @Test public void doesNotForceLocalCacheOnlyWithAirplaneModeOffAndRetryCount() throws Exception {
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    networkHandler.load(action.getRequest(), 0);
+    networkHandler.load(action.getRequest());
     verify(downloader).load(URI_1, 0);
   }
 
@@ -105,7 +105,7 @@ public class NetworkRequestHandlerTest {
     Downloader.Response response = new Downloader.Response(mockInputStream(), false, 1024);
     when(downloader.load(any(Uri.class), anyInt())).thenReturn(response);
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    networkHandler.load(action.getRequest(), 0);
+    networkHandler.load(action.getRequest());
     verify(stats).dispatchDownloadFinished(response.contentLength);
   }
 
@@ -115,7 +115,7 @@ public class NetworkRequestHandlerTest {
     when(downloader.load(any(Uri.class), anyInt())).thenReturn(response);
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     try {
-      networkHandler.load(action.getRequest(), 0);
+      networkHandler.load(action.getRequest());
       fail("Should have thrown IOException.");
     } catch(IOException expected) {
       verifyZeroInteractions(stats);
@@ -127,7 +127,7 @@ public class NetworkRequestHandlerTest {
     Downloader.Response response = new Downloader.Response(mockInputStream(), true, 1024);
     when(downloader.load(any(Uri.class), anyInt())).thenReturn(response);
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    networkHandler.load(action.getRequest(), 0);
+    networkHandler.load(action.getRequest());
     verifyZeroInteractions(stats);
   }
 
@@ -144,7 +144,7 @@ public class NetworkRequestHandlerTest {
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     NetworkRequestHandler customNetworkHandler = new NetworkRequestHandler(bitmapDownloader, stats);
 
-    RequestHandler.Result result = customNetworkHandler.load(action.getRequest(), 0);
+    RequestHandler.Result result = customNetworkHandler.load(action.getRequest());
     assertThat(result.getBitmap()).isSameAs(expected);
     assertThat(result.getStream()).isNull();
   }
@@ -162,7 +162,7 @@ public class NetworkRequestHandlerTest {
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     NetworkRequestHandler customNetworkHandler = new NetworkRequestHandler(bitmapDownloader, stats);
 
-    RequestHandler.Result result = customNetworkHandler.load(action.getRequest(), 0);
+    RequestHandler.Result result = customNetworkHandler.load(action.getRequest());
     assertThat(result.getStream()).isSameAs(is);
     assertThat(result.getBitmap()).isNull();
   }
