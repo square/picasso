@@ -215,6 +215,22 @@ public class PicassoTest {
     verifyZeroInteractions(action, dispatcher);
   }
 
+  @Test public void cancelExistingRequestWithNullImageView() {
+    try {
+      picasso.cancelRequest((ImageView) null);
+      fail("Canceling with a null ImageView should throw exception.");
+    } catch (IllegalArgumentException expected) {
+    }
+  }
+
+  @Test public void cancelExistingRequestWithNullTarget() {
+    try {
+      picasso.cancelRequest((Target) null);
+      fail("Canceling with a null target should throw exception.");
+    } catch (IllegalArgumentException expected) {
+    }
+  }
+
   @Test public void cancelExistingRequestWithImageViewTarget() {
     ImageView target = mockImageViewTarget();
     Action action = mockAction(URI_KEY_1, URI_1, target);
@@ -256,6 +272,14 @@ public class PicassoTest {
     assertThat(picasso.targetToAction).isEmpty();
     verify(action).cancel();
     verify(dispatcher).dispatchCancel(action);
+  }
+
+  @Test public void cancelExistingRequestWithNullRemoteViews() {
+    try {
+      picasso.cancelRequest(null, 0);
+      fail("Canceling with a null RemoteViews should throw exception.");
+    } catch (IllegalArgumentException expected) {
+    }
   }
 
   @Test public void cancelExistingRequestWithRemoteViewTarget() {
