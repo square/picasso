@@ -149,21 +149,4 @@ public class NetworkRequestHandlerTest {
     assertThat(result.getStream()).isNull();
   }
 
-  @Test public void downloaderInputStreamNotDecoded() throws Exception {
-    final InputStream is = new ByteArrayInputStream(new byte[] { 'a' });
-    Downloader bitmapDownloader = new Downloader() {
-      @Override public Response load(Uri uri, int networkPolicy) throws IOException {
-        return new Response(is, false, 1);
-      }
-
-      @Override public void shutdown() {
-      }
-    };
-    Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    NetworkRequestHandler customNetworkHandler = new NetworkRequestHandler(bitmapDownloader, stats);
-
-    RequestHandler.Result result = customNetworkHandler.load(action.getRequest(), 0);
-    assertThat(result.getStream()).isSameAs(is);
-    assertThat(result.getBitmap()).isNull();
-  }
 }
