@@ -71,11 +71,15 @@ public class LruCache implements Cache {
       throw new NullPointerException("key == null || bitmap == null");
     }
 
-    Bitmap previous;
+    int addedSize = Utils.getBitmapBytes(bitmap);
+    if (addedSize > maxSize) {
+      return;
+    }
+
     synchronized (this) {
       putCount++;
-      size += Utils.getBitmapBytes(bitmap);
-      previous = map.put(key, bitmap);
+      size += addedSize;
+      Bitmap previous = map.put(key, bitmap);
       if (previous != null) {
         size -= Utils.getBitmapBytes(previous);
       }
