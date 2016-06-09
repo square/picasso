@@ -418,7 +418,7 @@ public final class Request {
     /** Decode the image using the specified config. */
     public Builder config(@NonNull Bitmap.Config config) {
       if (config == null) {
-        throw new IllegalArgumentException("tag == null");
+        throw new IllegalArgumentException("config == null");
       }
       this.config = config;
       return this;
