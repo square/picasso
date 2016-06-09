@@ -1,0 +1,40 @@
+apply plugin: 'com.android.library'
+
+description = 'Picasso'
+
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0"
+    }
+
+    compileOptions {
+        sourceCompatibility rootProject.ext.sourceCompatibilityVersion
+        targetCompatibility rootProject.ext.targetCompatibilityVersion
+    }
+
+    lintOptions {
+        // https://github.com/square/okhttp/issues/896
+        ignore 'InvalidPackage'
+    }
+}
+
+dependencies {
+    provided deps.okhttp
+    provided deps.intellijannotations
+
+    testCompile deps.junit
+    testCompile deps.mockitocore
+    testCompile deps.mockwebserver
+    testCompile deps.festassert
+    testCompile deps.festandroid
+    testCompile(deps.robolectric) {
+        exclude module: "commons-logging"
+        exclude module: "httpclient"
+    }
+}

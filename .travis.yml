@@ -2,14 +2,15 @@ language: android
 
 android:
   components:
-    - build-tools-20.0.0
-    - android-17
-  licenses:
-    - android-sdk-license-5be876d5
+    - build-tools-21.1.2
+    - android-21
 
 jdk:
   - oraclejdk7
   - oraclejdk8
+
+script:
+  - ./gradlew clean check
 
 after_success:
   - .buildscript/deploy_snapshot.sh
@@ -30,4 +31,4 @@ sudo: false
 
 cache:
   directories:
-    - $HOME/.m2
+    - $HOME/.gradle
