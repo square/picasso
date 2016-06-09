@@ -1,0 +1,51 @@
+buildscript {
+  dependencies {
+    classpath dep.androidPlugin
+  }
+}
+
+apply plugin: 'com.android.application'
+
+dependencies {
+  compile dep.okhttp
+  compile dep.supportV4
+  compile project(':picasso')
+}
+
+android {
+  compileSdkVersion rootProject.ext.compileSdkVersion
+  buildToolsVersion rootProject.ext.buildToolsVersion
+
+  compileOptions {
+    sourceCompatibility rootProject.ext.sourceCompatibilityVersion
+    targetCompatibility rootProject.ext.targetCompatibilityVersion
+  }
+
+  lintOptions {
+    lintConfig file('lint.xml')
+    textOutput 'stdout'
+
+    // https://github.com/square/okhttp/issues/896
+    ignore 'InvalidPackage'
+  }
+
+  dexOptions {
+    preDexLibraries = !rootProject.ext.isCi
+  }
+
+  defaultConfig {
+    minSdkVersion rootProject.ext.minSdkVersion
+    minSdkVersion rootProject.ext.targetSdkVersion
+    applicationId 'com.example.picasso'
+
+    versionCode 1
+    versionName '1.0'
+  }
+
+  buildTypes {
+    debug {
+      applicationIdSuffix '.development'
+    }
+  }
+}
+
