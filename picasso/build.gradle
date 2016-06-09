@@ -1,0 +1,43 @@
+buildscript {
+  dependencies {
+    classpath dep.androidPlugin
+  }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+  compileSdkVersion rootProject.ext.compileSdkVersion
+  buildToolsVersion rootProject.ext.buildToolsVersion
+
+  compileOptions {
+    sourceCompatibility rootProject.ext.sourceCompatibilityVersion
+    targetCompatibility rootProject.ext.targetCompatibilityVersion
+  }
+
+  lintOptions {
+    textOutput 'stdout'
+  }
+
+  dexOptions {
+    preDexLibraries = !rootProject.ext.isCi
+  }
+
+  defaultConfig {
+    minSdkVersion rootProject.ext.minSdkVersion
+  }
+}
+
+dependencies {
+  provided dep.okhttp
+  provided dep.okhttp3
+  provided dep.intellijAnnotations
+  testCompile dep.junit
+  testCompile dep.fest
+  testCompile dep.festAndroid
+  testCompile dep.robolectric
+  testCompile dep.mockito
+  testCompile dep.mockWebServer
+}
+
+apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
