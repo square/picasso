@@ -24,6 +24,7 @@ android {
   lintOptions {
     lintConfig file('lint.xml')
     textOutput 'stdout'
+    textReport true
 
     // https://github.com/square/okhttp/issues/896
     ignore 'InvalidPackage'
@@ -48,4 +49,3 @@ android {
     }
   }
 }
-
