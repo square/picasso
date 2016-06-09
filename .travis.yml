@@ -2,8 +2,8 @@ language: android
 
 android:
   components:
-    - build-tools-20.0.0
-    - android-17
+    - build-tools-23.2.1
+    - android-23
   licenses:
     - android-sdk-license-5be876d5
 
