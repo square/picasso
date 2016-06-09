@@ -15,12 +15,13 @@
  */
 package com.squareup.picasso;
 
+import android.support.annotation.VisibleForTesting;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
+
 import java.lang.ref.WeakReference;
-import org.jetbrains.annotations.TestOnly;
 
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.HONEYCOMB_MR1;
@@ -32,7 +33,7 @@ class DeferredRequestCreator implements ViewTreeObserver.OnPreDrawListener {
   Object attachListener;
   Callback callback;
 
-  @TestOnly DeferredRequestCreator(RequestCreator creator, ImageView target) {
+  @VisibleForTesting DeferredRequestCreator(RequestCreator creator, ImageView target) {
     this(creator, target, null);
   }
 

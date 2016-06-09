@@ -17,6 +17,9 @@ package com.squareup.picasso;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -32,7 +35,7 @@ public interface Downloader {
    * loading the bitmap.
    * @throws IOException if the requested URL cannot successfully be loaded.
    */
-  Response load(Uri uri, int networkPolicy) throws IOException;
+  @Nullable Response load(@NonNull Uri uri, int networkPolicy) throws IOException;
 
   /**
    * Allows to perform a clean up for this {@link Downloader} including closing the disk cache and
@@ -67,7 +70,7 @@ public interface Downloader {
      * @deprecated Use {@link RequestHandler} for directly loading {@link Bitmap} instances.
      */
     @Deprecated
-    public Response(Bitmap bitmap, boolean loadedFromCache) {
+    public Response(@NonNull Bitmap bitmap, boolean loadedFromCache) {
       if (bitmap == null) {
         throw new IllegalArgumentException("Bitmap may not be null.");
       }
@@ -85,7 +88,7 @@ public interface Downloader {
      * @deprecated Use {@link Response#Response(java.io.InputStream, boolean, long)} instead.
      */
     @Deprecated @SuppressWarnings("UnusedDeclaration")
-    public Response(InputStream stream, boolean loadedFromCache) {
+    public Response(@NonNull InputStream stream, boolean loadedFromCache) {
       this(stream, loadedFromCache, -1);
     }
 
@@ -100,7 +103,7 @@ public interface Downloader {
      * boolean)}.
      */
     @Deprecated @SuppressWarnings("UnusedDeclaration")
-    public Response(Bitmap bitmap, boolean loadedFromCache, long contentLength) {
+    public Response(@NonNull Bitmap bitmap, boolean loadedFromCache, long contentLength) {
       this(bitmap, loadedFromCache);
     }
 
@@ -112,7 +115,7 @@ public interface Downloader {
      * @param contentLength The content length of the response, typically derived by the
      * {@code Content-Length} HTTP header.
      */
-    public Response(InputStream stream, boolean loadedFromCache, long contentLength) {
+    public Response(@NonNull InputStream stream, boolean loadedFromCache, long contentLength) {
       if (stream == null) {
         throw new IllegalArgumentException("Stream may not be null.");
       }
@@ -127,7 +130,7 @@ public interface Downloader {
      * <p>
      * If this returns {@code null}, image data will be available via {@link #getBitmap()}.
      */
-    public InputStream getInputStream() {
+    @Nullable public InputStream getInputStream() {
       return stream;
     }
 
@@ -138,6 +141,7 @@ public interface Downloader {
      *
      * @deprecated Use {@link RequestHandler} for directly loading {@link Bitmap} instances.
      */
+    @Nullable
     @Deprecated
     public Bitmap getBitmap() {
       return bitmap;

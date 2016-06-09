@@ -32,6 +32,7 @@ android {
 dependencies {
   compile project(':picasso')
   compile dep.pollexor
+  compile dep.supportAnnotations
   testCompile dep.junit
   testCompile dep.robolectric
   testCompile dep.fest

@@ -17,7 +17,12 @@ package com.squareup.picasso;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.support.annotation.DrawableRes;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import com.squareup.picasso.Picasso.Priority;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -213,12 +218,12 @@ public final class Request {
     private Priority priority;
 
     /** Start building a request using the specified {@link Uri}. */
-    public Builder(Uri uri) {
+    public Builder(@NonNull Uri uri) {
       setUri(uri);
     }
 
     /** Start building a request using the specified resource ID. */
-    public Builder(int resourceId) {
+    public Builder(@DrawableRes int resourceId) {
       setResourceId(resourceId);
     }
 
@@ -266,7 +271,7 @@ public final class Request {
      * <p>
      * This will clear an image resource ID if one is set.
      */
-    public Builder setUri(Uri uri) {
+    public Builder setUri(@NonNull Uri uri) {
       if (uri == null) {
         throw new IllegalArgumentException("Image URI may not be null.");
       }
@@ -280,7 +285,7 @@ public final class Request {
      * <p>
      * This will clear an image Uri if one is set.
      */
-    public Builder setResourceId(int resourceId) {
+    public Builder setResourceId(@DrawableRes int resourceId) {
       if (resourceId == 0) {
         throw new IllegalArgumentException("Image resource ID may not be 0.");
       }
@@ -293,7 +298,7 @@ public final class Request {
      * Set the stable key to be used instead of the URI or resource ID when caching.
      * Two requests with the same value are considered to be for the same resource.
      */
-    public Builder stableKey(String stableKey) {
+    public Builder stableKey(@Nullable String stableKey) {
       this.stableKey = stableKey;
       return this;
     }
@@ -411,13 +416,16 @@ public final class Request {
     }
 
     /** Decode the image using the specified config. */
-    public Builder config(Bitmap.Config config) {
+    public Builder config(@NonNull Bitmap.Config config) {
+      if (config == null) {
+        throw new IllegalArgumentException("config == null");
+      }
       this.config = config;
       return this;
     }
 
     /** Execute request using the specified priority. */
-    public Builder priority(Priority priority) {
+    public Builder priority(@NonNull Priority priority) {
       if (priority == null) {
         throw new IllegalArgumentException("Priority invalid.");
       }
@@ -433,7 +441,7 @@ public final class Request {
      * <p>
      * Custom transformations will always be run after the built-in transformations.
      */
-    public Builder transform(Transformation transformation) {
+    public Builder transform(@NonNull Transformation transformation) {
       if (transformation == null) {
         throw new IllegalArgumentException("Transformation must not be null.");
       }
@@ -452,7 +460,7 @@ public final class Request {
      * <p>
      * Custom transformations will always be run after the built-in transformations.
      */
-    public Builder transform(List<? extends Transformation> transformations) {
+    public Builder transform(@NonNull List<? extends Transformation> transformations) {
       if (transformations == null) {
         throw new IllegalArgumentException("Transformation list must not be null.");
       }
