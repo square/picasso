@@ -26,6 +26,8 @@ android {
 
   defaultConfig {
     minSdkVersion rootProject.ext.minSdkVersion
+
+    consumerProguardFiles 'consumer-proguard-rules.txt'
   }
 }
 
