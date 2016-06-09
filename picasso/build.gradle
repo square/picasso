@@ -32,7 +32,7 @@ android {
 dependencies {
   provided dep.okhttp
   provided dep.okhttp3
-  provided dep.intellijAnnotations
+  compile dep.supportAnnotations
   testCompile dep.junit
   testCompile dep.fest
   testCompile dep.festAndroid

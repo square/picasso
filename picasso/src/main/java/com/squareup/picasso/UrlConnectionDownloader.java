@@ -19,6 +19,8 @@ import android.content.Context;
 import android.net.Uri;
 import android.net.http.HttpResponseCache;
 import android.os.Build;
+import android.support.annotation.NonNull;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -57,7 +59,7 @@ public class UrlConnectionDownloader implements Downloader {
     return connection;
   }
 
-  @Override public Response load(Uri uri, int networkPolicy) throws IOException {
+  @Override public Response load(@NonNull Uri uri, int networkPolicy) throws IOException {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
       installCacheIfNeeded(context);
     }

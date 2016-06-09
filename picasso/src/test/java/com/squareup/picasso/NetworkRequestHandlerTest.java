@@ -18,6 +18,8 @@ package com.squareup.picasso;
 import android.graphics.Bitmap;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.support.annotation.NonNull;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -134,7 +136,7 @@ public class NetworkRequestHandlerTest {
   @Test public void downloaderCanReturnBitmapDirectly() throws Exception {
     final Bitmap expected = Bitmap.createBitmap(10, 10, ARGB_8888);
     Downloader bitmapDownloader = new Downloader() {
-      @Override public Response load(Uri uri, int networkPolicy) throws IOException {
+      @Override public Response load(@NonNull Uri uri, int networkPolicy) throws IOException {
         return new Response(expected, false);
       }
 
@@ -152,7 +154,7 @@ public class NetworkRequestHandlerTest {
   @Test public void downloaderInputStreamNotDecoded() throws Exception {
     final InputStream is = new ByteArrayInputStream(new byte[] { 'a' });
     Downloader bitmapDownloader = new Downloader() {
-      @Override public Response load(Uri uri, int networkPolicy) throws IOException {
+      @Override public Response load(@NonNull Uri uri, int networkPolicy) throws IOException {
         return new Response(is, false, 1);
       }
 

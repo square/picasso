@@ -23,6 +23,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
+import android.support.annotation.NonNull;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 import java.io.File;
@@ -202,7 +203,7 @@ public class Picasso {
   }
 
   /** Cancel any existing requests for the specified target {@link ImageView}. */
-  public void cancelRequest(ImageView view) {
+  public void cancelRequest(@NonNull ImageView view) {
     // checkMain() is called from cancelExistingRequest()
     if (view == null) {
       throw new IllegalArgumentException("view cannot be null.");
@@ -211,7 +212,7 @@ public class Picasso {
   }
 
   /** Cancel any existing requests for the specified {@link Target} instance. */
-  public void cancelRequest(Target target) {
+  public void cancelRequest(@NonNull Target target) {
     // checkMain() is called from cancelExistingRequest()
     if (target == null) {
       throw new IllegalArgumentException("target cannot be null.");
@@ -223,7 +224,7 @@ public class Picasso {
    * Cancel any existing requests for the specified {@link RemoteViews} target with the given {@code
    * viewId}.
    */
-  public void cancelRequest(RemoteViews remoteViews, int viewId) {
+  public void cancelRequest(@NonNull RemoteViews remoteViews, int viewId) {
     // checkMain() is called from cancelExistingRequest()
     if (remoteViews == null) {
       throw new IllegalArgumentException("remoteViews cannot be null.");
@@ -237,7 +238,7 @@ public class Picasso {
    *
    * @see RequestCreator#tag(Object)
    */
-  public void cancelTag(Object tag) {
+  public void cancelTag(@NonNull Object tag) {
     checkMain();
     if (tag == null) {
       throw new IllegalArgumentException("Cannot cancel requests with null tag.");
@@ -365,7 +366,7 @@ public class Picasso {
    * @see #invalidate(String)
    * @see #invalidate(File)
    */
-  public void invalidate(Uri uri) {
+  public void invalidate(@NonNull Uri uri) {
     if (uri == null) {
       throw new IllegalArgumentException("uri == null");
     }
@@ -379,7 +380,7 @@ public class Picasso {
    * @see #invalidate(Uri)
    * @see #invalidate(File)
    */
-  public void invalidate(String path) {
+  public void invalidate(@NonNull String path) {
     if (path == null) {
       throw new IllegalArgumentException("path == null");
     }
@@ -392,7 +393,7 @@ public class Picasso {
    * @see #invalidate(Uri)
    * @see #invalidate(String)
    */
-  public void invalidate(File file) {
+  public void invalidate(@NonNull File file) {
     if (file == null) {
       throw new IllegalArgumentException("file == null");
     }
@@ -701,7 +702,7 @@ public class Picasso {
    * <p>
    * This method must be called before any calls to {@link #with} and may only be called once.
    */
-  public static void setSingletonInstance(Picasso picasso) {
+  public static void setSingletonInstance(@NonNull Picasso picasso) {
     if (picasso == null) {
       throw new IllegalArgumentException("Picasso must not be null.");
     }
@@ -729,7 +730,7 @@ public class Picasso {
     private boolean loggingEnabled;
 
     /** Start building a new {@link Picasso} instance. */
-    public Builder(Context context) {
+    public Builder(@NonNull Context context) {
       if (context == null) {
         throw new IllegalArgumentException("Context must not be null.");
       }
@@ -740,7 +741,7 @@ public class Picasso {
      * Specify the default {@link Bitmap.Config} used when decoding images. This can be overridden
      * on a per-request basis using {@link RequestCreator#config(Bitmap.Config) config(..)}.
      */
-    public Builder defaultBitmapConfig(Bitmap.Config bitmapConfig) {
+    public Builder defaultBitmapConfig(@NonNull Bitmap.Config bitmapConfig) {
       if (bitmapConfig == null) {
         throw new IllegalArgumentException("Bitmap config must not be null.");
       }
@@ -749,7 +750,7 @@ public class Picasso {
     }
 
     /** Specify the {@link Downloader} that will be used for downloading images. */
-    public Builder downloader(Downloader downloader) {
+    public Builder downloader(@NonNull Downloader downloader) {
       if (downloader == null) {
         throw new IllegalArgumentException("Downloader must not be null.");
       }
@@ -765,7 +766,7 @@ public class Picasso {
      * <p>
      * Note: Calling {@link Picasso#shutdown() shutdown()} will not shutdown supplied executors.
      */
-    public Builder executor(ExecutorService executorService) {
+    public Builder executor(@NonNull ExecutorService executorService) {
       if (executorService == null) {
         throw new IllegalArgumentException("Executor service must not be null.");
       }
@@ -777,7 +778,7 @@ public class Picasso {
     }
 
     /** Specify the memory cache used for the most recent images. */
-    public Builder memoryCache(Cache memoryCache) {
+    public Builder memoryCache(@NonNull Cache memoryCache) {
       if (memoryCache == null) {
         throw new IllegalArgumentException("Memory cache must not be null.");
       }
@@ -789,7 +790,7 @@ public class Picasso {
     }
 
     /** Specify a listener for interesting events. */
-    public Builder listener(Listener listener) {
+    public Builder listener(@NonNull Listener listener) {
       if (listener == null) {
         throw new IllegalArgumentException("Listener must not be null.");
       }
@@ -806,7 +807,7 @@ public class Picasso {
      * <b>NOTE:</b> This is a beta feature. The API is subject to change in a backwards incompatible
      * way at any time.
      */
-    public Builder requestTransformer(RequestTransformer transformer) {
+    public Builder requestTransformer(@NonNull RequestTransformer transformer) {
       if (transformer == null) {
         throw new IllegalArgumentException("Transformer must not be null.");
       }
@@ -818,7 +819,7 @@ public class Picasso {
     }
 
     /** Register a {@link RequestHandler}. */
-    public Builder addRequestHandler(RequestHandler requestHandler) {
+    public Builder addRequestHandler(@NonNull RequestHandler requestHandler) {
       if (requestHandler == null) {
         throw new IllegalArgumentException("RequestHandler must not be null.");
       }

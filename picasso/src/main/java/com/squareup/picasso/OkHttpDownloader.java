@@ -17,6 +17,8 @@ package com.squareup.picasso;
 
 import android.content.Context;
 import android.net.Uri;
+import android.support.annotation.NonNull;
+
 import com.squareup.okhttp.CacheControl;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.ResponseBody;
@@ -89,7 +91,7 @@ public class OkHttpDownloader implements Downloader {
     return client;
   }
 
-  @Override public Response load(Uri uri, int networkPolicy) throws IOException {
+  @Override public Response load(@NonNull Uri uri, int networkPolicy) throws IOException {
     CacheControl cacheControl = null;
     if (networkPolicy != 0) {
       if (NetworkPolicy.isOfflineOnly(networkPolicy)) {
