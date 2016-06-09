@@ -23,6 +23,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
+import android.support.annotation.DrawableRes;
+import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.widget.ImageView;
@@ -37,6 +39,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 
+import static android.R.attr.tag;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static com.squareup.picasso.Action.RequestWeakReference;
 import static com.squareup.picasso.Dispatcher.HUNTER_BATCH_COMPLETE;
@@ -226,7 +229,7 @@ public class Picasso {
    * Cancel any existing requests for the specified {@link RemoteViews} target with the given {@code
    * viewId}.
    */
-  public void cancelRequest(@NonNull RemoteViews remoteViews, int viewId) {
+  public void cancelRequest(@NonNull RemoteViews remoteViews, @IdRes int viewId) {
     // checkMain() is called from cancelExistingRequest()
     if (remoteViews == null) {
       throw new IllegalArgumentException("remoteViews cannot be null.");
@@ -273,7 +276,10 @@ public class Picasso {
    * @see #resumeTag(Object)
    * @see RequestCreator#tag(Object)
    */
-  public void pauseTag(Object tag) {
+  public void pauseTag(@NonNull Object tag) {
+    if (tag == null) {
+      throw new IllegalArgumentException("tag == null");
+    }
     dispatcher.dispatchPauseTag(tag);
   }
 
@@ -284,7 +290,10 @@ public class Picasso {
    * @see #pauseTag(Object)
    * @see RequestCreator#tag(Object)
    */
-  public void resumeTag(Object tag) {
+  public void resumeTag(@NonNull Object tag) {
+    if (tag == null) {
+      throw new IllegalArgumentException("tag == null");
+    }
     dispatcher.dispatchResumeTag(tag);
   }
 
@@ -298,7 +307,7 @@ public class Picasso {
    * @see #load(String)
    * @see #load(int)
    */
-  public RequestCreator load(Uri uri) {
+  public RequestCreator load(@Nullable Uri uri) {
     return new RequestCreator(this, uri, 0);
   }
 
@@ -318,7 +327,7 @@ public class Picasso {
    * @see #load(int)
    * @throws IllegalArgumentException if {@code path} is empty or blank string.
    */
-  public RequestCreator load(String path) {
+  public RequestCreator load(@Nullable String path) {
     if (path == null) {
       return new RequestCreator(this, null, 0);
     }
@@ -341,7 +350,7 @@ public class Picasso {
    * @see #load(String)
    * @see #load(int)
    */
-  public RequestCreator load(File file) {
+  public RequestCreator load(@NonNull File file) {
     if (file == null) {
       return new RequestCreator(this, null, 0);
     }
@@ -355,7 +364,7 @@ public class Picasso {
    * @see #load(String)
    * @see #load(File)
    */
-  public RequestCreator load(int resourceId) {
+  public RequestCreator load(@DrawableRes int resourceId) {
     if (resourceId == 0) {
       throw new IllegalArgumentException("Resource ID must not be zero.");
     }
@@ -688,7 +697,10 @@ public class Picasso {
    * {@link Picasso} instance. You can either use this directly or by setting it as the global
    * instance with {@link #setSingletonInstance}.
    */
-  public static Picasso with(Context context) {
+  public static Picasso with(@NonNull Context context) {
+    if (context == null) {
+      throw new IllegalArgumentException("context == null");
+    }
     if (singleton == null) {
       synchronized (Picasso.class) {
         if (singleton == null) {

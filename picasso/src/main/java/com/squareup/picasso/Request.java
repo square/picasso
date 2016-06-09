@@ -17,10 +17,12 @@ package com.squareup.picasso;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.support.annotation.IdRes;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.squareup.picasso.Picasso.Priority;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -221,7 +223,7 @@ public final class Request {
     }
 
     /** Start building a request using the specified resource ID. */
-    public Builder(@IdRes int resourceId) {
+    public Builder(@DrawableRes int resourceId) {
       setResourceId(resourceId);
     }
 
@@ -283,7 +285,7 @@ public final class Request {
      * <p>
      * This will clear an image Uri if one is set.
      */
-    public Builder setResourceId(@IdRes int resourceId) {
+    public Builder setResourceId(@DrawableRes int resourceId) {
       if (resourceId == 0) {
         throw new IllegalArgumentException("Image resource ID may not be 0.");
       }
@@ -296,7 +298,7 @@ public final class Request {
      * Set the stable key to be used instead of the URI or resource ID when caching.
      * Two requests with the same value are considered to be for the same resource.
      */
-    public Builder stableKey(String stableKey) {
+    public Builder stableKey(@Nullable String stableKey) {
       this.stableKey = stableKey;
       return this;
     }
@@ -415,6 +417,9 @@ public final class Request {
 
     /** Decode the image using the specified config. */
     public Builder config(@NonNull Bitmap.Config config) {
+      if (config == null) {
+        throw new IllegalArgumentException("tag == null");
+      }
       this.config = config;
       return this;
     }
