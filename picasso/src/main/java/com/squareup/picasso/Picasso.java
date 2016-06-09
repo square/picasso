@@ -24,8 +24,10 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
+
 import java.io.File;
 import java.lang.ref.ReferenceQueue;
 import java.util.ArrayList;
@@ -380,9 +382,9 @@ public class Picasso {
    * @see #invalidate(Uri)
    * @see #invalidate(File)
    */
-  public void invalidate(@NonNull String path) {
+  public void invalidate(@Nullable String path) {
     if (path == null) {
-      throw new IllegalArgumentException("path == null");
+      return;
     }
     invalidate(Uri.parse(path));
   }
