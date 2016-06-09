@@ -376,9 +376,9 @@ public class Picasso {
    * @see #invalidate(String)
    * @see #invalidate(File)
    */
-  public void invalidate(@NonNull Uri uri) {
+  public void invalidate(@Nullable Uri uri) {
     if (uri == null) {
-      throw new IllegalArgumentException("uri == null");
+      return;
     }
     cache.clearKeyUri(uri.toString());
   }
