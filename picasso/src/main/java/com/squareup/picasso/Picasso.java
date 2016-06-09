@@ -377,10 +377,9 @@ public class Picasso {
    * @see #invalidate(File)
    */
   public void invalidate(@Nullable Uri uri) {
-    if (uri == null) {
-      return;
+    if (uri != null) {
+      cache.clearKeyUri(uri.toString());
     }
-    cache.clearKeyUri(uri.toString());
   }
 
   /**
@@ -391,10 +390,9 @@ public class Picasso {
    * @see #invalidate(File)
    */
   public void invalidate(@Nullable String path) {
-    if (path == null) {
-      return;
+    if (path != null) {
+      invalidate(Uri.parse(path));
     }
-    invalidate(Uri.parse(path));
   }
 
   /**
