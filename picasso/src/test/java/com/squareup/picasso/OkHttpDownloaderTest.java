@@ -16,28 +16,25 @@
 package com.squareup.picasso;
 
 import android.net.Uri;
-
 import com.squareup.okhttp.Cache;
 import com.squareup.okhttp.OkHttpClient;
-
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
+import okio.Okio;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
-
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.RecordedRequest;
-import okio.Okio;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@RunWith(RobolectricGradleTestRunner.class)
+@Config(shadows = { Shadows.ShadowNetwork.class })
 public class OkHttpDownloaderTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   @Rule public MockWebServer server = new MockWebServer();

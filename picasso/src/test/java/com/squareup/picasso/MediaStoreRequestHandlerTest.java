@@ -8,8 +8,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowBitmap;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.FULL;
@@ -21,14 +22,15 @@ import static com.squareup.picasso.TestUtils.MEDIA_STORE_CONTENT_KEY_1;
 import static com.squareup.picasso.TestUtils.makeBitmap;
 import static com.squareup.picasso.TestUtils.mockAction;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(RobolectricTestRunner.class) //
-@Config(manifest = Config.NONE,
-    shadows = { Shadows.ShadowVideoThumbnails.class, Shadows.ShadowImageThumbnails.class })
+@RunWith(RobolectricGradleTestRunner.class)
+@Config(shadows = { Shadows.ShadowVideoThumbnails.class, Shadows.ShadowImageThumbnails.class })
 public class MediaStoreRequestHandlerTest {
 
   @Mock Context context;
@@ -44,7 +46,7 @@ public class MediaStoreRequestHandlerTest {
     Action action = mockAction(MEDIA_STORE_CONTENT_KEY_1, request);
     MediaStoreRequestHandler requestHandler = create("video/");
     Bitmap result = requestHandler.load(action.getRequest(), 0).getBitmap();
-    assertThat(result).isEqualTo(bitmap);
+    assertBitmapsEqual(result, bitmap);
   }
 
   @Test public void decodesImageThumbnailWithImageMimeType() throws Exception {
@@ -54,7 +56,7 @@ public class MediaStoreRequestHandlerTest {
     Action action = mockAction(MEDIA_STORE_CONTENT_KEY_1, request);
     MediaStoreRequestHandler requestHandler = create("image/png");
     Bitmap result = requestHandler.load(action.getRequest(), 0).getBitmap();
-    assertThat(result).isEqualTo(bitmap);
+    assertBitmapsEqual(result, bitmap);
   }
 
   @Test public void getPicassoKindMicro() throws Exception {
@@ -84,5 +86,20 @@ public class MediaStoreRequestHandlerTest {
   private MediaStoreRequestHandler create(ContentResolver contentResolver) {
     when(context.getContentResolver()).thenReturn(contentResolver);
     return new MediaStoreRequestHandler(context);
+  }
+
+  private static void assertBitmapsEqual(Bitmap a, Bitmap b) {
+    ShadowBitmap shadowA = shadowOf(a);
+    ShadowBitmap shadowB = shadowOf(b);
+
+    if (shadowA.getHeight() != shadowB.getHeight()) {
+      fail();
+    }
+    if (shadowA.getWidth() != shadowB.getWidth()) {
+      fail();
+    }
+    if (shadowA.getDescription() != null ? !shadowA.getDescription().equals(shadowB.getDescription()) : shadowB.getDescription() != null) {
+      fail();
+    }
   }
 }

@@ -21,9 +21,8 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
+import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RuntimeEnvironment;
 
 import static android.graphics.Color.RED;
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
@@ -31,10 +30,9 @@ import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.TestUtils.makeBitmap;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@RunWith(RobolectricGradleTestRunner.class)
 public class PicassoDrawableTest {
-  private final Context context = Robolectric.application;
+  private final Context context = RuntimeEnvironment.application;
   private final Drawable placeholder = new ColorDrawable(RED);
   private final Bitmap bitmap = makeBitmap();
   

@@ -1,10 +1,11 @@
 package com.squareup.picasso.pollexor;
 
 import android.net.Uri;
-import com.squareup.picasso.Request;
+import com.squareup.picasso.*;
 import com.squareup.pollexor.Thumbor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
@@ -12,8 +13,12 @@ import static com.squareup.picasso.Picasso.RequestTransformer;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.annotation.Config.NONE;
 
-@RunWith(RobolectricTestRunner.class) //
-@Config(manifest = NONE)
+@RunWith(RobolectricGradleTestRunner.class)
+@Config(
+    sdk = 18,
+    manifest = NONE,
+    constants = BuildConfig.class
+)
 public class PollexorRequestTransformerTest {
   private static final String HOST = "http://example.com/";
   private static final String KEY = "omgsecretpassword";
