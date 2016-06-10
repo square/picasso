@@ -1,12 +1,11 @@
 package com.squareup.picasso.pollexor;
 
 import android.net.Uri;
-import com.squareup.picasso.*;
+import com.squareup.picasso.Request;
 import com.squareup.pollexor.Thumbor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import static com.squareup.picasso.Picasso.RequestTransformer;
