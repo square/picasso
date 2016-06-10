@@ -28,14 +28,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 
+import static com.squareup.picasso.UrlConnectionDownloader.RESPONSE_SOURCE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-@RunWith(RobolectricGradleTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
 public class UrlConnectionDownloaderTest {
   private static final Uri URL = Uri.parse("/bees.gif");
 
@@ -70,6 +71,38 @@ public class UrlConnectionDownloaderTest {
     UrlConnectionDownloader.cache = cache;
     loader.shutdown();
     verify(cache).close();
+  }
+
+  @Test public void cacheNotInstalledWhenUnavailable() throws Exception {
+    UrlConnectionDownloader.cache = null;
+
+    server.enqueue(new MockResponse());
+    loader.load(URL, 0);
+    Object cache = UrlConnectionDownloader.cache;
+    assertThat(cache).isNull();
+  }
+
+  @Test public void allowExpiredSetsCacheControl() throws Exception {
+    server.enqueue(new MockResponse());
+    loader.load(URL, 0);
+    RecordedRequest request1 = server.takeRequest();
+    assertThat(request1.getHeader("Cache-Control")).isNull();
+
+    server.enqueue(new MockResponse());
+    loader.load(URL, NetworkPolicy.OFFLINE.index);
+    RecordedRequest request2 = server.takeRequest();
+    assertThat(request2.getHeader("Cache-Control")) //
+        .isEqualTo("only-if-cached,max-age=" + Integer.MAX_VALUE);
+  }
+
+  @Test public void responseSourceHeaderSetsResponseValue() throws Exception {
+    server.enqueue(new MockResponse());
+    Downloader.Response response1 = loader.load(URL, 0);
+    assertThat(response1.cached).isFalse();
+
+    server.enqueue(new MockResponse().addHeader(RESPONSE_SOURCE, "CACHE 200"));
+    Downloader.Response response2 = loader.load(URL, NetworkPolicy.OFFLINE.index);
+    assertThat(response2.cached).isTrue();
   }
 
   @Test public void networkPolicyNoCache() throws Exception {

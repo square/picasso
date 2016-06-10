@@ -15,6 +15,7 @@
  */
 package com.squareup.picasso;
 
+import android.os.IBinder;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
@@ -23,7 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 
 import static com.squareup.picasso.TestUtils.TRANSFORM_REQUEST_ANSWER;
 import static com.squareup.picasso.TestUtils.URI_1;
@@ -31,6 +32,7 @@ import static com.squareup.picasso.TestUtils.mockCallback;
 import static com.squareup.picasso.TestUtils.mockFitImageViewTarget;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -39,7 +41,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-@RunWith(RobolectricGradleTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
 @SuppressWarnings("deprecation")
 public class DeferredRequestCreatorTest {
 
@@ -50,23 +52,41 @@ public class DeferredRequestCreatorTest {
     initMocks(this);
   }
 
-  @Test public void initAttachesLayoutListenerApi11() {
+  @Test public void initAddsAttachListenerWhichDefersLayoutListener() {
     ImageView target = mockFitImageViewTarget(true);
     ViewTreeObserver observer = target.getViewTreeObserver();
-    DeferredRequestCreator request = new DeferredRequestCreator(mock(RequestCreator.class), target);
+    DeferredRequestCreator request =
+        new DeferredRequestCreator(mock(RequestCreator.class), target);
+    verify(target).addOnAttachStateChangeListener(attachListenerCaptor.capture());
+    verifyNoMoreInteractions(observer);
+
+    // Now trigger attach and ensure we defer to the pre-draw listener.
+    OnAttachStateChangeListener listener = attachListenerCaptor.getValue();
+    listener.onViewAttachedToWindow(target);
+    verify(target).removeOnAttachStateChangeListener(listener);
     verify(observer).addOnPreDrawListener(request);
   }
 
-  @Test public void cancelRemovesLayoutListenerApi11() {
+  @Test public void initAttachedTargetSkipsAttachListener() {
     ImageView target = mockFitImageViewTarget(true);
     ViewTreeObserver observer = target.getViewTreeObserver();
-    DeferredRequestCreator request = new DeferredRequestCreator(mock(RequestCreator.class), target);
-    request.cancel();
-    verify(observer).removeOnPreDrawListener(request);
+    doReturn(mock(IBinder.class)).when(target).getWindowToken(); // Pretend to be attached.
+    DeferredRequestCreator request =
+        new DeferredRequestCreator(mock(RequestCreator.class), target);
+    verify(observer).addOnPreDrawListener(request);
   }
 
-  @Test public void cancelTwiceOnlyPerformsOnce() {
+  @Test public void cancelWhileAttachedRemovesAttachListener() {
     ImageView target = mockFitImageViewTarget(true);
+    DeferredRequestCreator request = new DeferredRequestCreator(mock(RequestCreator.class), target);
+    verify(target).addOnAttachStateChangeListener(attachListenerCaptor.capture());
+    request.cancel();
+    verify(target).removeOnAttachStateChangeListener(attachListenerCaptor.getValue());
+  }
+
+  @Test public void cancelTwiceWhileAttachedOnlyPerformsOnce() {
+    ImageView target = mockFitImageViewTarget(true);
+    when(target.getWindowToken()).thenReturn(mock(IBinder.class));
     ViewTreeObserver observer = target.getViewTreeObserver();
     DeferredRequestCreator request = new DeferredRequestCreator(mock(RequestCreator.class), target);
     request.cancel();
@@ -93,8 +113,9 @@ public class DeferredRequestCreatorTest {
     verify(creator).clearTag();
   }
 
-  @Test public void onLayoutSkipsIfTargetIsNull() {
+  @Test public void onLayoutSkipsIfTargetIsNullAfterAttach() {
     ImageView target = mockFitImageViewTarget(true);
+    when(target.getWindowToken()).thenReturn(mock(IBinder.class));
     RequestCreator creator = mock(RequestCreator.class);
     DeferredRequestCreator request = new DeferredRequestCreator(creator, target);
     ViewTreeObserver viewTreeObserver = target.getViewTreeObserver();
@@ -105,8 +126,9 @@ public class DeferredRequestCreatorTest {
     verifyNoMoreInteractions(viewTreeObserver);
   }
 
-  @Test public void onLayoutSkipsIfViewTreeObserverIsDead() {
+  @Test public void onLayoutSkipsIfViewIsAttachedAndViewTreeObserverIsDead() {
     ImageView target = mockFitImageViewTarget(false);
+    when(target.getWindowToken()).thenReturn(mock(IBinder.class));
     RequestCreator creator = mock(RequestCreator.class);
     DeferredRequestCreator request = new DeferredRequestCreator(creator, target);
     ViewTreeObserver viewTreeObserver = target.getViewTreeObserver();

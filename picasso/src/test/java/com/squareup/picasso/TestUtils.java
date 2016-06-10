@@ -183,7 +183,6 @@ class TestUtils {
     when(observer.isAlive()).thenReturn(alive);
     ImageView mock = mock(ImageView.class);
     when(mock.getViewTreeObserver()).thenReturn(observer);
-    when(mock.getWindowToken()).thenReturn(mock(IBinder.class));
     return mock;
   }
 
