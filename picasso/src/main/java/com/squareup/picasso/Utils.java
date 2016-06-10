@@ -45,6 +45,7 @@ import static android.os.Build.VERSION_CODES.HONEYCOMB;
 import static android.os.Build.VERSION_CODES.HONEYCOMB_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static com.squareup.picasso.Picasso.TAG;
 import static java.lang.String.format;
@@ -109,7 +110,9 @@ final class Utils {
 
   static int getBitmapBytes(Bitmap bitmap) {
     int result;
-    if (SDK_INT >= HONEYCOMB_MR1) {
+    if (SDK_INT >= KITKAT) {
+      result = bitmap.getAllocationByteCount();
+    } else if (SDK_INT >= HONEYCOMB_MR1) {
       result = BitmapHoneycombMR1.getByteCount(bitmap);
     } else {
       result = bitmap.getRowBytes() * bitmap.getHeight();
