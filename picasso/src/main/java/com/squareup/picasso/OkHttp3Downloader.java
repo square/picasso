@@ -90,7 +90,7 @@ public final class OkHttp3Downloader implements Downloader {
     this.cache = null;
   }
 
-  @VisibleForTesting final Cache getCache() {
+  @VisibleForTesting Cache getCache() {
     return ((OkHttpClient) client).cache();
   }
 
