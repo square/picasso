@@ -43,8 +43,9 @@ import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.GINGERBREAD;
 import static android.os.Build.VERSION_CODES.HONEYCOMB;
 import static android.os.Build.VERSION_CODES.HONEYCOMB_MR1;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
-import static android.provider.Settings.System.AIRPLANE_MODE_ON;
 import static com.squareup.picasso.Picasso.TAG;
 import static java.lang.String.format;
 
@@ -270,12 +271,19 @@ final class Utils {
     return cache;
   }
 
+  @TargetApi(JELLY_BEAN_MR2)
   static long calculateDiskCacheSize(File dir) {
     long size = MIN_DISK_CACHE_SIZE;
 
     try {
       StatFs statFs = new StatFs(dir.getAbsolutePath());
-      long available = ((long) statFs.getBlockCount()) * statFs.getBlockSize();
+      //noinspection deprecation
+      long blockCount =
+          SDK_INT < JELLY_BEAN_MR2 ? (long) statFs.getBlockCount() : statFs.getBlockCountLong();
+      //noinspection deprecation
+      long blockSize =
+          SDK_INT < JELLY_BEAN_MR2 ? (long) statFs.getBlockSize() : statFs.getBlockSizeLong();
+      long available = blockCount * blockSize;
       // Target 2% of the total space.
       size = available / 50;
     } catch (IllegalArgumentException ignored) {
@@ -299,7 +307,7 @@ final class Utils {
   static boolean isAirplaneModeOn(Context context) {
     ContentResolver contentResolver = context.getContentResolver();
     try {
-      return Settings.System.getInt(contentResolver, AIRPLANE_MODE_ON, 0) != 0;
+      return airplaneModeSetting(contentResolver);
     } catch (NullPointerException e) {
       // https://github.com/square/picasso/issues/761, some devices might crash here, assume that
       // airplane mode is off.
@@ -428,6 +436,15 @@ final class Utils {
     static int getByteCount(Bitmap bitmap) {
       return bitmap.getByteCount();
     }
+  }
+
+  @TargetApi(JELLY_BEAN_MR1)
+  private static boolean airplaneModeSetting(ContentResolver contentResolver) {
+    if (SDK_INT < JELLY_BEAN_MR1) {
+      //noinspection deprecation
+      return Settings.System.getInt(contentResolver, Settings.System.AIRPLANE_MODE_ON, 0) != 0;
+    }
+    return Settings.Global.getInt(contentResolver, Settings.Global.AIRPLANE_MODE_ON, 0) != 0;
   }
 
   private static class OkHttpDownloaderCreator {
