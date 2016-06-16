@@ -3,6 +3,7 @@ package com.squareup.picasso;
 import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Network;
 import android.provider.MediaStore;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -29,5 +30,12 @@ final class Shadows {
         BitmapFactory.Options options) {
       return makeBitmap(20, 20);
     }
+  }
+
+  /**
+   * Here because https://github.com/robolectric/robolectric/issues/2223
+   */
+  @Implements(Network.class)
+  public static class ShadowNetwork {
   }
 }

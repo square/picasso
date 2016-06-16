@@ -28,9 +28,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
+import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RuntimeEnvironment;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso.Picasso.Listener;
@@ -57,8 +56,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@RunWith(RobolectricGradleTestRunner.class)
 public class PicassoTest {
 
   @Mock Context context;
@@ -215,6 +213,22 @@ public class PicassoTest {
     verifyZeroInteractions(action, dispatcher);
   }
 
+  @Test public void cancelExistingRequestWithNullImageView() {
+    try {
+      picasso.cancelRequest((ImageView) null);
+      fail("Canceling with a null ImageView should throw exception.");
+    } catch (IllegalArgumentException expected) {
+    }
+  }
+
+  @Test public void cancelExistingRequestWithNullTarget() {
+    try {
+      picasso.cancelRequest((Target) null);
+      fail("Canceling with a null target should throw exception.");
+    } catch (IllegalArgumentException expected) {
+    }
+  }
+
   @Test public void cancelExistingRequestWithImageViewTarget() {
     ImageView target = mockImageViewTarget();
     Action action = mockAction(URI_KEY_1, URI_1, target);
@@ -256,6 +270,14 @@ public class PicassoTest {
     assertThat(picasso.targetToAction).isEmpty();
     verify(action).cancel();
     verify(dispatcher).dispatchCancel(action);
+  }
+
+  @Test public void cancelExistingRequestWithNullRemoteViews() {
+    try {
+      picasso.cancelRequest(null, 0);
+      fail("Canceling with a null RemoteViews should throw exception.");
+    } catch (IllegalArgumentException expected) {
+    }
   }
 
   @Test public void cancelExistingRequestWithRemoteViewTarget() {
@@ -327,7 +349,7 @@ public class PicassoTest {
   @Test public void shutdownDisallowedOnSingletonInstance() {
     Picasso.singleton = null;
     try {
-      Picasso picasso = Picasso.with(Robolectric.application);
+      Picasso picasso = Picasso.with(RuntimeEnvironment.application);
       picasso.shutdown();
       fail("Calling shutdown() on static singleton instance should throw");
     } catch (UnsupportedOperationException expected) {
@@ -337,7 +359,7 @@ public class PicassoTest {
   @Test public void shutdownDisallowedOnCustomSingletonInstance() {
     Picasso.singleton = null;
     try {
-      Picasso picasso = new Picasso.Builder(Robolectric.application).build();
+      Picasso picasso = new Picasso.Builder(RuntimeEnvironment.application).build();
       Picasso.setSingletonInstance(picasso);
       picasso.shutdown();
       fail("Calling shutdown() on static singleton instance should throw");
@@ -359,7 +381,7 @@ public class PicassoTest {
   @Test public void setSingletonInstanceMayOnlyBeCalledOnce() {
     Picasso.singleton = null;
 
-    Picasso picasso = new Picasso.Builder(Robolectric.application).build();
+    Picasso picasso = new Picasso.Builder(RuntimeEnvironment.application).build();
     Picasso.setSingletonInstance(picasso);
 
     try {
@@ -374,9 +396,9 @@ public class PicassoTest {
     Picasso.singleton = null;
 
     // Implicitly create the default singleton instance.
-    Picasso.with(Robolectric.application);
+    Picasso.with(RuntimeEnvironment.application);
 
-    Picasso picasso = new Picasso.Builder(Robolectric.application).build();
+    Picasso picasso = new Picasso.Builder(RuntimeEnvironment.application).build();
     try {
       Picasso.setSingletonInstance(picasso);
       fail("Can't set singleton instance after with().");
@@ -387,9 +409,9 @@ public class PicassoTest {
 
   @Test public void setSingleInstanceReturnedFromWith() {
     Picasso.singleton = null;
-    Picasso picasso = new Picasso.Builder(Robolectric.application).build();
+    Picasso picasso = new Picasso.Builder(RuntimeEnvironment.application).build();
     Picasso.setSingletonInstance(picasso);
-    assertThat(Picasso.with(Robolectric.application)).isSameAs(picasso);
+    assertThat(Picasso.with(RuntimeEnvironment.application)).isSameAs(picasso);
   }
 
   @Test public void shutdownClearsDeferredRequests() {
@@ -520,12 +542,12 @@ public class PicassoTest {
   }
 
   @Test public void builderWithoutRequestHandler() {
-    Picasso picasso = new Picasso.Builder(Robolectric.application).build();
+    Picasso picasso = new Picasso.Builder(RuntimeEnvironment.application).build();
     assertThat(picasso.getRequestHandlers()).isNotEmpty().doesNotContain(requestHandler);
   }
 
   @Test public void builderWithRequestHandler() {
-    Picasso picasso = new Picasso.Builder(Robolectric.application)
+    Picasso picasso = new Picasso.Builder(RuntimeEnvironment.application)
         .addRequestHandler(requestHandler).build();
     assertThat(picasso.getRequestHandlers()).isNotNull().isNotEmpty().contains(requestHandler);
   }
@@ -539,7 +561,7 @@ public class PicassoTest {
   }
 
   @Test public void builderWithDebugIndicators() {
-    Picasso picasso = new Picasso.Builder(Robolectric.application).indicatorsEnabled(true).build();
+    Picasso picasso = new Picasso.Builder(RuntimeEnvironment.application).indicatorsEnabled(true).build();
     assertThat(picasso.areIndicatorsEnabled()).isTrue();
   }
 

@@ -2,22 +2,25 @@ language: android
 
 android:
   components:
-    - build-tools-20.0.0
-    - android-17
-  licenses:
-    - android-sdk-license-5be876d5
+    - tools
+    - platform-tools
+    - build-tools-23.0.3
+    - extra-android-m2repository
+    - android-23
 
 jdk:
-  - oraclejdk7
   - oraclejdk8
+
+script:
+  - ./gradlew clean check
 
 after_success:
   - .buildscript/deploy_snapshot.sh
 
 env:
   global:
-    - secure: "K6cyrlYhMmCHeez4uwkcQ5QeRLdCiegbbHnj8qKzbgcu0cDsvr2mMr6LLtjMOay1KMaxrW3QBFqz5nzTs/X0UnLl8jnt0Qdsf44BlIIZcJ9oldXFKAAWUZ3wlHTdz8ll+EBA31O1hkjAqRY4RDvS1hk842pRxXae3Dfodnjhz24="
-    - secure: "pOUA/hwXvpwt7VeRIoAZPiIn2qc88c8/sx1AhN3YhSyCiERLEtuxZqFmCgZE/80U41sBlvg75lpvXpEsND4eriYiRNMDPyD7el2NYxTzseWAykZYe1+Gaeiq1mO83w4pTI7QUrrkU/9+rl9Ccqe6E0heER510ERyLH0nGb8vaRM="
+    - secure: "ewGvOsV2RSG7Zt4RIwc53LhC5cxN7TP1Bo6Wy/LVNLNMfvD5X1+z1KPzP4j036zAQ6fq6Oi/Y2Mn0HLYrmVxHInXq9rMzHVDRC0ygO1r/rQ4SHli8ZjiMOjICLn2rBdgZMN2UVca6iFblIkSBu7lAsU0hSL/fn5V840YIysX8Rk="
+    - secure: "CO/LRw7XKHBOYrwY7uUhwcDpkmQReYKxEWn2jX37k5fHPFU9Jps1rLrXlOU0OD5H2sAdnT2SaLLAd0lW9/dvrYbSDcmvrlDtHitg+uWe6r67kXOQpQty7jj8QKt660ThSbwrO8nSTPXzbbUPBdisE5TMyrUj1AgEhvjEEH2uQAg="
 
 branches:
   except:
@@ -30,4 +33,4 @@ sudo: false
 
 cache:
   directories:
-    - $HOME/.m2
+    - $HOME/.gradle

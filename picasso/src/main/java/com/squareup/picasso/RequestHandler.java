@@ -18,6 +18,9 @@ package com.squareup.picasso;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.NetworkInfo;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -54,19 +57,19 @@ public abstract class RequestHandler {
     private final InputStream stream;
     private final int exifOrientation;
 
-    public Result(Bitmap bitmap, Picasso.LoadedFrom loadedFrom) {
+    public Result(@NonNull Bitmap bitmap, @NonNull Picasso.LoadedFrom loadedFrom) {
       this(checkNotNull(bitmap, "bitmap == null"), null, loadedFrom, 0);
     }
 
-    public Result(InputStream stream, Picasso.LoadedFrom loadedFrom) {
+    public Result(@NonNull InputStream stream, @NonNull Picasso.LoadedFrom loadedFrom) {
       this(null, checkNotNull(stream, "stream == null"), loadedFrom, 0);
     }
 
-    public Result(InputStream stream, Picasso.LoadedFrom loadedFrom, int exifOrientation) {
-      this(null, checkNotNull(stream, "stream == null"), loadedFrom, exifOrientation);
-    }
-
-    Result(Bitmap bitmap, InputStream stream, Picasso.LoadedFrom loadedFrom, int exifOrientation) {
+    Result(
+        @Nullable Bitmap bitmap,
+        @Nullable InputStream stream,
+        @NonNull Picasso.LoadedFrom loadedFrom,
+        int exifOrientation) {
       if (!(bitmap != null ^ stream != null)) {
         throw new AssertionError();
       }
@@ -77,12 +80,12 @@ public abstract class RequestHandler {
     }
 
     /** The loaded {@link Bitmap}. Mutually exclusive with {@link #getStream()}. */
-    public Bitmap getBitmap() {
+    @Nullable public Bitmap getBitmap() {
       return bitmap;
     }
 
     /** A stream of image data. Mutually exclusive with {@link #getBitmap()}. */
-    public InputStream getStream() {
+    @Nullable public InputStream getStream() {
       return stream;
     }
 
@@ -90,7 +93,7 @@ public abstract class RequestHandler {
      * Returns the resulting {@link Picasso.LoadedFrom} generated from a
      * {@link #load(Request, int)} call.
      */
-    public Picasso.LoadedFrom getLoadedFrom() {
+    @NonNull public Picasso.LoadedFrom getLoadedFrom() {
       return loadedFrom;
     }
 
@@ -114,7 +117,7 @@ public abstract class RequestHandler {
    * @param request the data from which the image should be resolved.
    * @param networkPolicy the {@link NetworkPolicy} for this request.
    */
-  public abstract Result load(Request request, int networkPolicy) throws IOException;
+  @Nullable public abstract Result load(Request request, int networkPolicy) throws IOException;
 
   int getRetryCount() {
     return 0;

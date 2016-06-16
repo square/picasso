@@ -17,6 +17,8 @@ package com.squareup.picasso;
 
 import android.graphics.Bitmap;
 import android.net.NetworkInfo;
+import android.support.annotation.Nullable;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -43,7 +45,7 @@ class NetworkRequestHandler extends RequestHandler {
     return (SCHEME_HTTP.equals(scheme) || SCHEME_HTTPS.equals(scheme));
   }
 
-  @Override public Result load(Request request, int networkPolicy) throws IOException {
+  @Override @Nullable public Result load(Request request, int networkPolicy) throws IOException {
     Response response = downloader.load(request.uri, request.networkPolicy);
     if (response == null) {
       return null;

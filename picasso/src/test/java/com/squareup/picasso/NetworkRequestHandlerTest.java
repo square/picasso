@@ -18,6 +18,7 @@ package com.squareup.picasso;
 import android.graphics.Bitmap;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,8 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
+import org.robolectric.RobolectricGradleTestRunner;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso.TestUtils.URI_1;
@@ -43,8 +43,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@RunWith(RobolectricGradleTestRunner.class)
 public class NetworkRequestHandlerTest {
 
   @Mock Picasso picasso;
@@ -134,7 +133,7 @@ public class NetworkRequestHandlerTest {
   @Test public void downloaderCanReturnBitmapDirectly() throws Exception {
     final Bitmap expected = Bitmap.createBitmap(10, 10, ARGB_8888);
     Downloader bitmapDownloader = new Downloader() {
-      @Override public Response load(Uri uri, int networkPolicy) throws IOException {
+      @Override public Response load(@NonNull Uri uri, int networkPolicy) throws IOException {
         return new Response(expected, false);
       }
 
@@ -149,4 +148,21 @@ public class NetworkRequestHandlerTest {
     assertThat(result.getStream()).isNull();
   }
 
+  @Test public void downloaderInputStreamNotDecoded() throws Exception {
+    final InputStream is = new ByteArrayInputStream(new byte[] { 'a' });
+    Downloader bitmapDownloader = new Downloader() {
+      @Override public Response load(@NonNull Uri uri, int networkPolicy) throws IOException {
+        return new Response(is, false, 1);
+      }
+
+      @Override public void shutdown() {
+      }
+    };
+    Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
+    NetworkRequestHandler customNetworkHandler = new NetworkRequestHandler(bitmapDownloader, stats);
+
+    RequestHandler.Result result = customNetworkHandler.load(action.getRequest(), 0);
+    assertThat(result.getStream()).isSameAs(is);
+    assertThat(result.getBitmap()).isNull();
+  }
 }

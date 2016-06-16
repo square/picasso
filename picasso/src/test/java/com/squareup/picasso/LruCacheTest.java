@@ -23,15 +23,14 @@ import java.util.List;
 import java.util.Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
+import org.robolectric.RobolectricGradleTestRunner;
 
 import static android.graphics.Bitmap.Config.ALPHA_8;
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.fail;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@RunWith(RobolectricGradleTestRunner.class)
 public class LruCacheTest {
   // The use of ALPHA_8 simplifies the size math in tests since only one byte is used per-pixel.
   private final Bitmap A = Bitmap.createBitmap(1, 1, ALPHA_8);
@@ -176,6 +175,25 @@ public class LruCacheTest {
     assertThat(cache.size()).isEqualTo(1);
     cache.clearKeyUri("Hello");
     assertThat(cache.size()).isZero();
+  }
+
+  @Test public void overMaxSizeDoesNotClear() {
+    LruCache cache = new LruCache(16);
+    Bitmap size4 = Bitmap.createBitmap(2, 2, ALPHA_8);
+    Bitmap size16 = Bitmap.createBitmap(4, 4, ALPHA_8);
+    Bitmap size25 = Bitmap.createBitmap(5, 5, ALPHA_8);
+    cache.set("4", size4);
+    expectedPutCount++;
+    assertHit(cache, "4", size4);
+    cache.set("16", size16);
+    expectedPutCount++;
+    expectedEvictionCount++; // size4 was evicted.
+    assertMiss(cache, "4");
+    assertHit(cache, "16", size16);
+    cache.set("25", size25);
+    assertHit(cache, "16", size16);
+    assertMiss(cache, "25");
+    assertEquals(cache.size(), 16);
   }
 
   private void assertHit(LruCache cache, String key, Bitmap value) {

@@ -22,6 +22,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.IBinder;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.RemoteViews;

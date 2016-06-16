@@ -16,8 +16,7 @@
 package com.squareup.picasso;
 
 import android.net.Uri;
-import com.squareup.okhttp.Cache;
-import com.squareup.okhttp.OkHttpClient;
+import okhttp3.OkHttpClient;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -27,14 +26,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@RunWith(RobolectricGradleTestRunner.class)
+@Config(shadows = { Shadows.ShadowNetwork.class })
 public class OkHttp3DownloaderTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   @Rule public MockWebServer server = new MockWebServer();
@@ -119,11 +118,17 @@ public class OkHttp3DownloaderTest {
     }
   }
 
-  @Test public void shutdownClosesCache() throws Exception {
-    OkHttpClient client = new OkHttpClient();
-    Cache cache = new Cache(temporaryFolder.getRoot(), 100);
-    client.setCache(cache);
-    new OkHttpDownloader(client).shutdown();
+  @Test public void shutdownClosesCacheIfNotShared() throws Exception {
+    OkHttp3Downloader downloader = new OkHttp3Downloader(temporaryFolder.getRoot());
+    okhttp3.Cache cache = downloader.getCache();
+    downloader.shutdown();
     assertThat(cache.isClosed()).isTrue();
+  }
+
+  @Test public void shutdownDoesNotCloseCacheIfSharedClient() throws Exception {
+    okhttp3.Cache cache = new okhttp3.Cache(temporaryFolder.getRoot(), 100);
+    OkHttpClient client = new OkHttpClient.Builder().cache(cache).build();
+    new OkHttp3Downloader(client).shutdown();
+    assertThat(cache.isClosed()).isFalse();
   }
 }

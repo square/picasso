@@ -1,0 +1,43 @@
+buildscript {
+  dependencies {
+    classpath dep.androidPlugin
+  }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+  compileSdkVersion rootProject.ext.compileSdkVersion
+  buildToolsVersion rootProject.ext.buildToolsVersion
+
+  compileOptions {
+    sourceCompatibility rootProject.ext.sourceCompatibilityVersion
+    targetCompatibility rootProject.ext.targetCompatibilityVersion
+  }
+
+  lintOptions {
+    textOutput 'stdout'
+    textReport true
+  }
+
+  dexOptions {
+    preDexLibraries = !rootProject.ext.isCi
+  }
+
+  defaultConfig {
+    minSdkVersion rootProject.ext.minSdkVersion
+  }
+}
+
+dependencies {
+  compile project(':picasso')
+  compile dep.pollexor
+  compile dep.supportAnnotations
+  testCompile dep.junit
+  testCompile dep.robolectric
+  testCompile dep.fest
+  testCompile dep.festAndroid
+  testCompile dep.pollexor
+}
+
+apply from: rootProject.file('gradle/gradle-mvn-push.gradle')

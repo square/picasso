@@ -20,9 +20,8 @@ import android.widget.RemoteViews;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
+import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RuntimeEnvironment;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso.Picasso.LoadedFrom.NETWORK;
@@ -34,8 +33,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@RunWith(RobolectricGradleTestRunner.class)
 public class RemoteViewsActionTest {
 
   private Picasso picasso;
@@ -76,7 +74,7 @@ public class RemoteViewsActionTest {
   }
 
   private Picasso createPicasso() {
-    return new Picasso(Robolectric.application, mock(Dispatcher.class), Cache.NONE, null,
+    return new Picasso(RuntimeEnvironment.application, mock(Dispatcher.class), Cache.NONE, null,
         IDENTITY, null, mock(Stats.class), ARGB_8888, false, false);
   }
 

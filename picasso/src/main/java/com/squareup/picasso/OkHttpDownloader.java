@@ -17,10 +17,13 @@ package com.squareup.picasso;
 
 import android.content.Context;
 import android.net.Uri;
+import android.support.annotation.NonNull;
+
 import com.squareup.okhttp.CacheControl;
 import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.ResponseBody;
 import com.squareup.okhttp.Request;
+import com.squareup.okhttp.ResponseBody;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +39,7 @@ public class OkHttpDownloader implements Downloader {
   }
 
   private final OkHttpClient client;
+  private boolean sharedClient = true;
 
   /**
    * Create new downloader that uses OkHttp. This will install an image cache into your application
@@ -74,6 +78,7 @@ public class OkHttpDownloader implements Downloader {
    */
   public OkHttpDownloader(final File cacheDir, final long maxSize) {
     this(defaultOkHttpClient());
+    sharedClient = false;
     client.setCache(new com.squareup.okhttp.Cache(cacheDir, maxSize));
   }
 
@@ -89,7 +94,7 @@ public class OkHttpDownloader implements Downloader {
     return client;
   }
 
-  @Override public Response load(Uri uri, int networkPolicy) throws IOException {
+  @Override public Response load(@NonNull Uri uri, int networkPolicy) throws IOException {
     CacheControl cacheControl = null;
     if (networkPolicy != 0) {
       if (NetworkPolicy.isOfflineOnly(networkPolicy)) {
@@ -126,11 +131,13 @@ public class OkHttpDownloader implements Downloader {
   }
 
   @Override public void shutdown() {
-    com.squareup.okhttp.Cache cache = client.getCache();
-    if (cache != null) {
-      try {
-        cache.close();
-      } catch (IOException ignored) {
+    if (!sharedClient) {
+      com.squareup.okhttp.Cache cache = client.getCache();
+      if (cache != null) {
+        try {
+          cache.close();
+        } catch (IOException ignored) {
+        }
       }
     }
   }

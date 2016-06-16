@@ -19,6 +19,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.NetworkInfo;
+import android.os.Build;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -128,7 +129,7 @@ class BitmapHunter implements Runnable {
     final boolean calculateSize = RequestHandler.requiresInSampleSize(options);
 
     boolean isWebPFile = Utils.isWebPFile(stream);
-    boolean isPurgeable = request.purgeable && android.os.Build.VERSION.SDK_INT < 21;
+    boolean isPurgeable = request.purgeable && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP;
     markStream.reset(mark);
     // We decode from a byte array because, a) when decoding a WebP network stream, BitmapFactory
     // throws a JNI Exception, so we workaround by decoding a byte array, or b) user requested
