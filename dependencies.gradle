@@ -18,7 +18,7 @@ ext {
       junit              : 'junit:junit:4.10',
       fest               : 'org.easytesting:fest-assert-core:2.0M10',
       festAndroid        : 'com.squareup:fest-android:1.0.6',
-      robolectric        : 'org.robolectric:robolectric:2.2',
+      robolectric        : 'org.robolectric:robolectric:3.1',
       mockito            : 'org.mockito:mockito-core:1.9.5'
   ]
 

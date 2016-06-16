@@ -25,7 +25,6 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 
 import static com.squareup.picasso.TestUtils.TRANSFORM_REQUEST_ANSWER;
 import static com.squareup.picasso.TestUtils.URI_1;
@@ -43,7 +42,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE, reportSdk = 11)
 @SuppressWarnings("deprecation")
 public class DeferredRequestCreatorTest {
 
@@ -54,7 +52,6 @@ public class DeferredRequestCreatorTest {
     initMocks(this);
   }
 
-  @Config(reportSdk = 12)
   @Test public void initAddsAttachListenerWhichDefersLayoutListener() {
     ImageView target = mockFitImageViewTarget(true);
     ViewTreeObserver observer = target.getViewTreeObserver();
@@ -70,7 +67,6 @@ public class DeferredRequestCreatorTest {
     verify(observer).addOnPreDrawListener(request);
   }
 
-  @Config(reportSdk = 12)
   @Test public void initAttachedTargetSkipsAttachListener() {
     ImageView target = mockFitImageViewTarget(true);
     ViewTreeObserver observer = target.getViewTreeObserver();
@@ -80,15 +76,7 @@ public class DeferredRequestCreatorTest {
     verify(observer).addOnPreDrawListener(request);
   }
 
-  @Test public void initAttachesLayoutListenerApi11() {
-    ImageView target = mockFitImageViewTarget(true);
-    ViewTreeObserver observer = target.getViewTreeObserver();
-    DeferredRequestCreator request = new DeferredRequestCreator(mock(RequestCreator.class), target);
-    verify(observer).addOnPreDrawListener(request);
-  }
-
-  @Config(reportSdk = 12)
-  @Test public void cancelRemovesAttachListener() {
+  @Test public void cancelWhileAttachedRemovesAttachListener() {
     ImageView target = mockFitImageViewTarget(true);
     DeferredRequestCreator request = new DeferredRequestCreator(mock(RequestCreator.class), target);
     verify(target).addOnAttachStateChangeListener(attachListenerCaptor.capture());
@@ -96,16 +84,9 @@ public class DeferredRequestCreatorTest {
     verify(target).removeOnAttachStateChangeListener(attachListenerCaptor.getValue());
   }
 
-  @Test public void cancelRemovesLayoutListenerApi11() {
+  @Test public void cancelTwiceWhileAttachedOnlyPerformsOnce() {
     ImageView target = mockFitImageViewTarget(true);
-    ViewTreeObserver observer = target.getViewTreeObserver();
-    DeferredRequestCreator request = new DeferredRequestCreator(mock(RequestCreator.class), target);
-    request.cancel();
-    verify(observer).removeOnPreDrawListener(request);
-  }
-
-  @Test public void cancelTwiceOnlyPerformsOnce() {
-    ImageView target = mockFitImageViewTarget(true);
+    when(target.getWindowToken()).thenReturn(mock(IBinder.class));
     ViewTreeObserver observer = target.getViewTreeObserver();
     DeferredRequestCreator request = new DeferredRequestCreator(mock(RequestCreator.class), target);
     request.cancel();
@@ -132,8 +113,9 @@ public class DeferredRequestCreatorTest {
     verify(creator).clearTag();
   }
 
-  @Test public void onLayoutSkipsIfTargetIsNull() {
+  @Test public void onLayoutSkipsIfTargetIsNullAfterAttach() {
     ImageView target = mockFitImageViewTarget(true);
+    when(target.getWindowToken()).thenReturn(mock(IBinder.class));
     RequestCreator creator = mock(RequestCreator.class);
     DeferredRequestCreator request = new DeferredRequestCreator(creator, target);
     ViewTreeObserver viewTreeObserver = target.getViewTreeObserver();
@@ -144,8 +126,9 @@ public class DeferredRequestCreatorTest {
     verifyNoMoreInteractions(viewTreeObserver);
   }
 
-  @Test public void onLayoutSkipsIfViewTreeObserverIsDead() {
+  @Test public void onLayoutSkipsIfViewIsAttachedAndViewTreeObserverIsDead() {
     ImageView target = mockFitImageViewTarget(false);
+    when(target.getWindowToken()).thenReturn(mock(IBinder.class));
     RequestCreator creator = mock(RequestCreator.class);
     DeferredRequestCreator request = new DeferredRequestCreator(creator, target);
     ViewTreeObserver viewTreeObserver = target.getViewTreeObserver();

@@ -20,12 +20,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
+import org.robolectric.RobolectricGradleTestRunner;
 
-import static android.os.Build.VERSION_CODES.FROYO;
-import static android.os.Build.VERSION_CODES.GINGERBREAD;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_1;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_URI;
 import static com.squareup.picasso.TestUtils.RESOURCE_TYPE_URI;
@@ -36,8 +32,7 @@ import static com.squareup.picasso.Utils.isWebPFile;
 import static com.squareup.picasso.Utils.parseResponseSourceHeader;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@RunWith(RobolectricGradleTestRunner.class)
 public class UtilsTest {
 
   @Test public void matchingRequestsHaveSameKey() throws Exception {
@@ -118,17 +113,5 @@ public class UtilsTest {
     Resources res = Utils.getResources(mockPackageResourceContext(), request);
     int id = Utils.getResourceId(res, request);
     assertThat(id).isEqualTo(RESOURCE_ID_1);
-  }
-
-  @Test @Config(reportSdk=GINGERBREAD) public void useOkHttpByDefault() throws Exception {
-    Downloader downloader = Utils.createDefaultDownloader(Robolectric.application);
-    assertThat(downloader).isInstanceOf(OkHttp3Downloader.class);
-  }
-
-  @Test @Config(reportSdk=FROYO) public void noOkHttpInFroyo() throws Exception {
-    Downloader downloader = Utils.createDefaultDownloader(Robolectric.application);
-    assertThat(downloader)
-        .isNotInstanceOf(OkHttpDownloader.class)
-        .isNotInstanceOf(OkHttp3Downloader.class);
   }
 }

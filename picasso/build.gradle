@@ -38,6 +38,7 @@ dependencies {
   testCompile dep.junit
   testCompile dep.fest
   testCompile dep.festAndroid
+  testCompile dep.supportV4
   testCompile dep.robolectric
   testCompile dep.mockito
   testCompile dep.mockWebServer
