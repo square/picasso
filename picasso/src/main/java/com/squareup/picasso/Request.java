@@ -21,6 +21,7 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import android.support.annotation.Px;
 import com.squareup.picasso.Picasso.Priority;
 
 import java.util.ArrayList;
@@ -307,7 +308,7 @@ public final class Request {
      * Resize the image to the specified size in pixels.
      * Use 0 as desired dimension to resize keeping aspect ratio.
      */
-    public Builder resize(int targetWidth, int targetHeight) {
+    public Builder resize(@Px int targetWidth, @Px int targetHeight) {
       if (targetWidth < 0) {
         throw new IllegalArgumentException("Width must be positive number or 0.");
       }

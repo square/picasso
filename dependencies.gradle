@@ -1,11 +1,12 @@
 ext {
-  compileSdkVersion = 23
-  buildToolsVersion = '23.0.3'
+  compileSdkVersion = 24
+  buildToolsVersion = '24.0.0'
   minSdkVersion = 14
-  targetSdkVersion = 23
+  targetSdkVersion = 24
   sourceCompatibilityVersion = JavaVersion.VERSION_1_7
   targetCompatibilityVersion = JavaVersion.VERSION_1_7
   okhttp3Version = '3.0.1'
+  supportLibrariesVersion = '24.0.0'
 
   dep = [
       androidPlugin      : 'com.android.tools.build:gradle:2.1.2',
@@ -13,8 +14,8 @@ ext {
       okhttp3            : "com.squareup.okhttp3:okhttp:$okhttp3Version",
       mockWebServer      : "com.squareup.okhttp3:mockwebserver:$okhttp3Version",
       pollexor           : 'com.squareup:pollexor:2.0.0',
-      supportV4          : 'com.android.support:support-v4:23.4.0',
-      supportAnnotations : 'com.android.support:support-annotations:23.4.0',
+      supportV4          : "com.android.support:support-v4:$supportLibrariesVersion",
+      supportAnnotations : "com.android.support:support-annotations:$supportLibrariesVersion",
       junit              : 'junit:junit:4.10',
       fest               : 'org.easytesting:fest-assert-core:2.0M10',
       festAndroid        : 'com.squareup:fest-android:1.0.6',
