@@ -132,7 +132,6 @@ public class LruCache implements Cache {
   }
 
   @Override public final synchronized void clearKeyUri(String uri) {
-    boolean sizeChanged = false;
     int uriLength = uri.length();
     for (Iterator<Map.Entry<String, Bitmap>> i = map.entrySet().iterator(); i.hasNext();) {
       Map.Entry<String, Bitmap> entry = i.next();
@@ -142,11 +141,7 @@ public class LruCache implements Cache {
       if (newlineIndex == uriLength && key.substring(0, newlineIndex).equals(uri)) {
         i.remove();
         size -= Utils.getBitmapBytes(value);
-        sizeChanged = true;
       }
-    }
-    if (sizeChanged) {
-      trimToSize(maxSize);
     }
   }
 
