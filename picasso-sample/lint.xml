@@ -2,6 +2,6 @@
 
 <lint>
   <issue id="NewApi">
-    <ignore path="res/values/styles.xml" />
+    <ignore path="src/main/res/values/styles.xml" />
   </issue>
 </lint>

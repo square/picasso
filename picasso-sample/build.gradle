@@ -37,7 +37,7 @@ android {
 
   defaultConfig {
     minSdkVersion rootProject.ext.minSdkVersion
-    minSdkVersion rootProject.ext.targetSdkVersion
+    targetSdkVersion rootProject.ext.targetSdkVersion
     applicationId 'com.example.picasso'
 
     versionCode 1
