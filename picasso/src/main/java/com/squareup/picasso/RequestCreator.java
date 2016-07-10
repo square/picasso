@@ -685,7 +685,7 @@ public class RequestCreator {
       }
       int width = target.getWidth();
       int height = target.getHeight();
-      if (width == 0 || height == 0) {
+      if (width == 0 || height == 0 || target.isLayoutRequested()) {
         if (setPlaceholder) {
           setPlaceholder(target, getPlaceholderDrawable());
         }

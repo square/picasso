@@ -381,6 +381,17 @@ public class RequestCreatorTest {
   }
 
   @Test
+  public void intoImageViewWithFitAndRequestedLayoutQueuesDeferredImageViewRequest() {
+    ImageView target = mockFitImageViewTarget(true);
+    when(target.getWidth()).thenReturn(100);
+    when(target.getHeight()).thenReturn(100);
+    when(target.isLayoutRequested()).thenReturn(true);
+    new RequestCreator(picasso, URI_1, 0).fit().into(target);
+    verify(picasso, never()).enqueueAndSubmit(any(Action.class));
+    verify(picasso).defer(eq(target), any(DeferredRequestCreator.class));
+  }
+
+  @Test
   public void intoImageViewWithFitAndDimensionsQueuesImageViewRequest() {
     ImageView target = mockFitImageViewTarget(true);
     when(target.getWidth()).thenReturn(100);
