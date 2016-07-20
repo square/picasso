@@ -23,15 +23,16 @@ import android.graphics.BitmapFactory;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore;
+
 import java.io.IOException;
 
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentUris.parseId;
 import static android.provider.MediaStore.Images;
-import static android.provider.MediaStore.Video;
 import static android.provider.MediaStore.Images.Thumbnails.FULL_SCREEN_KIND;
 import static android.provider.MediaStore.Images.Thumbnails.MICRO_KIND;
 import static android.provider.MediaStore.Images.Thumbnails.MINI_KIND;
+import static android.provider.MediaStore.Video;
 import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.FULL;
 import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.MICRO;
 import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.MINI;
@@ -40,6 +41,9 @@ import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 class MediaStoreRequestHandler extends ContentStreamRequestHandler {
   private static final String[] CONTENT_ORIENTATION = new String[] {
       Images.ImageColumns.ORIENTATION
+  };
+  private static final String[] CONTENT_DATA = new String[] {
+          Images.ImageColumns.DATA
   };
 
   MediaStoreRequestHandler(Context context) {
@@ -103,6 +107,37 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
   }
 
   static int getExifOrientation(ContentResolver contentResolver, Uri uri) {
+    int exifOrientation = getExitOrientationFromFile(contentResolver, uri);
+    if (exifOrientation == ExifInterface.ORIENTATION_UNDEFINED) {
+      exifOrientation = getExifOrientationFromContentResolver(contentResolver, uri);
+    }
+    return exifOrientation;
+  }
+
+  static int getExitOrientationFromFile(ContentResolver contentResolver, Uri uri) {
+    Cursor cursor = null;
+    try {
+      contentResolver.openInputStream(uri);
+      cursor = contentResolver.query(uri, CONTENT_DATA, null, null, null);
+      if (cursor == null || !cursor.moveToFirst()) {
+        return 0;
+      }
+      String filePath = cursor.getString(0);
+      ExifInterface exifInterface = new ExifInterface(filePath);
+      return exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+              ExifInterface.ORIENTATION_UNDEFINED);
+
+    } catch (Exception ignored) {
+      // In case of error during reading exif, assume no rotation.
+      return ExifInterface.ORIENTATION_UNDEFINED;
+    } finally {
+      if (cursor != null) {
+        cursor.close();
+      }
+    }
+  }
+
+  static int getExifOrientationFromContentResolver(ContentResolver contentResolver, Uri uri) {
     Cursor cursor = null;
     try {
       cursor = contentResolver.query(uri, CONTENT_ORIENTATION, null, null, null);
