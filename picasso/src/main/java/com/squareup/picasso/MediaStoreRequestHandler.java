@@ -43,7 +43,7 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
       Images.ImageColumns.ORIENTATION
   };
   private static final String[] CONTENT_DATA = new String[] {
-          Images.ImageColumns.DATA
+      Images.ImageColumns.DATA
   };
 
   MediaStoreRequestHandler(Context context) {
@@ -117,7 +117,6 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
   static int getExitOrientationFromFile(ContentResolver contentResolver, Uri uri) {
     Cursor cursor = null;
     try {
-      contentResolver.openInputStream(uri);
       cursor = contentResolver.query(uri, CONTENT_DATA, null, null, null);
       if (cursor == null || !cursor.moveToFirst()) {
         return 0;
