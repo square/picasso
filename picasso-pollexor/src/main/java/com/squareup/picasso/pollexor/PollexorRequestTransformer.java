@@ -1,11 +1,14 @@
 package com.squareup.picasso.pollexor;
 
 import android.net.Uri;
+import android.os.Build;
 import com.squareup.picasso.Request;
 import com.squareup.pollexor.Thumbor;
 import com.squareup.pollexor.ThumborUrlBuilder;
+import com.squareup.pollexor.ThumborUrlBuilder.ImageFormat;
 
 import static com.squareup.picasso.Picasso.RequestTransformer;
+import static com.squareup.pollexor.ThumborUrlBuilder.format;
 
 /**
  * A {@link RequestTransformer} that changes requests to use {@link Thumbor} for some remote
@@ -62,6 +65,11 @@ public class PollexorRequestTransformer implements RequestTransformer {
     if (request.centerInside) {
       urlBuilder.fitIn();
       newRequest.clearCenterInside();
+    }
+
+    // If the Android version is modern enough use WebP for downloading.
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+      urlBuilder.filter(format(ImageFormat.WEBP));
     }
 
     // Update the request with the completed Thumbor URL.

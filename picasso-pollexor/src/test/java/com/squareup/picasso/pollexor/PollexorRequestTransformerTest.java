@@ -3,18 +3,21 @@ package com.squareup.picasso.pollexor;
 import android.net.Uri;
 import com.squareup.picasso.Request;
 import com.squareup.pollexor.Thumbor;
+import com.squareup.pollexor.ThumborUrlBuilder;
+import com.squareup.pollexor.ThumborUrlBuilder.ImageFormat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
 
 import static com.squareup.picasso.Picasso.RequestTransformer;
+import static com.squareup.pollexor.ThumborUrlBuilder.format;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.annotation.Config.NONE;
 
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(
-    sdk = 18,
+    sdk = 17,
     manifest = NONE,
     constants = BuildConfig.class
 )
@@ -52,6 +55,21 @@ public class PollexorRequestTransformerTest {
     assertThat(output.hasSize()).isFalse();
 
     String expected = Thumbor.create(HOST).buildImage(IMAGE).resize(50, 50).toUrl();
+    assertThat(output.uri.toString()).isEqualTo(expected);
+  }
+
+  @Config(sdk = 18)
+  @Test public void simpleResizeOnJbMr2UsesWebP() {
+    Request input = new Request.Builder(IMAGE_URI).resize(50, 50).build();
+    Request output = transformer.transformRequest(input);
+    assertThat(output).isNotSameAs(input);
+    assertThat(output.hasSize()).isFalse();
+
+    String expected = Thumbor.create(HOST)
+        .buildImage(IMAGE)
+        .resize(50, 50)
+        .filter(format(ImageFormat.WEBP))
+        .toUrl();
     assertThat(output.uri.toString()).isEqualTo(expected);
   }
 
