@@ -26,9 +26,9 @@ import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
+import android.view.Gravity;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -242,7 +242,17 @@ public class RequestCreator {
    * requested bounds and then crops the extra.
    */
   public RequestCreator centerCrop() {
-    data.centerCrop();
+    data.centerCrop(Gravity.CENTER);
+    return this;
+  }
+
+  /**
+   * Crops an image inside of the bounds specified by {@link #resize(int, int)} rather than
+   * distorting the aspect ratio. This cropping technique scales the image so that it fills the
+   * requested bounds and then crops the extra, preferring the contents at {@code alignGravity}.
+   */
+  public RequestCreator centerCrop(int alignGravity) {
+    data.centerCrop(alignGravity);
     return this;
   }
 
@@ -685,7 +695,7 @@ public class RequestCreator {
       }
       int width = target.getWidth();
       int height = target.getHeight();
-      if (width == 0 || height == 0) {
+      if (width == 0 || height == 0 || target.isLayoutRequested()) {
         if (setPlaceholder) {
           setPlaceholder(target, getPlaceholderDrawable());
         }

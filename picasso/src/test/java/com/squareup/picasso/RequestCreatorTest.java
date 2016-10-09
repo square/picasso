@@ -54,7 +54,7 @@ import static com.squareup.picasso.TestUtils.mockNotification;
 import static com.squareup.picasso.TestUtils.mockRemoteViews;
 import static com.squareup.picasso.TestUtils.mockTarget;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.fest.assertions.api.Assertions.fail;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -381,6 +381,17 @@ public class RequestCreatorTest {
   }
 
   @Test
+  public void intoImageViewWithFitAndRequestedLayoutQueuesDeferredImageViewRequest() {
+    ImageView target = mockFitImageViewTarget(true);
+    when(target.getWidth()).thenReturn(100);
+    when(target.getHeight()).thenReturn(100);
+    when(target.isLayoutRequested()).thenReturn(true);
+    new RequestCreator(picasso, URI_1, 0).fit().into(target);
+    verify(picasso, never()).enqueueAndSubmit(any(Action.class));
+    verify(picasso).defer(eq(target), any(DeferredRequestCreator.class));
+  }
+
+  @Test
   public void intoImageViewWithFitAndDimensionsQueuesImageViewRequest() {
     ImageView target = mockFitImageViewTarget(true);
     when(target.getWidth()).thenReturn(100);
@@ -622,7 +633,7 @@ public class RequestCreatorTest {
 
   @Test public void nullAdditionalMemoryPolicy() {
     try {
-      new RequestCreator().memoryPolicy(MemoryPolicy.NO_CACHE, null);
+      new RequestCreator().memoryPolicy(MemoryPolicy.NO_CACHE, (MemoryPolicy[]) null);
       fail("Null additional memory policy should throw exception.");
     } catch (IllegalArgumentException ignored) {
     }
@@ -646,7 +657,7 @@ public class RequestCreatorTest {
 
   @Test public void nullAdditionalNetworkPolicy() {
     try {
-      new RequestCreator().networkPolicy(NetworkPolicy.NO_CACHE, null);
+      new RequestCreator().networkPolicy(NetworkPolicy.NO_CACHE, (NetworkPolicy[]) null);
       fail("Null additional network policy should throw exception.");
     } catch (IllegalArgumentException ignored) {
     }

@@ -17,9 +17,7 @@ package com.squareup.picasso;
 
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Build;
 import android.telephony.TelephonyManager;
-
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -79,13 +77,8 @@ class PicassoExecutorService extends ThreadPoolExecutor {
   }
 
   private void setThreadCount(int threadCount) {
-    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-      setMaximumPoolSize(threadCount);
-      setCorePoolSize(threadCount);
-    } else {
-      setCorePoolSize(threadCount);
-      setMaximumPoolSize(threadCount);
-    }
+    setCorePoolSize(threadCount);
+    setMaximumPoolSize(threadCount);
   }
 
   @Override

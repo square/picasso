@@ -19,6 +19,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.net.Uri;
+import android.view.Gravity;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -773,6 +774,78 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 4.0 4.0");
   }
 
+  @Test public void centerCropWithGravityHorizontalLeft() {
+    Bitmap source = Bitmap.createBitmap(20, 10, ARGB_8888);
+    Request data = new Request.Builder(URI_1).resize(40, 40).centerCrop(Gravity.LEFT).build();
+
+    Bitmap result = transformResult(data, source, 0);
+
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(10);
+    assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(10);
+
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 4.0 4.0");
+  }
+
+  @Test public void centerCropWithGravityHorizontalRight() {
+    Bitmap source = Bitmap.createBitmap(20, 10, ARGB_8888);
+    Request data = new Request.Builder(URI_1).resize(40, 40).centerCrop(Gravity.RIGHT).build();
+
+    Bitmap result = transformResult(data, source, 0);
+
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(10);
+    assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(10);
+    assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(10);
+
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 4.0 4.0");
+  }
+
+  @Test public void centerCropWithGravityVerticalTop() {
+    Bitmap source = Bitmap.createBitmap(10, 20, ARGB_8888);
+    Request data = new Request.Builder(URI_1).resize(40, 40).centerCrop(Gravity.TOP).build();
+
+    Bitmap result = transformResult(data, source, 0);
+
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(10);
+    assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(10);
+
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 4.0 4.0");
+  }
+
+  @Test public void centerCropWithGravityVerticalBottom() {
+    Bitmap source = Bitmap.createBitmap(10, 20, ARGB_8888);
+    Request data = new Request.Builder(URI_1).resize(40, 40).centerCrop(Gravity.BOTTOM).build();
+
+    Bitmap result = transformResult(data, source, 0);
+
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
+    assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(10);
+    assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(10);
+    assertThat(shadowBitmap.getCreatedFromHeight()).isEqualTo(10);
+
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 4.0 4.0");
+  }
+
   @Test public void centerCropWideTooLarge() {
     Bitmap source = Bitmap.createBitmap(200, 100, ARGB_8888);
     Request data = new Request.Builder(URI_1).resize(50, 50).centerCrop().build();
@@ -871,6 +944,54 @@ public class BitmapHunterTest {
     ShadowBitmap shadowBitmap = shadowOf(result);
     assertThat(shadowBitmap.getCreatedFromBitmap()).isNull();
     assertThat(shadowBitmap.getCreatedFromBitmap()).isNotSameAs(source);
+  }
+
+  @Test public void onlyScaleDownOriginalSmallerWidthIs0() {
+    Bitmap source = Bitmap.createBitmap(50, 50, ARGB_8888);
+    Request data = new Request.Builder(URI_1).resize(0, 60).onlyScaleDown().build();
+    Bitmap result = transformResult(data, source, 0);
+    assertThat(result).isSameAs(source);
+
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isNull();
+  }
+
+  @Test public void onlyScaleDownOriginalSmallerHeightIs0() {
+    Bitmap source = Bitmap.createBitmap(50, 50, ARGB_8888);
+    Request data = new Request.Builder(URI_1).resize(60, 0).onlyScaleDown().build();
+    Bitmap result = transformResult(data, source, 0);
+    assertThat(result).isSameAs(source);
+
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isNull();
+  }
+
+  @Test public void onlyScaleDownOriginalBiggerWidthIs0() {
+    Bitmap source = Bitmap.createBitmap(50, 50, ARGB_8888);
+    Request data = new Request.Builder(URI_1).resize(0, 40).onlyScaleDown().build();
+    Bitmap result = transformResult(data, source, 0);
+
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.8 0.8");
+  }
+
+  @Test public void onlyScaleDownOriginalBiggerHeightIs0() {
+    Bitmap source = Bitmap.createBitmap(50, 50, ARGB_8888);
+    Request data = new Request.Builder(URI_1).resize(40, 0).onlyScaleDown().build();
+    Bitmap result = transformResult(data, source, 0);
+
+    ShadowBitmap shadowBitmap = shadowOf(result);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+
+    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
+    ShadowMatrix shadowMatrix = shadowOf(matrix);
+
+    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.8 0.8");
   }
 
   @Test public void reusedBitmapIsNotRecycled() {

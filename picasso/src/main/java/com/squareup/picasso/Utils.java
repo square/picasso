@@ -206,7 +206,7 @@ final class Utils {
       builder.append(KEY_SEPARATOR);
     }
     if (data.centerCrop) {
-      builder.append("centerCrop").append(KEY_SEPARATOR);
+      builder.append("centerCrop:").append(data.centerCropGravity).append(KEY_SEPARATOR);
     } else if (data.centerInside) {
       builder.append("centerInside").append(KEY_SEPARATOR);
     }
@@ -310,7 +310,11 @@ final class Utils {
   static boolean isAirplaneModeOn(Context context) {
     ContentResolver contentResolver = context.getContentResolver();
     try {
-      return airplaneModeSetting(contentResolver);
+      if (SDK_INT < JELLY_BEAN_MR1) {
+        //noinspection deprecation
+        return Settings.System.getInt(contentResolver, Settings.System.AIRPLANE_MODE_ON, 0) != 0;
+      }
+      return Settings.Global.getInt(contentResolver, Settings.Global.AIRPLANE_MODE_ON, 0) != 0;
     } catch (NullPointerException e) {
       // https://github.com/square/picasso/issues/761, some devices might crash here, assume that
       // airplane mode is off.
@@ -439,15 +443,6 @@ final class Utils {
     static int getByteCount(Bitmap bitmap) {
       return bitmap.getByteCount();
     }
-  }
-
-  @TargetApi(JELLY_BEAN_MR1)
-  private static boolean airplaneModeSetting(ContentResolver contentResolver) {
-    if (SDK_INT < JELLY_BEAN_MR1) {
-      //noinspection deprecation
-      return Settings.System.getInt(contentResolver, Settings.System.AIRPLANE_MODE_ON, 0) != 0;
-    }
-    return Settings.Global.getInt(contentResolver, Settings.Global.AIRPLANE_MODE_ON, 0) != 0;
   }
 
   private static class OkHttpDownloaderCreator {
