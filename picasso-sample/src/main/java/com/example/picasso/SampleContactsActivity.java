@@ -37,15 +37,20 @@ public class SampleContactsActivity extends PicassoSampleActivity
     implements LoaderManager.LoaderCallbacks<Cursor> {
   private static final boolean IS_HONEYCOMB =
       Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB;
-  private final int PERMISSION_READ_CONTACTS = 123;
+
+  private final int permissionReadContacts = 123;
+
   private SampleContactsAdapter adapter;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.sample_contacts_activity);
 
-    if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-      ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, PERMISSION_READ_CONTACTS);
+    if (ContextCompat.checkSelfPermission(this,
+            Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+      ActivityCompat.requestPermissions(this,
+              new String[]{Manifest.permission.READ_CONTACTS},
+              permissionReadContacts);
     }
 
     adapter = new SampleContactsAdapter(this);
@@ -78,14 +83,19 @@ public class SampleContactsActivity extends PicassoSampleActivity
   }
 
   @Override
-  public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+  public void onRequestPermissionsResult(int requestCode,
+                                         @NonNull String[] permissions,
+                                         @NonNull int[] grantResults) {
 
     switch (requestCode) {
-      case PERMISSION_READ_CONTACTS:
+      case permissionReadContacts:
         if (grantResults.length < 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-          Toast.makeText(getApplicationContext(), "Contact Read Permission is required to access photos.", Toast.LENGTH_LONG).show();
+          Toast.makeText(getApplicationContext(),
+                  "Contact Read Permission is required to access photos.",
+                  Toast.LENGTH_LONG).show();
         }
-
+        break;
+      default:
         break;
     }
   }
