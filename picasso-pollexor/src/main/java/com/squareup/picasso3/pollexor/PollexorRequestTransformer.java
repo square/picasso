@@ -16,10 +16,17 @@ import static com.squareup.pollexor.ThumborUrlBuilder.format;
  */
 public class PollexorRequestTransformer implements RequestTransformer {
   private final Thumbor thumbor;
+  private final boolean alwaysTransform;
 
   /** Create a transformer for the specified {@link Thumbor}. */
   public PollexorRequestTransformer(Thumbor thumbor) {
+    this(thumbor, false);
+  }
+
+  /** Create a transformer for the specified {@link Thumbor}. */
+  public PollexorRequestTransformer(Thumbor thumbor, boolean alwaysTransform) {
     this.thumbor = thumbor;
+    this.alwaysTransform = alwaysTransform;
   }
 
   @Override public Request transformRequest(Request request) {
@@ -31,8 +38,9 @@ public class PollexorRequestTransformer implements RequestTransformer {
     if (!"https".equals(scheme) && !"http".equals(scheme)) {
       return request; // Thumbor only supports remote images.
     }
-    if (!request.hasSize()) {
-      return request; // Thumbor only works with resizing images.
+    // Only transform requests that have resizes unless `alwaysTransform` is set.
+    if (!request.hasSize() && !alwaysTransform) {
+      return request;
     }
 
     // Start building a new request for us to mutate.
@@ -41,9 +49,11 @@ public class PollexorRequestTransformer implements RequestTransformer {
     // Create the url builder to use.
     ThumborUrlBuilder urlBuilder = thumbor.buildImage(uri.toString());
 
-    // Resize the image to the target size.
-    urlBuilder.resize(request.targetWidth, request.targetHeight);
-    newRequest.clearResize();
+    // Resize the image to the target size if it has a size.
+    if (request.hasSize()) {
+      urlBuilder.resize(request.targetWidth, request.targetHeight);
+      newRequest.clearResize();
+    }
 
     // If the center inside flag is set, perform that with Thumbor as well.
     if (request.centerInside) {
