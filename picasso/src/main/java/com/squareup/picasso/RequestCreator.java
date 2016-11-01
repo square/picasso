@@ -350,8 +350,7 @@ public class RequestCreator {
    * Specifies the {@link MemoryPolicy} to use for this request. You may specify additional policy
    * options using the varargs parameter.
    */
-  public RequestCreator memoryPolicy(
-      @NonNull MemoryPolicy policy,
+  public RequestCreator memoryPolicy(@NonNull MemoryPolicy policy,
       @NonNull MemoryPolicy... additional) {
     if (policy == null) {
       throw new IllegalArgumentException("Memory policy cannot be null.");
@@ -375,8 +374,7 @@ public class RequestCreator {
    * Specifies the {@link NetworkPolicy} to use for this request. You may specify additional policy
    * options using the varargs parameter.
    */
-  public RequestCreator networkPolicy(
-      @NonNull NetworkPolicy policy,
+  public RequestCreator networkPolicy(@NonNull NetworkPolicy policy,
       @NonNull NetworkPolicy... additional) {
     if (policy == null) {
       throw new IllegalArgumentException("Network policy cannot be null.");
@@ -396,7 +394,8 @@ public class RequestCreator {
     return this;
   }
 
-  /** Set inPurgeable and inInputShareable when decoding. This will force the bitmap to be decoded
+  /**
+   * Set inPurgeable and inInputShareable when decoding. This will force the bitmap to be decoded
    * from a byte array instead of a stream, since inPurgeable only affects the former.
    * <p>
    * <em>Note</em>: as of API level 21 (Lollipop), the inPurgeable field is deprecated and will be
@@ -576,10 +575,7 @@ public class RequestCreator {
    * Asynchronously fulfills the request into the specified {@link RemoteViews} object with the
    * given {@code viewId}. This is used for loading bitmaps into a {@link Notification}.
    */
-  public void into(
-      @NonNull RemoteViews remoteViews,
-      @IdRes int viewId,
-      int notificationId,
+  public void into(@NonNull RemoteViews remoteViews, @IdRes int viewId, int notificationId,
       @NonNull Notification notification) {
     into(remoteViews, viewId, notificationId, notification, null);
   }
@@ -588,12 +584,17 @@ public class RequestCreator {
    * Asynchronously fulfills the request into the specified {@link RemoteViews} object with the
    * given {@code viewId}. This is used for loading bitmaps into a {@link Notification}.
    */
-  public void into(
-      @NonNull RemoteViews remoteViews,
-      @IdRes int viewId,
-      int notificationId,
-      @NonNull Notification notification,
-      @Nullable String notificationTag) {
+  public void into(@NonNull RemoteViews remoteViews, @IdRes int viewId, int notificationId,
+      @NonNull Notification notification, @Nullable String notificationTag) {
+    into(remoteViews, viewId, notificationId, notification, notificationTag, null);
+  }
+
+  /**
+   * Asynchronously fulfills the request into the specified {@link RemoteViews} object with the
+   * given {@code viewId}. This is used for loading bitmaps into a {@link Notification}.
+   */
+  public void into(@NonNull RemoteViews remoteViews, @IdRes int viewId, int notificationId,
+      @NonNull Notification notification, @Nullable String notificationTag, Callback callback) {
     long started = System.nanoTime();
 
     if (remoteViews == null) {
@@ -615,7 +616,7 @@ public class RequestCreator {
 
     RemoteViewsAction action =
         new NotificationAction(picasso, request, remoteViews, viewId, notificationId, notification,
-            notificationTag, memoryPolicy, networkPolicy, key, tag, errorResId);
+            notificationTag, memoryPolicy, networkPolicy, key, tag, errorResId, callback);
 
     performRemoteViewInto(action);
   }
@@ -624,10 +625,17 @@ public class RequestCreator {
    * Asynchronously fulfills the request into the specified {@link RemoteViews} object with the
    * given {@code viewId}. This is used for loading bitmaps into all instances of a widget.
    */
-  public void into(
-      @NonNull RemoteViews remoteViews,
-      @IdRes int viewId,
+  public void into(@NonNull RemoteViews remoteViews, @IdRes int viewId,
       @NonNull int[] appWidgetIds) {
+    into(remoteViews, viewId, appWidgetIds, null);
+  }
+
+  /**
+   * Asynchronously fulfills the request into the specified {@link RemoteViews} object with the
+   * given {@code viewId}. This is used for loading bitmaps into all instances of a widget.
+   */
+  public void into(@NonNull RemoteViews remoteViews, @IdRes int viewId, @NonNull int[] appWidgetIds,
+      Callback callback) {
     long started = System.nanoTime();
 
     if (remoteViews == null) {
@@ -649,7 +657,7 @@ public class RequestCreator {
 
     RemoteViewsAction action =
         new AppWidgetAction(picasso, request, remoteViews, viewId, appWidgetIds, memoryPolicy,
-            networkPolicy, key, tag, errorResId);
+            networkPolicy, key, tag, errorResId, callback);
 
     performRemoteViewInto(action);
   }
