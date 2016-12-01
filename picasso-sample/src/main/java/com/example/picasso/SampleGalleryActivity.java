@@ -1,10 +1,16 @@
 package com.example.picasso;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.ViewAnimator;
+import android.widget.ProgressBar;
+
 import com.squareup.picasso.Picasso;
 
 import static android.content.Intent.ACTION_PICK;
@@ -13,10 +19,11 @@ import static com.squareup.picasso.Callback.EmptyCallback;
 
 public class SampleGalleryActivity extends PicassoSampleActivity {
   private static final int GALLERY_REQUEST = 9391;
+  private static final int READ_STORAGE_REQUEST = 9392;
   private static final String KEY_IMAGE = "com.example.picasso:image";
 
   private ImageView imageView;
-  private ViewAnimator animator;
+  private ProgressBar progressBar;
   private String image;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
@@ -24,7 +31,7 @@ public class SampleGalleryActivity extends PicassoSampleActivity {
 
     setContentView(R.layout.sample_gallery_activity);
 
-    animator = (ViewAnimator) findViewById(R.id.animator);
+    progressBar = (ProgressBar) findViewById(R.id.progress);
     imageView = (ImageView) findViewById(R.id.image);
 
     findViewById(R.id.go).setOnClickListener(new View.OnClickListener() {
@@ -67,14 +74,28 @@ public class SampleGalleryActivity extends PicassoSampleActivity {
     }
   }
 
-  private void loadImage() {
-    // Index 1 is the progress bar. Show it while we're loading the image.
-    animator.setDisplayedChild(1);
+  @Override public void onRequestPermissionsResult(int requestCode,
+                                                   @NonNull String[] permissions,
+                                                   @NonNull int[] grantResults) {
+    if (requestCode == READ_STORAGE_REQUEST) {
+      if (grantResults.length > 0
+          && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        loadImage();
+      }
+    }
+  }
 
+  private void loadImage() {
+    if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+        != PackageManager.PERMISSION_GRANTED) {
+      ActivityCompat.requestPermissions(this,
+          new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_STORAGE_REQUEST);
+      return;
+    }
+    progressBar.setVisibility(View.VISIBLE);
     Picasso.with(this).load(image).fit().centerInside().into(imageView, new EmptyCallback() {
       @Override public void onSuccess() {
-        // Index 0 is the image view.
-        animator.setDisplayedChild(0);
+        progressBar.setVisibility(View.GONE);
       }
     });
   }
