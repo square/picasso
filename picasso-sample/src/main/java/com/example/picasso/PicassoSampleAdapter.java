@@ -26,6 +26,7 @@ final class PicassoSampleAdapter extends BaseAdapter {
     GALLERY("Load from Gallery", SampleGalleryActivity.class),
     CONTACTS("Contact Photos", SampleContactsActivity.class),
     LIST_DETAIL("List / Detail View", SampleListDetailActivity.class),
+    APP_ICON_LIST("APP ICON", SampleAppIconListActivity.class),
     SHOW_NOTIFICATION("Sample Notification", null) {
       @Override public void launch(Activity activity) {
         RemoteViews remoteViews =

@@ -37,6 +37,7 @@
     <activity android:name=".SampleContactsActivity"/>
     <activity android:name=".SampleGalleryActivity"/>
     <activity android:name=".SampleListDetailActivity"/>
+    <activity android:name=".SampleAppIconListActivity"/>
 
     <receiver android:name="SampleWidgetProvider">
       <intent-filter>
