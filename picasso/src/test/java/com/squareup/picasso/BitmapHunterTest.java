@@ -221,7 +221,7 @@ public class BitmapHunterTest {
     assertThat(hunter.action).isNull();
   }
 
-  @Test public void detachMutlipleRequests() {
+  @Test public void detachMultipleRequests() {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     Action action2 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action);
@@ -546,7 +546,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
   }
 
-  @Test public void keepsAspectRationWhileResizingWhenDesiredHeighIs0() {
+  @Test public void keepsAspectRationWhileResizingWhenDesiredHeightIs0() {
     Request request = new Request.Builder(URI_1).resize(0, 10).build();
     Bitmap source = Bitmap.createBitmap(40, 20, ARGB_8888);
 
