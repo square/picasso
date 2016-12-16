@@ -91,6 +91,24 @@ public class UrlConnectionDownloader implements Downloader {
 
       connection.setRequestProperty("Cache-Control", headerValue);
     }
+    
+     // Handle HTTP redirections by reconnecting to the new URL (currently we follow only a single redirection)
+    if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP
+			|| responseCode == HttpURLConnection.HTTP_MOVED_PERM
+				|| responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
+    	// Disconnect previous connection
+    	connection.disconnect();
+    	
+    	String newUrl = connection.getHeaderField("Location");
+    	if(newUrl!=null){
+	    	connection = openConnection(Uri.parse(newUrl));
+	    	connection.setUseCaches(true);
+	    	responseCode = connection.getResponseCode();
+	      if (localCacheOnly) {
+	            connection.setRequestProperty("Cache-Control", "only-if-cached,max-age=" + Integer.MAX_VALUE);
+	      }
+    	}
+    }
 
     int responseCode = connection.getResponseCode();
     if (responseCode >= 300) {
