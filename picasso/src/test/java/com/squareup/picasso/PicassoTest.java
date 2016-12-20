@@ -579,4 +579,9 @@ public class PicassoTest {
     picasso.invalidate(Uri.parse("mock://12345"));
     verify(cache).clearKeyUri("mock://12345");
   }
+
+  @Test public void invalidateResourceId() {
+    picasso.invalidate(android.R.drawable.btn_default);
+    verify(cache).clearKeyUri(String.valueOf(android.R.drawable.btn_default));
+  }
 }

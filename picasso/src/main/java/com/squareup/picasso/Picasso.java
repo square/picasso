@@ -375,6 +375,7 @@ public class Picasso {
    *
    * @see #invalidate(String)
    * @see #invalidate(File)
+   * @see #invalidate(int)
    */
   public void invalidate(@Nullable Uri uri) {
     if (uri != null) {
@@ -388,6 +389,7 @@ public class Picasso {
    *
    * @see #invalidate(Uri)
    * @see #invalidate(File)
+   * @see #invalidate(int)
    */
   public void invalidate(@Nullable String path) {
     if (path != null) {
@@ -400,12 +402,27 @@ public class Picasso {
    *
    * @see #invalidate(Uri)
    * @see #invalidate(String)
+   * @see #invalidate(int)
    */
   public void invalidate(@NonNull File file) {
     if (file == null) {
       throw new IllegalArgumentException("file == null");
     }
     invalidate(Uri.fromFile(file));
+  }
+
+  /**
+   * Invalidate all memory cached images for the specified {@code resourceId}.
+   *
+   * @see #invalidate(Uri)
+   * @see #invalidate(String)
+   * @see #invalidate(File)
+   */
+  public void invalidate(int resourceId) {
+    if (resourceId == 0) {
+      throw new IllegalArgumentException("Resource ID must not be zero.");
+    }
+    cache.clearKeyUri(String.valueOf(resourceId));
   }
 
   /**
