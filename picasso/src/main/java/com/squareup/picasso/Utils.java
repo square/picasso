@@ -40,9 +40,6 @@ import java.util.concurrent.ThreadFactory;
 import static android.content.Context.ACTIVITY_SERVICE;
 import static android.content.pm.ApplicationInfo.FLAG_LARGE_HEAP;
 import static android.os.Build.VERSION.SDK_INT;
-import static android.os.Build.VERSION_CODES.GINGERBREAD;
-import static android.os.Build.VERSION_CODES.HONEYCOMB;
-import static android.os.Build.VERSION_CODES.HONEYCOMB_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
@@ -109,14 +106,7 @@ final class Utils {
   }
 
   static int getBitmapBytes(Bitmap bitmap) {
-    int result;
-    if (SDK_INT >= KITKAT) {
-      result = bitmap.getAllocationByteCount();
-    } else if (SDK_INT >= HONEYCOMB_MR1) {
-      result = BitmapHoneycombMR1.getByteCount(bitmap);
-    } else {
-      result = bitmap.getRowBytes() * bitmap.getHeight();
-    }
+    int result = SDK_INT >= KITKAT ? bitmap.getAllocationByteCount() : bitmap.getByteCount();
     if (result < 0) {
       throw new IllegalStateException("Negative size: " + bitmap);
     }
@@ -250,17 +240,15 @@ final class Utils {
   }
 
   static Downloader createDefaultDownloader(Context context) {
-    if (SDK_INT >= GINGERBREAD) {
-      try {
-        Class.forName("okhttp3.OkHttpClient");
-        return OkHttp3DownloaderCreator.create(context);
-      } catch (ClassNotFoundException ignored) {
-      }
-      try {
-        Class.forName("com.squareup.okhttp.OkHttpClient");
-        return OkHttpDownloaderCreator.create(context);
-      } catch (ClassNotFoundException ignored) {
-      }
+    try {
+      Class.forName("okhttp3.OkHttpClient");
+      return OkHttp3DownloaderCreator.create(context);
+    } catch (ClassNotFoundException ignored) {
+    }
+    try {
+      Class.forName("com.squareup.okhttp.OkHttpClient");
+      return OkHttpDownloaderCreator.create(context);
+    } catch (ClassNotFoundException ignored) {
     }
     return new UrlConnectionDownloader(context);
   }
@@ -299,10 +287,7 @@ final class Utils {
   static int calculateMemoryCacheSize(Context context) {
     ActivityManager am = getService(context, ACTIVITY_SERVICE);
     boolean largeHeap = (context.getApplicationInfo().flags & FLAG_LARGE_HEAP) != 0;
-    int memoryClass = am.getMemoryClass();
-    if (largeHeap && SDK_INT >= HONEYCOMB) {
-      memoryClass = ActivityManagerHoneycomb.getLargeMemoryClass(am);
-    }
+    int memoryClass = largeHeap ? am.getLargeMemoryClass() : am.getMemoryClass();
     // Target ~15% of the available heap.
     return (int) (1024L * 1024L * memoryClass / 7);
   }
@@ -413,13 +398,6 @@ final class Utils {
     handler.sendMessageDelayed(handler.obtainMessage(), THREAD_LEAK_CLEANING_MS);
   }
 
-  @TargetApi(HONEYCOMB)
-  private static class ActivityManagerHoneycomb {
-    static int getLargeMemoryClass(ActivityManager activityManager) {
-      return activityManager.getLargeMemoryClass();
-    }
-  }
-
   static class PicassoThreadFactory implements ThreadFactory {
     @SuppressWarnings("NullableProblems")
     public Thread newThread(Runnable r) {
@@ -435,13 +413,6 @@ final class Utils {
     @Override public void run() {
       Process.setThreadPriority(THREAD_PRIORITY_BACKGROUND);
       super.run();
-    }
-  }
-
-  @TargetApi(HONEYCOMB_MR1)
-  private static class BitmapHoneycombMR1 {
-    static int getByteCount(Bitmap bitmap) {
-      return bitmap.getByteCount();
     }
   }
 
