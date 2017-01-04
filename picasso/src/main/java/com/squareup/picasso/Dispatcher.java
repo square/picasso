@@ -331,22 +331,7 @@ class Dispatcher {
       networkInfo = connectivityManager.getActiveNetworkInfo();
     }
 
-    boolean hasConnectivity = networkInfo != null && networkInfo.isConnected();
-    boolean shouldRetryHunter = hunter.shouldRetry(airplaneMode, networkInfo);
-    boolean supportsReplay = hunter.supportsReplay();
-
-    if (!shouldRetryHunter) {
-      // Mark for replay only if we observe network info changes and support replay.
-      boolean willReplay = scansNetworkChanges && supportsReplay;
-      performError(hunter, willReplay);
-      if (willReplay) {
-        markForReplay(hunter);
-      }
-      return;
-    }
-
-    // If we don't scan for network changes (missing permission) or if we have connectivity, retry.
-    if (!scansNetworkChanges || hasConnectivity) {
+    if (hunter.shouldRetry(airplaneMode, networkInfo)) {
       if (hunter.getPicasso().loggingEnabled) {
         log(OWNER_DISPATCHER, VERB_RETRYING, getLogIdsForHunter(hunter));
       }
@@ -355,13 +340,13 @@ class Dispatcher {
         hunter.networkPolicy |= NetworkPolicy.NO_CACHE.index;
       }
       hunter.future = service.submit(hunter);
-      return;
-    }
-
-    performError(hunter, supportsReplay);
-
-    if (supportsReplay) {
-      markForReplay(hunter);
+    } else {
+      // Mark for replay only if we observe network info changes and support replay.
+      boolean willReplay = scansNetworkChanges && hunter.supportsReplay();
+      performError(hunter, willReplay);
+      if (willReplay) {
+        markForReplay(hunter);
+      }
     }
   }
 

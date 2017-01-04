@@ -360,25 +360,21 @@ public class DispatcherTest {
     verify(service).submit(hunter);
   }
 
-  @Test public void performRetryMarksForReplayIfSupportsReplayAndNoConnectivity() {
-    NetworkInfo networkInfo = mockNetworkInfo(false);
+  @Test public void performRetryMarksForReplayIfSupportsReplayAndShouldNotRetry() {
     Action action = mockAction(URI_KEY_1, URI_1, mockTarget());
     BitmapHunter hunter = mockHunter(URI_KEY_1, bitmap1, false, action);
-    when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(true);
+    when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(false);
     when(hunter.supportsReplay()).thenReturn(true);
-    when(connectivityManager.getActiveNetworkInfo()).thenReturn(networkInfo);
     dispatcher.performRetry(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.failedActions).hasSize(1);
     verify(service, never()).submit(hunter);
   }
 
-  @Test public void performRetryRetriesIfHasConnectivity() {
-    NetworkInfo networkInfo = mockNetworkInfo(true);
+  @Test public void performRetryRetriesIfShouldRetry() {
     Action action = mockAction(URI_KEY_1, URI_1, mockTarget());
     BitmapHunter hunter = mockHunter(URI_KEY_1, bitmap1, false, action);
     when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(true);
-    when(connectivityManager.getActiveNetworkInfo()).thenReturn(networkInfo);
     dispatcher.performRetry(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.failedActions).isEmpty();
