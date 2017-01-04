@@ -4,9 +4,9 @@ android:
   components:
     - tools
     - platform-tools
-    - build-tools-24.0.0
+    - build-tools-25.0.2
     - extra-android-m2repository
-    - android-24
+    - android-25
 
 jdk:
   - oraclejdk8
