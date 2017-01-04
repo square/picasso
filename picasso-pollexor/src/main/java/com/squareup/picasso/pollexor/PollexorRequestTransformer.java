@@ -17,22 +17,6 @@ import static com.squareup.pollexor.ThumborUrlBuilder.format;
 public class PollexorRequestTransformer implements RequestTransformer {
   private final Thumbor thumbor;
 
-  /**
-   * @deprecated Use {@link #PollexorRequestTransformer(Thumbor)} instead.
-   * Create a transformer for the specified Thumbor host. This will not use URL encryption.
-   */
-  @Deprecated public PollexorRequestTransformer(String host) {
-    this(Thumbor.create(host));
-  }
-
-  /**
-   * @deprecated Use {@link #PollexorRequestTransformer(Thumbor)} instead.
-   * Create a transformer for the specified Thumbor host using the provided URL encryption key.
-   */
-  @Deprecated public PollexorRequestTransformer(String host, String key) {
-    this(Thumbor.create(host, key));
-  }
-
   /** Create a transformer for the specified {@link Thumbor}. */
   public PollexorRequestTransformer(Thumbor thumbor) {
     this.thumbor = thumbor;

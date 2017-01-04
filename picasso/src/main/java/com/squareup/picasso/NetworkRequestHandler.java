@@ -15,10 +15,8 @@
  */
 package com.squareup.picasso;
 
-import android.graphics.Bitmap;
 import android.net.NetworkInfo;
 import android.support.annotation.Nullable;
-
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -53,15 +51,7 @@ class NetworkRequestHandler extends RequestHandler {
 
     Picasso.LoadedFrom loadedFrom = response.cached ? DISK : NETWORK;
 
-    Bitmap bitmap = response.getBitmap();
-    if (bitmap != null) {
-      return new Result(bitmap, loadedFrom);
-    }
-
     InputStream is = response.getInputStream();
-    if (is == null) {
-      return null;
-    }
     // Sometimes response content length is zero when requests are being replayed. Haven't found
     // root cause to this but retrying the request seems safe to do so.
     if (loadedFrom == DISK && response.getContentLength() == 0) {
