@@ -42,7 +42,6 @@ import static android.content.pm.ApplicationInfo.FLAG_LARGE_HEAP;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.GINGERBREAD;
 import static android.os.Build.VERSION_CODES.HONEYCOMB;
-import static android.os.Build.VERSION_CODES.HONEYCOMB_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
@@ -109,14 +108,7 @@ final class Utils {
   }
 
   static int getBitmapBytes(Bitmap bitmap) {
-    int result;
-    if (SDK_INT >= KITKAT) {
-      result = bitmap.getAllocationByteCount();
-    } else if (SDK_INT >= HONEYCOMB_MR1) {
-      result = BitmapHoneycombMR1.getByteCount(bitmap);
-    } else {
-      result = bitmap.getRowBytes() * bitmap.getHeight();
-    }
+    int result = SDK_INT >= KITKAT ? bitmap.getAllocationByteCount() : bitmap.getByteCount();
     if (result < 0) {
       throw new IllegalStateException("Negative size: " + bitmap);
     }
@@ -435,13 +427,6 @@ final class Utils {
     @Override public void run() {
       Process.setThreadPriority(THREAD_PRIORITY_BACKGROUND);
       super.run();
-    }
-  }
-
-  @TargetApi(HONEYCOMB_MR1)
-  private static class BitmapHoneycombMR1 {
-    static int getByteCount(Bitmap bitmap) {
-      return bitmap.getByteCount();
     }
   }
 
