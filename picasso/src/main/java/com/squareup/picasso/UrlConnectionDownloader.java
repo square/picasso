@@ -93,10 +93,23 @@ public class UrlConnectionDownloader implements Downloader {
     }
 
     int responseCode = connection.getResponseCode();
-    if (responseCode >= 300) {
-      connection.disconnect();
-      throw new ResponseException(responseCode + " " + connection.getResponseMessage(),
-          networkPolicy, responseCode);
+    if (responseCode != HttpURLConnection.HTTP_OK) {
+      if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP
+              || responseCode == HttpURLConnection.HTTP_MOVED_PERM
+              || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
+        // Redirect
+
+        // get redirect url from "location" header field
+        String newUrl = connection.getHeaderField("Location");
+
+        // open the new connnection again
+        connection = (HttpURLConnection) new URL(newUrl).openConnection();
+
+      } else {
+        connection.disconnect();
+        throw new ResponseException(responseCode + " " + connection.getResponseMessage(),
+                networkPolicy, responseCode);
+      }
     }
 
     long contentLength = connection.getHeaderFieldInt("Content-Length", -1);
