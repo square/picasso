@@ -874,7 +874,7 @@ public class Picasso {
       Context context = this.context;
 
       if (downloader == null) {
-        downloader = Utils.createDefaultDownloader(context);
+        downloader = new OkHttp3Downloader(context);
       }
       if (cache == null) {
         cache = new LruCache(context);

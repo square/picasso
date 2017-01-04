@@ -29,7 +29,6 @@ import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.mockPackageResourceContext;
 import static com.squareup.picasso.Utils.createKey;
 import static com.squareup.picasso.Utils.isWebPFile;
-import static com.squareup.picasso.Utils.parseResponseSourceHeader;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(RobolectricGradleTestRunner.class)
@@ -70,17 +69,6 @@ public class UtilsTest {
     String order1 = createKey(requestTransform5);
     String order2 = createKey(requestTransform6);
     assertThat(order1).isNotEqualTo(order2);
-  }
-
-  @Test public void loadedFromCache() throws Exception {
-    assertThat(parseResponseSourceHeader(null)).isFalse();
-    assertThat(parseResponseSourceHeader("CACHE 200")).isTrue();
-    assertThat(parseResponseSourceHeader("STREAM 200")).isFalse();
-    assertThat(parseResponseSourceHeader("CONDITIONAL_CACHE 200")).isFalse();
-    assertThat(parseResponseSourceHeader("CONDITIONAL_CACHE 304")).isTrue();
-    assertThat(parseResponseSourceHeader("STREAM 304")).isFalse();
-    assertThat(parseResponseSourceHeader("")).isFalse();
-    assertThat(parseResponseSourceHeader("HELLO WORLD")).isFalse();
   }
 
   @Test public void detectedWebPFile() throws Exception {
