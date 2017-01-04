@@ -77,6 +77,7 @@ public class RequestCreator {
           "Picasso instance already shut down. Cannot submit new requests.");
     }
     this.picasso = picasso;
+    this.noFade = picasso.noFade;
     this.data = new Request.Builder(uri, resourceId, picasso.defaultBitmapConfig);
   }
 
@@ -403,6 +404,12 @@ public class RequestCreator {
    */
   public RequestCreator purgeable() {
     data.purgeable();
+    return this;
+  }
+
+  /** Enable brief fade in of images loaded from the disk cache or network. */
+  public RequestCreator fade() {
+    noFade = false;
     return this;
   }
 
