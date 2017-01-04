@@ -17,7 +17,6 @@ package com.squareup.picasso;
 
 import android.content.ContentResolver;
 import android.content.Context;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -37,10 +36,6 @@ import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.MINI;
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 
 class MediaStoreRequestHandler extends ContentStreamRequestHandler {
-  private static final String[] CONTENT_ORIENTATION = new String[] {
-      Images.ImageColumns.ORIENTATION
-  };
-
   MediaStoreRequestHandler(Context context) {
     super(context);
   }
@@ -53,7 +48,7 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
 
   @Override public Result load(Request request, int networkPolicy) throws IOException {
     ContentResolver contentResolver = context.getContentResolver();
-    int exifOrientation = getExifOrientation(contentResolver, request.uri);
+    int exifOrientation = Utils.getExifOrientation(contentResolver, request.uri);
 
     String mimeType = contentResolver.getType(request.uri);
     boolean isVideo = mimeType != null && mimeType.startsWith("video/");
@@ -99,24 +94,6 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
       return MINI;
     }
     return FULL;
-  }
-
-  static int getExifOrientation(ContentResolver contentResolver, Uri uri) {
-    Cursor cursor = null;
-    try {
-      cursor = contentResolver.query(uri, CONTENT_ORIENTATION, null, null, null);
-      if (cursor == null || !cursor.moveToFirst()) {
-        return 0;
-      }
-      return cursor.getInt(0);
-    } catch (RuntimeException ignored) {
-      // If the orientation column doesn't exist, assume no rotation.
-      return 0;
-    } finally {
-      if (cursor != null) {
-        cursor.close();
-      }
-    }
   }
 
   enum PicassoKind {
