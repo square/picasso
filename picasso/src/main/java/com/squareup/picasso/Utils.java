@@ -40,7 +40,6 @@ import java.util.concurrent.ThreadFactory;
 import static android.content.Context.ACTIVITY_SERVICE;
 import static android.content.pm.ApplicationInfo.FLAG_LARGE_HEAP;
 import static android.os.Build.VERSION.SDK_INT;
-import static android.os.Build.VERSION_CODES.GINGERBREAD;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
@@ -241,17 +240,15 @@ final class Utils {
   }
 
   static Downloader createDefaultDownloader(Context context) {
-    if (SDK_INT >= GINGERBREAD) {
-      try {
-        Class.forName("okhttp3.OkHttpClient");
-        return OkHttp3DownloaderCreator.create(context);
-      } catch (ClassNotFoundException ignored) {
-      }
-      try {
-        Class.forName("com.squareup.okhttp.OkHttpClient");
-        return OkHttpDownloaderCreator.create(context);
-      } catch (ClassNotFoundException ignored) {
-      }
+    try {
+      Class.forName("okhttp3.OkHttpClient");
+      return OkHttp3DownloaderCreator.create(context);
+    } catch (ClassNotFoundException ignored) {
+    }
+    try {
+      Class.forName("com.squareup.okhttp.OkHttpClient");
+      return OkHttpDownloaderCreator.create(context);
+    } catch (ClassNotFoundException ignored) {
     }
     return new UrlConnectionDownloader(context);
   }
