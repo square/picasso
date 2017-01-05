@@ -19,6 +19,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
@@ -30,12 +32,15 @@ import android.os.SystemClock;
 import android.widget.ImageView;
 
 import static android.graphics.Color.WHITE;
+import static com.squareup.picasso.ColorMatrixes.COLUMN_ALPHA;
+import static com.squareup.picasso.ColorMatrixes.ROW_ALPHA;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 
 final class PicassoDrawable extends BitmapDrawable {
   // Only accessed from main thread.
   private static final Paint DEBUG_PAINT = new Paint();
-  private static final float FADE_DURATION = 200f; //ms
+  private static final ColorMatrixTransition TRANSITION = new MaterialTransition();
+  private static final long DEFAULT_FADE_DURATION = 200; // ms
 
   /**
    * Create or update the drawable on the target {@link ImageView} to display the supplied bitmap
@@ -67,6 +72,7 @@ final class PicassoDrawable extends BitmapDrawable {
   private final float density;
   private final Picasso.LoadedFrom loadedFrom;
 
+  private ColorMatrix colorMatrix;
   Drawable placeholder;
 
   long startTimeMillis;
@@ -94,8 +100,13 @@ final class PicassoDrawable extends BitmapDrawable {
     if (!animating) {
       super.draw(canvas);
     } else {
-      float normalized = (SystemClock.uptimeMillis() - startTimeMillis) / FADE_DURATION;
-      if (normalized >= 1f) {
+      // If the drawable has a color filter set already we can't apply our own filter, so default
+      // to a simple alpha fade.
+      boolean useColorMatrixTransition = getPaint().getColorFilter() == null;
+
+      long duration = useColorMatrixTransition ? TRANSITION.getDuration() : DEFAULT_FADE_DURATION;
+      float fraction = (SystemClock.uptimeMillis() - startTimeMillis) / (float) duration;
+      if (fraction >= 1f) {
         animating = false;
         placeholder = null;
         super.draw(canvas);
@@ -104,10 +115,29 @@ final class PicassoDrawable extends BitmapDrawable {
           placeholder.draw(canvas);
         }
 
-        int partialAlpha = (int) (alpha * normalized);
-        super.setAlpha(partialAlpha);
-        super.draw(canvas);
-        super.setAlpha(alpha);
+        if (useColorMatrixTransition) {
+          if (colorMatrix == null) {
+            colorMatrix = new ColorMatrix();
+          } else {
+            colorMatrix.reset();
+          }
+
+          TRANSITION.apply(colorMatrix, fraction);
+
+          // Scale the transition alpha to match the defined alpha on the drawable.
+          colorMatrix.getArray()[ROW_ALPHA + COLUMN_ALPHA] *= (alpha / 255);
+
+          super.setColorFilter(new ColorMatrixColorFilter(colorMatrix));
+          super.draw(canvas);
+          super.setColorFilter(null);
+        } else {
+          int partialAlpha = (int) (alpha * fraction);
+          super.setAlpha(partialAlpha);
+          super.draw(canvas);
+          super.setAlpha(alpha);
+        }
+
+        // setAlpha and setColorFilter already call invalidateSelf after Gingerbread.
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1) {
           invalidateSelf();
         }
