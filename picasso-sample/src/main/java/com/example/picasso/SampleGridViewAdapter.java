@@ -13,7 +13,7 @@ import static android.widget.ImageView.ScaleType.CENTER_CROP;
 
 final class SampleGridViewAdapter extends BaseAdapter {
   private final Context context;
-  private final List<String> urls = new ArrayList<String>();
+  private final List<String> urls = new ArrayList<>();
 
   public SampleGridViewAdapter(Context context) {
     this.context = context;
@@ -23,7 +23,7 @@ final class SampleGridViewAdapter extends BaseAdapter {
     Collections.shuffle(urls);
 
     // Triple up the list.
-    ArrayList<String> copy = new ArrayList<String>(urls);
+    ArrayList<String> copy = new ArrayList<>(urls);
     urls.addAll(copy);
     urls.addAll(copy);
   }

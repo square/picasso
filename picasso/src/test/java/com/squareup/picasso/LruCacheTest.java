@@ -216,7 +216,7 @@ public class LruCacheTest {
   }
 
   private void assertSnapshot(LruCache cache, Object... keysAndValues) {
-    List<Object> actualKeysAndValues = new ArrayList<Object>();
+    List<Object> actualKeysAndValues = new ArrayList<>();
     for (Map.Entry<String, Bitmap> entry : cache.map.entrySet()) {
       actualKeysAndValues.add(entry.getKey());
       actualKeysAndValues.add(entry.getValue());

@@ -35,7 +35,7 @@ class DeferredRequestCreator implements ViewTreeObserver.OnPreDrawListener {
 
   DeferredRequestCreator(RequestCreator creator, ImageView target, Callback callback) {
     this.creator = creator;
-    this.target = new WeakReference<ImageView>(target);
+    this.target = new WeakReference<>(target);
     this.callback = callback;
 
     // Since the view on which an image is being requested might not be attached to a hierarchy,

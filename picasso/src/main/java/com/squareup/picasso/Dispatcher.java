@@ -103,16 +103,16 @@ class Dispatcher {
     Utils.flushStackLocalLeaks(dispatcherThread.getLooper());
     this.context = context;
     this.service = service;
-    this.hunterMap = new LinkedHashMap<String, BitmapHunter>();
-    this.failedActions = new WeakHashMap<Object, Action>();
-    this.pausedActions = new WeakHashMap<Object, Action>();
-    this.pausedTags = new HashSet<Object>();
+    this.hunterMap = new LinkedHashMap<>();
+    this.failedActions = new WeakHashMap<>();
+    this.pausedActions = new WeakHashMap<>();
+    this.pausedTags = new HashSet<>();
     this.handler = new DispatcherHandler(dispatcherThread.getLooper(), this);
     this.downloader = downloader;
     this.mainThreadHandler = mainThreadHandler;
     this.cache = cache;
     this.stats = stats;
-    this.batch = new ArrayList<BitmapHunter>(4);
+    this.batch = new ArrayList<>(4);
     this.airplaneMode = Utils.isAirplaneModeOn(this.context);
     this.scansNetworkChanges = hasPermission(context, Manifest.permission.ACCESS_NETWORK_STATE);
     this.receiver = new NetworkBroadcastReceiver(this);
@@ -305,7 +305,7 @@ class Dispatcher {
       Action action = i.next();
       if (action.getTag().equals(tag)) {
         if (batch == null) {
-          batch = new ArrayList<Action>();
+          batch = new ArrayList<>();
         }
         batch.add(action);
         i.remove();
@@ -362,7 +362,7 @@ class Dispatcher {
   }
 
   void performBatchComplete() {
-    List<BitmapHunter> copy = new ArrayList<BitmapHunter>(batch);
+    List<BitmapHunter> copy = new ArrayList<>(batch);
     batch.clear();
     mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(HUNTER_BATCH_COMPLETE, copy));
     logBatch(copy);

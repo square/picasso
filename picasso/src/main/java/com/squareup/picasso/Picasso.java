@@ -178,8 +178,7 @@ public class Picasso {
 
     int builtInHandlers = 7; // Adjust this as internal handlers are added or removed.
     int extraCount = (extraRequestHandlers != null ? extraRequestHandlers.size() : 0);
-    List<RequestHandler> allRequestHandlers =
-        new ArrayList<RequestHandler>(builtInHandlers + extraCount);
+    List<RequestHandler> allRequestHandlers = new ArrayList<>(builtInHandlers + extraCount);
 
     // ResourceRequestHandler needs to be the first in the list to avoid
     // forcing other RequestHandlers to perform null checks on request.uri
@@ -197,11 +196,11 @@ public class Picasso {
     requestHandlers = Collections.unmodifiableList(allRequestHandlers);
 
     this.stats = stats;
-    this.targetToAction = new WeakHashMap<Object, Action>();
-    this.targetToDeferredRequestCreator = new WeakHashMap<ImageView, DeferredRequestCreator>();
+    this.targetToAction = new WeakHashMap<>();
+    this.targetToDeferredRequestCreator = new WeakHashMap<>();
     this.indicatorsEnabled = indicatorsEnabled;
     this.loggingEnabled = loggingEnabled;
-    this.referenceQueue = new ReferenceQueue<Object>();
+    this.referenceQueue = new ReferenceQueue<>();
     this.cleanupThread = new CleanupThread(referenceQueue, HANDLER);
     this.cleanupThread.start();
   }
@@ -248,7 +247,7 @@ public class Picasso {
       throw new IllegalArgumentException("Cannot cancel requests with null tag.");
     }
 
-    List<Action> actions = new ArrayList<Action>(targetToAction.values());
+    List<Action> actions = new ArrayList<>(targetToAction.values());
     //noinspection ForLoopReplaceableByForEach
     for (int i = 0, n = actions.size(); i < n; i++) {
       Action action = actions.get(i);
@@ -258,7 +257,7 @@ public class Picasso {
     }
 
     List<DeferredRequestCreator> deferredRequestCreators =
-        new ArrayList<DeferredRequestCreator>(targetToDeferredRequestCreator.values());
+        new ArrayList<>(targetToDeferredRequestCreator.values());
     //noinspection ForLoopReplaceableByForEach
     for (int i = 0, n = deferredRequestCreators.size(); i < n; i++) {
       DeferredRequestCreator deferredRequestCreator = deferredRequestCreators.get(i);
@@ -816,7 +815,7 @@ public class Picasso {
         throw new IllegalArgumentException("RequestHandler must not be null.");
       }
       if (requestHandlers == null) {
-        requestHandlers = new ArrayList<RequestHandler>();
+        requestHandlers = new ArrayList<>();
       }
       if (requestHandlers.contains(requestHandler)) {
         throw new IllegalStateException("RequestHandler already registered.");

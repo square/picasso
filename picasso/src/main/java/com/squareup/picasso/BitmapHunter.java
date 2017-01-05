@@ -277,7 +277,7 @@ class BitmapHunter implements Runnable {
     }
 
     if (actions == null) {
-      actions = new ArrayList<Action>(3);
+      actions = new ArrayList<>(3);
     }
 
     actions.add(action);

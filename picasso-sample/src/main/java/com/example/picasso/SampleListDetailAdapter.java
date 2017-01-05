@@ -14,7 +14,7 @@ import java.util.List;
 
 final class SampleListDetailAdapter extends BaseAdapter {
   private final Context context;
-  private final List<String> urls = new ArrayList<String>();
+  private final List<String> urls = new ArrayList<>();
 
   public SampleListDetailAdapter(Context context) {
     this.context = context;

@@ -236,7 +236,7 @@ public class BitmapHunterTest {
   @Test public void cancelSingleRequest() {
     Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action1);
-    hunter.future = new FutureTask<Object>(mock(Runnable.class), mock(Object.class));
+    hunter.future = new FutureTask<>(mock(Runnable.class), mock(Object.class));
     assertThat(hunter.isCancelled()).isFalse();
     assertThat(hunter.cancel()).isFalse();
     hunter.detach(action1);
@@ -248,7 +248,7 @@ public class BitmapHunterTest {
     Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     Action action2 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action1);
-    hunter.future = new FutureTask<Object>(mock(Runnable.class), mock(Object.class));
+    hunter.future = new FutureTask<>(mock(Runnable.class), mock(Object.class));
     hunter.attach(action2);
     assertThat(hunter.isCancelled()).isFalse();
     assertThat(hunter.cancel()).isFalse();
