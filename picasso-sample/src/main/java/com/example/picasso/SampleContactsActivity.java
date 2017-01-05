@@ -18,7 +18,6 @@ package com.example.picasso;
 
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -29,9 +28,6 @@ import static android.provider.ContactsContract.Contacts;
 
 public class SampleContactsActivity extends PicassoSampleActivity
     implements LoaderManager.LoaderCallbacks<Cursor> {
-  private static final boolean IS_HONEYCOMB =
-      Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB;
-
   private SampleContactsAdapter adapter;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
@@ -72,19 +68,19 @@ public class SampleContactsActivity extends PicassoSampleActivity
 
     Uri CONTENT_URI = Contacts.CONTENT_URI;
 
-    String SELECTION = (IS_HONEYCOMB ? Contacts.DISPLAY_NAME_PRIMARY : Contacts.DISPLAY_NAME)
+    String SELECTION = Contacts.DISPLAY_NAME_PRIMARY
         + "<>''"
         + " AND "
         + Contacts.IN_VISIBLE_GROUP
         + "=1";
 
-    String SORT_ORDER = IS_HONEYCOMB ? Contacts.SORT_KEY_PRIMARY : Contacts.DISPLAY_NAME;
+    String SORT_ORDER = Contacts.SORT_KEY_PRIMARY;
 
     String[] PROJECTION = {
         Contacts._ID, //
         Contacts.LOOKUP_KEY, //
-        IS_HONEYCOMB ? Contacts.DISPLAY_NAME_PRIMARY : Contacts.DISPLAY_NAME, //
-        IS_HONEYCOMB ? Contacts.PHOTO_THUMBNAIL_URI : Contacts._ID, //
+        Contacts.DISPLAY_NAME_PRIMARY, //
+        Contacts.PHOTO_THUMBNAIL_URI, //
         SORT_ORDER
     };
 
