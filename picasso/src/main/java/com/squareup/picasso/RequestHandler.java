@@ -70,7 +70,7 @@ public abstract class RequestHandler {
         @Nullable InputStream stream,
         @NonNull Picasso.LoadedFrom loadedFrom,
         int exifOrientation) {
-      if (!(bitmap != null ^ stream != null)) {
+      if ((bitmap != null) == (stream != null)) {
         throw new AssertionError();
       }
       this.bitmap = bitmap;

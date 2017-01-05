@@ -876,7 +876,7 @@ public class Picasso {
 
     final int debugColor;
 
-    private LoadedFrom(int debugColor) {
+    LoadedFrom(int debugColor) {
       this.debugColor = debugColor;
     }
   }

@@ -37,7 +37,7 @@ public enum MemoryPolicy {
 
   final int index;
 
-  private MemoryPolicy(int index) {
+  MemoryPolicy(int index) {
     this.index = index;
   }
 }

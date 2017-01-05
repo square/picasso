@@ -20,7 +20,7 @@ public interface Callback {
 
   void onError();
 
-  public static class EmptyCallback implements Callback {
+  class EmptyCallback implements Callback {
 
     @Override public void onSuccess() {
     }

@@ -46,7 +46,7 @@ public enum NetworkPolicy {
 
   final int index;
 
-  private NetworkPolicy(int index) {
+  NetworkPolicy(int index) {
     this.index = index;
   }
 }
