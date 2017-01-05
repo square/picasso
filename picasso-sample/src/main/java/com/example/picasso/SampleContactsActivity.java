@@ -16,14 +16,20 @@
  */
 package com.example.picasso;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import static android.provider.ContactsContract.Contacts;
 
@@ -32,11 +38,20 @@ public class SampleContactsActivity extends PicassoSampleActivity
   private static final boolean IS_HONEYCOMB =
       Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB;
 
+  private final int permissionReadContacts = 123;
+
   private SampleContactsAdapter adapter;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.sample_contacts_activity);
+
+    if (ContextCompat.checkSelfPermission(this,
+            Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+      ActivityCompat.requestPermissions(this,
+              new String[]{Manifest.permission.READ_CONTACTS},
+              permissionReadContacts);
+    }
 
     adapter = new SampleContactsAdapter(this);
 
@@ -65,6 +80,24 @@ public class SampleContactsActivity extends PicassoSampleActivity
 
   @Override public void onLoaderReset(Loader<Cursor> loader) {
     adapter.swapCursor(null);
+  }
+
+  @Override
+  public void onRequestPermissionsResult(int requestCode,
+                                         @NonNull String[] permissions,
+                                         @NonNull int[] grantResults) {
+
+    switch (requestCode) {
+      case permissionReadContacts:
+        if (grantResults.length < 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+          Toast.makeText(getApplicationContext(),
+                  "Contact Read Permission is required to access photos.",
+                  Toast.LENGTH_LONG).show();
+        }
+        break;
+      default:
+        break;
+    }
   }
 
   interface ContactsQuery {
