@@ -60,17 +60,19 @@ import static org.mockito.Mockito.when;
   @Test public void errorWithNoResourceIsNoop() throws Exception {
     Callback callback = mockCallback();
     RemoteViewsAction action = createAction(callback);
-    action.error();
+    Exception e = new RuntimeException();
+    action.error(e);
     verifyZeroInteractions(remoteViews);
-    verify(callback).onError();
+    verify(callback).onError(e);
   }
 
   @Test public void errorWithResourceSetsResource() throws Exception {
     Callback callback = mockCallback();
     RemoteViewsAction action = createAction(1, callback);
-    action.error();
+    Exception e = new RuntimeException();
+    action.error(e);
     verify(remoteViews).setImageViewResource(1, 1);
-    verify(callback).onError();
+    verify(callback).onError(e);
   }
 
   @Test public void clearsCallbackOnCancel() throws Exception {

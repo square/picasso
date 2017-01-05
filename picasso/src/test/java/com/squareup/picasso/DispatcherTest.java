@@ -180,9 +180,10 @@ public class DispatcherTest {
         new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, 0, pausedTag,
             URI_KEY_1, callback);
     dispatcher.performSubmit(fetchAction, false);
-    fetchAction.error();
+    Exception e = new RuntimeException();
+    fetchAction.error(e);
 
-    verify(callback).onError();
+    verify(callback).onError(e);
   }
 
   @Test public void performCancelWithFetchActionWithCallback() {

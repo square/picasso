@@ -53,7 +53,7 @@ class ImageViewAction extends Action<ImageView> {
     }
   }
 
-  @Override public void error() {
+  @Override public void error(Exception e) {
     ImageView target = this.target.get();
     if (target == null) {
       return;
@@ -69,7 +69,7 @@ class ImageViewAction extends Action<ImageView> {
     }
 
     if (callback != null) {
-      callback.onError();
+      callback.onError(e);
     }
   }
 

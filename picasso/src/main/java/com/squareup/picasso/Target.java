@@ -44,7 +44,7 @@ public interface Target {
    * specified via {@link RequestCreator#error(android.graphics.drawable.Drawable)}
    * or {@link RequestCreator#error(int)}.
    */
-  void onBitmapFailed(Drawable errorDrawable);
+  void onBitmapFailed(Exception e, Drawable errorDrawable);
 
   /**
    * Callback invoked right before your request is submitted.

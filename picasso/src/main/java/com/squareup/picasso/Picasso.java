@@ -527,14 +527,14 @@ public class Picasso {
     LoadedFrom from = hunter.getLoadedFrom();
 
     if (single != null) {
-      deliverAction(result, from, single);
+      deliverAction(result, from, single, exception);
     }
 
     if (hasMultiple) {
       //noinspection ForLoopReplaceableByForEach
       for (int i = 0, n = joined.size(); i < n; i++) {
         Action join = joined.get(i);
-        deliverAction(result, from, join);
+        deliverAction(result, from, join, exception);
       }
     }
 
@@ -551,7 +551,7 @@ public class Picasso {
 
     if (bitmap != null) {
       // Resumed action is cached, complete immediately.
-      deliverAction(bitmap, MEMORY, action);
+      deliverAction(bitmap, MEMORY, action, null);
       if (loggingEnabled) {
         log(OWNER_MAIN, VERB_COMPLETED, action.request.logId(), "from " + MEMORY);
       }
@@ -564,7 +564,7 @@ public class Picasso {
     }
   }
 
-  private void deliverAction(Bitmap result, LoadedFrom from, Action action) {
+  private void deliverAction(Bitmap result, LoadedFrom from, Action action, Exception e) {
     if (action.isCancelled()) {
       return;
     }
@@ -580,9 +580,9 @@ public class Picasso {
         log(OWNER_MAIN, VERB_COMPLETED, action.request.logId(), "from " + from);
       }
     } else {
-      action.error();
+      action.error(e);
       if (loggingEnabled) {
-        log(OWNER_MAIN, VERB_ERRORED, action.request.logId());
+        log(OWNER_MAIN, VERB_ERRORED, action.request.logId(), e.getMessage());
       }
     }
   }

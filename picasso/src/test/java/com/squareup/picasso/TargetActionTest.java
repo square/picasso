@@ -62,8 +62,9 @@ public class TargetActionTest {
     TargetAction request =
         new TargetAction(mock(Picasso.class), target, null, 0, 0, errorDrawable, URI_KEY_1, null,
             0);
-    request.error();
-    verify(target).onBitmapFailed(errorDrawable);
+    Exception e = new RuntimeException();
+    request.error(e);
+    verify(target).onBitmapFailed(e, errorDrawable);
   }
 
   @Test
@@ -80,8 +81,9 @@ public class TargetActionTest {
 
     when(context.getResources()).thenReturn(res);
     when(res.getDrawable(RESOURCE_ID_1)).thenReturn(errorDrawable);
-    request.error();
-    verify(target).onBitmapFailed(errorDrawable);
+    Exception e = new RuntimeException();
+    request.error(e);
+    verify(target).onBitmapFailed(e, errorDrawable);
   }
 
   @Test public void recyclingInSuccessThrowsException() {
@@ -90,7 +92,7 @@ public class TargetActionTest {
         bitmap.recycle();
       }
 
-      @Override public void onBitmapFailed(Drawable errorDrawable) {
+      @Override public void onBitmapFailed(Exception e, Drawable errorDrawable) {
         throw new AssertionError();
       }
 

@@ -35,9 +35,9 @@ class FetchAction extends Action<Object> {
     }
   }
 
-  @Override void error() {
+  @Override void error(Exception e) {
     if (callback != null) {
-      callback.onError();
+      callback.onError(e);
     }
   }
 

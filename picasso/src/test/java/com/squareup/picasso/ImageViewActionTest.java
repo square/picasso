@@ -73,7 +73,7 @@ public class ImageViewActionTest {
         new ImageViewAction(picasso, target, null, 0, 0, 0, null, URI_KEY_1, null,
             callback, false);
     request.target.clear();
-    request.error();
+    request.error(new RuntimeException());
     verifyZeroInteractions(target);
     verifyZeroInteractions(callback);
   }
@@ -102,9 +102,10 @@ public class ImageViewActionTest {
     ImageViewAction request =
         new ImageViewAction(mock, target, null, 0, 0, RESOURCE_ID_1, null, null, null,
             callback, false);
-    request.error();
+    Exception e = new RuntimeException();
+    request.error(e);
     verify(target).setImageResource(RESOURCE_ID_1);
-    verify(callback).onError();
+    verify(callback).onError(e);
   }
 
   @Test
@@ -115,9 +116,10 @@ public class ImageViewActionTest {
     ImageViewAction request =
         new ImageViewAction(mock, target, null, 0, 0, RESOURCE_ID_1, null, null, null,
             callback, false);
-    request.error();
+    Exception e = new RuntimeException();
+    request.error(e);
     verify(target).setImageResource(RESOURCE_ID_1);
-    verify(callback).onError();
+    verify(callback).onError(e);
   }
 
   @Test
@@ -129,9 +131,10 @@ public class ImageViewActionTest {
     ImageViewAction request =
         new ImageViewAction(mock, target, null, 0, 0, 0, errorDrawable, URI_KEY_1, null,
             callback, false);
-    request.error();
+    Exception e = new RuntimeException();
+    request.error(e);
     verify(target).setImageDrawable(errorDrawable);
-    verify(callback).onError();
+    verify(callback).onError(e);
   }
 
   @Test
@@ -155,7 +158,7 @@ public class ImageViewActionTest {
     ImageViewAction request =
         new ImageViewAction(picasso, target, null, 0, 0, 0, null, URI_KEY_1, null,
             null, false);
-    request.error();
+    request.error(new RuntimeException());
     verify(placeholder).stop();
   }
 }

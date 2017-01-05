@@ -26,6 +26,6 @@ class GetAction extends Action<Void> {
   @Override void complete(Bitmap result, Picasso.LoadedFrom from) {
   }
 
-  @Override public void error() {
+  @Override public void error(Exception e) {
   }
 }
