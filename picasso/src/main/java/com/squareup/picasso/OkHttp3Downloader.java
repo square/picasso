@@ -22,6 +22,7 @@ import android.support.annotation.VisibleForTesting;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import okhttp3.Cache;
 import okhttp3.CacheControl;
 import okhttp3.Call;
@@ -31,6 +32,15 @@ import okhttp3.ResponseBody;
 
 /** A {@link Downloader} which uses OkHttp to download images. */
 public final class OkHttp3Downloader implements Downloader {
+  private static OkHttpClient defaultOkHttpClient(File cacheDir, long maxSize) {
+    return new OkHttpClient.Builder()
+        .connectTimeout(Utils.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+        .readTimeout(Utils.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+        .writeTimeout(Utils.DEFAULT_WRITE_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+        .cache(new Cache(cacheDir, maxSize))
+        .build();
+  }
+
   private final Call.Factory client;
   private final Cache cache;
   private boolean sharedClient = true;
@@ -71,7 +81,7 @@ public final class OkHttp3Downloader implements Downloader {
    * @param maxSize The size limit for the cache.
    */
   public OkHttp3Downloader(final File cacheDir, final long maxSize) {
-    this(new OkHttpClient.Builder().cache(new Cache(cacheDir, maxSize)).build());
+    this(defaultOkHttpClient(cacheDir, maxSize));
     sharedClient = false;
   }
 
