@@ -15,7 +15,6 @@
  */
 package com.squareup.picasso;
 
-import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.UriMatcher;
@@ -25,8 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import static android.content.ContentResolver.SCHEME_CONTENT;
-import static android.os.Build.VERSION.SDK_INT;
-import static android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH;
 import static android.provider.ContactsContract.Contacts.openContactPhotoInputStream;
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 
@@ -83,23 +80,12 @@ class ContactsPhotoRequestHandler extends RequestHandler {
         }
         // Resolved the uri to a contact uri, intentionally fall through to process the resolved uri
       case ID_CONTACT:
-        if (SDK_INT < ICE_CREAM_SANDWICH) {
-          return openContactPhotoInputStream(contentResolver, uri);
-        } else {
-          return ContactPhotoStreamIcs.get(contentResolver, uri);
-        }
+        return openContactPhotoInputStream(contentResolver, uri, true);
       case ID_THUMBNAIL:
       case ID_DISPLAY_PHOTO:
         return contentResolver.openInputStream(uri);
       default:
         throw new IllegalStateException("Invalid uri: " + uri);
-    }
-  }
-
-  @TargetApi(ICE_CREAM_SANDWICH)
-  private static class ContactPhotoStreamIcs {
-    static InputStream get(ContentResolver contentResolver, Uri uri) {
-      return openContactPhotoInputStream(contentResolver, uri, true);
     }
   }
 }

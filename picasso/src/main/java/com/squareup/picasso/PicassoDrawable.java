@@ -25,7 +25,6 @@ import android.graphics.Rect;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.SystemClock;
 import android.widget.ImageView;
 
@@ -108,9 +107,6 @@ final class PicassoDrawable extends BitmapDrawable {
         super.setAlpha(partialAlpha);
         super.draw(canvas);
         super.setAlpha(alpha);
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1) {
-          invalidateSelf();
-        }
       }
     }
 
