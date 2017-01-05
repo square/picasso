@@ -179,9 +179,6 @@ class BitmapHunter implements Runnable {
         exception = e;
       }
       dispatcher.dispatchFailed(this);
-    } catch (NetworkRequestHandler.ContentLengthException e) {
-      exception = e;
-      dispatcher.dispatchRetry(this);
     } catch (IOException e) {
       exception = e;
       dispatcher.dispatchRetry(this);

@@ -335,7 +335,6 @@ class Dispatcher {
       if (hunter.getPicasso().loggingEnabled) {
         log(OWNER_DISPATCHER, VERB_RETRYING, getLogIdsForHunter(hunter));
       }
-      //noinspection ThrowableResultOfMethodCallIgnored
       if (hunter.getException() instanceof NetworkRequestHandler.ContentLengthException) {
         hunter.networkPolicy |= NetworkPolicy.NO_CACHE.index;
       }
