@@ -134,8 +134,8 @@ public class PicassoTest {
     when(hunter.getException()).thenReturn(exception);
     when(hunter.getActions()).thenReturn(Arrays.asList(action1, action2));
     picasso.complete(hunter);
-    verify(action1).error();
-    verify(action2, never()).error();
+    verify(action1).error(exception);
+    verify(action2, never()).error(exception);
     verify(listener).onImageLoadFailed(picasso, URI_1, exception);
   }
 

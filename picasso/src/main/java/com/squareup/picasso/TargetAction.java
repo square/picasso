@@ -40,13 +40,13 @@ final class TargetAction extends Action<Target> {
     }
   }
 
-  @Override void error() {
+  @Override void error(Exception e) {
     Target target = getTarget();
     if (target != null) {
       if (errorResId != 0) {
-        target.onBitmapFailed(picasso.context.getResources().getDrawable(errorResId));
+        target.onBitmapFailed(e, picasso.context.getResources().getDrawable(errorResId));
       } else {
-        target.onBitmapFailed(errorDrawable);
+        target.onBitmapFailed(e, errorDrawable);
       }
     }
   }

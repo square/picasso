@@ -63,7 +63,7 @@ abstract class Action<T> {
 
   abstract void complete(Bitmap result, Picasso.LoadedFrom from);
 
-  abstract void error();
+  abstract void error(Exception e);
 
   void cancel() {
     cancelled = true;

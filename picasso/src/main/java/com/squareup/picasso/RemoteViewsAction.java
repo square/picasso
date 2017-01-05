@@ -55,12 +55,12 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
     }
   }
 
-  @Override public void error() {
+  @Override public void error(Exception e) {
     if (errorResId != 0) {
       setImageResource(errorResId);
     }
     if (callback != null) {
-      callback.onError();
+      callback.onError(e);
     }
   }
 
