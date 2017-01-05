@@ -18,6 +18,7 @@ android {
   lintOptions {
     textOutput 'stdout'
     textReport true
+    lintConfig file('lint.xml')
   }
 
   dexOptions {

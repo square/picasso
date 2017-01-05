@@ -18,6 +18,7 @@ android {
   lintOptions {
     textOutput 'stdout'
     textReport true
+    lintConfig file('lint.xml')
   }
 
   dexOptions {
@@ -32,8 +33,7 @@ android {
 }
 
 dependencies {
-  provided dep.okhttp
-  provided dep.okhttp3
+  compile dep.okhttp
   compile dep.supportAnnotations
   testCompile dep.junit
   testCompile dep.fest

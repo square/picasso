@@ -15,10 +15,10 @@
  */
 package com.squareup.picasso;
 
-import android.graphics.Bitmap;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import com.squareup.picasso.Downloader.Response;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +28,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.RobolectricGradleTestRunner;
 
-import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.mockInputStream;
@@ -37,7 +36,6 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.api.Assertions.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -56,7 +54,8 @@ public class NetworkRequestHandlerTest {
   @Before public void setUp() throws Exception {
     initMocks(this);
     networkHandler = new NetworkRequestHandler(downloader, stats);
-    when(downloader.load(any(Uri.class), anyInt())).thenReturn(mock(Downloader.Response.class));
+    Response response = new Response(new ByteArrayInputStream(new byte[0]), false, 0);
+    when(downloader.load(any(Uri.class), anyInt())).thenReturn(response);
   }
 
   @Test public void doesNotForceLocalCacheOnlyWithAirplaneModeOffAndRetryCount() throws Exception {
@@ -101,7 +100,7 @@ public class NetworkRequestHandlerTest {
   }
 
   @Test public void noCacheAndKnownContentLengthDispatchToStats() throws Exception {
-    Downloader.Response response = new Downloader.Response(mockInputStream(), false, 1024);
+    Response response = new Response(mockInputStream(), false, 1024);
     when(downloader.load(any(Uri.class), anyInt())).thenReturn(response);
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     networkHandler.load(action.getRequest(), 0);
@@ -110,7 +109,7 @@ public class NetworkRequestHandlerTest {
 
   @Test public void unknownContentLengthFromDiskThrows() throws Exception {
     InputStream stream = mockInputStream();
-    Downloader.Response response = new Downloader.Response(stream, true, 0);
+    Response response = new Response(stream, true, 0);
     when(downloader.load(any(Uri.class), anyInt())).thenReturn(response);
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     try {
@@ -123,29 +122,11 @@ public class NetworkRequestHandlerTest {
   }
 
   @Test public void cachedResponseDoesNotDispatchToStats() throws Exception {
-    Downloader.Response response = new Downloader.Response(mockInputStream(), true, 1024);
+    Response response = new Response(mockInputStream(), true, 1024);
     when(downloader.load(any(Uri.class), anyInt())).thenReturn(response);
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     networkHandler.load(action.getRequest(), 0);
     verifyZeroInteractions(stats);
-  }
-
-  @Test public void downloaderCanReturnBitmapDirectly() throws Exception {
-    final Bitmap expected = Bitmap.createBitmap(10, 10, ARGB_8888);
-    Downloader bitmapDownloader = new Downloader() {
-      @Override public Response load(@NonNull Uri uri, int networkPolicy) throws IOException {
-        return new Response(expected, false);
-      }
-
-      @Override public void shutdown() {
-      }
-    };
-    Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    NetworkRequestHandler customNetworkHandler = new NetworkRequestHandler(bitmapDownloader, stats);
-
-    RequestHandler.Result result = customNetworkHandler.load(action.getRequest(), 0);
-    assertThat(result.getBitmap()).isSameAs(expected);
-    assertThat(result.getStream()).isNull();
   }
 
   @Test public void downloaderInputStreamNotDecoded() throws Exception {

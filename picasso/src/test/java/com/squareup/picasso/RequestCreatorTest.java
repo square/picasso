@@ -206,13 +206,6 @@ public class RequestCreatorTest {
   }
 
   @Test
-  public void intoTargetAndSkipMemoryCacheDoesNotCheckMemoryCache() {
-    Target target = mockTarget();
-    new RequestCreator(picasso, URI_1, 0).skipMemoryCache().into(target);
-    verify(picasso, never()).quickMemoryCacheCheck(URI_KEY_1);
-  }
-
-  @Test
   public void intoTargetWithSkipMemoryPolicy() {
     Target target = mockTarget();
     new RequestCreator(picasso, URI_1, 0).memoryPolicy(MemoryPolicy.NO_CACHE).into(target);
@@ -399,13 +392,6 @@ public class RequestCreatorTest {
     new RequestCreator(picasso, URI_1, 0).fit().into(target);
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue()).isInstanceOf(ImageViewAction.class);
-  }
-
-  @Test
-  public void intoImageViewAndSkipMemoryCacheDoesNotCheckMemoryCache() {
-    ImageView target = mockImageViewTarget();
-    new RequestCreator(picasso, URI_1, 0).skipMemoryCache().into(target);
-    verify(picasso, never()).quickMemoryCacheCheck(URI_KEY_1);
   }
 
   @Test

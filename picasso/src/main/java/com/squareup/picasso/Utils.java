@@ -50,9 +50,6 @@ import static java.lang.String.format;
 final class Utils {
   static final String THREAD_PREFIX = "Picasso-";
   static final String THREAD_IDLE_NAME = THREAD_PREFIX + "Idle";
-  static final int DEFAULT_READ_TIMEOUT_MILLIS = 20 * 1000; // 20s
-  static final int DEFAULT_WRITE_TIMEOUT_MILLIS = 20 * 1000; // 20s
-  static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = 15 * 1000; // 15s
   private static final String PICASSO_CACHE = "picasso-cache";
   private static final int KEY_PADDING = 50; // Determined by exact science.
   private static final int MIN_DISK_CACHE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -220,39 +217,6 @@ final class Utils {
     }
   }
 
-  /** Returns {@code true} if header indicates the response body was loaded from the disk cache. */
-  static boolean parseResponseSourceHeader(String header) {
-    if (header == null) {
-      return false;
-    }
-    String[] parts = header.split(" ", 2);
-    if ("CACHE".equals(parts[0])) {
-      return true;
-    }
-    if (parts.length == 1) {
-      return false;
-    }
-    try {
-      return "CONDITIONAL_CACHE".equals(parts[0]) && Integer.parseInt(parts[1]) == 304;
-    } catch (NumberFormatException e) {
-      return false;
-    }
-  }
-
-  static Downloader createDefaultDownloader(Context context) {
-    try {
-      Class.forName("okhttp3.OkHttpClient");
-      return OkHttp3DownloaderCreator.create(context);
-    } catch (ClassNotFoundException ignored) {
-    }
-    try {
-      Class.forName("com.squareup.okhttp.OkHttpClient");
-      return OkHttpDownloaderCreator.create(context);
-    } catch (ClassNotFoundException ignored) {
-    }
-    return new UrlConnectionDownloader(context);
-  }
-
   static File createDefaultCacheDir(Context context) {
     File cache = new File(context.getApplicationContext().getCacheDir(), PICASSO_CACHE);
     if (!cache.exists()) {
@@ -413,18 +377,6 @@ final class Utils {
     @Override public void run() {
       Process.setThreadPriority(THREAD_PRIORITY_BACKGROUND);
       super.run();
-    }
-  }
-
-  private static class OkHttpDownloaderCreator {
-    static Downloader create(Context context) {
-      return new OkHttpDownloader(context);
-    }
-  }
-
-  private static class OkHttp3DownloaderCreator {
-    static Downloader create(Context context) {
-      return new OkHttp3Downloader(context);
     }
   }
 }

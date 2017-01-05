@@ -408,25 +408,6 @@ public class Picasso {
     invalidate(Uri.fromFile(file));
   }
 
-  /**
-   * {@code true} if debug display, logging, and statistics are enabled.
-   * <p>
-   * @deprecated Use {@link #areIndicatorsEnabled()} and {@link #isLoggingEnabled()} instead.
-   */
-  @SuppressWarnings("UnusedDeclaration") @Deprecated public boolean isDebugging() {
-    return areIndicatorsEnabled() && isLoggingEnabled();
-  }
-
-  /**
-   * Toggle whether debug display, logging, and statistics are enabled.
-   * <p>
-   * @deprecated Use {@link #setIndicatorsEnabled(boolean)} and {@link #setLoggingEnabled(boolean)}
-   * instead.
-   */
-  @SuppressWarnings("UnusedDeclaration") @Deprecated public void setDebugging(boolean debugging) {
-    setIndicatorsEnabled(debugging);
-  }
-
   /** Toggle whether to display debug indicators on images. */
   @SuppressWarnings("UnusedDeclaration") public void setIndicatorsEnabled(boolean enabled) {
     indicatorsEnabled = enabled;
@@ -844,14 +825,6 @@ public class Picasso {
       return this;
     }
 
-    /**
-     * @deprecated Use {@link #indicatorsEnabled(boolean)} instead.
-     * Whether debugging is enabled or not.
-     */
-    @Deprecated public Builder debugging(boolean debugging) {
-      return indicatorsEnabled(debugging);
-    }
-
     /** Toggle whether to display debug indicators on images. */
     public Builder indicatorsEnabled(boolean enabled) {
       this.indicatorsEnabled = enabled;
@@ -874,7 +847,7 @@ public class Picasso {
       Context context = this.context;
 
       if (downloader == null) {
-        downloader = Utils.createDefaultDownloader(context);
+        downloader = new OkHttp3Downloader(context);
       }
       if (cache == null) {
         cache = new LruCache(context);

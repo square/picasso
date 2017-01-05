@@ -34,8 +34,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.squareup.picasso.BitmapHunter.forRequest;
-import static com.squareup.picasso.MemoryPolicy.NO_CACHE;
-import static com.squareup.picasso.MemoryPolicy.NO_STORE;
 import static com.squareup.picasso.MemoryPolicy.shouldReadFromMemoryCache;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Picasso.Priority;
@@ -337,13 +335,6 @@ public class RequestCreator {
   public RequestCreator transform(@NonNull List<? extends Transformation> transformations) {
     data.transform(transformations);
     return this;
-  }
-
-  /**
-   * @deprecated Use {@link #memoryPolicy(MemoryPolicy, MemoryPolicy...)} instead.
-   */
-  @Deprecated public RequestCreator skipMemoryCache() {
-    return memoryPolicy(NO_CACHE, NO_STORE);
   }
 
   /**

@@ -27,8 +27,9 @@ public class PollexorRequestTransformerTest {
   private static final String IMAGE = "http://google.com/logo.png";
   private static final Uri IMAGE_URI = Uri.parse(IMAGE);
 
-  private RequestTransformer transformer = new PollexorRequestTransformer(HOST);
-  private RequestTransformer secureTransformer = new PollexorRequestTransformer(HOST, KEY);
+  private RequestTransformer transformer = new PollexorRequestTransformer(Thumbor.create(HOST));
+  private RequestTransformer secureTransformer =
+      new PollexorRequestTransformer(Thumbor.create(HOST, KEY));
 
   @Test public void resourceIdRequestsAreNotTransformed() {
     Request input = new Request.Builder(12).build();

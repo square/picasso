@@ -7,7 +7,6 @@ buildscript {
 apply plugin: 'com.android.application'
 
 dependencies {
-  compile dep.okhttp
   compile dep.supportV4
   compile dep.supportAnnotations
   compile project(':picasso')
