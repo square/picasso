@@ -182,6 +182,7 @@ class TestUtils {
     ViewTreeObserver observer = mock(ViewTreeObserver.class);
     when(observer.isAlive()).thenReturn(alive);
     ImageView mock = mock(ImageView.class);
+    when(mock.getWindowToken()).thenReturn(mock(IBinder.class));
     when(mock.getViewTreeObserver()).thenReturn(observer);
     return mock;
   }
