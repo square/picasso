@@ -15,12 +15,10 @@
  */
 package com.squareup.picasso;
 
-import android.net.Uri;
-import okhttp3.OkHttpClient;
+import okhttp3.*;
+import okhttp3.Request;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.RecordedRequest;
-import okio.Okio;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,7 +28,6 @@ import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
 
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(shadows = { Shadows.ShadowNetwork.class })
@@ -39,88 +36,21 @@ public class OkHttp3DownloaderTest {
   @Rule public MockWebServer server = new MockWebServer();
 
   private OkHttp3Downloader downloader;
-  private Uri uri;
 
   @Before public void setUp() throws Exception {
     downloader = new OkHttp3Downloader(temporaryFolder.getRoot());
-    uri = Uri.parse(server.url("/").toString());
   }
 
-  @Test public void cachedResponse() throws Exception {
-    server.enqueue(new MockResponse()
-        .setHeader("Cache-Control", "max-age=31536000")
-        .setBody("Hi"));
-
-    Downloader.Response response1 = downloader.load(uri, 0);
-    assertThat(response1.cached).isFalse();
-    // Exhaust input stream to ensure response is cached.
-    Okio.buffer(Okio.source(response1.getInputStream())).readByteArray();
-
-    Downloader.Response response2 = downloader.load(uri, NetworkPolicy.OFFLINE.index);
-    assertThat(response2.cached).isTrue();
-  }
-
-  @Test public void offlineStaleResponse() throws Exception {
-    server.enqueue(new MockResponse()
-        .setHeader("Cache-Control", "max-age=1")
-        .setHeader("Expires", "Mon, 29 Dec 2014 21:44:55 GMT")
-        .setBody("Hi"));
-
-    Downloader.Response response1 = downloader.load(uri, 0);
-    assertThat(response1.cached).isFalse();
-    // Exhaust input stream to ensure response is cached.
-    Okio.buffer(Okio.source(response1.getInputStream())).readByteArray();
-
-    Downloader.Response response2 = downloader.load(uri, NetworkPolicy.OFFLINE.index);
-    assertThat(response2.cached).isTrue();
-  }
-
-  @Test public void networkPolicyNoCache() throws Exception {
-    MockResponse response =
-        new MockResponse().setHeader("Cache-Control", "max-age=31536000").setBody("Hi");
-    server.enqueue(response);
-
-    Downloader.Response response1 = downloader.load(uri, 0);
-    assertThat(response1.cached).isFalse();
-    // Exhaust input stream to ensure response is cached.
-    Okio.buffer(Okio.source(response1.getInputStream())).readByteArray();
-
-    // Enqueue the same response again but this time use NetworkPolicy.NO_CACHE.
-    server.enqueue(response);
-
-    Downloader.Response response2 = downloader.load(uri, NetworkPolicy.NO_CACHE.index);
-    // Response should not be coming from cache even if it was cached previously.
-    assertThat(response2.cached).isFalse();
-  }
-
-  @Test public void networkPolicyNoStore() throws Exception {
-    server.enqueue(new MockResponse());
-    downloader.load(uri, NetworkPolicy.NO_STORE.index);
-    RecordedRequest request = server.takeRequest();
-    assertThat(request.getHeader("Cache-Control")).isEqualTo("no-store");
-  }
-
-  @Test public void readsContentLengthHeader() throws Exception {
-    server.enqueue(new MockResponse().addHeader("Content-Length", 1024));
-
-    Downloader.Response response = downloader.load(uri, 0);
-    assertThat(response.contentLength).isEqualTo(1024);
-  }
-
-  @Test public void throwsResponseException() throws Exception {
-    server.enqueue(new MockResponse().setStatus("HTTP/1.1 401 Not Authorized"));
-
-    try {
-      downloader.load(uri, 0);
-      fail("Expected ResponseException.");
-    } catch (Downloader.ResponseException e) {
-      assertThat(e).hasMessage("401 Not Authorized");
-    }
+  @Test public void works() throws Exception {
+    server.enqueue(new MockResponse().setBody("Hi"));
+    okhttp3.Request request = new Request.Builder().url(server.url("/")).build();
+    Response response = downloader.load(request);
+    assertThat(response.body().string()).isEqualTo("Hi");
   }
 
   @Test public void shutdownClosesCacheIfNotShared() throws Exception {
     OkHttp3Downloader downloader = new OkHttp3Downloader(temporaryFolder.getRoot());
-    okhttp3.Cache cache = downloader.getCache();
+    okhttp3.Cache cache = ((OkHttpClient) downloader.client).cache();
     downloader.shutdown();
     assertThat(cache.isClosed()).isTrue();
   }
