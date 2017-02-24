@@ -34,7 +34,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ThreadFactory;
-import okio.Buffer;
 import okio.BufferedSource;
 import okio.ByteString;
 
@@ -95,7 +94,6 @@ final class Utils {
     |      'W'      |      'E'      |      'B'      |      'P'      |
     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
-  private static final int WEBP_FILE_HEADER_SIZE = 12;
   private static final ByteString WEBP_FILE_HEADER_RIFF = ByteString.encodeUtf8("RIFF");
   private static final ByteString WEBP_FILE_HEADER_WEBP = ByteString.encodeUtf8("WEBP");
 
@@ -277,14 +275,8 @@ final class Utils {
   }
 
   static boolean isWebPFile(BufferedSource source) throws IOException {
-    if (source.request(WEBP_FILE_HEADER_SIZE)) {
-      Buffer buffer = source.buffer();
-      if (buffer.rangeEquals(0, WEBP_FILE_HEADER_RIFF)
-          && buffer.rangeEquals(8, WEBP_FILE_HEADER_WEBP)) {
-        return true;
-      }
-    }
-    return false;
+    return source.rangeEquals(0, WEBP_FILE_HEADER_RIFF)
+        && source.rangeEquals(8, WEBP_FILE_HEADER_WEBP);
   }
 
   static int getResourceId(Resources resources, Request data) throws FileNotFoundException {
