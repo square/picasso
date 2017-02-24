@@ -30,6 +30,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso.Picasso.Listener;
@@ -57,6 +58,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(RobolectricGradleTestRunner.class)
+@Config(sdk = 23) // Works around https://github.com/robolectric/robolectric/issues/2566.
 public class PicassoTest {
 
   @Mock Context context;
@@ -280,6 +282,7 @@ public class PicassoTest {
     }
   }
 
+  @Config(sdk = 16) // This test fails on 23 so restore the default level.
   @Test public void cancelExistingRequestWithRemoteViewTarget() {
     int layoutId = 0;
     int viewId = 1;

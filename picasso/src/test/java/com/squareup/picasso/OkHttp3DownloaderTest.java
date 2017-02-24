@@ -30,7 +30,10 @@ import org.robolectric.annotation.Config;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(RobolectricGradleTestRunner.class)
-@Config(shadows = { Shadows.ShadowNetwork.class })
+@Config(
+    sdk = 23, // Works around https://github.com/robolectric/robolectric/issues/2566.
+    shadows = { Shadows.ShadowNetwork.class }
+)
 public class OkHttp3DownloaderTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   @Rule public MockWebServer server = new MockWebServer();

@@ -29,13 +29,14 @@ import android.os.Process;
 import android.os.StatFs;
 import android.provider.Settings;
 import android.util.Log;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.ThreadFactory;
+import okio.Buffer;
+import okio.BufferedSource;
+import okio.ByteString;
 
 import static android.content.Context.ACTIVITY_SERVICE;
 import static android.content.pm.ApplicationInfo.FLAG_LARGE_HEAP;
@@ -95,8 +96,8 @@ final class Utils {
     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
   private static final int WEBP_FILE_HEADER_SIZE = 12;
-  private static final String WEBP_FILE_HEADER_RIFF = "RIFF";
-  private static final String WEBP_FILE_HEADER_WEBP = "WEBP";
+  private static final ByteString WEBP_FILE_HEADER_RIFF = ByteString.encodeUtf8("RIFF");
+  private static final ByteString WEBP_FILE_HEADER_WEBP = ByteString.encodeUtf8("WEBP");
 
   private Utils() {
     // No instances.
@@ -209,14 +210,6 @@ final class Utils {
     return builder.toString();
   }
 
-  static void closeQuietly(InputStream is) {
-    if (is == null) return;
-    try {
-      is.close();
-    } catch (IOException ignored) {
-    }
-  }
-
   static File createDefaultCacheDir(Context context) {
     File cache = new File(context.getApplicationContext().getCacheDir(), PICASSO_CACHE);
     if (!cache.exists()) {
@@ -283,25 +276,15 @@ final class Utils {
     return context.checkCallingOrSelfPermission(permission) == PackageManager.PERMISSION_GRANTED;
   }
 
-  static byte[] toByteArray(InputStream input) throws IOException {
-    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-    byte[] buffer = new byte[1024 * 4];
-    int n;
-    while (-1 != (n = input.read(buffer))) {
-      byteArrayOutputStream.write(buffer, 0, n);
+  static boolean isWebPFile(BufferedSource source) throws IOException {
+    if (source.request(WEBP_FILE_HEADER_SIZE)) {
+      Buffer buffer = source.buffer();
+      if (buffer.rangeEquals(0, WEBP_FILE_HEADER_RIFF)
+          && buffer.rangeEquals(8, WEBP_FILE_HEADER_WEBP)) {
+        return true;
+      }
     }
-    return byteArrayOutputStream.toByteArray();
-  }
-
-  static boolean isWebPFile(InputStream stream) throws IOException {
-    byte[] fileHeaderBytes = new byte[WEBP_FILE_HEADER_SIZE];
-    boolean isWebPFile = false;
-    if (stream.read(fileHeaderBytes, 0, WEBP_FILE_HEADER_SIZE) == WEBP_FILE_HEADER_SIZE) {
-      // If a file's header starts with RIFF and end with WEBP, the file is a WebP file
-      isWebPFile = WEBP_FILE_HEADER_RIFF.equals(new String(fileHeaderBytes, 0, 4, "US-ASCII"))
-          && WEBP_FILE_HEADER_WEBP.equals(new String(fileHeaderBytes, 8, 4, "US-ASCII"));
-    }
-    return isWebPFile;
+    return false;
   }
 
   static int getResourceId(Resources resources, Request data) throws FileNotFoundException {

@@ -5,7 +5,7 @@ ext {
   targetSdkVersion = 25
   sourceCompatibilityVersion = JavaVersion.VERSION_1_7
   targetCompatibilityVersion = JavaVersion.VERSION_1_7
-  okhttpVersion = '3.0.1'
+  okhttpVersion = '3.6.0'
   supportLibrariesVersion = '25.1.0'
 
   dep = [
