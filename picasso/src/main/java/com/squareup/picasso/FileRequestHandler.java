@@ -19,6 +19,8 @@ import android.content.Context;
 import android.media.ExifInterface;
 import android.net.Uri;
 import java.io.IOException;
+import okio.Okio;
+import okio.Source;
 
 import static android.content.ContentResolver.SCHEME_FILE;
 import static android.media.ExifInterface.ORIENTATION_NORMAL;
@@ -36,7 +38,8 @@ class FileRequestHandler extends ContentStreamRequestHandler {
   }
 
   @Override public Result load(Request request, int networkPolicy) throws IOException {
-    return new Result(null, getInputStream(request), DISK, getFileExifRotation(request.uri));
+    Source source = Okio.source(getInputStream(request));
+    return new Result(null, source, DISK, getFileExifRotation(request.uri));
   }
 
   static int getFileExifRotation(Uri uri) throws IOException {

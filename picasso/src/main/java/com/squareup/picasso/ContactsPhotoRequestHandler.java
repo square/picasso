@@ -22,6 +22,7 @@ import android.net.Uri;
 import android.provider.ContactsContract;
 import java.io.IOException;
 import java.io.InputStream;
+import okio.Okio;
 
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.provider.ContactsContract.Contacts.openContactPhotoInputStream;
@@ -66,7 +67,10 @@ class ContactsPhotoRequestHandler extends RequestHandler {
 
   @Override public Result load(Request request, int networkPolicy) throws IOException {
     InputStream is = getInputStream(request);
-    return is != null ? new Result(is, DISK) : null;
+    if (is == null) {
+      return null;
+    }
+    return new Result(Okio.source(is), DISK);
   }
 
   private InputStream getInputStream(Request data) throws IOException {

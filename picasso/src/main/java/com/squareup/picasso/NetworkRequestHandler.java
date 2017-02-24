@@ -17,7 +17,6 @@ package com.squareup.picasso;
 
 import android.net.NetworkInfo;
 import java.io.IOException;
-import java.io.InputStream;
 import okhttp3.CacheControl;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -65,8 +64,7 @@ class NetworkRequestHandler extends RequestHandler {
     if (loadedFrom == NETWORK && body.contentLength() > 0) {
       stats.dispatchDownloadFinished(body.contentLength());
     }
-    InputStream is = body.byteStream();
-    return new Result(is, loadedFrom);
+    return new Result(body.source(), loadedFrom);
   }
 
   @Override int getRetryCount() {

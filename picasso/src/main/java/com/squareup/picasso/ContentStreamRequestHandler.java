@@ -20,6 +20,8 @@ import android.content.Context;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import okio.Okio;
+import okio.Source;
 
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
@@ -36,7 +38,8 @@ class ContentStreamRequestHandler extends RequestHandler {
   }
 
   @Override public Result load(Request request, int networkPolicy) throws IOException {
-    return new Result(getInputStream(request), DISK);
+    Source source = Okio.source(getInputStream(request));
+    return new Result(source, DISK);
   }
 
   InputStream getInputStream(Request request) throws FileNotFoundException {

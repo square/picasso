@@ -29,6 +29,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import okio.BufferedSource;
+import okio.Okio;
+import okio.Source;
 
 import static android.media.ExifInterface.ORIENTATION_FLIP_HORIZONTAL;
 import static android.media.ExifInterface.ORIENTATION_FLIP_VERTICAL;
@@ -119,23 +122,19 @@ class BitmapHunter implements Runnable {
    * about the supplied request in order to do the decoding efficiently (such as through leveraging
    * {@code inSampleSize}).
    */
-  static Bitmap decodeStream(InputStream stream, Request request) throws IOException {
-    MarkableInputStream markStream = new MarkableInputStream(stream);
-    stream = markStream;
-    markStream.allowMarksToExpire(false);
-    long mark = markStream.savePosition(1024);
+  static Bitmap decodeStream(Source source, Request request) throws IOException {
+    BufferedSource bufferedSource = Okio.buffer(source);
 
-    final BitmapFactory.Options options = RequestHandler.createBitmapOptions(request);
-    final boolean calculateSize = RequestHandler.requiresInSampleSize(options);
-
-    boolean isWebPFile = Utils.isWebPFile(stream);
+    boolean isWebPFile = Utils.isWebPFile(bufferedSource);
     boolean isPurgeable = request.purgeable && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP;
-    markStream.reset(mark);
+    BitmapFactory.Options options = RequestHandler.createBitmapOptions(request);
+    boolean calculateSize = RequestHandler.requiresInSampleSize(options);
+
     // We decode from a byte array because, a) when decoding a WebP network stream, BitmapFactory
     // throws a JNI Exception, so we workaround by decoding a byte array, or b) user requested
     // purgeable, which only affects bitmaps decoded from byte arrays.
     if (isWebPFile || isPurgeable) {
-      byte[] bytes = Utils.toByteArray(stream);
+      byte[] bytes = bufferedSource.readByteArray();
       if (calculateSize) {
         BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
         RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight, options,
@@ -143,13 +142,19 @@ class BitmapHunter implements Runnable {
       }
       return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
     } else {
+      InputStream stream = bufferedSource.inputStream();
       if (calculateSize) {
+        // TODO use an InputStream that buffers with Okio...
+        MarkableInputStream markStream = new MarkableInputStream(stream);
+        stream = markStream;
+        markStream.allowMarksToExpire(false);
+        long mark = markStream.savePosition(1024);
         BitmapFactory.decodeStream(stream, null, options);
         RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight, options,
             request);
         markStream.reset(mark);
+        markStream.allowMarksToExpire(true);
       }
-      markStream.allowMarksToExpire(true);
       Bitmap bitmap = BitmapFactory.decodeStream(stream, null, options);
       if (bitmap == null) {
         // Treat null as an IO exception, we will eventually retry.
@@ -219,11 +224,15 @@ class BitmapHunter implements Runnable {
 
       // If there was no Bitmap then we need to decode it from the stream.
       if (bitmap == null) {
-        InputStream is = result.getStream();
+        Source source = result.getSource();
         try {
-          bitmap = decodeStream(is, data);
+          bitmap = decodeStream(source, data);
         } finally {
-          Utils.closeQuietly(is);
+          try {
+            //noinspection ConstantConditions If bitmap is null then source is guranteed non-null.
+            source.close();
+          } catch (IOException ignored) {
+          }
         }
       }
     }
