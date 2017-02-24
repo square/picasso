@@ -16,22 +16,19 @@
 package com.squareup.picasso;
 
 import android.content.Context;
-import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.VisibleForTesting;
-
 import java.io.File;
 import java.io.IOException;
 import okhttp3.Cache;
-import okhttp3.CacheControl;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.ResponseBody;
+import okhttp3.Response;
 
 /** A {@link Downloader} which uses OkHttp to download images. */
 public final class OkHttp3Downloader implements Downloader {
-  private final Call.Factory client;
+  @VisibleForTesting final Call.Factory client;
   private final Cache cache;
   private boolean sharedClient = true;
 
@@ -90,53 +87,15 @@ public final class OkHttp3Downloader implements Downloader {
     this.cache = null;
   }
 
-  @VisibleForTesting Cache getCache() {
-    return ((OkHttpClient) client).cache();
-  }
-
-  @Override public Response load(@NonNull Uri uri, int networkPolicy) throws IOException {
-    CacheControl cacheControl = null;
-    if (networkPolicy != 0) {
-      if (NetworkPolicy.isOfflineOnly(networkPolicy)) {
-        cacheControl = CacheControl.FORCE_CACHE;
-      } else {
-        CacheControl.Builder builder = new CacheControl.Builder();
-        if (!NetworkPolicy.shouldReadFromDiskCache(networkPolicy)) {
-          builder.noCache();
-        }
-        if (!NetworkPolicy.shouldWriteToDiskCache(networkPolicy)) {
-          builder.noStore();
-        }
-        cacheControl = builder.build();
-      }
-    }
-
-    Request.Builder builder = new okhttp3.Request.Builder().url(uri.toString());
-    if (cacheControl != null) {
-      builder.cacheControl(cacheControl);
-    }
-
-    okhttp3.Response response = client.newCall(builder.build()).execute();
-    int responseCode = response.code();
-    if (responseCode >= 300) {
-      response.body().close();
-      throw new ResponseException(responseCode + " " + response.message(), networkPolicy,
-          responseCode);
-    }
-
-    boolean fromCache = response.cacheResponse() != null;
-
-    ResponseBody responseBody = response.body();
-    return new Response(responseBody.byteStream(), fromCache, responseBody.contentLength());
+  @NonNull @Override public Response load(@NonNull Request request) throws IOException {
+    return client.newCall(request).execute();
   }
 
   @Override public void shutdown() {
-    if (!sharedClient) {
-      if (cache != null) {
-        try {
-          cache.close();
-        } catch (IOException ignored) {
-        }
+    if (!sharedClient && cache != null) {
+      try {
+        cache.close();
+      } catch (IOException ignored) {
       }
     }
   }

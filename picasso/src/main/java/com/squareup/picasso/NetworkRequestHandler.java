@@ -16,17 +16,16 @@
 package com.squareup.picasso;
 
 import android.net.NetworkInfo;
-import android.support.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
+import okhttp3.CacheControl;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
-import static com.squareup.picasso.Downloader.Response;
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 import static com.squareup.picasso.Picasso.LoadedFrom.NETWORK;
 
 class NetworkRequestHandler extends RequestHandler {
-  static final int RETRY_COUNT = 2;
-
   private static final String SCHEME_HTTP = "http";
   private static final String SCHEME_HTTPS = "https";
 
@@ -43,29 +42,35 @@ class NetworkRequestHandler extends RequestHandler {
     return (SCHEME_HTTP.equals(scheme) || SCHEME_HTTPS.equals(scheme));
   }
 
-  @Override @Nullable public Result load(Request request, int networkPolicy) throws IOException {
-    Response response = downloader.load(request.uri, request.networkPolicy);
-    if (response == null) {
-      return null;
+  @Override public Result load(Request request, int networkPolicy) throws IOException {
+    okhttp3.Request downloaderRequest = createRequest(request, networkPolicy);
+    Response response = downloader.load(downloaderRequest);
+    ResponseBody body = response.body();
+
+    if (!response.isSuccessful()) {
+      body.close();
+      throw new ResponseException(response.code(), request.networkPolicy);
     }
 
-    Picasso.LoadedFrom loadedFrom = response.cached ? DISK : NETWORK;
+    // Cache response is only null when the response comes fully from the network. Both completely
+    // cached and conditionally cached responses will have a non-null cache response.
+    Picasso.LoadedFrom loadedFrom = response.cacheResponse() == null ? NETWORK : DISK;
 
-    InputStream is = response.getInputStream();
     // Sometimes response content length is zero when requests are being replayed. Haven't found
     // root cause to this but retrying the request seems safe to do so.
-    if (loadedFrom == DISK && response.getContentLength() == 0) {
-      Utils.closeQuietly(is);
+    if (loadedFrom == DISK && body.contentLength() == 0) {
+      body.close();
       throw new ContentLengthException("Received response with 0 content-length header.");
     }
-    if (loadedFrom == NETWORK && response.getContentLength() > 0) {
-      stats.dispatchDownloadFinished(response.getContentLength());
+    if (loadedFrom == NETWORK && body.contentLength() > 0) {
+      stats.dispatchDownloadFinished(body.contentLength());
     }
+    InputStream is = body.byteStream();
     return new Result(is, loadedFrom);
   }
 
   @Override int getRetryCount() {
-    return RETRY_COUNT;
+    return 2;
   }
 
   @Override boolean shouldRetry(boolean airplaneMode, NetworkInfo info) {
@@ -76,9 +81,44 @@ class NetworkRequestHandler extends RequestHandler {
     return true;
   }
 
+  private static okhttp3.Request createRequest(Request request, int networkPolicy) {
+    CacheControl cacheControl = null;
+    if (networkPolicy != 0) {
+      if (NetworkPolicy.isOfflineOnly(networkPolicy)) {
+        cacheControl = CacheControl.FORCE_CACHE;
+      } else {
+        CacheControl.Builder builder = new CacheControl.Builder();
+        if (!NetworkPolicy.shouldReadFromDiskCache(networkPolicy)) {
+          builder.noCache();
+        }
+        if (!NetworkPolicy.shouldWriteToDiskCache(networkPolicy)) {
+          builder.noStore();
+        }
+        cacheControl = builder.build();
+      }
+    }
+
+    okhttp3.Request.Builder builder = new okhttp3.Request.Builder().url(request.uri.toString());
+    if (cacheControl != null) {
+      builder.cacheControl(cacheControl);
+    }
+    return builder.build();
+  }
+
   static class ContentLengthException extends IOException {
-    public ContentLengthException(String message) {
+    ContentLengthException(String message) {
       super(message);
+    }
+  }
+
+  static final class ResponseException extends IOException {
+    final int code;
+    final int networkPolicy;
+
+    ResponseException(int code, int networkPolicy) {
+      super("HTTP " + code);
+      this.code = code;
+      this.networkPolicy = networkPolicy;
     }
   }
 }

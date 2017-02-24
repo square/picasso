@@ -16,26 +16,34 @@
 package com.squareup.picasso;
 
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.support.annotation.NonNull;
-import com.squareup.picasso.Downloader.Response;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.atomic.AtomicBoolean;
+import okhttp3.CacheControl;
+import okhttp3.MediaType;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okio.Buffer;
+import okio.BufferedSource;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.robolectric.RobolectricGradleTestRunner;
 
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
-import static com.squareup.picasso.TestUtils.mockInputStream;
 import static com.squareup.picasso.TestUtils.mockNetworkInfo;
+import static okhttp3.Protocol.HTTP_1_1;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.fest.assertions.api.Assertions.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -43,33 +51,49 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(RobolectricGradleTestRunner.class)
 public class NetworkRequestHandlerTest {
+  private final BlockingDeque<Response> responses = new LinkedBlockingDeque<>();
+  private final BlockingDeque<okhttp3.Request> requests = new LinkedBlockingDeque<>();
+  private final Downloader downloader = new Downloader() {
+    @NonNull @Override public Response load(@NonNull Request request) throws IOException {
+      requests.add(request);
+      try {
+        return responses.takeFirst();
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Override public void shutdown() {
+    }
+  };
 
   @Mock Picasso picasso;
   @Mock Cache cache;
   @Mock Stats stats;
   @Mock Dispatcher dispatcher;
-  @Mock Downloader downloader;
-  NetworkRequestHandler networkHandler;
+  @Captor ArgumentCaptor<okhttp3.Request> requestCaptor;
+
+  private NetworkRequestHandler networkHandler;
 
   @Before public void setUp() throws Exception {
     initMocks(this);
     networkHandler = new NetworkRequestHandler(downloader, stats);
-    Response response = new Response(new ByteArrayInputStream(new byte[0]), false, 0);
-    when(downloader.load(any(Uri.class), anyInt())).thenReturn(response);
   }
 
   @Test public void doesNotForceLocalCacheOnlyWithAirplaneModeOffAndRetryCount() throws Exception {
+    responses.add(responseOf(ResponseBody.create(null, new byte[10])));
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     networkHandler.load(action.getRequest(), 0);
-    verify(downloader).load(URI_1, 0);
+    assertEquals("", requests.takeFirst().cacheControl().toString());
   }
 
   @Test public void withZeroRetryCountForcesLocalCacheOnly() throws Exception {
+    responses.add(responseOf(ResponseBody.create(null, new byte[10])));
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     BitmapHunter hunter = new BitmapHunter(picasso, dispatcher, cache, stats, action, networkHandler);
     hunter.retryCount = 0;
     hunter.hunt();
-    verify(downloader).load(URI_1, NetworkPolicy.OFFLINE.index);
+    assertEquals(CacheControl.FORCE_CACHE.toString(), requests.takeFirst().cacheControl().toString());
   }
 
   @Test public void shouldRetryTwiceWithAirplaneModeOffAndNoNetworkInfo() throws Exception {
@@ -100,50 +124,53 @@ public class NetworkRequestHandlerTest {
   }
 
   @Test public void noCacheAndKnownContentLengthDispatchToStats() throws Exception {
-    Response response = new Response(mockInputStream(), false, 1024);
-    when(downloader.load(any(Uri.class), anyInt())).thenReturn(response);
+    responses.add(responseOf(ResponseBody.create(null, new byte[10])));
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     networkHandler.load(action.getRequest(), 0);
-    verify(stats).dispatchDownloadFinished(response.contentLength);
+    verify(stats).dispatchDownloadFinished(10);
   }
 
   @Test public void unknownContentLengthFromDiskThrows() throws Exception {
-    InputStream stream = mockInputStream();
-    Response response = new Response(stream, true, 0);
-    when(downloader.load(any(Uri.class), anyInt())).thenReturn(response);
+    final AtomicBoolean closed = new AtomicBoolean();
+    ResponseBody body = new ResponseBody() {
+      @Override public MediaType contentType() { return null; }
+      @Override public long contentLength() { return 0; }
+      @Override public BufferedSource source() { return new Buffer(); }
+      @Override public void close() {
+        closed.set(true);
+        super.close();
+      }
+    };
+    responses.add(responseOf(body)
+        .newBuilder()
+        .cacheResponse(responseOf(null))
+        .build());
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     try {
       networkHandler.load(action.getRequest(), 0);
-      fail("Should have thrown IOException.");
+      fail();
     } catch(IOException expected) {
       verifyZeroInteractions(stats);
-      verify(stream).close();
+      assertTrue(closed.get());
     }
   }
 
   @Test public void cachedResponseDoesNotDispatchToStats() throws Exception {
-    Response response = new Response(mockInputStream(), true, 1024);
-    when(downloader.load(any(Uri.class), anyInt())).thenReturn(response);
+    responses.add(responseOf(ResponseBody.create(null, new byte[10]))
+        .newBuilder()
+        .cacheResponse(responseOf(null))
+        .build());
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     networkHandler.load(action.getRequest(), 0);
     verifyZeroInteractions(stats);
   }
 
-  @Test public void downloaderInputStreamNotDecoded() throws Exception {
-    final InputStream is = new ByteArrayInputStream(new byte[] { 'a' });
-    Downloader bitmapDownloader = new Downloader() {
-      @Override public Response load(@NonNull Uri uri, int networkPolicy) throws IOException {
-        return new Response(is, false, 1);
-      }
-
-      @Override public void shutdown() {
-      }
-    };
-    Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    NetworkRequestHandler customNetworkHandler = new NetworkRequestHandler(bitmapDownloader, stats);
-
-    RequestHandler.Result result = customNetworkHandler.load(action.getRequest(), 0);
-    assertThat(result.getStream()).isSameAs(is);
-    assertThat(result.getBitmap()).isNull();
+  private static Response responseOf(ResponseBody body) {
+    return new Response.Builder()
+        .code(200)
+        .protocol(HTTP_1_1)
+        .request(new okhttp3.Request.Builder().url("http://example.com").build())
+        .body(body)
+        .build();
   }
 }

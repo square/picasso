@@ -174,8 +174,8 @@ class BitmapHunter implements Runnable {
       } else {
         dispatcher.dispatchComplete(this);
       }
-    } catch (Downloader.ResponseException e) {
-      if (!e.localCacheOnly || e.responseCode != 504) {
+    } catch (NetworkRequestHandler.ResponseException e) {
+      if (!NetworkPolicy.isOfflineOnly(e.networkPolicy) || e.code != 504) {
         exception = e;
       }
       dispatcher.dispatchFailed(this);
@@ -210,7 +210,7 @@ class BitmapHunter implements Runnable {
       }
     }
 
-    data.networkPolicy = retryCount == 0 ? NetworkPolicy.OFFLINE.index : networkPolicy;
+    networkPolicy = retryCount == 0 ? NetworkPolicy.OFFLINE.index : networkPolicy;
     RequestHandler.Result result = requestHandler.load(data, networkPolicy);
     if (result != null) {
       loadedFrom = result.getLoadedFrom();
