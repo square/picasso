@@ -18,7 +18,10 @@ import static android.view.View.VISIBLE;
 abstract class PicassoSampleActivity extends FragmentActivity {
   private ToggleButton showHide;
   private FrameLayout sampleContent;
-
+/**
+ * Just a TTTTTT!
+ * @param savedInstanceState
+ */
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     super.setContentView(R.layout.picasso_sample_activity);
