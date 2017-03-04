@@ -19,6 +19,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.appwidget.AppWidgetManager;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.widget.RemoteViews;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
@@ -134,7 +135,17 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
 
     @Override void update() {
       NotificationManager manager = getService(picasso.context, NOTIFICATION_SERVICE);
-      manager.notify(notificationTag, notificationId, notification);
+      try {
+        manager.notify(notificationTag, notificationId, notification);
+      } catch (RuntimeException e) {
+        if ((Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT)
+            && (Build.MANUFACTURER.equalsIgnoreCase("samsung"))
+            && ("bad array lengths".equalsIgnoreCase(e.getMessage()))) {
+          // Avoiding the reboot issue of Samsung Android 4.4
+        } else {
+          throw e;
+        }
+      }
     }
   }
 }
