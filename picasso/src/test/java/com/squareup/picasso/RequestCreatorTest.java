@@ -402,6 +402,16 @@ public class RequestCreatorTest {
   }
 
   @Test
+  public void intoImageViewWithFitAndOnlyScaleDown() {
+    ImageView target = mockFitImageViewTarget(true);
+    when(target.getWidth()).thenReturn(100);
+    when(target.getHeight()).thenReturn(100);
+    new RequestCreator(picasso, URI_1, 0).fit().onlyScaleDown().into(target);
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().getRequest().onlyScaleDown).isTrue();
+  }
+
+  @Test
   public void intoImageViewWithFitAndResizeThrows() {
     try {
       ImageView target = mockImageViewTarget();
@@ -544,7 +554,7 @@ public class RequestCreatorTest {
   }
 
   @Test
-  public void intoTargetNoResizeWithCenterInsideOrCenterCropThrows() {
+  public void intoTargetNoResizeWithCenterInsideOrCenterCropOrOnlyScaleDownThrows() {
     try {
       new RequestCreator(picasso, URI_1, 0).centerInside().into(mockTarget());
       fail("Center inside with unknown width should throw exception.");
@@ -553,6 +563,11 @@ public class RequestCreatorTest {
     try {
       new RequestCreator(picasso, URI_1, 0).centerCrop().into(mockTarget());
       fail("Center inside with unknown height should throw exception.");
+    } catch (IllegalStateException ignored) {
+    }
+    try {
+      new RequestCreator(picasso, URI_1, 0).onlyScaleDown().into(mockTarget());
+      fail("onlyScaleDown with unknown height should throw exception.");
     } catch (IllegalStateException ignored) {
     }
   }

@@ -390,9 +390,6 @@ public final class Request {
      * specified by {@link #resize(int, int)}.
      */
     public Builder onlyScaleDown() {
-      if (targetHeight == 0 && targetWidth == 0) {
-        throw new IllegalStateException("onlyScaleDown can not be applied without resize");
-      }
       onlyScaleDown = true;
       return this;
     }
@@ -499,6 +496,10 @@ public final class Request {
       if (centerInside && (targetWidth == 0 && targetHeight == 0)) {
         throw new IllegalStateException(
             "Center inside requires calling resize with positive width and height.");
+      }
+      if (onlyScaleDown && (targetWidth == 0 && targetHeight == 0)) {
+        throw new IllegalStateException(
+            "onlyScaleDown requires calling resize with positive width and height.");
       }
       if (priority == null) {
         priority = Priority.NORMAL;
