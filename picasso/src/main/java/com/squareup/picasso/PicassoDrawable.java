@@ -103,6 +103,7 @@ final class PicassoDrawable extends BitmapDrawable {
           placeholder.draw(canvas);
         }
 
+        // setAlpha will call invalidateSelf and drive the animation.
         int partialAlpha = (int) (alpha * normalized);
         super.setAlpha(partialAlpha);
         super.draw(canvas);
