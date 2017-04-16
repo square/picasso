@@ -51,6 +51,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -343,9 +344,9 @@ public class PicassoTest {
   @Test public void shutdownTwice() {
     picasso.shutdown();
     picasso.shutdown();
-    verify(cache).clear();
-    verify(stats).shutdown();
-    verify(dispatcher).shutdown();
+    verify(cache, only()).clear();
+    verify(stats, only()).shutdown();
+    verify(dispatcher, only()).shutdown();
     assertThat(picasso.shutdown).isTrue();
   }
 
