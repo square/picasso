@@ -131,6 +131,10 @@ final class PicassoDrawable extends BitmapDrawable {
     super.setColorFilter(cf);
   }
 
+  public Bitmap getBitmap() {
+    return image.getBitmap();
+  }
+  
   @Override protected void onBoundsChange(Rect bounds) {
     if (placeholder != null) {
       placeholder.setBounds(bounds);
