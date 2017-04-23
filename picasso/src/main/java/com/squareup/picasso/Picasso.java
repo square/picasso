@@ -586,7 +586,7 @@ public class Picasso {
     }
   }
 
-  private void cancelExistingRequest(Object target) {
+  void cancelExistingRequest(Object target) {
     checkMain();
     Action action = targetToAction.remove(target);
     if (action != null) {
