@@ -21,6 +21,7 @@ import android.view.View.OnAttachStateChangeListener;
 import android.view.ViewTreeObserver;
 import android.view.ViewTreeObserver.OnPreDrawListener;
 import android.widget.ImageView;
+
 import java.lang.ref.WeakReference;
 
 class DeferredRequestCreator implements OnPreDrawListener, OnAttachStateChangeListener {
@@ -72,7 +73,13 @@ class DeferredRequestCreator implements OnPreDrawListener, OnAttachStateChangeLi
     vto.removeOnPreDrawListener(this);
     this.target.clear();
 
-    this.creator.unfit().resize(width, height).into(target, callback);
+    this.creator.unfit().resize(width, height);
+    if (this.creator.doOnlyScaleDown) {
+      this.creator.onlyScaleDown();
+    }
+
+    this.creator.into(target, callback);
+
     return true;
   }
 
