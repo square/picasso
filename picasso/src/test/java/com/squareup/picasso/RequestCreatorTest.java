@@ -20,10 +20,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,6 +29,11 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RuntimeEnvironment;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
@@ -547,12 +549,17 @@ public class RequestCreatorTest {
   public void intoTargetNoResizeWithCenterInsideOrCenterCropThrows() {
     try {
       new RequestCreator(picasso, URI_1, 0).centerInside().into(mockTarget());
-      fail("Center inside with unknown width should throw exception.");
+      fail("Center inside with unknown height/width should throw exception.");
     } catch (IllegalStateException ignored) {
     }
     try {
       new RequestCreator(picasso, URI_1, 0).centerCrop().into(mockTarget());
-      fail("Center inside with unknown height should throw exception.");
+      fail("Center inside with unknown height/width should throw exception.");
+    } catch (IllegalStateException ignored) {
+    }
+    try {
+      new RequestCreator(picasso, URI_1, 0).onlyScaleDown().into(mockTarget());
+      fail("Only scale down with unknown height/width should throw exception.");
     } catch (IllegalStateException ignored) {
     }
   }
