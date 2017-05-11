@@ -529,6 +529,7 @@ public class RequestCreatorTest {
   public void intoRemoteViewsWidgetWithFitThrows() {
     try {
       RemoteViews remoteViews = mockRemoteViews();
+      //noinspection ResourceType
       new RequestCreator(picasso, URI_1, 0).fit().into(remoteViews, 1, new int[] { 1, 2, 3 });
       fail("Calling fit() into remote views should throw exception");
     } catch (IllegalStateException ignored) {
@@ -539,6 +540,7 @@ public class RequestCreatorTest {
   public void intoRemoteViewsNotificationWithFitThrows() {
     try {
       RemoteViews remoteViews = mockRemoteViews();
+      //noinspection ResourceType
       new RequestCreator(picasso, URI_1, 0).fit().into(remoteViews, 1, 1, mockNotification());
       fail("Calling fit() into remote views should throw exception");
     } catch (IllegalStateException ignored) {
@@ -705,11 +707,13 @@ public class RequestCreatorTest {
     } catch (IllegalArgumentException ignored) {
     }
     try {
+      //noinspection ResourceType
       new RequestCreator().placeholder(1).placeholder(new ColorDrawable(0));
       fail("Two placeholders should throw exception.");
     } catch (IllegalStateException ignored) {
     }
     try {
+      //noinspection ResourceType
       new RequestCreator().placeholder(new ColorDrawable(0)).placeholder(1);
       fail("Two placeholders should throw exception.");
     } catch (IllegalStateException ignored) {
@@ -723,11 +727,13 @@ public class RequestCreatorTest {
     } catch (IllegalStateException ignored) {
     }
     try {
+      //noinspection ResourceType
       new RequestCreator().noPlaceholder().placeholder(1);
       fail("Placeholder after no placeholder should throw exception.");
     } catch (IllegalStateException ignored) {
     }
     try {
+      //noinspection ResourceType
       new RequestCreator().placeholder(1).noPlaceholder();
       fail("No placeholder after placeholder should throw exception.");
     } catch (IllegalStateException ignored) {
@@ -751,11 +757,13 @@ public class RequestCreatorTest {
     } catch (IllegalArgumentException ignored) {
     }
     try {
+      //noinspection ResourceType
       new RequestCreator().error(1).error(new ColorDrawable(0));
       fail("Two placeholders should throw exception.");
     } catch (IllegalStateException ignored) {
     }
     try {
+      //noinspection ResourceType
       new RequestCreator().error(new ColorDrawable(0)).error(1);
       fail("Two placeholders should throw exception.");
     } catch (IllegalStateException ignored) {
