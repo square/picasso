@@ -431,6 +431,9 @@ class Dispatcher {
     if (hunter.isCancelled()) {
       return;
     }
+    if (hunter.result != null) {
+      hunter.result.prepareToDraw();
+    }
     batch.add(hunter);
     if (!handler.hasMessages(HUNTER_DELAY_NEXT_BATCH)) {
       handler.sendEmptyMessageDelayed(HUNTER_DELAY_NEXT_BATCH, BATCH_DELAY);
