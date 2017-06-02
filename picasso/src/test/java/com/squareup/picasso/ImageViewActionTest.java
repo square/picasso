@@ -21,7 +21,7 @@ import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
@@ -38,7 +38,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-@RunWith(RobolectricGradleTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
 public class ImageViewActionTest {
 
   @Test(expected = AssertionError.class)

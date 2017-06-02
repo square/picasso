@@ -20,7 +20,7 @@ import java.io.IOException;
 import okio.Buffer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_1;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_URI;
@@ -31,7 +31,7 @@ import static com.squareup.picasso.Utils.createKey;
 import static com.squareup.picasso.Utils.isWebPFile;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-@RunWith(RobolectricGradleTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
 public class UtilsTest {
 
   @Test public void matchingRequestsHaveSameKey() throws Exception {
