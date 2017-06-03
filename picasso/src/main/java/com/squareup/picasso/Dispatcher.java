@@ -16,12 +16,14 @@
 package com.squareup.picasso;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -119,13 +121,18 @@ class Dispatcher {
     receiver.register();
   }
 
+  @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
   void shutdown() {
     // Shutdown the thread pool only if it is the one created by Picasso.
     if (service instanceof PicassoExecutorService) {
       service.shutdown();
     }
     downloader.shutdown();
-    dispatcherThread.quit();
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+      dispatcherThread.quitSafely();
+    } else {
+      dispatcherThread.quit();
+    }
     // Unregister network broadcast receiver on the main thread.
     Picasso.HANDLER.post(new Runnable() {
       @Override public void run() {
