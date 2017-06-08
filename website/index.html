@@ -121,6 +121,8 @@ Picasso.with(context).load(new File(...)).into(imageView3);</pre>
   &lt;artifactId>picasso&lt;/artifactId>
   &lt;version><span class="version pln"><em>(insert latest version)</em></span>&lt;/version>
 &lt;/dependency></pre>
+            <p>Once you've installed Picasso, add the following lines to your <code>proguard-project.txt</code> file:</p>
+            <pre class="prettyprint">-dontwarn com.squareup.okhttp.**</pre>
 
             <h4>Gradle</h4>
             <pre class="prettyprint">compile 'com.squareup.picasso:picasso:<span class="version pln"><em>(insert latest version)</em></span>'</pre>
