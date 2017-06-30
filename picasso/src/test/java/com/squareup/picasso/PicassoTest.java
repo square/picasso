@@ -352,7 +352,7 @@ public class PicassoTest {
   @Test public void shutdownDisallowedOnSingletonInstance() {
     Picasso.singleton = null;
     try {
-      Picasso picasso = Picasso.with(RuntimeEnvironment.application);
+      Picasso picasso = Picasso.with();
       picasso.shutdown();
       fail("Calling shutdown() on static singleton instance should throw");
     } catch (UnsupportedOperationException expected) {
@@ -399,7 +399,7 @@ public class PicassoTest {
     Picasso.singleton = null;
 
     // Implicitly create the default singleton instance.
-    Picasso.with(RuntimeEnvironment.application);
+    Picasso.with();
 
     Picasso picasso = new Picasso.Builder(RuntimeEnvironment.application).build();
     try {
@@ -414,7 +414,7 @@ public class PicassoTest {
     Picasso.singleton = null;
     Picasso picasso = new Picasso.Builder(RuntimeEnvironment.application).build();
     Picasso.setSingletonInstance(picasso);
-    assertThat(Picasso.with(RuntimeEnvironment.application)).isSameAs(picasso);
+    assertThat(Picasso.with()).isSameAs(picasso);
   }
 
   @Test public void shutdownClearsDeferredRequests() {

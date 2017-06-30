@@ -81,7 +81,7 @@ public class SampleListDetailActivity extends PicassoSampleActivity {
       String url = arguments.getString(KEY_URL);
 
       urlView.setText(url);
-      Picasso.with(activity)
+      Picasso.with()
           .load(url)
           .fit()
           .tag(activity)

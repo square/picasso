@@ -29,7 +29,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
-
 import java.io.File;
 import java.lang.ref.ReferenceQueue;
 import java.util.ArrayList;
@@ -59,7 +58,7 @@ import static com.squareup.picasso.Utils.log;
 /**
  * Image downloading, transformation, and caching manager.
  * <p>
- * Use {@link #with(android.content.Context)} for the global singleton instance or construct your
+ * Use {@link #with()} for the global singleton instance or construct your
  * own instance with {@link Builder}.
  */
 public class Picasso {
@@ -674,16 +673,9 @@ public class Picasso {
    * {@link Picasso} instance. You can either use this directly or by setting it as the global
    * instance with {@link #setSingletonInstance}.
    */
-  public static Picasso with(@NonNull Context context) {
-    if (context == null) {
-      throw new IllegalArgumentException("context == null");
-    }
+  public static Picasso with() {
     if (singleton == null) {
-      synchronized (Picasso.class) {
-        if (singleton == null) {
-          singleton = new Builder(context).build();
-        }
-      }
+      throw new IllegalStateException("Singleton was not initialized.");
     }
     return singleton;
   }
