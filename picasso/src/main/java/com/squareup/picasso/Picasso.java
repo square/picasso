@@ -58,8 +58,8 @@ import static com.squareup.picasso.Utils.log;
 /**
  * Image downloading, transformation, and caching manager.
  * <p>
- * Use {@link #with()} for the global singleton instance or construct your
- * own instance with {@link Builder}.
+ * Use {@link #with(android.content.Context)} or {@link #with()} for the global singleton instance
+ * or construct your own instance with {@link Builder}.
  */
 public class Picasso {
 
@@ -673,11 +673,28 @@ public class Picasso {
    * {@link Picasso} instance. You can either use this directly or by setting it as the global
    * instance with {@link #setSingletonInstance}.
    */
-  public static Picasso with() {
+  public static Picasso with(@NonNull Context context) {
+    if (context == null) {
+      throw new IllegalArgumentException("context == null");
+    }
     if (singleton == null) {
-      throw new IllegalStateException("Singleton was not initialized.");
+      synchronized (Picasso.class) {
+        if (singleton == null) {
+          singleton = new Builder(context).build();
+        }
+      }
     }
     return singleton;
+  }
+
+  /**
+   * The global default {@link Picasso} instance.
+   * <p>
+   * This instance is created by passing a global context from startup into {@link #with(Context)}.
+   * </p>
+   */
+  public static Picasso with() {
+    return with(PicassoProvider.context);
   }
 
   /**

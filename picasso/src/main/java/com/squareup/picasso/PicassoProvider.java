@@ -17,14 +17,22 @@ package com.squareup.picasso;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RestrictTo;
 
-public class PicassoProvider extends ContentProvider {
+import static android.support.annotation.RestrictTo.Scope.LIBRARY;
+
+@RestrictTo(LIBRARY)
+public final class PicassoProvider extends ContentProvider {
+
+  static Context context;
+
   @Override public boolean onCreate() {
-    Picasso.setSingletonInstance(new Picasso.Builder(getContext()).build());
+    context = getContext();
     return true;
   }
 
