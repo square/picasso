@@ -44,7 +44,7 @@
           <div class="span9">
             <h3 id="introduction">Introduction</h3>
             <p>Images add much-needed context and visual flair to Android applications. Picasso allows for hassle-free image loading in your application&mdash;often in one line of code!</p>
-            <pre class="prettyprint">Picasso.with(context).load("http://i.imgur.com/DvpvklR.png").into(imageView);</pre>
+            <pre class="prettyprint">Picasso.with().load("http://i.imgur.com/DvpvklR.png").into(imageView);</pre>
             <p>Many common pitfalls of image loading on Android are handled automatically by Picasso:</p>
             <ul>
               <li>Handling <code>ImageView</code> recycling and download cancelation in an adapter.</li>
@@ -64,12 +64,12 @@
   }
   String url = getItem(position);
 
-  Picasso.with(context).load(url).into(view);
+  Picasso.with().load(url).into(view);
 }</pre>
 
             <h4>Image Transformations</h4>
             <p>Transform images to better fit into layouts and to reduce memory size.</p>
-            <pre class="prettyprint">Picasso.with(context)
+            <pre class="prettyprint">Picasso.with()
   .load(url)
   .resize(50, 50)
   .centerCrop()
@@ -93,7 +93,7 @@
 
             <h4>Place Holders</h4>
             <p>Picasso supports both download and error placeholders as optional features.</p>
-            <pre class-"prettyprint">Picasso.with(context)
+            <pre class-"prettyprint">Picasso.with()
     .load(url)
     .placeholder(R.drawable.user_placeholder)
     .error(R.drawable.user_placeholder_error)
@@ -103,9 +103,9 @@
 
             <h4>Resource Loading</h4>
             <p>Resources, assets, files, content providers are all supported as image sources.</p>
-            <pre class="prettyprint">Picasso.with(context).load(R.drawable.landing_screen).into(imageView1);
-Picasso.with(context).load("file:///android_asset/DvpvklR.png").into(imageView2);
-Picasso.with(context).load(new File(...)).into(imageView3);</pre>
+            <pre class="prettyprint">Picasso.with().load(R.drawable.landing_screen).into(imageView1);
+Picasso.with().load("file:///android_asset/DvpvklR.png").into(imageView2);
+Picasso.with().load(new File(...)).into(imageView3);</pre>
 
             <h4>Debug Indicators</h4>
             <p>For development you can enable the display of a colored ribbon which indicates the image source. Call <code>setIndicatorsEnabled(true)</code> on the Picasso instance.</p>
