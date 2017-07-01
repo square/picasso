@@ -39,7 +39,7 @@ final class SampleListDetailAdapter extends BaseAdapter {
     holder.text.setText(url);
 
     // Trigger the download of the URL asynchronously into the image view.
-    Picasso.with(context)
+    Picasso.with()
         .load(url)
         .placeholder(R.drawable.placeholder)
         .error(R.drawable.error)

@@ -44,7 +44,7 @@ final class PicassoSampleAdapter extends BaseAdapter {
         notificationManager.notify(NOTIFICATION_ID, notification);
 
         // Now load an image for this notification.
-        Picasso.with(activity) //
+        Picasso.with() //
             .load(Data.URLS[new Random().nextInt(Data.URLS.length)]) //
             .resizeDimen(R.dimen.notification_icon_width_height,
                 R.dimen.notification_icon_width_height) //
