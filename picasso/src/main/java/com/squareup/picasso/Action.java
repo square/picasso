@@ -26,7 +26,7 @@ abstract class Action<T> {
   static class RequestWeakReference<M> extends WeakReference<M> {
     final Action action;
 
-    public RequestWeakReference(Action action, M referent, ReferenceQueue<? super M> q) {
+    RequestWeakReference(Action action, M referent, ReferenceQueue<? super M> q) {
       super(referent, q);
       this.action = action;
     }

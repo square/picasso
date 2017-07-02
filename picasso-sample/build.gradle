@@ -7,9 +7,9 @@ buildscript {
 apply plugin: 'com.android.application'
 
 dependencies {
-  compile dep.supportV4
-  compile dep.supportAnnotations
-  compile project(':picasso')
+  implementation dep.supportV4
+  compileOnly dep.supportAnnotations
+  implementation project(':picasso')
 }
 
 android {

@@ -33,15 +33,15 @@ android {
 }
 
 dependencies {
-  compile dep.okhttp
-  compile dep.supportAnnotations
-  testCompile dep.junit
-  testCompile dep.fest
-  testCompile dep.festAndroid
-  testCompile dep.supportV4
-  testCompile dep.robolectric
-  testCompile dep.mockito
-  testCompile dep.mockWebServer
+  api dep.okhttp
+  compileOnly dep.supportAnnotations
+  testImplementation dep.junit
+  testImplementation dep.fest
+  testImplementation dep.festAndroid
+  testImplementation dep.supportV4
+  testImplementation dep.robolectric
+  testImplementation dep.mockito
+  testImplementation dep.mockWebServer
 }
 
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')

@@ -68,7 +68,7 @@ final class PicassoSampleAdapter extends BaseAdapter {
 
   private final LayoutInflater inflater;
 
-  public PicassoSampleAdapter(Context context) {
+  PicassoSampleAdapter(Context context) {
     inflater = LayoutInflater.from(context);
   }
 

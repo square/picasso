@@ -34,7 +34,7 @@ class AssetRequestHandler extends RequestHandler {
   private final Object lock = new Object();
   private AssetManager assetManager;
 
-  public AssetRequestHandler(Context context) {
+  AssetRequestHandler(Context context) {
     this.context = context;
   }
 

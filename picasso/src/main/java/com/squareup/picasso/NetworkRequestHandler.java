@@ -31,7 +31,7 @@ class NetworkRequestHandler extends RequestHandler {
   private final Downloader downloader;
   private final Stats stats;
 
-  public NetworkRequestHandler(Downloader downloader, Stats stats) {
+  NetworkRequestHandler(Downloader downloader, Stats stats) {
     this.downloader = downloader;
     this.stats = stats;
   }

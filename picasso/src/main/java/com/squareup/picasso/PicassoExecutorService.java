@@ -92,7 +92,7 @@ class PicassoExecutorService extends ThreadPoolExecutor {
       implements Comparable<PicassoFutureTask> {
     private final BitmapHunter hunter;
 
-    public PicassoFutureTask(BitmapHunter hunter) {
+    PicassoFutureTask(BitmapHunter hunter) {
       super(hunter, null);
       this.hunter = hunter;
     }
