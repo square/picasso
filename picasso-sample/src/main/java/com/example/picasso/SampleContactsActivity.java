@@ -16,9 +16,13 @@
  */
 package com.example.picasso;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -30,6 +34,9 @@ public class SampleContactsActivity extends PicassoSampleActivity
     implements LoaderManager.LoaderCallbacks<Cursor> {
   private SampleContactsAdapter adapter;
 
+  private static final String READ_CONTACTS = Manifest.permission.READ_CONTACTS;
+  private static final int READ_CONTACTS_CODE = 100;
+
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.sample_contacts_activity);
@@ -40,10 +47,29 @@ public class SampleContactsActivity extends PicassoSampleActivity
     lv.setAdapter(adapter);
     lv.setOnScrollListener(new SampleScrollListener(this));
 
-    getSupportLoaderManager().initLoader(ContactsQuery.QUERY_ID, null, this);
+    initLoader();
   }
 
-  @Override public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+  private void initLoader() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+            && checkSelfPermission(READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+      requestPermissions(new String[]{READ_CONTACTS}, READ_CONTACTS_CODE);
+    } else {
+      getSupportLoaderManager().initLoader(ContactsQuery.QUERY_ID, null, this);
+    }
+  }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        if (requestCode == READ_CONTACTS_CODE) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getSupportLoaderManager().initLoader(ContactsQuery.QUERY_ID, null, this);
+            }
+        }
+    }
+
+    @Override public Loader<Cursor> onCreateLoader(int id, Bundle args) {
     if (id == ContactsQuery.QUERY_ID) {
       return new CursorLoader(this, //
           ContactsQuery.CONTENT_URI, //
