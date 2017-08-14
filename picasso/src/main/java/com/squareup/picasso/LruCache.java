@@ -85,6 +85,9 @@ public class LruCache implements Cache {
       if (previous != null) {
         size -= Utils.getBitmapBytes(previous);
       }
+      if (previous != null && previous != bitmap) {
+        previous.recycle();
+      }
     }
 
     trimToSize(maxSize);
@@ -109,6 +112,7 @@ public class LruCache implements Cache {
         value = toEvict.getValue();
         map.remove(key);
         size -= Utils.getBitmapBytes(value);
+        value.recycle();
         evictionCount++;
       }
     }
@@ -141,6 +145,7 @@ public class LruCache implements Cache {
       if (newlineIndex == uriLength && key.substring(0, newlineIndex).equals(uri)) {
         i.remove();
         size -= Utils.getBitmapBytes(value);
+        value.recycle();
       }
     }
   }
