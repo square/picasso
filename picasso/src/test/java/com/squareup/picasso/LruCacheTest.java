@@ -27,6 +27,8 @@ import org.robolectric.RobolectricGradleTestRunner;
 
 import static android.graphics.Bitmap.Config.ALPHA_8;
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -194,6 +196,27 @@ public class LruCacheTest {
     assertHit(cache, "16", size16);
     assertMiss(cache, "25");
     assertEquals(cache.size(), 16);
+  }
+
+  @Test public void recycleOld() {
+    LruCache cache = new LruCache(36);
+    Bitmap size25 = Bitmap.createBitmap(5, 5, ALPHA_8);
+    Bitmap size36 = Bitmap.createBitmap(6, 6, ALPHA_8);
+
+    cache.set("25", size25);
+    cache.set("36", size36);
+
+    assertTrue(size25.isRecycled());
+  }
+
+  @Test public void notRecycleTheSame() {
+    LruCache cache = new LruCache(25);
+    Bitmap size25 = Bitmap.createBitmap(5, 5, ALPHA_8);
+
+    cache.set("25", size25);
+    cache.set("25", size25);
+
+    assertFalse(size25.isRecycled());
   }
 
   private void assertHit(LruCache cache, String key, Bitmap value) {
