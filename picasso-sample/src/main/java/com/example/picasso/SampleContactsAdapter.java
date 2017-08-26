@@ -33,7 +33,7 @@ import static com.example.picasso.SampleContactsActivity.ContactsQuery;
 class SampleContactsAdapter extends CursorAdapter {
   private final LayoutInflater inflater;
 
-  public SampleContactsAdapter(Context context) {
+  SampleContactsAdapter(Context context) {
     super(context, null, 0);
     inflater = LayoutInflater.from(context);
   }

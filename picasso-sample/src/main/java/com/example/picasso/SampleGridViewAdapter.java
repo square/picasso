@@ -15,7 +15,7 @@ final class SampleGridViewAdapter extends BaseAdapter {
   private final Context context;
   private final List<String> urls = new ArrayList<>();
 
-  public SampleGridViewAdapter(Context context) {
+  SampleGridViewAdapter(Context context) {
     this.context = context;
 
     // Ensure we get a different ordering of images on each run.

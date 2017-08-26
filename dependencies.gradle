@@ -9,7 +9,7 @@ ext {
   supportLibrariesVersion = '25.1.0'
 
   dep = [
-      androidPlugin      : 'com.android.tools.build:gradle:2.1.3',
+      androidPlugin      : 'com.android.tools.build:gradle:3.0.0-beta2',
       okhttp             : "com.squareup.okhttp3:okhttp:$okhttpVersion",
       mockWebServer      : "com.squareup.okhttp3:mockwebserver:$okhttpVersion",
       pollexor           : 'com.squareup:pollexor:2.0.4',

@@ -16,7 +16,7 @@ final class SampleListDetailAdapter extends BaseAdapter {
   private final Context context;
   private final List<String> urls = new ArrayList<>();
 
-  public SampleListDetailAdapter(Context context) {
+  SampleListDetailAdapter(Context context) {
     this.context = context;
     Collections.addAll(urls, Data.URLS);
   }

@@ -36,11 +36,11 @@ final class MarkableInputStream extends InputStream {
   private boolean allowExpire = true;
   private int limitIncrement = -1;
 
-  public MarkableInputStream(InputStream in) {
+  MarkableInputStream(InputStream in) {
     this(in, DEFAULT_BUFFER_SIZE);
   }
 
-  public MarkableInputStream(InputStream in, int size) {
+  MarkableInputStream(InputStream in, int size) {
     this(in, size, DEFAULT_LIMIT_INCREMENT);
   }
 

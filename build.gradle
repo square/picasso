@@ -2,6 +2,8 @@ subprojects {
   buildscript {
     repositories {
       mavenCentral()
+      jcenter()
+      google()
     }
   }
   repositories {

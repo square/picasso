@@ -31,14 +31,14 @@ android {
 }
 
 dependencies {
-  compile project(':picasso')
-  compile dep.pollexor
-  compile dep.supportAnnotations
-  testCompile dep.junit
-  testCompile dep.robolectric
-  testCompile dep.fest
-  testCompile dep.festAndroid
-  testCompile dep.pollexor
+  api project(':picasso')
+  api dep.pollexor
+  compileOnly dep.supportAnnotations
+  testImplementation dep.junit
+  testImplementation dep.robolectric
+  testImplementation dep.fest
+  testImplementation dep.festAndroid
+  testImplementation dep.pollexor
 }
 
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')

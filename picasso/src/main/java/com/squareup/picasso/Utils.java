@@ -345,7 +345,7 @@ final class Utils {
   }
 
   private static class PicassoThread extends Thread {
-    public PicassoThread(Runnable r) {
+    PicassoThread(Runnable r) {
       super(r);
     }
 

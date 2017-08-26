@@ -127,7 +127,7 @@ class Stats {
 
     private final Stats stats;
 
-    public StatsHandler(Looper looper, Stats stats) {
+    StatsHandler(Looper looper, Stats stats) {
       super(looper);
       this.stats = stats;
     }
