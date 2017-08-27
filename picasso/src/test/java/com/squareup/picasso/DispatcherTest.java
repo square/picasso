@@ -445,6 +445,13 @@ public class DispatcherTest {
     assertThat(dispatcher.pausedTags).isEmpty();
   }
 
+  @Test public void performPauseAndRemoveUpdatesListOfPausedTags() {
+    dispatcher.performPauseTag("tag");
+    assertThat(dispatcher.pausedTags).hasSize(1).contains("tag");
+    dispatcher.performRemoveTag("tag");
+    assertThat(dispatcher.pausedTags).isEmpty();
+  }
+
   @Test public void performPauseTagIsIdempotent() {
     Action action = mockAction(URI_KEY_1, URI_1, mockTarget(), "tag");
     BitmapHunter hunter = mockHunter(URI_KEY_1, bitmap1, false, action);

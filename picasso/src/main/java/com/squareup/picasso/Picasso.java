@@ -264,6 +264,8 @@ public class Picasso {
         deferredRequestCreator.cancel();
       }
     }
+
+    dispatcher.dispatchRemoveTag(tag);
   }
 
   /**

@@ -73,7 +73,8 @@ class Dispatcher {
   static final int AIRPLANE_MODE_CHANGE = 10;
   static final int TAG_PAUSE = 11;
   static final int TAG_RESUME = 12;
-  static final int REQUEST_BATCH_RESUME = 13;
+  static final int TAG_REMOVE = 13;
+  static final int REQUEST_BATCH_RESUME = 14;
 
   private static final String DISPATCHER_THREAD_NAME = "Dispatcher";
   private static final int BATCH_DELAY = 200; // ms
@@ -148,6 +149,10 @@ class Dispatcher {
 
   void dispatchResumeTag(Object tag) {
     handler.sendMessage(handler.obtainMessage(TAG_RESUME, tag));
+  }
+
+  void dispatchRemoveTag(Object tag) {
+    handler.sendMessage(handler.obtainMessage(TAG_REMOVE, tag));
   }
 
   void dispatchComplete(BitmapHunter hunter) {
@@ -317,6 +322,10 @@ class Dispatcher {
     }
   }
 
+  void performRemoveTag(Object tag) {
+    pausedTags.remove(tag);
+  }
+
   void performRetry(BitmapHunter hunter) {
     if (hunter.isCancelled()) return;
 
@@ -482,6 +491,11 @@ class Dispatcher {
         case TAG_RESUME: {
           Object tag = msg.obj;
           dispatcher.performResumeTag(tag);
+          break;
+        }
+        case TAG_REMOVE: {
+          Object tag = msg.obj;
+          dispatcher.performRemoveTag(tag);
           break;
         }
         case HUNTER_COMPLETE: {
