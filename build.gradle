@@ -1,13 +1,13 @@
 subprojects {
   buildscript {
     repositories {
-      mavenCentral()
       jcenter()
       google()
     }
   }
   repositories {
-    mavenCentral()
+    jcenter()
+    google()
   }
 
   plugins.apply('checkstyle')
