@@ -22,5 +22,5 @@ ext {
       mockito            : 'org.mockito:mockito-core:1.9.5'
   ]
 
-  isCi = "true".equals(System.getenv('CI'))
+  isCi = "true" == System.getenv('CI')
 }
