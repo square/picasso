@@ -15,6 +15,7 @@
  */
 package com.squareup.picasso;
 
+import android.annotation.SuppressLint;
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -317,6 +318,7 @@ class Dispatcher {
     }
   }
 
+  @SuppressLint("MissingPermission")
   void performRetry(BitmapHunter hunter) {
     if (hunter.isCancelled()) return;
 
@@ -550,6 +552,7 @@ class Dispatcher {
       dispatcher.context.unregisterReceiver(this);
     }
 
+    @SuppressLint("MissingPermission")
     @Override public void onReceive(Context context, Intent intent) {
       // On some versions of Android this may be called with a null Intent,
       // also without extras (getExtras() == null), in such case we use defaults.
