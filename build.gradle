@@ -1,13 +1,13 @@
 subprojects {
   buildscript {
     repositories {
-      mavenCentral()
       jcenter()
       google()
     }
   }
   repositories {
-    mavenCentral()
+    jcenter()
+    google()
   }
 
   plugins.apply('checkstyle')
@@ -30,4 +30,4 @@ subprojects {
   }
 }
 
-apply from: rootProject.file('dependencies.gradle')
+apply from: rootProject.file('gradle/dependencies.gradle')

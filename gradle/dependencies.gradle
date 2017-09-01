@@ -1,12 +1,12 @@
 ext {
-  compileSdkVersion = 25
-  buildToolsVersion = '25.0.2'
+  compileSdkVersion = 26
+  buildToolsVersion = '26.0.1'
   minSdkVersion = 14
-  targetSdkVersion = 25
+  targetSdkVersion = 26
   sourceCompatibilityVersion = JavaVersion.VERSION_1_7
   targetCompatibilityVersion = JavaVersion.VERSION_1_7
   okhttpVersion = '3.6.0'
-  supportLibrariesVersion = '25.1.0'
+  supportLibrariesVersion = '26.0.1'
 
   dep = [
       androidPlugin      : 'com.android.tools.build:gradle:3.0.0-beta2',
@@ -15,12 +15,12 @@ ext {
       pollexor           : 'com.squareup:pollexor:2.0.4',
       supportV4          : "com.android.support:support-v4:$supportLibrariesVersion",
       supportAnnotations : "com.android.support:support-annotations:$supportLibrariesVersion",
-      junit              : 'junit:junit:4.10',
+      junit              : 'junit:junit:4.12',
       fest               : 'org.easytesting:fest-assert-core:2.0M10',
       festAndroid        : 'com.squareup:fest-android:1.0.6',
       robolectric        : 'org.robolectric:robolectric:3.1',
       mockito            : 'org.mockito:mockito-core:1.9.5'
   ]
 
-  isCi = "true".equals(System.getenv('CI'))
+  isCi = "true" == System.getenv('CI')
 }
