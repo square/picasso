@@ -36,8 +36,7 @@ dependencies {
   api dep.okhttp
   compileOnly dep.supportAnnotations
   testImplementation dep.junit
-  testImplementation dep.fest
-  testImplementation dep.festAndroid
+  testImplementation dep.truth
   testImplementation dep.supportV4
   testImplementation dep.robolectric
   testImplementation dep.mockito

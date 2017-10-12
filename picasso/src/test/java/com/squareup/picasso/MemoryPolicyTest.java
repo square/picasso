@@ -2,7 +2,7 @@ package com.squareup.picasso;
 
 import org.junit.Test;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 public class MemoryPolicyTest {
 

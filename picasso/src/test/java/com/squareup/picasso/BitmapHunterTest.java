@@ -39,6 +39,7 @@ import static android.media.ExifInterface.ORIENTATION_FLIP_VERTICAL;
 import static android.media.ExifInterface.ORIENTATION_ROTATE_90;
 import static android.media.ExifInterface.ORIENTATION_TRANSPOSE;
 import static android.media.ExifInterface.ORIENTATION_TRANSVERSE;
+import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso.BitmapHunter.forRequest;
 import static com.squareup.picasso.BitmapHunter.transformResult;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
@@ -71,10 +72,7 @@ import static com.squareup.picasso.TestUtils.makeBitmap;
 import static com.squareup.picasso.TestUtils.mockAction;
 import static com.squareup.picasso.TestUtils.mockImageViewTarget;
 import static com.squareup.picasso.TestUtils.mockPicasso;
-import static org.fest.assertions.api.ANDROID.assertThat;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.fest.assertions.api.Assertions.entry;
-import static org.fest.assertions.api.Assertions.fail;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -210,7 +208,8 @@ public class BitmapHunterTest {
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action1);
     assertThat(hunter.actions).isNull();
     hunter.attach(action2);
-    assertThat(hunter.actions).isNotNull().hasSize(1);
+    assertThat(hunter.actions).isNotNull();
+    assertThat(hunter.actions).hasSize(1);
   }
 
   @Test public void detachSingleRequest() {
@@ -228,7 +227,8 @@ public class BitmapHunterTest {
     hunter.attach(action2);
     hunter.detach(action2);
     assertThat(hunter.action).isNotNull();
-    assertThat(hunter.actions).isNotNull().isEmpty();
+    assertThat(hunter.actions).isNotNull();
+    assertThat(hunter.actions).isEmpty();
     hunter.detach(action);
     assertThat(hunter.action).isNull();
   }
@@ -389,7 +389,8 @@ public class BitmapHunterTest {
         dispatcher, cache, stats, action1);
     hunter.attach(action2);
     assertThat(hunter.getAction()).isEqualTo(action1);
-    assertThat(hunter.getActions()).hasSize(1).contains(action2);
+    assertThat(hunter.getActions()).hasSize(1);
+    assertThat(hunter.getActions()).contains(action2);
     assertThat(hunter.getPriority()).isEqualTo(HIGH);
   }
 
@@ -400,7 +401,8 @@ public class BitmapHunterTest {
         dispatcher, cache, stats, action1);
     hunter.attach(action2);
     assertThat(hunter.getAction()).isEqualTo(action1);
-    assertThat(hunter.getActions()).hasSize(1).contains(action2);
+    assertThat(hunter.getActions()).hasSize(1);
+    assertThat(hunter.getActions()).contains(action2);
     assertThat(hunter.getPriority()).isEqualTo(HIGH);
     hunter.detach(action2);
     assertThat(hunter.getAction()).isEqualTo(action1);
@@ -417,7 +419,7 @@ public class BitmapHunterTest {
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
-    assertThat(shadowMatrix.getPreOperations()).containsOnly("rotate 90.0");
+    assertThat(shadowMatrix.getPreOperations()).containsExactly("rotate 90.0");
   }
 
  @Test public void exifRotationSizing() throws Exception {
@@ -489,8 +491,8 @@ public class BitmapHunterTest {
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
-    assertThat(shadowMatrix.getPostOperations()).containsOnly("scale -1.0 1.0");
-    assertThat(shadowMatrix.getPreOperations()).containsOnly("rotate 180.0");
+    assertThat(shadowMatrix.getPostOperations()).containsExactly("scale -1.0 1.0");
+    assertThat(shadowMatrix.getPreOperations()).containsExactly("rotate 180.0");
   }
 
   @Test public void exifHorizontalFlip() {
@@ -502,7 +504,7 @@ public class BitmapHunterTest {
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
-    assertThat(shadowMatrix.getPostOperations()).containsOnly("scale -1.0 1.0");
+    assertThat(shadowMatrix.getPostOperations()).containsExactly("scale -1.0 1.0");
     assertThat(shadowMatrix.getPreOperations()).doesNotContain("rotate 180.0");
     assertThat(shadowMatrix.getPreOperations()).doesNotContain("rotate 90.0");
     assertThat(shadowMatrix.getPreOperations()).doesNotContain("rotate 270.0");
@@ -517,8 +519,8 @@ public class BitmapHunterTest {
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
-    assertThat(shadowMatrix.getPostOperations()).containsOnly("scale -1.0 1.0");
-    assertThat(shadowMatrix.getPreOperations()).containsOnly("rotate 90.0");
+    assertThat(shadowMatrix.getPostOperations()).containsExactly("scale -1.0 1.0");
+    assertThat(shadowMatrix.getPreOperations()).containsExactly("rotate 90.0");
   }
 
   @Test public void exifTransverse() {
@@ -530,8 +532,8 @@ public class BitmapHunterTest {
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
-    assertThat(shadowMatrix.getPostOperations()).containsOnly("scale -1.0 1.0");
-    assertThat(shadowMatrix.getPreOperations()).containsOnly("rotate 270.0");
+    assertThat(shadowMatrix.getPostOperations()).containsExactly("scale -1.0 1.0");
+    assertThat(shadowMatrix.getPreOperations()).containsExactly("rotate 270.0");
   }
 
   @Test public void keepsAspectRationWhileResizingWhenDesiredWidthIs0() {
@@ -543,7 +545,7 @@ public class BitmapHunterTest {
     ShadowBitmap shadowBitmap = shadowOf(result);
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
-    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
+    assertThat(shadowMatrix.getPreOperations()).containsExactly("scale 0.5 0.5");
   }
 
   @Test public void keepsAspectRationWhileResizingWhenDesiredHeightIs0() {
@@ -555,7 +557,7 @@ public class BitmapHunterTest {
     ShadowBitmap shadowBitmap = shadowOf(result);
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
-    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
+    assertThat(shadowMatrix.getPreOperations()).containsExactly("scale 0.5 0.5");
   }
 
   @Test public void centerCropResultMatchesTargetSize() {
@@ -674,8 +676,8 @@ public class BitmapHunterTest {
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
-    assertThat(shadowMatrix.getPreOperations()).containsOnly("rotate 90.0");
-    assertThat(shadowMatrix.getSetOperations()).contains(entry("rotate", "-45.0"));
+    assertThat(shadowMatrix.getPreOperations()).containsExactly("rotate 90.0");
+    assertThat(shadowMatrix.getSetOperations()).containsEntry("rotate", "-45.0");
   }
 
   @Test public void rotation() {
@@ -689,7 +691,7 @@ public class BitmapHunterTest {
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
-    assertThat(shadowMatrix.getSetOperations()).contains(entry("rotate", "-45.0"));
+    assertThat(shadowMatrix.getSetOperations()).containsEntry("rotate", "-45.0");
   }
 
   @Test public void pivotRotation() {
@@ -703,7 +705,7 @@ public class BitmapHunterTest {
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
-    assertThat(shadowMatrix.getSetOperations()).contains(entry("rotate", "-45.0 10.0 10.0"));
+    assertThat(shadowMatrix.getSetOperations()).containsEntry("rotate", "-45.0 10.0 10.0");
   }
 
   @Test public void resize() {
@@ -717,7 +719,7 @@ public class BitmapHunterTest {
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
-    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 2.0 1.5");
+    assertThat(shadowMatrix.getPreOperations()).containsExactly("scale 2.0 1.5");
   }
 
   @Test public void centerCropTallTooSmall() {
@@ -735,7 +737,7 @@ public class BitmapHunterTest {
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
-    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 4.0 4.0");
+    assertThat(shadowMatrix.getPreOperations()).containsExactly("scale 4.0 4.0");
   }
 
   @Test public void centerCropTallTooLarge() {
@@ -753,7 +755,7 @@ public class BitmapHunterTest {
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
-    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
+    assertThat(shadowMatrix.getPreOperations()).containsExactly("scale 0.5 0.5");
   }
 
   @Test public void centerCropWideTooSmall() {
@@ -771,7 +773,7 @@ public class BitmapHunterTest {
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
-    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 4.0 4.0");
+    assertThat(shadowMatrix.getPreOperations()).containsExactly("scale 4.0 4.0");
   }
 
   @Test public void centerCropWithGravityHorizontalLeft() {
@@ -789,7 +791,7 @@ public class BitmapHunterTest {
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
-    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 4.0 4.0");
+    assertThat(shadowMatrix.getPreOperations()).containsExactly("scale 4.0 4.0");
   }
 
   @Test public void centerCropWithGravityHorizontalRight() {
@@ -807,7 +809,7 @@ public class BitmapHunterTest {
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
-    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 4.0 4.0");
+    assertThat(shadowMatrix.getPreOperations()).containsExactly("scale 4.0 4.0");
   }
 
   @Test public void centerCropWithGravityVerticalTop() {
@@ -825,7 +827,7 @@ public class BitmapHunterTest {
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
-    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 4.0 4.0");
+    assertThat(shadowMatrix.getPreOperations()).containsExactly("scale 4.0 4.0");
   }
 
   @Test public void centerCropWithGravityVerticalBottom() {
@@ -843,7 +845,7 @@ public class BitmapHunterTest {
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
-    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 4.0 4.0");
+    assertThat(shadowMatrix.getPreOperations()).containsExactly("scale 4.0 4.0");
   }
 
   @Test public void centerCropWideTooLarge() {
@@ -861,7 +863,7 @@ public class BitmapHunterTest {
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
-    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
+    assertThat(shadowMatrix.getPreOperations()).containsExactly("scale 0.5 0.5");
   }
 
   @Test public void centerInsideTallTooSmall() {
@@ -875,7 +877,7 @@ public class BitmapHunterTest {
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
-    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 2.5 2.5");
+    assertThat(shadowMatrix.getPreOperations()).containsExactly("scale 2.5 2.5");
   }
 
   @Test public void centerInsideTallTooLarge() {
@@ -889,7 +891,7 @@ public class BitmapHunterTest {
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
-    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
+    assertThat(shadowMatrix.getPreOperations()).containsExactly("scale 0.5 0.5");
   }
 
   @Test public void centerInsideWideTooSmall() {
@@ -903,7 +905,7 @@ public class BitmapHunterTest {
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
-    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 2.5 2.5");
+    assertThat(shadowMatrix.getPreOperations()).containsExactly("scale 2.5 2.5");
   }
 
   @Test public void centerInsideWideTooLarge() {
@@ -918,7 +920,7 @@ public class BitmapHunterTest {
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
 
-    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
+    assertThat(shadowMatrix.getPreOperations()).containsExactly("scale 0.5 0.5");
   }
 
   @Test public void onlyScaleDownOriginalBigger() {
@@ -932,7 +934,7 @@ public class BitmapHunterTest {
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
 
-    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.5 0.5");
+    assertThat(shadowMatrix.getPreOperations()).containsExactly("scale 0.5 0.5");
   }
 
   @Test public void onlyScaleDownOriginalSmaller() {
@@ -977,7 +979,7 @@ public class BitmapHunterTest {
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
 
-    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.8 0.8");
+    assertThat(shadowMatrix.getPreOperations()).containsExactly("scale 0.8 0.8");
   }
 
   @Test public void onlyScaleDownOriginalBiggerHeightIs0() {
@@ -991,14 +993,15 @@ public class BitmapHunterTest {
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
 
-    assertThat(shadowMatrix.getPreOperations()).containsOnly("scale 0.8 0.8");
+    assertThat(shadowMatrix.getPreOperations()).containsExactly("scale 0.8 0.8");
   }
 
   @Test public void reusedBitmapIsNotRecycled() {
     Request data = new Request.Builder(URI_1).build();
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, 0);
-    assertThat(result).isSameAs(source).isNotRecycled();
+    assertThat(result).isSameAs(source);
+    assertThat(result.isRecycled()).isFalse();
   }
 
   @Test public void crashingOnTransformationThrows() {
@@ -1017,7 +1020,7 @@ public class BitmapHunterTest {
       BitmapHunter.applyCustomTransformations(transformations, original);
       fail("Expected exception to be thrown.");
     } catch (RuntimeException e) {
-      assertThat(e).hasMessage("Transformation " + badTransformation.key() + " crashed with exception.");
+      assertThat(e).hasMessageThat().isEqualTo("Transformation " + badTransformation.key() + " crashed with exception.");
     }
   }
 
@@ -1037,7 +1040,7 @@ public class BitmapHunterTest {
       BitmapHunter.applyCustomTransformations(transformations, original);
       fail("Expected exception to be thrown.");
     } catch (RuntimeException e) {
-      assertThat(e).hasMessageContaining(
+      assertThat(e).hasMessageThat().contains(
           "Transformation " + badTransformation.key() + " returned null");
     }
   }
@@ -1059,7 +1062,7 @@ public class BitmapHunterTest {
       BitmapHunter.applyCustomTransformations(transformations, original);
       fail("Expected exception to be thrown.");
     } catch (RuntimeException e) {
-      assertThat(e).hasMessage("Transformation "
+      assertThat(e).hasMessageThat().isEqualTo("Transformation "
           + badTransformation.key()
           + " mutated input Bitmap but failed to recycle the original.");
     }
@@ -1082,7 +1085,7 @@ public class BitmapHunterTest {
       BitmapHunter.applyCustomTransformations(transformations, original);
       fail("Expected exception to be thrown.");
     } catch (RuntimeException e) {
-      assertThat(e).hasMessage("Transformation "
+      assertThat(e).hasMessageThat().isEqualTo("Transformation "
           + badTransformation.key()
           + " returned input Bitmap but recycled it.");
     }

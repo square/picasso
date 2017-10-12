@@ -26,9 +26,9 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
 
 import static android.graphics.Bitmap.Config.ALPHA_8;
+import static com.google.common.truth.Truth.assertThat;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.fail;
-import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(RobolectricGradleTestRunner.class)
 public class LruCacheTest {
@@ -166,7 +166,8 @@ public class LruCacheTest {
     cache.set("Hellos\nWorld!", D);
 
     cache.clearKeyUri("Hello");
-    assertThat(cache.map).hasSize(1).containsKey("Hellos\nWorld!");
+    assertThat(cache.map).hasSize(1);
+    assertThat(cache.map).containsKey("Hellos\nWorld!");
   }
 
   @Test public void invalidate() {
@@ -174,7 +175,7 @@ public class LruCacheTest {
     cache.set("Hello\nAlice!", A);
     assertThat(cache.size()).isEqualTo(1);
     cache.clearKeyUri("Hello");
-    assertThat(cache.size()).isZero();
+    assertThat(cache.size()).isEqualTo(0);
   }
 
   @Test public void overMaxSizeDoesNotClear() {

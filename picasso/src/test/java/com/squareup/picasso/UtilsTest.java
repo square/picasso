@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
 
+import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_1;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_URI;
 import static com.squareup.picasso.TestUtils.RESOURCE_TYPE_URI;
@@ -29,7 +30,6 @@ import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.mockPackageResourceContext;
 import static com.squareup.picasso.Utils.createKey;
 import static com.squareup.picasso.Utils.isWebPFile;
-import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(RobolectricGradleTestRunner.class)
 public class UtilsTest {

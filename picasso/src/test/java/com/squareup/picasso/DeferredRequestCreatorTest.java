@@ -24,11 +24,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.robolectric.RobolectricTestRunner;
 
+import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso.TestUtils.TRANSFORM_REQUEST_ANSWER;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.mockCallback;
 import static com.squareup.picasso.TestUtils.mockFitImageViewTarget;
-import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
