@@ -1,6 +1,6 @@
 ext {
   compileSdkVersion = 26
-  buildToolsVersion = '26.0.1'
+  buildToolsVersion = '26.0.2'
   minSdkVersion = 14
   targetSdkVersion = 26
   sourceCompatibilityVersion = JavaVersion.VERSION_1_7
@@ -9,15 +9,14 @@ ext {
   supportLibrariesVersion = '26.0.1'
 
   dep = [
-      androidPlugin      : 'com.android.tools.build:gradle:3.0.0-beta2',
+      androidPlugin      : 'com.android.tools.build:gradle:3.0.0-beta7',
       okhttp             : "com.squareup.okhttp3:okhttp:$okhttpVersion",
       mockWebServer      : "com.squareup.okhttp3:mockwebserver:$okhttpVersion",
       pollexor           : 'com.squareup:pollexor:2.0.4',
       supportV4          : "com.android.support:support-v4:$supportLibrariesVersion",
       supportAnnotations : "com.android.support:support-annotations:$supportLibrariesVersion",
       junit              : 'junit:junit:4.12',
-      fest               : 'org.easytesting:fest-assert-core:2.0M10',
-      festAndroid        : 'com.squareup:fest-android:1.0.6',
+      truth              : 'com.google.truth:truth:0.36',
       robolectric        : 'org.robolectric:robolectric:3.1',
       mockito            : 'org.mockito:mockito-core:1.9.5'
   ]

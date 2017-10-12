@@ -13,6 +13,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowBitmap;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
+import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.FULL;
 import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.MICRO;
 import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.MINI;
@@ -21,7 +22,6 @@ import static com.squareup.picasso.TestUtils.MEDIA_STORE_CONTENT_1_URL;
 import static com.squareup.picasso.TestUtils.MEDIA_STORE_CONTENT_KEY_1;
 import static com.squareup.picasso.TestUtils.makeBitmap;
 import static com.squareup.picasso.TestUtils.mockAction;
-import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;

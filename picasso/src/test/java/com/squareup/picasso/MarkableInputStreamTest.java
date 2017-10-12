@@ -21,7 +21,7 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import org.junit.Test;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
 public class MarkableInputStreamTest {

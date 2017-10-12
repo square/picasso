@@ -25,10 +25,10 @@ import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
 import static android.graphics.Color.RED;
+import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.TestUtils.makeBitmap;
-import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(RobolectricGradleTestRunner.class)
 public class PicassoDrawableTest {

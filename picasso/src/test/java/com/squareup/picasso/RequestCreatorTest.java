@@ -34,6 +34,7 @@ import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
+import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Picasso.Priority.HIGH;
 import static com.squareup.picasso.Picasso.Priority.LOW;
@@ -53,7 +54,6 @@ import static com.squareup.picasso.TestUtils.mockImageViewTarget;
 import static com.squareup.picasso.TestUtils.mockNotification;
 import static com.squareup.picasso.TestUtils.mockRemoteViews;
 import static com.squareup.picasso.TestUtils.mockTarget;
-import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;

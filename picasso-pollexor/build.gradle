@@ -36,8 +36,7 @@ dependencies {
   compileOnly dep.supportAnnotations
   testImplementation dep.junit
   testImplementation dep.robolectric
-  testImplementation dep.fest
-  testImplementation dep.festAndroid
+  testImplementation dep.truth
   testImplementation dep.pollexor
 }
 
