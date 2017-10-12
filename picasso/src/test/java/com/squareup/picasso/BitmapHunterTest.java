@@ -389,8 +389,7 @@ public class BitmapHunterTest {
         dispatcher, cache, stats, action1);
     hunter.attach(action2);
     assertThat(hunter.getAction()).isEqualTo(action1);
-    assertThat(hunter.getActions()).hasSize(1);
-    assertThat(hunter.getActions()).contains(action2);
+    assertThat(hunter.getActions()).containsExactly(action2);
     assertThat(hunter.getPriority()).isEqualTo(HIGH);
   }
 
@@ -401,8 +400,7 @@ public class BitmapHunterTest {
         dispatcher, cache, stats, action1);
     hunter.attach(action2);
     assertThat(hunter.getAction()).isEqualTo(action1);
-    assertThat(hunter.getActions()).hasSize(1);
-    assertThat(hunter.getActions()).contains(action2);
+    assertThat(hunter.getActions()).containsExactly(action2);
     assertThat(hunter.getPriority()).isEqualTo(HIGH);
     hunter.detach(action2);
     assertThat(hunter.getAction()).isEqualTo(action1);

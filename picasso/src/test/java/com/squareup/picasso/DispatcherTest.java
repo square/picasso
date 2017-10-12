@@ -235,8 +235,7 @@ public class DispatcherTest {
     dispatcher.pausedTags.add("tag");
     dispatcher.pausedActions.put(action.getTarget(), action);
     dispatcher.performCancel(action);
-    assertThat(dispatcher.pausedTags).hasSize(1);
-    assertThat(dispatcher.pausedTags).contains("tag");
+    assertThat(dispatcher.pausedTags).containsExactly("tag");
     assertThat(dispatcher.pausedActions).isEmpty();
     verify(hunter).detach(action);
   }
@@ -441,8 +440,7 @@ public class DispatcherTest {
 
   @Test public void performPauseAndResumeUpdatesListOfPausedTags() {
     dispatcher.performPauseTag("tag");
-    assertThat(dispatcher.pausedTags).hasSize(1);
-    assertThat(dispatcher.pausedTags).contains("tag");
+    assertThat(dispatcher.pausedTags).containsExactly("tag");
     dispatcher.performResumeTag("tag");
     assertThat(dispatcher.pausedTags).isEmpty();
   }
