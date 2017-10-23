@@ -29,6 +29,7 @@ import android.support.annotation.VisibleForTesting;
 import android.view.Gravity;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -50,7 +51,9 @@ import static com.squareup.picasso.Utils.checkNotMain;
 import static com.squareup.picasso.Utils.createKey;
 import static com.squareup.picasso.Utils.log;
 
-/** Fluent API for building an image download request. */
+/**
+ * Fluent API for building an image download request.
+ */
 @SuppressWarnings("UnusedDeclaration") // Public API.
 public class RequestCreator {
   private static final AtomicInteger nextId = new AtomicInteger();
@@ -120,6 +123,20 @@ public class RequestCreator {
     return this;
   }
 
+  public RequestCreator placeholder(@NonNull String placeHolderText) {
+    return placeholder(placeHolderText, null, null);
+  }
+
+  public RequestCreator placeholder(@NonNull String placeHolderText,
+                                    @Nullable Integer textColor) {
+    return placeholder(placeHolderText, null, textColor);
+  }
+
+  public RequestCreator placeholder(@NonNull String placeHolderText,
+                                    @Nullable Integer backgroundColor, @Nullable Integer textColor) {
+    return placeholder(new TextDrawable(placeHolderText, backgroundColor, textColor));
+  }
+
   /**
    * A placeholder drawable to be used while the image is being loaded. If the requested image is
    * not immediately available in the memory cache then this resource will be set on the target
@@ -139,7 +156,22 @@ public class RequestCreator {
     return this;
   }
 
-  /** An error drawable to be used if the request image could not be loaded. */
+  public RequestCreator error(@NonNull String placeHolderText) {
+    return error(placeHolderText, null, null);
+  }
+
+  public RequestCreator error(@NonNull String placeHolderText, @Nullable Integer textColor) {
+    return error(placeHolderText, null, textColor);
+  }
+
+  public RequestCreator error(@NonNull String placeHolderText,
+                              @Nullable Integer backgroundColor, @Nullable Integer textColor) {
+    return error(new TextDrawable(placeHolderText, backgroundColor, textColor));
+  }
+
+  /**
+   * An error drawable to be used if the request image could not be loaded.
+   */
   public RequestCreator error(@DrawableRes int errorResId) {
     if (errorResId == 0) {
       throw new IllegalArgumentException("Error image resource invalid.");
@@ -342,7 +374,7 @@ public class RequestCreator {
    * options using the varargs parameter.
    */
   public RequestCreator memoryPolicy(@NonNull MemoryPolicy policy,
-      @NonNull MemoryPolicy... additional) {
+                                     @NonNull MemoryPolicy... additional) {
     if (policy == null) {
       throw new IllegalArgumentException("Memory policy cannot be null.");
     }
@@ -491,11 +523,11 @@ public class RequestCreator {
    *   {@literal @}Override public void onBitmapLoaded(Bitmap bitmap, LoadedFrom from) {
    *     setBackgroundDrawable(new BitmapDrawable(bitmap));
    *   }
-   *
+   * <p>
    *   {@literal @}Override public void onBitmapFailed() {
    *     setBackgroundResource(R.drawable.profile_error);
    *   }
-   *
+   * <p>
    *   {@literal @}Override public void onPrepareLoad(Drawable placeHolderDrawable) {
    *     frame.setBackgroundDrawable(placeHolderDrawable);
    *   }
@@ -506,15 +538,15 @@ public class RequestCreator {
    * public class ViewHolder implements Target {
    *   public FrameLayout frame;
    *   public TextView name;
-   *
+   * <p>
    *   {@literal @}Override public void onBitmapLoaded(Bitmap bitmap, LoadedFrom from) {
    *     frame.setBackgroundDrawable(new BitmapDrawable(bitmap));
    *   }
-   *
+   * <p>
    *   {@literal @}Override public void onBitmapFailed() {
    *     frame.setBackgroundResource(R.drawable.profile_error);
    *   }
-   *
+   * <p>
    *   {@literal @}Override public void onPrepareLoad(Drawable placeHolderDrawable) {
    *     frame.setBackgroundDrawable(placeHolderDrawable);
    *   }
@@ -617,7 +649,7 @@ public class RequestCreator {
    * given {@code viewId}. This is used for loading bitmaps into all instances of a widget.
    */
   public void into(@NonNull RemoteViews remoteViews, @IdRes int viewId,
-      @NonNull int[] appWidgetIds) {
+                   @NonNull int[] appWidgetIds) {
     into(remoteViews, viewId, appWidgetIds, null);
   }
 
