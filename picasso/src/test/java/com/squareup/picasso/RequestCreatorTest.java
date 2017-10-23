@@ -20,10 +20,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,6 +29,11 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RuntimeEnvironment;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.google.common.truth.Truth.assertThat;
@@ -288,6 +290,18 @@ public class RequestCreatorTest {
     Drawable placeHolderDrawable = mock(Drawable.class);
     new RequestCreator(picasso, URI_1, 0).placeholder(placeHolderDrawable).into(target);
     verify(target).setImageDrawable(placeHolderDrawable);
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue()).isInstanceOf(ImageViewAction.class);
+  }
+
+  @Test
+  public void intoImageViewSetsTextPlaceholder() {
+    Picasso picasso =
+            spy(new Picasso(RuntimeEnvironment.application, mock(Dispatcher.class), Cache.NONE, null,
+                    IDENTITY, null, mock(Stats.class), ARGB_8888, false, false));
+    ImageView target = mockImageViewTarget();
+    new RequestCreator(picasso, URI_1, 0).placeholder("PlaceHolder").into(target);
+    verify(target).setImageDrawable(any(TextDrawable.class));
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue()).isInstanceOf(ImageViewAction.class);
   }
@@ -739,7 +753,7 @@ public class RequestCreatorTest {
     } catch (IllegalArgumentException ignored) {
     }
     try {
-      new RequestCreator().error(null);
+      new RequestCreator().error((Drawable) null);
       fail("Null drawable should throw exception.");
     } catch (IllegalArgumentException ignored) {
     }
