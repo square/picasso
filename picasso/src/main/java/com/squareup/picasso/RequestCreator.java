@@ -51,9 +51,7 @@ import static com.squareup.picasso.Utils.checkNotMain;
 import static com.squareup.picasso.Utils.createKey;
 import static com.squareup.picasso.Utils.log;
 
-/**
- * Fluent API for building an image download request.
- */
+/** Fluent API for building an image download request.*/
 @SuppressWarnings("UnusedDeclaration") // Public API.
 public class RequestCreator {
   private static final AtomicInteger nextId = new AtomicInteger();
@@ -374,7 +372,7 @@ public class RequestCreator {
    * options using the varargs parameter.
    */
   public RequestCreator memoryPolicy(@NonNull MemoryPolicy policy,
-                                     @NonNull MemoryPolicy... additional) {
+      @NonNull MemoryPolicy... additional) {
     if (policy == null) {
       throw new IllegalArgumentException("Memory policy cannot be null.");
     }
@@ -649,7 +647,7 @@ public class RequestCreator {
    * given {@code viewId}. This is used for loading bitmaps into all instances of a widget.
    */
   public void into(@NonNull RemoteViews remoteViews, @IdRes int viewId,
-                   @NonNull int[] appWidgetIds) {
+      @NonNull int[] appWidgetIds) {
     into(remoteViews, viewId, appWidgetIds, null);
   }
 
