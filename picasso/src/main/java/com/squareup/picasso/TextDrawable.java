@@ -33,11 +33,10 @@ public class TextDrawable extends Drawable {
 
     mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     mPaint.setColor(textColor);
-    mPaint.setAntiAlias(true);
-    mPaint.setFakeBoldText(false);
     mPaint.setStyle(Paint.Style.FILL);
     mPaint.setTypeface(font);
     mPaint.setTextAlign(Paint.Align.CENTER);
+    mPaint.setFakeBoldText(false);
 
     mIntrinsicWidth = (int) (mPaint.measureText(mText, 0, mText.length()) + .5);
     mIntrinsicHeight = mPaint.getFontMetricsInt(null);
@@ -108,15 +107,15 @@ public class TextDrawable extends Drawable {
       y = 0;
     } else if (gravityVerticalPart == Gravity.CENTER_VERTICAL) {
       y = height / 2 - ((paint.descent() + paint.ascent()) / 2);
-    } else if (gravityVerticalPart ==  Gravity.BOTTOM) {
-      y = height;
+    } else if (gravityVerticalPart == Gravity.BOTTOM) {
+      y = height - (paint.descent() + paint.ascent());
     }
     return new PointF(x, y);
   }
 
-  static class Builder {
+  public static class Builder {
 
-    private String mText;
+    private final String mText;
 
     private int mTextColor = Color.WHITE;
 
@@ -126,9 +125,8 @@ public class TextDrawable extends Drawable {
 
     private int mTextGravity = Gravity.CENTER;
 
-    public Builder setText(String text) {
+    public Builder(String text) {
       mText = text;
-      return this;
     }
 
     public Builder setTextColor(int textColor) {

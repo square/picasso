@@ -154,22 +154,8 @@ public class RequestCreator {
     return this;
   }
 
-  public RequestCreator error(@NonNull String placeHolderText) {
-    return error(placeHolderText, null, null);
-  }
-
-  public RequestCreator error(@NonNull String placeHolderText, @Nullable Integer textColor) {
-    return error(placeHolderText, null, textColor);
-  }
-
-  public RequestCreator error(@NonNull String placeHolderText,
-                              @Nullable Integer backgroundColor, @Nullable Integer textColor) {
-    return error(new TextDrawable.Builder()
-        .setText(placeHolderText)
-        .setTextColor(textColor)
-        .setBackgroundColor(backgroundColor)
-        .setTextGravity(Gravity.TOP | Gravity.END)
-        .build());
+  public RequestCreator error(TextDrawable.Builder textDrawableBuilder) {
+    return error(textDrawableBuilder.build());
   }
 
   /**
