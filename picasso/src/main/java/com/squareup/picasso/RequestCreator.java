@@ -121,19 +121,9 @@ public class RequestCreator {
     return this;
   }
 
-//  public RequestCreator placeholder(@NonNull String placeHolderText) {
-//    return placeholder(placeHolderText, null, null);
-//  }
-//
-//  public RequestCreator placeholder(@NonNull String placeHolderText,
-//                                    @Nullable Integer textColor) {
-//    return placeholder(placeHolderText, null, textColor);
-//  }
-//
-//  public RequestCreator placeholder(@NonNull String placeHolderText,
-//                                    @Nullable Integer backgroundColor, @Nullable Integer textColor) {
-//    return placeholder();
-//  }
+  public RequestCreator placeholder(TextDrawable.Builder textDrawableBuilder) {
+    return placeholder(textDrawableBuilder.build());
+  }
 
   /**
    * A placeholder drawable to be used while the image is being loaded. If the requested image is
