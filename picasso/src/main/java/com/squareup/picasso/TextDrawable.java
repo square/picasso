@@ -58,7 +58,9 @@ public class TextDrawable extends Drawable {
 
     PointF pointF = initParamByGravity(mPaint, width, height, mTextGravity);
 
-    canvas.drawText(mText, pointF.x, pointF.y, mPaint);
+    Rect textBounds = new Rect();
+    mPaint.getTextBounds(mText, 0, mText.length(), textBounds);
+    canvas.drawText(mText, pointF.x, (pointF.y == 0) ? (-textBounds.top + pointF.y) : pointF.y, mPaint);
     canvas.restoreToCount(count);
   }
 
@@ -108,7 +110,7 @@ public class TextDrawable extends Drawable {
     } else if (gravityVerticalPart == Gravity.CENTER_VERTICAL) {
       y = height / 2 - ((paint.descent() + paint.ascent()) / 2);
     } else if (gravityVerticalPart == Gravity.BOTTOM) {
-      y = height - (paint.descent() + paint.ascent());
+      y = height - (paint.descent() / 2);
     }
     return new PointF(x, y);
   }
@@ -126,6 +128,9 @@ public class TextDrawable extends Drawable {
     private int mTextGravity = Gravity.CENTER;
 
     public Builder(String text) {
+      if (text == null) {
+        throw new IllegalArgumentException("Text cannot be null");
+      }
       mText = text;
     }
 
@@ -150,9 +155,6 @@ public class TextDrawable extends Drawable {
     }
 
     public TextDrawable build() {
-      if (mText == null) {
-        throw new IllegalArgumentException("Text cannot be null");
-      }
       return new TextDrawable(mText, mTextColor, mBackgroundColor, mFont, mTextGravity);
     }
   }

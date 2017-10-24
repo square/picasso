@@ -1,11 +1,14 @@
 package com.example.picasso;
 
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 
-import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.TextDrawable;
 
@@ -22,9 +25,15 @@ public class PicassoTextActivity extends PicassoSampleActivity {
       Gravity.BOTTOM | Gravity.CENTER,
       Gravity.BOTTOM | Gravity.RIGHT};
 
+  private final static String ERROR_LINK = "https://www.error.com/link";
+
+  private final static String WELL_LINK = "https://www.codeproject.com/KB/GDI-plus/ImageProcessing2/flip.jpg";
+
   private ImageView image;
 
   private int gravityIndex = 0;
+
+  private String link = ERROR_LINK;
 
   @Override
   protected void onCreate(final Bundle savedInstanceState) {
@@ -35,14 +44,25 @@ public class PicassoTextActivity extends PicassoSampleActivity {
 
     reload();
 
-    findViewById(R.id.previousTextGravity).setOnClickListener(new View.OnClickListener() {
-      @Override public void onClick(View view) {
-        gravityIndex = gravities.length - (Math.abs(gravityIndex--) % gravities.length) - 1;
+    ((CheckBox) findViewById(R.id.cbUseCorrectLink)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+      @Override public void onCheckedChanged(CompoundButton compoundButton, boolean isCheck) {
+        if (isCheck) {
+          link = WELL_LINK;
+        } else {
+          link = ERROR_LINK;
+        }
         reload();
       }
     });
 
-    findViewById(R.id.nextTextGravity).setOnClickListener(new View.OnClickListener() {
+    findViewById(R.id.bPreviousTextGravity).setOnClickListener(new View.OnClickListener() {
+      @Override public void onClick(View view) {
+        gravityIndex = gravities.length - (Math.abs(gravityIndex - 1) % gravities.length) - 1;
+        reload();
+      }
+    });
+
+    findViewById(R.id.bNextTextGravity).setOnClickListener(new View.OnClickListener() {
       @Override public void onClick(View view) {
         gravityIndex = (gravityIndex + 1) % gravities.length;
         reload();
@@ -52,10 +72,16 @@ public class PicassoTextActivity extends PicassoSampleActivity {
 
   private void reload() {
     Picasso.with()
-        .load("https://www.error.com/link")
-        .memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE)
-        .error(new TextDrawable.Builder("Error")
+        .load(link)
+        .placeholder(new TextDrawable.Builder("PL")
+            .setTextColor(Color.BLACK)
+            .setBackgroundColor(Color.BLUE)
             .setTextGravity(gravities[gravityIndex]))
+        .error(new TextDrawable.Builder("Error")
+            .setTextColor(Color.GREEN)
+            .setBackgroundColor(Color.GRAY)
+            .setTextGravity(gravities[gravityIndex])
+            .setTextFont(Typeface.DEFAULT_BOLD))
         .tag(this)
         .into(image);
   }

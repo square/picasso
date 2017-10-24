@@ -13,4 +13,5 @@
   </string>
     <string name="previous_gravity">Previous gravity</string>
   <string name="next_gravity">Next gravity</string>
+    <string name="use_correct_link">Use correct link</string>
 </resources>
