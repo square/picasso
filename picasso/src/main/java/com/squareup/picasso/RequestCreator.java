@@ -121,19 +121,19 @@ public class RequestCreator {
     return this;
   }
 
-  public RequestCreator placeholder(@NonNull String placeHolderText) {
-    return placeholder(placeHolderText, null, null);
-  }
-
-  public RequestCreator placeholder(@NonNull String placeHolderText,
-                                    @Nullable Integer textColor) {
-    return placeholder(placeHolderText, null, textColor);
-  }
-
-  public RequestCreator placeholder(@NonNull String placeHolderText,
-                                    @Nullable Integer backgroundColor, @Nullable Integer textColor) {
-    return placeholder(new TextDrawable(placeHolderText, backgroundColor, textColor));
-  }
+//  public RequestCreator placeholder(@NonNull String placeHolderText) {
+//    return placeholder(placeHolderText, null, null);
+//  }
+//
+//  public RequestCreator placeholder(@NonNull String placeHolderText,
+//                                    @Nullable Integer textColor) {
+//    return placeholder(placeHolderText, null, textColor);
+//  }
+//
+//  public RequestCreator placeholder(@NonNull String placeHolderText,
+//                                    @Nullable Integer backgroundColor, @Nullable Integer textColor) {
+//    return placeholder();
+//  }
 
   /**
    * A placeholder drawable to be used while the image is being loaded. If the requested image is
@@ -164,7 +164,12 @@ public class RequestCreator {
 
   public RequestCreator error(@NonNull String placeHolderText,
                               @Nullable Integer backgroundColor, @Nullable Integer textColor) {
-    return error(new TextDrawable(placeHolderText, backgroundColor, textColor));
+    return error(new TextDrawable.Builder()
+        .setText(placeHolderText)
+        .setTextColor(textColor)
+        .setBackgroundColor(backgroundColor)
+        .setTextGravity(Gravity.TOP | Gravity.END)
+        .build());
   }
 
   /**

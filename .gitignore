@@ -36,3 +36,6 @@ jniLibs
 build
 local.properties
 reports
+
+.idea/instapk.xml
+instapk.log*
