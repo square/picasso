@@ -8,7 +8,9 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.support.annotation.NonNull;
+import android.util.LayoutDirection;
 import android.view.Gravity;
 
 public class TextDrawable extends Drawable {
@@ -90,6 +92,11 @@ public class TextDrawable extends Drawable {
   }
 
   PointF initParamByGravity(Paint paint, int width, int height, int textGravity) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+      if (isAutoMirrored()) {
+        textGravity = Gravity.getAbsoluteGravity(textGravity, LayoutDirection.RTL);
+      }
+    }
     float x = 0;
     float y = 0;
     int gravityHorizontalPart = textGravity & Gravity.HORIZONTAL_GRAVITY_MASK;

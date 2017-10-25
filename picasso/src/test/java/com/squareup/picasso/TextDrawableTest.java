@@ -26,7 +26,7 @@ public class TextDrawableTest {
 
   @Before
   public void init() {
-    textDrawable = new TextDrawable.Builder().setText("").build();
+    textDrawable = new TextDrawable.Builder("").build();
     paint = Mockito.mock(Paint.class);
   }
 
