@@ -51,7 +51,7 @@ public class TextDrawableTest {
     PointF point = textDrawable.initParamByGravity(paint, WIDTH, HEIGHT,
         Gravity.TOP | Gravity.RIGHT);
     checkPoint(point, new PointF(WIDTH, 0));
-    verifyPaintTextAlign(Paint.Align.RIGHT);
+    verifyPaintTextAlign(Paint.Align.LEFT);
   }
 
   @Test
@@ -74,7 +74,7 @@ public class TextDrawableTest {
     PointF point = textDrawable.initParamByGravity(paint, WIDTH, HEIGHT,
         Gravity.CENTER | Gravity.RIGHT);
     checkPoint(point, new PointF(WIDTH, HEIGHT / 2));
-    verifyPaintTextAlign(Paint.Align.RIGHT);
+    verifyPaintTextAlign(Paint.Align.LEFT);
   }
 
   @Test
@@ -98,7 +98,7 @@ public class TextDrawableTest {
     PointF point = textDrawable.initParamByGravity(paint, WIDTH, HEIGHT,
         Gravity.BOTTOM | Gravity.RIGHT);
     checkPoint(point, new PointF(WIDTH, HEIGHT));
-    verifyPaintTextAlign(Paint.Align.RIGHT);
+    verifyPaintTextAlign(Paint.Align.LEFT);
   }
 
   private void checkPoint(PointF expected, PointF actual) {

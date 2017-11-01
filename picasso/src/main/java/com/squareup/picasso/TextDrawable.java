@@ -69,7 +69,7 @@ public class TextDrawable extends Drawable {
     mPaint.setTextSize(mTextSize);
     canvas.drawColor(mBackgroundColor);
 
-    PointF pointF = initParamByGravity(mPaint, canvas.getWidth(), canvas.getHeight(), mTextGravity);
+    PointF pointF = initParamByGravity(mPaint, getBounds().width(), getBounds().height(), mTextGravity);
 
     Rect textRect = new Rect();
     mPaint.getTextBounds(mText, 0, mText.length(), textRect);
@@ -116,19 +116,19 @@ public class TextDrawable extends Drawable {
       x = mPaddingLeft;
       paint.setTextAlign(Paint.Align.LEFT);
     } else if (gravityHorizontalPart == Gravity.CENTER_HORIZONTAL) {
-      x = getBounds().width() / 2;
+      x = width / 2;
       paint.setTextAlign(Paint.Align.CENTER);
     } else if (gravityHorizontalPart == Gravity.RIGHT) {
-      x = getBounds().width() - mPaint.measureText(mText) - mPaddingRight;
+      x = width - mPaint.measureText(mText) - mPaddingRight;
       paint.setTextAlign(Paint.Align.LEFT);
     }
 
     if (gravityVerticalPart == Gravity.TOP) {
       y = mPaint.getTextSize() - mPaint.descent() + mPaddingTop;
     } else if (gravityVerticalPart == Gravity.CENTER_VERTICAL) {
-      y = getBounds().height() / 2 - ((paint.descent() + paint.ascent()) / 2);
+      y = height / 2 - ((paint.descent() + paint.ascent()) / 2);
     } else if (gravityVerticalPart == Gravity.BOTTOM) {
-      y = getBounds().height() - (paint.descent() / 2) - mPaddingBottom;
+      y = height - (paint.descent() / 2) - mPaddingBottom;
     }
     return new PointF(x, y);
   }
