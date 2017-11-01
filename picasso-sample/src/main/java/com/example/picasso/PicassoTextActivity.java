@@ -17,13 +17,13 @@ public class PicassoTextActivity extends PicassoSampleActivity {
   private final int[] gravities = {
       Gravity.TOP | Gravity.LEFT,
       Gravity.TOP | Gravity.CENTER,
-      Gravity.TOP | Gravity.RIGHT,
-      Gravity.CENTER | Gravity.LEFT,
+      Gravity.TOP | Gravity.END,
+      Gravity.CENTER | Gravity.START,
       Gravity.CENTER,
       Gravity.CENTER | Gravity.RIGHT,
       Gravity.BOTTOM | Gravity.LEFT,
       Gravity.BOTTOM | Gravity.CENTER,
-      Gravity.BOTTOM | Gravity.RIGHT};
+      Gravity.BOTTOM | Gravity.END};
 
   private final static String ERROR_LINK = "https://www.error.com/link";
 
@@ -73,11 +73,11 @@ public class PicassoTextActivity extends PicassoSampleActivity {
   private void reload() {
     Picasso.with()
         .load(link)
-        .placeholder(new TextDrawable.Builder("PL")
-            .setTextColor(Color.BLACK)
-            .setBackgroundColor(Color.BLUE)
-            .setTextGravity(gravities[gravityIndex]))
-        .error(new TextDrawable.Builder("Error")
+//        .placeholder(new TextDrawable.Builder("PL")
+//            .setTextColor(Color.BLACK)
+//            .setBackgroundColor(Color.BLUE)
+//            .setTextGravity(gravities[gravityIndex]))
+        .error(new TextDrawable.Builder("ER")
             .setTextColor(Color.GREEN)
             .setBackgroundColor(Color.GRAY)
             .setTextGravity(gravities[gravityIndex])

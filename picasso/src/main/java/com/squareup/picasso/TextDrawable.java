@@ -19,6 +19,10 @@ public class TextDrawable extends Drawable {
 
   private String mText;
 
+  private final Typeface mFont;
+
+  private final int mTextSize;
+
   private final int mIntrinsicWidth;
 
   private final int mIntrinsicHeight;
@@ -27,16 +31,18 @@ public class TextDrawable extends Drawable {
 
   private final int mTextGravity;
 
-  private TextDrawable(String text, int textColor, int backgroundColor, Typeface font,
+  private TextDrawable(String text, int textColor, int textSize, int backgroundColor, Typeface font,
                        int textGravity) {
     mText = text;
     mBackgroundColor = backgroundColor;
     mTextGravity = textGravity;
+    mTextSize = textSize;
+    mFont = font;
 
-    mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    mPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.LINEAR_TEXT_FLAG);
     mPaint.setColor(textColor);
     mPaint.setStyle(Paint.Style.FILL);
-    mPaint.setTypeface(font);
+    mPaint.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL));
     mPaint.setTextAlign(Paint.Align.CENTER);
     mPaint.setFakeBoldText(false);
 
@@ -46,24 +52,15 @@ public class TextDrawable extends Drawable {
 
   @Override
   public void draw(@NonNull Canvas canvas) {
-    Rect bounds = getBounds();
-
-    int count = canvas.save();
-    canvas.translate(bounds.left, bounds.top);
-
-    // draw text
-    int width = bounds.width();
-    int height = bounds.height();
-    int fontSize = Math.min(width, height) / 2;
-    mPaint.setTextSize(fontSize);
+    mPaint.setTextSize(mTextSize);
     canvas.drawColor(mBackgroundColor);
 
-    PointF pointF = initParamByGravity(mPaint, width, height, mTextGravity);
+    PointF pointF = initParamByGravity(mPaint, canvas.getWidth(), canvas.getHeight(), mTextGravity);
 
-    Rect textBounds = new Rect();
-    mPaint.getTextBounds(mText, 0, mText.length(), textBounds);
-    canvas.drawText(mText, pointF.x, (pointF.y == 0) ? (-textBounds.top + pointF.y) : pointF.y, mPaint);
-    canvas.restoreToCount(count);
+    Rect textRect = new Rect();
+    mPaint.getTextBounds(mText, 0, mText.length(), textRect);
+
+    canvas.drawText(mText, pointF.x , pointF.y, mPaint);
   }
 
   @Override
@@ -105,26 +102,30 @@ public class TextDrawable extends Drawable {
       x = 0;
       paint.setTextAlign(Paint.Align.LEFT);
     } else if (gravityHorizontalPart == Gravity.CENTER_HORIZONTAL) {
-      x = width / 2;
+      x = getBounds().width() / 2;
       paint.setTextAlign(Paint.Align.CENTER);
     } else if (gravityHorizontalPart == Gravity.RIGHT) {
-      x = width;
-      paint.setTextAlign(Paint.Align.RIGHT);
+      x = getBounds().width() - mPaint.measureText(mText);
+      paint.setTextAlign(Paint.Align.LEFT);
     }
 
     if (gravityVerticalPart == Gravity.TOP) {
-      y = 0;
+      y = mPaint.getTextSize() - mPaint.descent();
     } else if (gravityVerticalPart == Gravity.CENTER_VERTICAL) {
-      y = height / 2 - ((paint.descent() + paint.ascent()) / 2);
+      y = getBounds().height() / 2 - ((paint.descent() + paint.ascent()) / 2);
     } else if (gravityVerticalPart == Gravity.BOTTOM) {
-      y = height - (paint.descent() / 2);
+      y = getBounds().height() - (paint.descent() / 2);
     }
     return new PointF(x, y);
   }
 
   public static class Builder {
 
+    private final static int DEFAULT_TEXT_SIZE = 5;
+
     private final String mText;
+
+    private int mTextSize = DEFAULT_TEXT_SIZE;
 
     private int mTextColor = Color.WHITE;
 
@@ -139,6 +140,11 @@ public class TextDrawable extends Drawable {
         throw new IllegalArgumentException("Text cannot be null");
       }
       mText = text;
+    }
+
+    public Builder setTextSize(int textSize) {
+      mTextSize = textSize;
+      return this;
     }
 
     public Builder setTextColor(int textColor) {
@@ -162,7 +168,7 @@ public class TextDrawable extends Drawable {
     }
 
     public TextDrawable build() {
-      return new TextDrawable(mText, mTextColor, mBackgroundColor, mFont, mTextGravity);
+      return new TextDrawable(mText, mTextColor, mTextSize, mBackgroundColor, mFont, mTextGravity);
     }
   }
 }
