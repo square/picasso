@@ -22,9 +22,9 @@ abstract class PicassoSampleActivity extends FragmentActivity {
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     super.setContentView(R.layout.picasso_sample_activity);
-    sampleContent = (FrameLayout) findViewById(R.id.sample_content);
+    sampleContent = findViewById(R.id.sample_content);
 
-    final ListView activityList = (ListView) findViewById(R.id.activity_list);
+    final ListView activityList = findViewById(R.id.activity_list);
     final PicassoSampleAdapter adapter = new PicassoSampleAdapter(this);
     activityList.setAdapter(adapter);
     activityList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -34,7 +34,7 @@ abstract class PicassoSampleActivity extends FragmentActivity {
       }
     });
 
-    showHide = (ToggleButton) findViewById(R.id.faux_action_bar_control);
+    showHide = findViewById(R.id.faux_action_bar_control);
     showHide.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
       @Override public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
         activityList.setVisibility(checked ? VISIBLE : GONE);
