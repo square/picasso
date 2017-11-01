@@ -31,8 +31,17 @@ public class TextDrawable extends Drawable {
 
   private final int mTextGravity;
 
+  private int mPaddingLeft = 0;
+
+  private int mPaddingRight = 0;
+
+  private int mPaddingTop = 0;
+
+  private int mPaddingBottom = 0;
+
   private TextDrawable(String text, int textColor, int textSize, int backgroundColor, Typeface font,
-                       int textGravity) {
+                       int textGravity,
+                       int paddingLeft, int paddingRight, int paddingTop, int paggingBottom) {
     mText = text;
     mBackgroundColor = backgroundColor;
     mTextGravity = textGravity;
@@ -42,9 +51,14 @@ public class TextDrawable extends Drawable {
     mPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.LINEAR_TEXT_FLAG);
     mPaint.setColor(textColor);
     mPaint.setStyle(Paint.Style.FILL);
-    mPaint.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL));
+    mPaint.setTypeface(mFont);
     mPaint.setTextAlign(Paint.Align.CENTER);
     mPaint.setFakeBoldText(false);
+
+    mPaddingTop = paddingTop;
+    mPaddingBottom = paggingBottom;
+    mPaddingLeft = paddingLeft;
+    mPaddingRight = paddingRight;
 
     mIntrinsicWidth = (int) (mPaint.measureText(mText, 0, mText.length()) + .5);
     mIntrinsicHeight = mPaint.getFontMetricsInt(null);
@@ -60,7 +74,7 @@ public class TextDrawable extends Drawable {
     Rect textRect = new Rect();
     mPaint.getTextBounds(mText, 0, mText.length(), textRect);
 
-    canvas.drawText(mText, pointF.x , pointF.y, mPaint);
+    canvas.drawText(mText, pointF.x, pointF.y, mPaint);
   }
 
   @Override
@@ -99,22 +113,22 @@ public class TextDrawable extends Drawable {
     int gravityHorizontalPart = textGravity & Gravity.HORIZONTAL_GRAVITY_MASK;
     int gravityVerticalPart = textGravity & Gravity.VERTICAL_GRAVITY_MASK;
     if (gravityHorizontalPart == Gravity.LEFT) {
-      x = 0;
+      x = mPaddingLeft;
       paint.setTextAlign(Paint.Align.LEFT);
     } else if (gravityHorizontalPart == Gravity.CENTER_HORIZONTAL) {
       x = getBounds().width() / 2;
       paint.setTextAlign(Paint.Align.CENTER);
     } else if (gravityHorizontalPart == Gravity.RIGHT) {
-      x = getBounds().width() - mPaint.measureText(mText);
+      x = getBounds().width() - mPaint.measureText(mText) - mPaddingRight;
       paint.setTextAlign(Paint.Align.LEFT);
     }
 
     if (gravityVerticalPart == Gravity.TOP) {
-      y = mPaint.getTextSize() - mPaint.descent();
+      y = mPaint.getTextSize() - mPaint.descent() + mPaddingTop;
     } else if (gravityVerticalPart == Gravity.CENTER_VERTICAL) {
       y = getBounds().height() / 2 - ((paint.descent() + paint.ascent()) / 2);
     } else if (gravityVerticalPart == Gravity.BOTTOM) {
-      y = getBounds().height() - (paint.descent() / 2);
+      y = getBounds().height() - (paint.descent() / 2) - mPaddingBottom;
     }
     return new PointF(x, y);
   }
@@ -131,6 +145,14 @@ public class TextDrawable extends Drawable {
 
     private int mBackgroundColor = Color.argb(0, 0, 0, 0);
 
+    private int mPaddingLeft = 0;
+
+    private int mPaddingRight = 0;
+
+    private int mPaddingTop = 0;
+
+    private int mPaddingBottom = 0;
+
     private Typeface mFont = Typeface.DEFAULT;
 
     private int mTextGravity = Gravity.CENTER;
@@ -144,6 +166,34 @@ public class TextDrawable extends Drawable {
 
     public Builder setTextSize(int textSize) {
       mTextSize = textSize;
+      return this;
+    }
+
+    public Builder setPadding(int left, int right, int bottom, int top) {
+      mPaddingLeft = left;
+      mPaddingRight = right;
+      mPaddingTop = top;
+      mPaddingBottom = bottom;
+      return this;
+    }
+
+    public Builder setPaddingLeft(int left) {
+      mPaddingLeft = left;
+      return this;
+    }
+
+    public Builder setPaddingRight(int right) {
+      mPaddingRight = right;
+      return this;
+    }
+
+    public Builder setPaddingTop(int top) {
+      mPaddingTop = top;
+      return this;
+    }
+
+    public Builder setPaddingBottom(int bottom) {
+      mPaddingBottom = bottom;
       return this;
     }
 
@@ -168,7 +218,8 @@ public class TextDrawable extends Drawable {
     }
 
     public TextDrawable build() {
-      return new TextDrawable(mText, mTextColor, mTextSize, mBackgroundColor, mFont, mTextGravity);
+      return new TextDrawable(mText, mTextColor, mTextSize, mBackgroundColor, mFont, mTextGravity,
+          mPaddingLeft, mPaddingRight, mPaddingTop, mPaddingBottom);
     }
   }
 }

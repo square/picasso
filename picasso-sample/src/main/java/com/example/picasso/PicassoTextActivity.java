@@ -73,15 +73,16 @@ public class PicassoTextActivity extends PicassoSampleActivity {
   private void reload() {
     Picasso.with()
         .load(link)
-//        .placeholder(new TextDrawable.Builder("PL")
-//            .setTextColor(Color.BLACK)
-//            .setBackgroundColor(Color.BLUE)
-//            .setTextGravity(gravities[gravityIndex]))
+        .placeholder(new TextDrawable.Builder("PL")
+            .setTextColor(Color.BLACK)
+            .setBackgroundColor(Color.BLUE)
+            .setTextGravity(gravities[gravityIndex]))
         .error(new TextDrawable.Builder("ER")
             .setTextColor(Color.GREEN)
             .setBackgroundColor(Color.GRAY)
             .setTextGravity(gravities[gravityIndex])
-            .setTextFont(Typeface.DEFAULT_BOLD))
+            .setTextFont(Typeface.DEFAULT_BOLD)
+            .setPaddingLeft(1))
         .tag(this)
         .into(image);
   }
