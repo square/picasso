@@ -24,8 +24,6 @@ public enum NetworkPolicy {
 
   /**
    * Skips storing the result into the disk cache.
-   * <p>
-   * <em>Note</em>: At this time this is only supported if you are using OkHttp.
    */
   NO_STORE(1 << 1),
 
