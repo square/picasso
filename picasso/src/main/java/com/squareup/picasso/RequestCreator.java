@@ -21,11 +21,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
@@ -735,7 +737,17 @@ public class RequestCreator {
 
   private Drawable getPlaceholderDrawable() {
     if (placeholderResId != 0) {
-      return picasso.context.getResources().getDrawable(placeholderResId);
+      if (Build.VERSION.SDK_INT >= 21) {
+        return picasso.context.getDrawable(placeholderResId);
+      } else if (Build.VERSION.SDK_INT >= 16) {
+        return picasso.context.getResources().getDrawable(placeholderResId);
+      } else {
+        final int resolvedId;
+        TypedValue sTempValue = new TypedValue();
+        picasso.context.getResources().getValue(placeholderResId, sTempValue, true);
+        resolvedId = sTempValue.resourceId;
+        return picasso.context.getResources().getDrawable(resolvedId);
+      }
     } else {
       return placeholderDrawable; // This may be null which is expected and desired behavior.
     }
