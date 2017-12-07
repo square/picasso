@@ -125,7 +125,6 @@ class BitmapHunter implements Runnable {
     long mark = markStream.savePosition(65536); // TODO fix this crap.
 
     BitmapFactory.Options options = RequestHandler.createBitmapOptions(request);
-    final boolean calculateSize = RequestHandler.requiresInSampleSize(options);
 
     boolean isWebPFile = Utils.isWebPFile(stream);
     boolean isPurgeable = request.purgeable && android.os.Build.VERSION.SDK_INT < 21;
@@ -137,8 +136,9 @@ class BitmapHunter implements Runnable {
       byte[] bytes = Utils.toByteArray(stream);
       if (request.optionsTransformer != null) {
           options = request.optionsTransformer.transformOptions(bytes, options);
+          request.optionsTransformer.calculateInSampleSize(options, request.targetWidth, request.targetHeight);
       }
-      if (options != null && calculateSize) {
+      if (RequestHandler.requiresInSampleSize(options)) {
         if (options.outWidth == -0 || options.outHeight == 0) {
             BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
         }
@@ -148,17 +148,17 @@ class BitmapHunter implements Runnable {
       return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
     } else {
       if (request.optionsTransformer != null) {
-          options = request.optionsTransformer.transformOptions(stream, options);
+          options = request.optionsTransformer.transformOptions(markStream, options, mark);
+          request.optionsTransformer.calculateInSampleSize(options, request.targetWidth, request.targetHeight);
       }
-      if (calculateSize) {
-        if (options != null && options.outWidth == 0 || options.outHeight == 0) {
+      if (RequestHandler.requiresInSampleSize(options)) {
+        if (options != null && (options.outWidth == 0 || options.outHeight == 0)) {
             BitmapFactory.decodeStream(stream, null, options);
         }
         RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight, options,
             request);
-
+        markStream.reset(mark);
       }
-      markStream.reset(mark);
       Bitmap bitmap = BitmapFactory.decodeStream(stream, null, options);
       if (bitmap == null) {
         // Treat null as an IO exception, we will eventually retry.

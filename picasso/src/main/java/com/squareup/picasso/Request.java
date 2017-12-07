@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 
 import static java.util.Collections.unmodifiableList;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 /** Immutable data about an image and the transformations that will be applied to it. */
@@ -41,7 +42,10 @@ public final class Request {
        */
       BitmapFactory.Options transformOptions(byte[] bytes, BitmapFactory.Options options);
 
-      BitmapFactory.Options transformOptions(InputStream stream, BitmapFactory.Options options);
+      BitmapFactory.Options transformOptions(MarkableInputStream stream, BitmapFactory.Options options, long mark) throws IOException;
+      
+      int calculateInSampleSize(BitmapFactory.Options options,
+              int reqWidth, int reqHeight);
     }
 
   /** A unique ID for the request. */
