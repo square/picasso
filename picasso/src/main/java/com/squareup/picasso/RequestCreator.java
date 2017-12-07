@@ -742,11 +742,9 @@ public class RequestCreator {
       } else if (Build.VERSION.SDK_INT >= 16) {
         return picasso.context.getResources().getDrawable(placeholderResId);
       } else {
-        final int resolvedId;
-        TypedValue sTempValue = new TypedValue();
-        picasso.context.getResources().getValue(placeholderResId, sTempValue, true);
-        resolvedId = sTempValue.resourceId;
-        return picasso.context.getResources().getDrawable(resolvedId);
+        TypedValue value = new TypedValue();
+        picasso.context.getResources().getValue(placeholderResId, value, true);
+        return picasso.context.getResources().getDrawable(value.resourceId);
       }
     } else {
       return placeholderDrawable; // This may be null which is expected and desired behavior.
