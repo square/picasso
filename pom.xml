@@ -122,7 +122,7 @@
           <version>4.1.1</version>
           <configuration>
             <sdk>
-              <platform>17</platform>
+              <platform>23</platform>
             </sdk>
           </configuration>
         </plugin>
