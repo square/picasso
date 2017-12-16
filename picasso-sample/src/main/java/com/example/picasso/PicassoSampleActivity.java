@@ -45,7 +45,7 @@ abstract class PicassoSampleActivity extends FragmentActivity {
   @Override
   protected void onDestroy() {
     super.onDestroy();
-    Picasso.with().cancelTag(this);
+    Picasso.get().cancelTag(this);
   }
 
   @Override public void onBackPressed() {

@@ -58,7 +58,7 @@ class SampleContactsAdapter extends CursorAdapter {
     holder.text1.setText(cursor.getString(ContactsQuery.DISPLAY_NAME));
     holder.icon.assignContactUri(contactUri);
 
-    Picasso.with()
+    Picasso.get()
         .load(contactUri)
         .placeholder(R.drawable.contact_picture_placeholder)
         .tag(context)

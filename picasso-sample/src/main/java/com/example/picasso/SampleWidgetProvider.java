@@ -29,7 +29,7 @@ public class SampleWidgetProvider extends AppWidgetProvider {
       int[] appWidgetIds) {
     RemoteViews updateViews = new RemoteViews(context.getPackageName(), R.layout.sample_widget);
     // Load image for all appWidgetIds.
-    Picasso picasso = Picasso.with();
+    Picasso picasso = Picasso.get();
     picasso.load(Data.URLS[new Random().nextInt(Data.URLS.length)]) //
         .placeholder(R.drawable.placeholder) //
         .error(R.drawable.error) //
