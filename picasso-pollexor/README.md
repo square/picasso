@@ -24,7 +24,7 @@ Picasso p = new Picasso.Builder(context)
 ```
 
 _Note: This can only be used with an instance you create yourself. You cannot set a request
-transformer on the global singleton instance (`Picasso.with`)._
+transformer on the global singleton instance (`Picasso.get`)._
 
 
 

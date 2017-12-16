@@ -58,7 +58,7 @@ import static com.squareup.picasso.Utils.log;
 /**
  * Image downloading, transformation, and caching manager.
  * <p>
- * Use {@link #with()} for the global singleton instance
+ * Use {@link #get()} for the global singleton instance
  * or construct your own instance with {@link Builder}.
  */
 public class Picasso {
@@ -313,8 +313,7 @@ public class Picasso {
    * {@link #load(Uri)}.
    * <p>
    * This path may be a remote URL, file resource (prefixed with {@code file:}), content resource
-   * (prefixed with {@code content:}), or android resource (prefixed with {@code
-   * android.resource:}.
+   * (prefixed with {@code content:}), or android resource (prefixed with {@code android.resource:}.
    * <p>
    * Passing {@code null} as a {@code path} will not trigger any request but will set a
    * placeholder, if one is specified.
@@ -673,7 +672,7 @@ public class Picasso {
    * {@link Picasso} instance. You can either use this directly or by setting it as the global
    * instance with {@link #setSingletonInstance}.
    */
-  public static Picasso with() {
+  public static Picasso get() {
     if (singleton == null) {
       synchronized (Picasso.class) {
         if (singleton == null) {
@@ -688,9 +687,9 @@ public class Picasso {
   }
 
   /**
-   * Set the global instance returned from {@link #with}.
+   * Set the global instance returned from {@link #get}.
    * <p>
-   * This method must be called before any calls to {@link #with} and may only be called once.
+   * This method must be called before any calls to {@link #get} and may only be called once.
    */
   public static void setSingletonInstance(@NonNull Picasso picasso) {
     if (picasso == null) {
