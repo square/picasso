@@ -494,12 +494,12 @@ public class RequestCreator {
    *     setBackgroundDrawable(new BitmapDrawable(bitmap));
    *   }
    *
-   *   {@literal @}Override public void onBitmapFailed() {
-   *     setBackgroundResource(R.drawable.profile_error);
+   *   {@literal @}Override public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+   *     setBackgroundDrawable(errorDrawable);
    *   }
    *
    *   {@literal @}Override public void onPrepareLoad(Drawable placeHolderDrawable) {
-   *     frame.setBackgroundDrawable(placeHolderDrawable);
+   *     setBackgroundDrawable(placeHolderDrawable);
    *   }
    * }
    * </pre></blockquote>
@@ -513,8 +513,8 @@ public class RequestCreator {
    *     frame.setBackgroundDrawable(new BitmapDrawable(bitmap));
    *   }
    *
-   *   {@literal @}Override public void onBitmapFailed() {
-   *     frame.setBackgroundResource(R.drawable.profile_error);
+   *   {@literal @}Override public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+   *     frame.setBackgroundDrawable(errorDrawable);
    *   }
    *
    *   {@literal @}Override public void onPrepareLoad(Drawable placeHolderDrawable) {
