@@ -55,7 +55,7 @@ import static com.squareup.picasso.Utils.log;
 
 class BitmapHunter implements Runnable {
   /**
-   * Global lock for bitmap decoding to ensure that we are only are decoding one at a time. Since
+   * Global lock for bitmap decoding to ensure that we are only decoding one at a time. Since
    * this will only ever happen in background threads we help avoid excessive memory thrashing as
    * well as potential OOMs. Shamelessly stolen from Volley.
    */
