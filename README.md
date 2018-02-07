@@ -14,7 +14,7 @@ Download
 
 Download [the latest JAR][2] or grab via Gradle:
 ```groovy
-compile 'com.squareup.picasso:picasso:2.5.2'
+implementation 'com.squareup.picasso:picasso:2.5.2'
 ```
 or Maven:
 ```xml
