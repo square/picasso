@@ -13,6 +13,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowBitmap;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
+import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.FULL;
 import static com.squareup.picasso.MediaStoreRequestHandler.PicassoKind.MICRO;
@@ -30,7 +31,11 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricGradleTestRunner.class)
-@Config(shadows = { Shadows.ShadowVideoThumbnails.class, Shadows.ShadowImageThumbnails.class })
+@Config(
+    constants = BuildConfig.class,
+    sdk = M,
+    shadows = { Shadows.ShadowVideoThumbnails.class, Shadows.ShadowImageThumbnails.class }
+)
 public class MediaStoreRequestHandlerTest {
 
   @Mock Context context;

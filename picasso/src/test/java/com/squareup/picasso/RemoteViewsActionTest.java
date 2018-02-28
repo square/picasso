@@ -23,8 +23,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
+import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso.Picasso.LoadedFrom.NETWORK;
 import static com.squareup.picasso.Picasso.RequestTransformer.IDENTITY;
@@ -37,7 +39,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-@RunWith(RobolectricGradleTestRunner.class) public class RemoteViewsActionTest {
+@RunWith(RobolectricGradleTestRunner.class)
+@Config(constants = BuildConfig.class, sdk = M)
+public class RemoteViewsActionTest {
 
   private Picasso picasso;
   private RemoteViews remoteViews;

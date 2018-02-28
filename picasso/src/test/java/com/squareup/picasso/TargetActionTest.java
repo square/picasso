@@ -22,8 +22,10 @@ import android.graphics.drawable.Drawable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.annotation.Config;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
+import static android.os.Build.VERSION_CODES.M;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Picasso.RequestTransformer.IDENTITY;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_1;
@@ -36,6 +38,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(RobolectricGradleTestRunner.class)
+@Config(constants = BuildConfig.class, sdk = M)
 public class TargetActionTest {
 
   @Test(expected = AssertionError.class)

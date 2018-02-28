@@ -23,7 +23,9 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
+import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso.TestUtils.TRANSFORM_REQUEST_ANSWER;
 import static com.squareup.picasso.TestUtils.URI_1;
@@ -39,6 +41,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(RobolectricTestRunner.class)
+@Config(constants = BuildConfig.class, sdk = M)
 public class DeferredRequestCreatorTest {
 
   @Captor ArgumentCaptor<Action> actionCaptor;
