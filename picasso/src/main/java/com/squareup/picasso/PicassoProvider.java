@@ -15,6 +15,7 @@
  */
 package com.squareup.picasso;
 
+import android.annotation.SuppressLint;
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.Context;
@@ -29,7 +30,7 @@ import static android.support.annotation.RestrictTo.Scope.LIBRARY;
 @RestrictTo(LIBRARY)
 public final class PicassoProvider extends ContentProvider {
 
-  static Context context;
+  @SuppressLint("StaticFieldLeak") static Context context;
 
   @Override public boolean onCreate() {
     context = getContext();
