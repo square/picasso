@@ -170,6 +170,7 @@ public class NetworkRequestHandlerTest {
         .code(200)
         .protocol(HTTP_1_1)
         .request(new okhttp3.Request.Builder().url("http://example.com").build())
+        .message("OK")
         .body(body)
         .build();
   }
