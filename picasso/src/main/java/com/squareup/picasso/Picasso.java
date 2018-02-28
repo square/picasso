@@ -15,6 +15,7 @@
  */
 package com.squareup.picasso;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -144,7 +145,7 @@ public class Picasso {
     }
   };
 
-  static volatile Picasso singleton = null;
+  @SuppressLint("StaticFieldLeak") static volatile Picasso singleton = null;
 
   private final Listener listener;
   private final RequestTransformer requestTransformer;
