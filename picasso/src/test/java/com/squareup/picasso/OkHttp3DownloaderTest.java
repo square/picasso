@@ -15,8 +15,9 @@
  */
 package com.squareup.picasso;
 
-import okhttp3.*;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.Before;
@@ -27,11 +28,13 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
 
+import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(
-    sdk = 23, // Works around https://github.com/robolectric/robolectric/issues/2566.
+    constants = BuildConfig.class,
+    sdk = M, // Works around https://github.com/robolectric/robolectric/issues/2566.
     shadows = { Shadows.ShadowNetwork.class }
 )
 public class OkHttp3DownloaderTest {

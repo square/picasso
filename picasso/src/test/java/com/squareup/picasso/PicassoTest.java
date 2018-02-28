@@ -33,6 +33,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
+import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso.Picasso.Listener;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
@@ -58,7 +59,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(RobolectricGradleTestRunner.class)
-@Config(sdk = 23) // Works around https://github.com/robolectric/robolectric/issues/2566.
+@Config(constants = BuildConfig.class, sdk = M) // Works around https://github.com/robolectric/robolectric/issues/2566.
 public class PicassoTest {
 
   @Mock Context context;
