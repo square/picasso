@@ -34,11 +34,11 @@ import org.robolectric.shadows.ShadowBitmap;
 import org.robolectric.shadows.ShadowMatrix;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
-import static android.media.ExifInterface.ORIENTATION_FLIP_HORIZONTAL;
-import static android.media.ExifInterface.ORIENTATION_FLIP_VERTICAL;
-import static android.media.ExifInterface.ORIENTATION_ROTATE_90;
-import static android.media.ExifInterface.ORIENTATION_TRANSPOSE;
-import static android.media.ExifInterface.ORIENTATION_TRANSVERSE;
+import static android.support.media.ExifInterface.ORIENTATION_FLIP_HORIZONTAL;
+import static android.support.media.ExifInterface.ORIENTATION_FLIP_VERTICAL;
+import static android.support.media.ExifInterface.ORIENTATION_ROTATE_90;
+import static android.support.media.ExifInterface.ORIENTATION_TRANSPOSE;
+import static android.support.media.ExifInterface.ORIENTATION_TRANSVERSE;
 import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso.BitmapHunter.forRequest;
 import static com.squareup.picasso.BitmapHunter.transformResult;

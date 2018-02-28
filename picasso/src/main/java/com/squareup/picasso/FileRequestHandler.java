@@ -16,15 +16,15 @@
 package com.squareup.picasso;
 
 import android.content.Context;
-import android.media.ExifInterface;
+import android.support.media.ExifInterface;
 import android.net.Uri;
 import java.io.IOException;
 import okio.Okio;
 import okio.Source;
 
 import static android.content.ContentResolver.SCHEME_FILE;
-import static android.media.ExifInterface.ORIENTATION_NORMAL;
-import static android.media.ExifInterface.TAG_ORIENTATION;
+import static android.support.media.ExifInterface.ORIENTATION_NORMAL;
+import static android.support.media.ExifInterface.TAG_ORIENTATION;
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 
 class FileRequestHandler extends ContentStreamRequestHandler {
