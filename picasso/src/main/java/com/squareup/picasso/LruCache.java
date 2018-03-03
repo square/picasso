@@ -19,22 +19,11 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import static com.squareup.picasso.Utils.KEY_SEPARATOR;
 
 /** A memory cache which uses a least-recently used eviction policy. */
-public class LruCache implements Cache {
-  final LinkedHashMap<String, BitmapAndSize> map;
-  private final int maxSize;
-
-  private int size;
-  private int putCount;
-  private int evictionCount;
-  private int hitCount;
-  private int missCount;
+public final class LruCache implements Cache {
+  final android.util.LruCache<String, LruCache.BitmapAndSize> cache;
 
   /** Create a cache using an appropriate portion of the available RAM as the maximum size. */
   public LruCache(@NonNull Context context) {
@@ -42,30 +31,17 @@ public class LruCache implements Cache {
   }
 
   /** Create a cache with a given maximum size in bytes. */
-  public LruCache(int maxSize) {
-    if (maxSize <= 0) {
-      throw new IllegalArgumentException("Max size must be positive.");
-    }
-    this.maxSize = maxSize;
-    this.map = new LinkedHashMap<>(0, 0.75f, true);
+  public LruCache(int maxByteCount) {
+    cache = new android.util.LruCache<String, LruCache.BitmapAndSize>(maxByteCount) {
+      @Override protected int sizeOf(String key, BitmapAndSize value) {
+        return (int) value.byteCount;
+      }
+    };
   }
 
   @Override public Bitmap get(@NonNull String key) {
-    if (key == null) {
-      throw new NullPointerException("key == null");
-    }
-
-    BitmapAndSize mapValue;
-    synchronized (this) {
-      mapValue = map.get(key);
-      if (mapValue != null) {
-        hitCount++;
-        return mapValue.bitmap;
-      }
-      missCount++;
-    }
-
-    return null;
+    BitmapAndSize bitmapAndSize = cache.get(key);
+    return bitmapAndSize != null ? bitmapAndSize.bitmap : null;
   }
 
   @Override public void set(@NonNull String key, @NonNull Bitmap bitmap) {
@@ -73,105 +49,69 @@ public class LruCache implements Cache {
       throw new NullPointerException("key == null || bitmap == null");
     }
 
-    int addedSize = Utils.getBitmapBytes(bitmap);
-    if (addedSize > maxSize) {
+    int byteCount = Utils.getBitmapBytes(bitmap);
+
+    // If the bitmap is too big for the cache, don't even attempt to store it. Doing so will cause
+    // the cache to be cleared. Instead just evict an existing element with the same key if it
+    // exists.
+    if (byteCount > maxSize()) {
+      cache.remove(key);
       return;
     }
 
-    synchronized (this) {
-      putCount++;
-      size += addedSize;
-      BitmapAndSize previous = map.put(key, new BitmapAndSize(bitmap, addedSize));
-      if (previous != null) {
-        size -= previous.allocationSize;
-      }
-    }
-
-    trimToSize(maxSize);
+    cache.put(key, new BitmapAndSize(bitmap, byteCount));
   }
 
-  private void trimToSize(int maxSize) {
-    while (true) {
-      String key;
-      BitmapAndSize value;
-      synchronized (this) {
-        if (size < 0 || (map.isEmpty() && size != 0)) {
-          throw new IllegalStateException(
-              getClass().getName() + ".sizeOf() is reporting inconsistent results!");
-        }
-
-        if (size <= maxSize || map.isEmpty()) {
-          break;
-        }
-
-        Map.Entry<String, BitmapAndSize> toEvict = map.entrySet().iterator().next();
-        key = toEvict.getKey();
-        value = toEvict.getValue();
-        map.remove(key);
-        size -= value.allocationSize;
-        evictionCount++;
-      }
-    }
+  @Override public int size() {
+    return cache.size();
   }
 
-  /** Clear the cache. */
-  public final void evictAll() {
-    trimToSize(-1); // -1 will evict 0-sized elements
+  @Override public int maxSize() {
+    return cache.maxSize();
   }
 
-  @Override public final synchronized int size() {
-    return size;
+  @Override public void clear() {
+    cache.evictAll();
   }
 
-  @Override public final synchronized int maxSize() {
-    return maxSize;
-  }
-
-  @Override public final synchronized void clear() {
-    evictAll();
-  }
-
-  @Override public final synchronized void clearKeyUri(String uri) {
-    int uriLength = uri.length();
-    for (Iterator<Map.Entry<String, BitmapAndSize>> i = map.entrySet().iterator(); i.hasNext();) {
-      Map.Entry<String, BitmapAndSize> entry = i.next();
-      String key = entry.getKey();
-      BitmapAndSize value = entry.getValue();
-      int newlineIndex = key.indexOf(KEY_SEPARATOR);
-      if (newlineIndex == uriLength && key.substring(0, newlineIndex).equals(uri)) {
-        i.remove();
-        size -= value.allocationSize;
+  @Override public void clearKeyUri(String uri) {
+    // Keys are prefixed with a URI followed by '\n'.
+    for (String key : cache.snapshot().keySet()) {
+      if (key.startsWith(uri)
+          && key.length() > uri.length()
+          && key.charAt(uri.length()) == KEY_SEPARATOR) {
+        cache.remove(key);
       }
     }
   }
 
   /** Returns the number of times {@link #get} returned a value. */
-  public final synchronized int hitCount() {
-    return hitCount;
+  public int hitCount() {
+    return cache.hitCount();
   }
 
   /** Returns the number of times {@link #get} returned {@code null}. */
-  public final synchronized int missCount() {
-    return missCount;
+  public int missCount() {
+    return cache.missCount();
   }
 
   /** Returns the number of times {@link #set(String, Bitmap)} was called. */
-  public final synchronized int putCount() {
-    return putCount;
+  public int putCount() {
+    return cache.putCount();
   }
 
   /** Returns the number of values that have been evicted. */
-  public final synchronized int evictionCount() {
-    return evictionCount;
+  public int evictionCount() {
+    return cache.evictionCount();
   }
 
   static final class BitmapAndSize {
     final Bitmap bitmap;
-    final long allocationSize;
+    final long byteCount;
 
-    BitmapAndSize(Bitmap bitmap, long allocationSize) {
+    BitmapAndSize(Bitmap bitmap, long byteCount) {
       this.bitmap = bitmap;
-      this.allocationSize = allocationSize;
+      this.byteCount = byteCount;
     }
   }
 }

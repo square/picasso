@@ -153,8 +153,8 @@ public class LruCacheTest {
     cache.set("a", A);
     cache.set("b", B);
     cache.set("c", C);
-    cache.evictAll();
-    assertThat(cache.map).isEmpty();
+    cache.clear();
+    assertThat(cache.cache.snapshot()).isEmpty();
   }
 
   @Test public void clearPrefixedKey() {
@@ -166,8 +166,8 @@ public class LruCacheTest {
     cache.set("Hellos\nWorld!", D);
 
     cache.clearKeyUri("Hello");
-    assertThat(cache.map).hasSize(1);
-    assertThat(cache.map).containsKey("Hellos\nWorld!");
+    assertThat(cache.cache.snapshot()).hasSize(1);
+    assertThat(cache.cache.snapshot()).containsKey("Hellos\nWorld!");
   }
 
   @Test public void invalidate() {
@@ -218,7 +218,7 @@ public class LruCacheTest {
 
   private void assertSnapshot(LruCache cache, Object... keysAndValues) {
     List<Object> actualKeysAndValues = new ArrayList<>();
-    for (Map.Entry<String, LruCache.BitmapAndSize> entry : cache.map.entrySet()) {
+    for (Map.Entry<String, LruCache.BitmapAndSize> entry : cache.cache.snapshot().entrySet()) {
       actualKeysAndValues.add(entry.getKey());
       actualKeysAndValues.add(entry.getValue().bitmap);
     }
