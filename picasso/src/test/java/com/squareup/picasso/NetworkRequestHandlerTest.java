@@ -41,7 +41,6 @@ import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.mockNetworkInfo;
 import static okhttp3.Protocol.HTTP_1_1;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.verify;
@@ -84,7 +83,7 @@ public class NetworkRequestHandlerTest {
     responses.add(responseOf(ResponseBody.create(null, new byte[10])));
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     networkHandler.load(action.getRequest(), 0);
-    assertEquals("", requests.takeFirst().cacheControl().toString());
+    assertThat(requests.takeFirst().cacheControl().toString()).isEmpty();
   }
 
   @Test public void withZeroRetryCountForcesLocalCacheOnly() throws Exception {
@@ -93,7 +92,7 @@ public class NetworkRequestHandlerTest {
     BitmapHunter hunter = new BitmapHunter(picasso, dispatcher, cache, stats, action, networkHandler);
     hunter.retryCount = 0;
     hunter.hunt();
-    assertEquals(CacheControl.FORCE_CACHE.toString(), requests.takeFirst().cacheControl().toString());
+    assertThat(requests.takeFirst().cacheControl().toString()).isEqualTo(CacheControl.FORCE_CACHE.toString());
   }
 
   @Test public void shouldRetryTwiceWithAirplaneModeOffAndNoNetworkInfo() throws Exception {

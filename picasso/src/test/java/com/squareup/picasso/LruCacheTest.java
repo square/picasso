@@ -27,7 +27,6 @@ import org.robolectric.RobolectricGradleTestRunner;
 
 import static android.graphics.Bitmap.Config.ALPHA_8;
 import static com.google.common.truth.Truth.assertThat;
-import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.fail;
 
 @RunWith(RobolectricGradleTestRunner.class)
@@ -194,7 +193,7 @@ public class LruCacheTest {
     cache.set("25", size25);
     assertHit(cache, "16", size16);
     assertMiss(cache, "25");
-    assertEquals(cache.size(), 16);
+    assertThat(cache.size()).isEqualTo(16);
   }
 
   @Test public void overMaxSizeRemovesExisting() {
@@ -212,7 +211,7 @@ public class LruCacheTest {
     cache.set("big", size25);
     assertHit(cache, "small", size4);
     assertMiss(cache, "big");
-    assertEquals(cache.size(), 4);
+    assertThat(cache.size()).isEqualTo(4);
   }
 
   private void assertHit(LruCache cache, String key, Bitmap value) {
