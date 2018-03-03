@@ -42,6 +42,16 @@ subprojects {
     google()
   }
 
+  tasks.withType(Test) {
+    testLogging {
+      events "failed"
+      exceptionFormat "full"
+      showExceptions true
+      showStackTraces true
+      showCauses true
+    }
+  }
+
   plugins.apply('checkstyle')
 
   task('checkstyle', type: Checkstyle) {
