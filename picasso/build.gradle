@@ -26,7 +26,7 @@ android {
 
 dependencies {
   api deps.okhttp
-  api deps.supportAnnotations
+  compileOnly deps.supportAnnotations
   implementation deps.supportExifInterface
   testImplementation deps.junit
   testImplementation deps.truth
