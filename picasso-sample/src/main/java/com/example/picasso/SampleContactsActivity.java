@@ -36,7 +36,7 @@ public class SampleContactsActivity extends PicassoSampleActivity
 
     adapter = new SampleContactsAdapter(this);
 
-    ListView lv = (ListView) findViewById(android.R.id.list);
+    ListView lv = findViewById(android.R.id.list);
     lv.setAdapter(adapter);
     lv.setOnScrollListener(new SampleScrollListener(this));
 

@@ -24,8 +24,8 @@ public class SampleGalleryActivity extends PicassoSampleActivity {
 
     setContentView(R.layout.sample_gallery_activity);
 
-    animator = (ViewAnimator) findViewById(R.id.animator);
-    imageView = (ImageView) findViewById(R.id.image);
+    animator = findViewById(R.id.animator);
+    imageView = findViewById(R.id.image);
 
     findViewById(R.id.go).setOnClickListener(new View.OnClickListener() {
       @Override public void onClick(View view) {

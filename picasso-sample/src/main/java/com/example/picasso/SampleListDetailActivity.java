@@ -74,8 +74,8 @@ public class SampleListDetailActivity extends PicassoSampleActivity {
       View view = LayoutInflater.from(activity)
           .inflate(R.layout.sample_list_detail_detail, container, false);
 
-      TextView urlView = (TextView) view.findViewById(R.id.url);
-      ImageView imageView = (ImageView) view.findViewById(R.id.photo);
+      TextView urlView = view.findViewById(R.id.url);
+      ImageView imageView = view.findViewById(R.id.photo);
 
       Bundle arguments = getArguments();
       String url = arguments.getString(KEY_URL);
