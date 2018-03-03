@@ -197,6 +197,24 @@ public class LruCacheTest {
     assertEquals(cache.size(), 16);
   }
 
+  @Test public void overMaxSizeRemovesExisting() {
+    LruCache cache = new LruCache(20);
+    Bitmap size4 = Bitmap.createBitmap(2, 2, ALPHA_8);
+    Bitmap size16 = Bitmap.createBitmap(4, 4, ALPHA_8);
+    Bitmap size25 = Bitmap.createBitmap(5, 5, ALPHA_8);
+    cache.set("small", size4);
+    expectedPutCount++;
+    assertHit(cache, "small", size4);
+    cache.set("big", size16);
+    expectedPutCount++;
+    assertHit(cache, "small", size4);
+    assertHit(cache, "big", size16);
+    cache.set("big", size25);
+    assertHit(cache, "small", size4);
+    assertMiss(cache, "big");
+    assertEquals(cache.size(), 4);
+  }
+
   private void assertHit(LruCache cache, String key, Bitmap value) {
     assertThat(cache.get(key)).isEqualTo(value);
     expectedHitCount++;
