@@ -3,6 +3,10 @@ apply plugin: 'com.android.library'
 android {
   compileSdkVersion versions.compileSdk
 
+  defaultConfig {
+    minSdkVersion versions.minSdk
+  }
+
   compileOptions {
     sourceCompatibility versions.sourceCompatibility
     targetCompatibility versions.targetCompatibility
@@ -16,10 +20,6 @@ android {
 
   dexOptions {
     preDexLibraries = !isCi
-  }
-
-  defaultConfig {
-    minSdkVersion versions.minSdk
   }
 }
 
