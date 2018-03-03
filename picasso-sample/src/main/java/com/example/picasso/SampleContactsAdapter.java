@@ -42,8 +42,8 @@ class SampleContactsAdapter extends CursorAdapter {
     View itemLayout = inflater.inflate(R.layout.sample_contacts_activity_item, viewGroup, false);
 
     ViewHolder holder = new ViewHolder();
-    holder.text1 = (TextView) itemLayout.findViewById(android.R.id.text1);
-    holder.icon = (QuickContactBadge) itemLayout.findViewById(android.R.id.icon);
+    holder.text1 = itemLayout.findViewById(android.R.id.text1);
+    holder.icon = itemLayout.findViewById(android.R.id.icon);
 
     itemLayout.setTag(holder);
 

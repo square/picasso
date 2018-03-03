@@ -26,8 +26,8 @@ final class SampleListDetailAdapter extends BaseAdapter {
     if (view == null) {
       view = LayoutInflater.from(context).inflate(R.layout.sample_list_detail_item, parent, false);
       holder = new ViewHolder();
-      holder.image = (ImageView) view.findViewById(R.id.photo);
-      holder.text = (TextView) view.findViewById(R.id.url);
+      holder.image = view.findViewById(R.id.photo);
+      holder.text = view.findViewById(R.id.url);
       view.setTag(holder);
     } else {
       holder = (ViewHolder) view.getTag();
