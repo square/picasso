@@ -15,8 +15,8 @@
  */
 package com.squareup.picasso;
 
-import android.annotation.SuppressLint;
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -28,9 +28,9 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -107,7 +107,7 @@ class Dispatcher {
     this.hunterMap = new LinkedHashMap<>();
     this.failedActions = new WeakHashMap<>();
     this.pausedActions = new WeakHashMap<>();
-    this.pausedTags = new HashSet<>();
+    this.pausedTags = new LinkedHashSet<>();
     this.handler = new DispatcherHandler(dispatcherThread.getLooper(), this);
     this.downloader = downloader;
     this.mainThreadHandler = mainThreadHandler;
