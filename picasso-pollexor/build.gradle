@@ -1,17 +1,15 @@
-buildscript {
-  dependencies {
-    classpath dep.androidPlugin
-  }
-}
-
 apply plugin: 'com.android.library'
 
 android {
-  compileSdkVersion rootProject.ext.compileSdkVersion
+  compileSdkVersion versions.compileSdk
+
+  defaultConfig {
+    minSdkVersion versions.minSdk
+  }
 
   compileOptions {
-    sourceCompatibility rootProject.ext.sourceCompatibilityVersion
-    targetCompatibility rootProject.ext.targetCompatibilityVersion
+    sourceCompatibility versions.sourceCompatibility
+    targetCompatibility versions.targetCompatibility
   }
 
   lintOptions {
@@ -21,22 +19,18 @@ android {
   }
 
   dexOptions {
-    preDexLibraries = !rootProject.ext.isCi
-  }
-
-  defaultConfig {
-    minSdkVersion rootProject.ext.minSdkVersion
+    preDexLibraries = !isCi
   }
 }
 
 dependencies {
   api project(':picasso')
-  api dep.pollexor
-  compileOnly dep.supportAnnotations
-  testImplementation dep.junit
-  testImplementation dep.robolectric
-  testImplementation dep.truth
-  testImplementation dep.pollexor
+  api deps.pollexor
+  compileOnly deps.supportAnnotations
+  testImplementation deps.junit
+  testImplementation deps.robolectric
+  testImplementation deps.truth
+  testImplementation deps.pollexor
 }
 
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')

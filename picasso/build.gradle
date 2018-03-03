@@ -1,17 +1,16 @@
-buildscript {
-  dependencies {
-    classpath dep.androidPlugin
-  }
-}
-
 apply plugin: 'com.android.library'
 
 android {
-  compileSdkVersion rootProject.ext.compileSdkVersion
+  compileSdkVersion versions.compileSdk
+
+  defaultConfig {
+    minSdkVersion versions.minSdk
+    consumerProguardFiles 'consumer-proguard-rules.txt'
+  }
 
   compileOptions {
-    sourceCompatibility rootProject.ext.sourceCompatibilityVersion
-    targetCompatibility rootProject.ext.targetCompatibilityVersion
+    sourceCompatibility versions.sourceCompatibility
+    targetCompatibility versions.targetCompatibility
   }
 
   lintOptions {
@@ -21,26 +20,20 @@ android {
   }
 
   dexOptions {
-    preDexLibraries = !rootProject.ext.isCi
-  }
-
-  defaultConfig {
-    minSdkVersion rootProject.ext.minSdkVersion
-
-    consumerProguardFiles 'consumer-proguard-rules.txt'
+    preDexLibraries = !isCi
   }
 }
 
 dependencies {
-  api dep.okhttp
-  api dep.supportAnnotations
-  implementation dep.supportExifInterface
-  testImplementation dep.junit
-  testImplementation dep.truth
-  testImplementation dep.supportV4
-  testImplementation dep.robolectric
-  testImplementation dep.mockito
-  testImplementation dep.mockWebServer
+  api deps.okhttp
+  compileOnly deps.supportAnnotations
+  implementation deps.supportExifInterface
+  testImplementation deps.junit
+  testImplementation deps.truth
+  testImplementation deps.supportV4
+  testImplementation deps.robolectric
+  testImplementation deps.mockito
+  testImplementation deps.mockWebServer
 }
 
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
