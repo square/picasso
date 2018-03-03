@@ -27,7 +27,7 @@ import static com.squareup.picasso.Utils.KEY_SEPARATOR;
 
 /** A memory cache which uses a least-recently used eviction policy. */
 public class LruCache implements Cache {
-  final LinkedHashMap<String, Bitmap> map;
+  final LinkedHashMap<String, BitmapAndSize> map;
   private final int maxSize;
 
   private int size;
@@ -55,12 +55,12 @@ public class LruCache implements Cache {
       throw new NullPointerException("key == null");
     }
 
-    Bitmap mapValue;
+    BitmapAndSize mapValue;
     synchronized (this) {
       mapValue = map.get(key);
       if (mapValue != null) {
         hitCount++;
-        return mapValue;
+        return mapValue.bitmap;
       }
       missCount++;
     }
@@ -81,9 +81,9 @@ public class LruCache implements Cache {
     synchronized (this) {
       putCount++;
       size += addedSize;
-      Bitmap previous = map.put(key, bitmap);
+      BitmapAndSize previous = map.put(key, new BitmapAndSize(bitmap, addedSize));
       if (previous != null) {
-        size -= Utils.getBitmapBytes(previous);
+        size -= previous.allocationSize;
       }
     }
 
@@ -93,7 +93,7 @@ public class LruCache implements Cache {
   private void trimToSize(int maxSize) {
     while (true) {
       String key;
-      Bitmap value;
+      BitmapAndSize value;
       synchronized (this) {
         if (size < 0 || (map.isEmpty() && size != 0)) {
           throw new IllegalStateException(
@@ -104,11 +104,11 @@ public class LruCache implements Cache {
           break;
         }
 
-        Map.Entry<String, Bitmap> toEvict = map.entrySet().iterator().next();
+        Map.Entry<String, BitmapAndSize> toEvict = map.entrySet().iterator().next();
         key = toEvict.getKey();
         value = toEvict.getValue();
         map.remove(key);
-        size -= Utils.getBitmapBytes(value);
+        size -= value.allocationSize;
         evictionCount++;
       }
     }
@@ -133,14 +133,14 @@ public class LruCache implements Cache {
 
   @Override public final synchronized void clearKeyUri(String uri) {
     int uriLength = uri.length();
-    for (Iterator<Map.Entry<String, Bitmap>> i = map.entrySet().iterator(); i.hasNext();) {
-      Map.Entry<String, Bitmap> entry = i.next();
+    for (Iterator<Map.Entry<String, BitmapAndSize>> i = map.entrySet().iterator(); i.hasNext();) {
+      Map.Entry<String, BitmapAndSize> entry = i.next();
       String key = entry.getKey();
-      Bitmap value = entry.getValue();
+      BitmapAndSize value = entry.getValue();
       int newlineIndex = key.indexOf(KEY_SEPARATOR);
       if (newlineIndex == uriLength && key.substring(0, newlineIndex).equals(uri)) {
         i.remove();
-        size -= Utils.getBitmapBytes(value);
+        size -= value.allocationSize;
       }
     }
   }
@@ -163,5 +163,15 @@ public class LruCache implements Cache {
   /** Returns the number of values that have been evicted. */
   public final synchronized int evictionCount() {
     return evictionCount;
+  }
+
+  static final class BitmapAndSize {
+    final Bitmap bitmap;
+    final long allocationSize;
+
+    BitmapAndSize(Bitmap bitmap, long allocationSize) {
+      this.bitmap = bitmap;
+      this.allocationSize = allocationSize;
+    }
   }
 }

@@ -218,9 +218,9 @@ public class LruCacheTest {
 
   private void assertSnapshot(LruCache cache, Object... keysAndValues) {
     List<Object> actualKeysAndValues = new ArrayList<>();
-    for (Map.Entry<String, Bitmap> entry : cache.map.entrySet()) {
+    for (Map.Entry<String, LruCache.BitmapAndSize> entry : cache.map.entrySet()) {
       actualKeysAndValues.add(entry.getKey());
-      actualKeysAndValues.add(entry.getValue());
+      actualKeysAndValues.add(entry.getValue().bitmap);
     }
 
     // assert using lists because order is important for LRUs
