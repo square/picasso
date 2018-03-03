@@ -18,6 +18,7 @@ package com.squareup.picasso;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import static com.squareup.picasso.Utils.KEY_SEPARATOR;
 
@@ -39,7 +40,7 @@ public final class LruCache implements Cache {
     };
   }
 
-  @Override public Bitmap get(@NonNull String key) {
+  @Nullable @Override public Bitmap get(@NonNull String key) {
     BitmapAndSize bitmapAndSize = cache.get(key);
     return bitmapAndSize != null ? bitmapAndSize.bitmap : null;
   }
