@@ -1,17 +1,11 @@
-buildscript {
-  dependencies {
-    classpath deps.androidPlugin
-  }
-}
-
 apply plugin: 'com.android.library'
 
 android {
-  compileSdkVersion rootProject.ext.versions.compileSdk
+  compileSdkVersion versions.compileSdk
 
   compileOptions {
-    sourceCompatibility rootProject.ext.versions.sourceCompatibility
-    targetCompatibility rootProject.ext.versions.targetCompatibility
+    sourceCompatibility versions.sourceCompatibility
+    targetCompatibility versions.targetCompatibility
   }
 
   lintOptions {
@@ -21,11 +15,11 @@ android {
   }
 
   dexOptions {
-    preDexLibraries = !rootProject.ext.isCi
+    preDexLibraries = !isCi
   }
 
   defaultConfig {
-    minSdkVersion rootProject.ext.versions.minSdk
+    minSdkVersion versions.minSdk
 
     consumerProguardFiles 'consumer-proguard-rules.txt'
   }

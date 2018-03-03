@@ -1,9 +1,3 @@
-buildscript {
-  dependencies {
-    classpath deps.androidPlugin
-  }
-}
-
 apply plugin: 'com.android.application'
 
 dependencies {
@@ -13,11 +7,11 @@ dependencies {
 }
 
 android {
-  compileSdkVersion rootProject.ext.versions.compileSdk
+  compileSdkVersion versions.compileSdk
 
   compileOptions {
-    sourceCompatibility rootProject.ext.versions.sourceCompatibility
-    targetCompatibility rootProject.ext.versions.targetCompatibility
+    sourceCompatibility versions.sourceCompatibility
+    targetCompatibility versions.targetCompatibility
   }
 
   lintOptions {
@@ -34,8 +28,8 @@ android {
   }
 
   defaultConfig {
-    minSdkVersion rootProject.ext.versions.minSdk
-    targetSdkVersion rootProject.ext.versions.targetSdk
+    minSdkVersion versions.minSdk
+    targetSdkVersion versions.targetSdk
     applicationId 'com.example.picasso'
 
     versionCode 1
