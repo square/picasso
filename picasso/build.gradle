@@ -1,17 +1,17 @@
 buildscript {
   dependencies {
-    classpath dep.androidPlugin
+    classpath deps.androidPlugin
   }
 }
 
 apply plugin: 'com.android.library'
 
 android {
-  compileSdkVersion rootProject.ext.compileSdkVersion
+  compileSdkVersion rootProject.ext.versions.compileSdk
 
   compileOptions {
-    sourceCompatibility rootProject.ext.sourceCompatibilityVersion
-    targetCompatibility rootProject.ext.targetCompatibilityVersion
+    sourceCompatibility rootProject.ext.versions.sourceCompatibility
+    targetCompatibility rootProject.ext.versions.targetCompatibility
   }
 
   lintOptions {
@@ -25,22 +25,22 @@ android {
   }
 
   defaultConfig {
-    minSdkVersion rootProject.ext.minSdkVersion
+    minSdkVersion rootProject.ext.versions.minSdk
 
     consumerProguardFiles 'consumer-proguard-rules.txt'
   }
 }
 
 dependencies {
-  api dep.okhttp
-  api dep.supportAnnotations
-  implementation dep.supportExifInterface
-  testImplementation dep.junit
-  testImplementation dep.truth
-  testImplementation dep.supportV4
-  testImplementation dep.robolectric
-  testImplementation dep.mockito
-  testImplementation dep.mockWebServer
+  api deps.okhttp
+  api deps.supportAnnotations
+  implementation deps.supportExifInterface
+  testImplementation deps.junit
+  testImplementation deps.truth
+  testImplementation deps.supportV4
+  testImplementation deps.robolectric
+  testImplementation deps.mockito
+  testImplementation deps.mockWebServer
 }
 
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
