@@ -17,10 +17,6 @@ android {
     textReport true
     lintConfig file('lint.xml')
   }
-
-  dexOptions {
-    preDexLibraries = !isCi
-  }
 }
 
 dependencies {

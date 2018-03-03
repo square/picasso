@@ -25,16 +25,6 @@ android {
     // https://github.com/square/okhttp/issues/896
     ignore 'InvalidPackage'
   }
-
-  dexOptions {
-    preDexLibraries = !rootProject.ext.isCi
-  }
-
-  buildTypes {
-    debug {
-      applicationIdSuffix '.development'
-    }
-  }
 }
 
 dependencies {
