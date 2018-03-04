@@ -64,7 +64,7 @@ class DeferredRequestCreator implements OnPreDrawListener, OnAttachStateChangeLi
     int width = target.getWidth();
     int height = target.getHeight();
 
-    if (width <= 0 || height <= 0 || target.isLayoutRequested()) {
+    if (width <= 0 || height <= 0) {
       return true;
     }
 
