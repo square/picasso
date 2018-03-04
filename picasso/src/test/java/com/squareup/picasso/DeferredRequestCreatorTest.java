@@ -144,18 +144,6 @@ public class DeferredRequestCreatorTest {
     verifyZeroInteractions(creator);
   }
 
-  @Test public void waitsForAnotherLayoutIfLayoutRequested() {
-    ImageView target = mockFitImageViewTarget(true);
-    when(target.getWidth()).thenReturn(100);
-    when(target.getHeight()).thenReturn(100);
-    when(target.isLayoutRequested()).thenReturn(true);
-    RequestCreator creator = mock(RequestCreator.class);
-    DeferredRequestCreator request = new DeferredRequestCreator(creator, target, null);
-    request.onPreDraw();
-    verify(target.getViewTreeObserver(), never()).removeOnPreDrawListener(request);
-    verifyZeroInteractions(creator);
-  }
-
   @Test public void cancelSkipsWithNullTarget() {
     ImageView target = mockFitImageViewTarget(true);
     RequestCreator creator = mock(RequestCreator.class);
