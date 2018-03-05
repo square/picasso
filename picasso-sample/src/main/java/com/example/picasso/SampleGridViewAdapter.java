@@ -4,7 +4,7 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import com.squareup.picasso.Picasso;
+import com.squareup.picasso.provider.PicassoProvider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -39,7 +39,7 @@ final class SampleGridViewAdapter extends BaseAdapter {
     String url = getItem(position);
 
     // Trigger the download of the URL asynchronously into the image view.
-    Picasso.get() //
+    PicassoProvider.get() //
         .load(url) //
         .placeholder(R.drawable.placeholder) //
         .error(R.drawable.error) //

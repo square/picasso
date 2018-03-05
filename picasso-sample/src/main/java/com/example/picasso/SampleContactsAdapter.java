@@ -25,7 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.QuickContactBadge;
 import android.widget.TextView;
-import com.squareup.picasso.Picasso;
+import com.squareup.picasso.provider.PicassoProvider;
 
 import static android.provider.ContactsContract.Contacts;
 import static com.example.picasso.SampleContactsActivity.ContactsQuery;
@@ -58,7 +58,7 @@ class SampleContactsAdapter extends CursorAdapter {
     holder.text1.setText(cursor.getString(ContactsQuery.DISPLAY_NAME));
     holder.icon.assignContactUri(contactUri);
 
-    Picasso.get()
+    PicassoProvider.get()
         .load(contactUri)
         .placeholder(R.drawable.contact_picture_placeholder)
         .tag(context)

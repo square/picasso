@@ -32,4 +32,5 @@ dependencies {
   implementation deps.supportCompat
   implementation deps.supportFragment
   implementation project(':picasso')
+  implementation project(':picasso-provider')
 }

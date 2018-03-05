@@ -20,6 +20,7 @@ import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.widget.RemoteViews;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.provider.PicassoProvider;
 import java.util.Random;
 
 public class SampleWidgetProvider extends AppWidgetProvider {
@@ -29,7 +30,7 @@ public class SampleWidgetProvider extends AppWidgetProvider {
       int[] appWidgetIds) {
     RemoteViews updateViews = new RemoteViews(context.getPackageName(), R.layout.sample_widget);
     // Load image for all appWidgetIds.
-    Picasso picasso = Picasso.get();
+    Picasso picasso = PicassoProvider.get();
     picasso.load(Data.URLS[new Random().nextInt(Data.URLS.length)]) //
         .placeholder(R.drawable.placeholder) //
         .error(R.drawable.error) //

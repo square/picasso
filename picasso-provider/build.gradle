@@ -1,0 +1,27 @@
+apply plugin: 'com.android.library'
+
+android {
+  compileSdkVersion versions.compileSdk
+
+  defaultConfig {
+    minSdkVersion versions.minSdk
+  }
+
+  compileOptions {
+    sourceCompatibility versions.sourceCompatibility
+    targetCompatibility versions.targetCompatibility
+  }
+
+  lintOptions {
+    textOutput 'stdout'
+    textReport true
+    lintConfig file('lint.xml')
+  }
+}
+
+dependencies {
+  api project(':picasso')
+  compileOnly deps.supportAnnotations
+}
+
+apply from: rootProject.file('gradle/gradle-mvn-push.gradle')

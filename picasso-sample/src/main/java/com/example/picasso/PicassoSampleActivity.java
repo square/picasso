@@ -9,8 +9,7 @@ import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.ToggleButton;
-
-import com.squareup.picasso.Picasso;
+import com.squareup.picasso.provider.PicassoProvider;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
@@ -45,7 +44,7 @@ abstract class PicassoSampleActivity extends FragmentActivity {
   @Override
   protected void onDestroy() {
     super.onDestroy();
-    Picasso.get().cancelTag(this);
+    PicassoProvider.get().cancelTag(this);
   }
 
   @Override public void onBackPressed() {
