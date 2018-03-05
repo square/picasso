@@ -22,6 +22,8 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -96,6 +98,24 @@ final class Utils {
   */
   private static final ByteString WEBP_FILE_HEADER_RIFF = ByteString.encodeUtf8("RIFF");
   private static final ByteString WEBP_FILE_HEADER_WEBP = ByteString.encodeUtf8("WEBP");
+
+  private static final ByteString BMP_FILE_HEADER = ByteString.encodeUtf8("BM");
+
+  /**
+   * Due to bugs in Android's {@link BitmapFactory}. Streaming the bytes of some formats to the
+   * decoder can cause failed decodes or JNI exceptions. If this method returns true, buffer the
+   * bytes before decoding to avoid this behavior.
+   */
+  static boolean bufferedImageFormat(BufferedSource source) throws IOException {
+    if (source.rangeEquals(0, WEBP_FILE_HEADER_RIFF)
+        && source.rangeEquals(8, WEBP_FILE_HEADER_WEBP)) {
+      return true;
+    }
+    if (Build.VERSION.SDK_INT < 18 && source.rangeEquals(0, BMP_FILE_HEADER)) {
+      return true;
+    }
+    return false;
+  }
 
   private Utils() {
     // No instances.
@@ -272,11 +292,6 @@ final class Utils {
 
   static boolean hasPermission(Context context, String permission) {
     return context.checkCallingOrSelfPermission(permission) == PackageManager.PERMISSION_GRANTED;
-  }
-
-  static boolean isWebPFile(BufferedSource source) throws IOException {
-    return source.rangeEquals(0, WEBP_FILE_HEADER_RIFF)
-        && source.rangeEquals(8, WEBP_FILE_HEADER_WEBP);
   }
 
   static int getResourceId(Resources resources, Request data) throws FileNotFoundException {

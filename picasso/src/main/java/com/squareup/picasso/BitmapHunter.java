@@ -125,15 +125,15 @@ class BitmapHunter implements Runnable {
   static Bitmap decodeStream(Source source, Request request) throws IOException {
     BufferedSource bufferedSource = Okio.buffer(source);
 
-    boolean isWebPFile = Utils.isWebPFile(bufferedSource);
-    boolean isPurgeable = request.purgeable && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP;
     BitmapFactory.Options options = RequestHandler.createBitmapOptions(request);
     boolean calculateSize = RequestHandler.requiresInSampleSize(options);
 
-    // We decode from a byte array because, a) when decoding a WebP network stream, BitmapFactory
-    // throws a JNI Exception, so we workaround by decoding a byte array, or b) user requested
-    // purgeable, which only affects bitmaps decoded from byte arrays.
-    if (isWebPFile || isPurgeable) {
+    // We decode from a byte array because, a) bugs in BitmapFactory prevent certain formats on
+    // certain API levels to be decoded while streamed, or b) user requested purgeable, which only
+    // affects bitmaps decoded from byte arrays.
+    boolean bufferedImageFormat = Utils.bufferedImageFormat(bufferedSource);
+    boolean isPurgeable = request.purgeable && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP;
+    if (bufferedImageFormat || isPurgeable) {
       byte[] bytes = bufferedSource.readByteArray();
       if (calculateSize) {
         BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);

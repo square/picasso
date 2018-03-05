@@ -21,6 +21,7 @@ import okio.Buffer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.annotation.Config;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_1;
@@ -29,7 +30,7 @@ import static com.squareup.picasso.TestUtils.RESOURCE_TYPE_URI;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.mockPackageResourceContext;
 import static com.squareup.picasso.Utils.createKey;
-import static com.squareup.picasso.Utils.isWebPFile;
+import static com.squareup.picasso.Utils.bufferedImageFormat;
 
 @RunWith(RobolectricGradleTestRunner.class)
 public class UtilsTest {
@@ -71,12 +72,24 @@ public class UtilsTest {
     assertThat(order1).isNotEqualTo(order2);
   }
 
-  @Test public void detectedWebPFile() throws Exception {
-    assertThat(isWebPFile(new Buffer().writeUtf8("RIFFxxxxWEBP"))).isTrue();
-    assertThat(isWebPFile(new Buffer().writeUtf8("RIFFxxxxxWEBP"))).isFalse();
-    assertThat(isWebPFile(new Buffer().writeUtf8("ABCDxxxxWEBP"))).isFalse();
-    assertThat(isWebPFile(new Buffer().writeUtf8("RIFFxxxxABCD"))).isFalse();
-    assertThat(isWebPFile(new Buffer().writeUtf8("RIFFxxWEBP"))).isFalse();
+  @Test public void bufferedFormatWebP() throws Exception {
+    assertThat(bufferedImageFormat(new Buffer().writeUtf8("RIFFxxxxWEBP"))).isTrue();
+    assertThat(bufferedImageFormat(new Buffer().writeUtf8("RIFFxxxxxWEBP"))).isFalse();
+    assertThat(bufferedImageFormat(new Buffer().writeUtf8("ABCDxxxxWEBP"))).isFalse();
+    assertThat(bufferedImageFormat(new Buffer().writeUtf8("RIFFxxxxABCD"))).isFalse();
+    assertThat(bufferedImageFormat(new Buffer().writeUtf8("RIFFxxWEBP"))).isFalse();
+  }
+
+  @Config(sdk = 17)
+  @Test public void bufferedFormatBitmapApi17() throws Exception {
+    assertThat(bufferedImageFormat(new Buffer().writeUtf8("BM1234"))).isTrue();
+    assertThat(bufferedImageFormat(new Buffer().writeUtf8("BC1234"))).isFalse();
+  }
+
+  @Config
+  @Test public void bufferedFormatBitmapApi() throws Exception {
+    assertThat(bufferedImageFormat(new Buffer().writeUtf8("BM1234"))).isFalse();
+    assertThat(bufferedImageFormat(new Buffer().writeUtf8("BC1234"))).isFalse();
   }
 
   @Test public void ensureBuilderIsCleared() throws Exception {
