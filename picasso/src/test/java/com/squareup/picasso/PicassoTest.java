@@ -508,14 +508,16 @@ public class PicassoTest {
 
   @Test public void builderInvalidCache() {
     try {
-      new Picasso.Builder(context).memoryCache(null);
-      fail("Null Cache should throw exception.");
+      new Picasso.Builder(context).withCacheSize(-1);
+      fail();
     } catch (IllegalArgumentException expected) {
+      assertThat(expected).hasMessageThat().isEqualTo("maxByteCount < 0: -1");
     }
     try {
-      new Picasso.Builder(context).memoryCache(cache).memoryCache(cache);
-      fail("Setting Cache twice should throw exception.");
+      new Picasso.Builder(context).withCacheSize(0).withCacheSize(1);
+      fail();
     } catch (IllegalStateException expected) {
+      assertThat(expected).hasMessageThat().isEqualTo("Memory cache already set.");
     }
   }
 

@@ -768,14 +768,18 @@ public class Picasso {
     }
 
     /** Specify the memory cache used for the most recent images. */
-    public Builder memoryCache(@NonNull Cache memoryCache) {
-      if (memoryCache == null) {
-        throw new IllegalArgumentException("Memory cache must not be null.");
+    public Builder withCacheSize(int maxByteCount) {
+      if (maxByteCount < 0) {
+        throw new IllegalArgumentException("maxByteCount < 0: " + maxByteCount);
       }
-      if (this.cache != null) {
+      if (cache != null) {
         throw new IllegalStateException("Memory cache already set.");
       }
-      this.cache = memoryCache;
+      if (maxByteCount == 0) {
+        cache = Cache.NONE;
+      } else {
+        cache = new LruCache(maxByteCount);
+      }
       return this;
     }
 
