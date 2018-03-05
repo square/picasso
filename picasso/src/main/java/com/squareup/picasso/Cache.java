@@ -24,7 +24,7 @@ import android.graphics.Bitmap;
  * your {@link Cache} implementation is thread safe when {@link Cache#get(String)} or {@link
  * Cache#set(String, android.graphics.Bitmap)} is called.
  */
-public interface Cache {
+interface Cache {
   /** Retrieve an image for the specified {@code key} or {@code null}. */
   Bitmap get(String key);
 

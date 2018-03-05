@@ -23,16 +23,16 @@ import android.support.annotation.Nullable;
 import static com.squareup.picasso.Utils.KEY_SEPARATOR;
 
 /** A memory cache which uses a least-recently used eviction policy. */
-public final class LruCache implements Cache {
+final class LruCache implements Cache {
   final android.util.LruCache<String, LruCache.BitmapAndSize> cache;
 
   /** Create a cache using an appropriate portion of the available RAM as the maximum size. */
-  public LruCache(@NonNull Context context) {
+  LruCache(@NonNull Context context) {
     this(Utils.calculateMemoryCacheSize(context));
   }
 
   /** Create a cache with a given maximum size in bytes. */
-  public LruCache(int maxByteCount) {
+  LruCache(int maxByteCount) {
     cache = new android.util.LruCache<String, LruCache.BitmapAndSize>(maxByteCount) {
       @Override protected int sizeOf(String key, BitmapAndSize value) {
         return value.byteCount;
@@ -87,22 +87,22 @@ public final class LruCache implements Cache {
   }
 
   /** Returns the number of times {@link #get} returned a value. */
-  public int hitCount() {
+  int hitCount() {
     return cache.hitCount();
   }
 
   /** Returns the number of times {@link #get} returned {@code null}. */
-  public int missCount() {
+  int missCount() {
     return cache.missCount();
   }
 
   /** Returns the number of times {@link #set(String, Bitmap)} was called. */
-  public int putCount() {
+  int putCount() {
     return cache.putCount();
   }
 
   /** Returns the number of values that have been evicted. */
-  public int evictionCount() {
+  int evictionCount() {
     return cache.evictionCount();
   }
 
