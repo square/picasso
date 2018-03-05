@@ -16,6 +16,7 @@
       android:layout_weight="1"
       android:layout_marginLeft="8dp"
       android:layout_gravity="center_vertical"
+      android:textAppearance="@style/TextAppearance.Compat.Notification"
       android:text="@string/sample_notification"
       />
 </LinearLayout>
