@@ -16,18 +16,26 @@
  */
 package com.example.picasso;
 
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.widget.ListView;
+import android.widget.Toast;
 
+import static android.Manifest.permission.READ_CONTACTS;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.provider.ContactsContract.Contacts;
 
 public class SampleContactsActivity extends PicassoSampleActivity
     implements LoaderManager.LoaderCallbacks<Cursor> {
+  private static final int REQUEST_READ_CONTACTS = 123;
+
   private SampleContactsAdapter adapter;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +48,31 @@ public class SampleContactsActivity extends PicassoSampleActivity
     lv.setAdapter(adapter);
     lv.setOnScrollListener(new SampleScrollListener(this));
 
+    if (ActivityCompat.checkSelfPermission(this, READ_CONTACTS) == PERMISSION_GRANTED) {
+      loadContacts();
+    } else {
+      ActivityCompat.requestPermissions(this, new String[] { READ_CONTACTS },
+          REQUEST_READ_CONTACTS);
+    }
+  }
+
+  private void loadContacts() {
     getSupportLoaderManager().initLoader(ContactsQuery.QUERY_ID, null, this);
+  }
+
+  @Override public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+      @NonNull int[] grantResults) {
+    if (requestCode == REQUEST_READ_CONTACTS) {
+      if (grantResults.length > 0
+          && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        loadContacts();
+      } else {
+        Toast.makeText(this, "Read contacts permission denied", Toast.LENGTH_LONG).show();
+        finish();
+      }
+    } else {
+      super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
   }
 
   @Override public Loader<Cursor> onCreateLoader(int id, Bundle args) {
