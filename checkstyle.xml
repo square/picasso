@@ -78,7 +78,7 @@
     <module name="GenericWhitespace"/>
     <module name="EmptyForIteratorPad"/>
     <module name="MethodParamPad"/>
-    <module name="NoWhitespaceAfter"/>
+    <!--<module name="NoWhitespaceAfter"/>-->
     <module name="NoWhitespaceBefore"/>
     <module name="OperatorWrap"/>
     <module name="ParenPad"/>
