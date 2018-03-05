@@ -15,8 +15,9 @@
  */
 package com.squareup.picasso;
 
-import okhttp3.*;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.Before;
@@ -31,8 +32,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(
-    sdk = 23, // Works around https://github.com/robolectric/robolectric/issues/2566.
-    shadows = { Shadows.ShadowNetwork.class }
+    sdk = 23 // Works around https://github.com/robolectric/robolectric/issues/2566.
 )
 public class OkHttp3DownloaderTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
