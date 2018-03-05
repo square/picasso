@@ -15,7 +15,6 @@
  */
 package com.squareup.picasso;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -59,7 +58,7 @@ import static com.squareup.picasso.Utils.log;
 /**
  * Image downloading, transformation, and caching manager.
  * <p>
- * Use {@link #get()} for the global singleton instance
+ * Use {@see PicassoProvider#get()} for a global singleton instance
  * or construct your own instance with {@link Builder}.
  */
 public class Picasso {
@@ -144,8 +143,6 @@ public class Picasso {
       }
     }
   };
-
-  @SuppressLint("StaticFieldLeak") static volatile Picasso singleton = null;
 
   private final Listener listener;
   private final RequestTransformer requestTransformer;
@@ -319,10 +316,10 @@ public class Picasso {
    * Passing {@code null} as a {@code path} will not trigger any request but will set a
    * placeholder, if one is specified.
    *
+   * @throws IllegalArgumentException if {@code path} is empty or blank string.
    * @see #load(Uri)
    * @see #load(File)
    * @see #load(int)
-   * @throws IllegalArgumentException if {@code path} is empty or blank string.
    */
   public RequestCreator load(@Nullable String path) {
     if (path == null) {
@@ -444,9 +441,6 @@ public class Picasso {
 
   /** Stops this instance from accepting further requests. */
   public void shutdown() {
-    if (this == singleton) {
-      throw new UnsupportedOperationException("Default singleton instance cannot be shutdown.");
-    }
     if (shutdown) {
       return;
     }
@@ -652,55 +646,6 @@ public class Picasso {
 
     void shutdown() {
       interrupt();
-    }
-  }
-
-  /**
-   * The global {@link Picasso} instance.
-   * <p>
-   * This instance is automatically initialized with defaults that are suitable to most
-   * implementations.
-   * <ul>
-   * <li>LRU memory cache of 15% the available application RAM</li>
-   * <li>Disk cache of 2% storage space up to 50MB but no less than 5MB. (Note: this is only
-   * available on API 14+ <em>or</em> if you are using a standalone library that provides a disk
-   * cache on all API levels like OkHttp)</li>
-   * <li>Three download threads for disk and network access.</li>
-   * </ul>
-   * <p>
-   * If these settings do not meet the requirements of your application you can construct your own
-   * with full control over the configuration by using {@link Picasso.Builder} to create a
-   * {@link Picasso} instance. You can either use this directly or by setting it as the global
-   * instance with {@link #setSingletonInstance}.
-   */
-  public static Picasso get() {
-    if (singleton == null) {
-      synchronized (Picasso.class) {
-        if (singleton == null) {
-          if (PicassoProvider.context == null) {
-            throw new IllegalStateException("context == null");
-          }
-          singleton = new Builder(PicassoProvider.context).build();
-        }
-      }
-    }
-    return singleton;
-  }
-
-  /**
-   * Set the global instance returned from {@link #get}.
-   * <p>
-   * This method must be called before any calls to {@link #get} and may only be called once.
-   */
-  public static void setSingletonInstance(@NonNull Picasso picasso) {
-    if (picasso == null) {
-      throw new IllegalArgumentException("Picasso must not be null.");
-    }
-    synchronized (Picasso.class) {
-      if (singleton != null) {
-        throw new IllegalStateException("Singleton instance already exists.");
-      }
-      singleton = picasso;
     }
   }
 

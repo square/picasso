@@ -15,7 +15,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.RemoteViews;
 import android.widget.TextView;
-import com.squareup.picasso.Picasso;
+import com.squareup.picasso.provider.PicassoProvider;
 import java.util.Random;
 
 final class PicassoSampleAdapter extends BaseAdapter {
@@ -57,7 +57,7 @@ final class PicassoSampleAdapter extends BaseAdapter {
         notificationManager.notify(NOTIFICATION_ID, notification);
 
         // Now load an image for this notification.
-        Picasso.get() //
+        PicassoProvider.get() //
             .load(Data.URLS[new Random().nextInt(Data.URLS.length)]) //
             .resizeDimen(R.dimen.notification_icon_width_height,
                 R.dimen.notification_icon_width_height) //

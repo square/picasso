@@ -2,8 +2,8 @@ package com.example.picasso;
 
 import android.content.Context;
 import android.widget.AbsListView;
-
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.provider.PicassoProvider;
 
 public class SampleScrollListener implements AbsListView.OnScrollListener {
   private final Context context;
@@ -14,7 +14,7 @@ public class SampleScrollListener implements AbsListView.OnScrollListener {
 
   @Override
   public void onScrollStateChanged(AbsListView view, int scrollState) {
-    final Picasso picasso = Picasso.get();
+    Picasso picasso = PicassoProvider.get();
     if (scrollState == SCROLL_STATE_IDLE || scrollState == SCROLL_STATE_TOUCH_SCROLL) {
       picasso.resumeTag(context);
     } else {

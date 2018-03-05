@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ViewAnimator;
-import com.squareup.picasso.Picasso;
+import com.squareup.picasso.provider.PicassoProvider;
 
 import static android.content.Intent.ACTION_PICK;
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
@@ -49,7 +49,7 @@ public class SampleGalleryActivity extends PicassoSampleActivity {
       // This ensures that the anonymous callback we have does not prevent the activity from
       // being garbage collected. It also prevents our callback from getting invoked even after the
       // activity has finished.
-      Picasso.get().cancelRequest(imageView);
+      PicassoProvider.get().cancelRequest(imageView);
     }
   }
 
@@ -71,7 +71,7 @@ public class SampleGalleryActivity extends PicassoSampleActivity {
     // Index 1 is the progress bar. Show it while we're loading the image.
     animator.setDisplayedChild(1);
 
-    Picasso.get().load(image).fit().centerInside().into(imageView, new EmptyCallback() {
+    PicassoProvider.get().load(image).fit().centerInside().into(imageView, new EmptyCallback() {
       @Override public void onSuccess() {
         // Index 0 is the image view.
         animator.setDisplayedChild(0);
