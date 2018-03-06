@@ -34,6 +34,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
+import static android.graphics.Bitmap.Config.ALPHA_8;
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static android.provider.ContactsContract.Contacts.CONTENT_URI;
 import static android.provider.ContactsContract.Contacts.Photo.CONTENT_DIRECTORY;
@@ -267,7 +268,7 @@ class TestUtils {
   }
 
   static Bitmap makeBitmap(int width, int height) {
-    return Bitmap.createBitmap(width, height, null);
+    return Bitmap.createBitmap(width, height, ALPHA_8);
   }
 
   private TestUtils() {
