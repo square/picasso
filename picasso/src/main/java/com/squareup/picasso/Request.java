@@ -93,7 +93,7 @@ public final class Request {
   /** The priority of this request. */
   public final Priority priority;
 
-  private Request(Uri uri, int resourceId, String stableKey, List<Transformation> transformations,
+  Request(Uri uri, int resourceId, String stableKey, List<Transformation> transformations,
       int targetWidth, int targetHeight, boolean centerCrop, boolean centerInside,
       int centerCropGravity, boolean onlyScaleDown, float rotationDegrees,
       float rotationPivotX, float rotationPivotY, boolean hasRotationPivot,
@@ -238,7 +238,7 @@ public final class Request {
       this.config = bitmapConfig;
     }
 
-    private Builder(Request request) {
+    Builder(Request request) {
       uri = request.uri;
       resourceId = request.resourceId;
       stableKey = request.stableKey;
