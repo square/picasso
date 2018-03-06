@@ -366,6 +366,13 @@ public class Picasso {
   }
 
   /**
+   * Clear all the bitmaps from the memory cache.
+   */
+  public void evictAll() {
+    cache.clear();
+  }
+
+  /**
    * Invalidate all memory cached images for the specified {@code uri}.
    *
    * @see #invalidate(String)
