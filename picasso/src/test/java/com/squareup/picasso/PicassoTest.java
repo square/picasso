@@ -32,6 +32,7 @@ import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
+import static android.graphics.Bitmap.Config.ALPHA_8;
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso.Picasso.Listener;
@@ -504,6 +505,14 @@ public class PicassoTest {
   @Test public void builderWithDebugIndicators() {
     Picasso picasso = new Picasso.Builder(RuntimeEnvironment.application).indicatorsEnabled(true).build();
     assertThat(picasso.areIndicatorsEnabled()).isTrue();
+  }
+
+  @Test public void evictAll() {
+    Picasso picasso = new Picasso.Builder(RuntimeEnvironment.application).indicatorsEnabled(true).build();
+    picasso.cache.set("key", Bitmap.createBitmap(1, 1, ALPHA_8));
+    assertThat(picasso.cache.size()).isEqualTo(1);
+    picasso.evictAll();
+    assertThat(picasso.cache.size()).isEqualTo(0);
   }
 
   @Test public void invalidateString() {
