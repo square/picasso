@@ -15,7 +15,6 @@
  */
 package com.squareup.picasso;
 
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import java.io.IOException;
@@ -24,8 +23,7 @@ import okhttp3.Call;
 import okhttp3.Request;
 import okhttp3.Response;
 
-/** A {@link Downloader} which uses OkHttp to download images. */
-final class OkHttp3Downloader implements Downloader {
+final class OkHttp3Downloader {
   @VisibleForTesting final Call.Factory client;
   private final @Nullable Cache cache;
   private final boolean sharedClient;
@@ -36,11 +34,11 @@ final class OkHttp3Downloader implements Downloader {
     this.sharedClient = sharedClient;
   }
 
-  @NonNull @Override public Response load(@NonNull Request request) throws IOException {
+  Response load(Request request) throws IOException {
     return client.newCall(request).execute();
   }
 
-  @Override public void shutdown() {
+  void shutdown() {
     if (!sharedClient && cache != null) {
       try {
         cache.close();

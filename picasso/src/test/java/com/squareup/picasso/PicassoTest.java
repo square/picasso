@@ -24,8 +24,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
-import okhttp3.Call;
-import okhttp3.OkHttpClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,7 +63,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 public class PicassoTest {
 
   @Mock Context context;
-  @Mock Downloader downloader;
   @Mock Dispatcher dispatcher;
   @Mock Picasso.RequestTransformer transformer;
   @Mock RequestHandler requestHandler;

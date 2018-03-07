@@ -23,6 +23,7 @@ import android.graphics.Bitmap;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
@@ -30,6 +31,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import okhttp3.Call;
+import okhttp3.Response;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -269,6 +272,54 @@ class TestUtils {
 
   static Bitmap makeBitmap(int width, int height) {
     return Bitmap.createBitmap(width, height, ALPHA_8);
+  }
+
+  static final OkHttp3Downloader UNUSED_DOWNLOADER = new OkHttp3Downloader(new Call.Factory() {
+    @Override public Call newCall(okhttp3.Request request) {
+      throw new AssertionError();
+    }
+  }, null, true);
+
+  static final class PremadeCall implements Call {
+    private final okhttp3.Request request;
+    private final Response response;
+
+    PremadeCall(okhttp3.Request request, Response response) {
+      this.request = request;
+      this.response = response;
+    }
+
+    @Override public okhttp3.Request request() {
+      return request;
+    }
+
+    @Override public Response execute() {
+      return response;
+    }
+
+    @Override public void enqueue(@NonNull okhttp3.Callback responseCallback) {
+      try {
+        responseCallback.onResponse(this, response);
+      } catch (IOException e) {
+        throw new AssertionError(e);
+      }
+    }
+
+    @Override public void cancel() {
+      throw new AssertionError();
+    }
+
+    @Override public boolean isExecuted() {
+      throw new AssertionError();
+    }
+
+    @Override public boolean isCanceled() {
+      throw new AssertionError();
+    }
+
+    @Override public Call clone() {
+      throw new AssertionError();
+    }
   }
 
   private TestUtils() {
