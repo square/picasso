@@ -30,6 +30,7 @@ import android.support.annotation.Nullable;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 import java.io.File;
+import java.io.IOException;
 import java.lang.ref.ReferenceQueue;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -155,6 +156,7 @@ public class Picasso {
 
   final Context context;
   final Dispatcher dispatcher;
+  private final @Nullable okhttp3.Cache closeableCache;
   final Cache cache;
   final Stats stats;
   final Map<Object, Action> targetToAction;
@@ -167,11 +169,13 @@ public class Picasso {
 
   boolean shutdown;
 
-  Picasso(Context context, Dispatcher dispatcher, Cache cache, Listener listener,
+  Picasso(Context context, Dispatcher dispatcher, Call.Factory callFactory,
+      @Nullable okhttp3.Cache closeableCache, Cache cache, Listener listener,
       RequestTransformer requestTransformer, List<RequestHandler> extraRequestHandlers, Stats stats,
       Bitmap.Config defaultBitmapConfig, boolean indicatorsEnabled, boolean loggingEnabled) {
     this.context = context;
     this.dispatcher = dispatcher;
+    this.closeableCache = closeableCache;
     this.cache = cache;
     this.listener = listener;
     this.requestTransformer = requestTransformer;
@@ -193,7 +197,7 @@ public class Picasso {
     allRequestHandlers.add(new ContentStreamRequestHandler(context));
     allRequestHandlers.add(new AssetRequestHandler(context));
     allRequestHandlers.add(new FileRequestHandler(context));
-    allRequestHandlers.add(new NetworkRequestHandler(dispatcher.downloader, stats));
+    allRequestHandlers.add(new NetworkRequestHandler(callFactory, stats));
     requestHandlers = Collections.unmodifiableList(allRequestHandlers);
 
     this.stats = stats;
@@ -459,6 +463,12 @@ public class Picasso {
     cleanupThread.shutdown();
     stats.shutdown();
     dispatcher.shutdown();
+    if (closeableCache != null) {
+      try {
+        closeableCache.close();
+      } catch (IOException ignored) {
+      }
+    }
     for (DeferredRequestCreator deferredRequestCreator : targetToDeferredRequestCreator.values()) {
       deferredRequestCreator.cancel();
     }
@@ -664,7 +674,7 @@ public class Picasso {
   @SuppressWarnings("UnusedDeclaration") // Public API.
   public static class Builder {
     private final Context context;
-    private OkHttp3Downloader downloader;
+    private Call.Factory callFactory;
     private ExecutorService service;
     private Cache cache;
     private Listener listener;
@@ -704,7 +714,7 @@ public class Picasso {
       if (client == null) {
         throw new NullPointerException("client == null");
       }
-      downloader = new OkHttp3Downloader(client, client.cache(), true);
+      callFactory = client;
       return this;
     }
 
@@ -717,7 +727,7 @@ public class Picasso {
       if (factory == null) {
         throw new NullPointerException("factory == null");
       }
-      downloader = new OkHttp3Downloader(factory, null, true);
+      callFactory = factory;
       return this;
     }
 
@@ -821,14 +831,16 @@ public class Picasso {
     public Picasso build() {
       Context context = this.context;
 
-      if (downloader == null) {
+      okhttp3.Cache unsharedCache;
+      if (callFactory == null) {
         File cacheDir = createDefaultCacheDir(context);
         long maxSize = calculateDiskCacheSize(cacheDir);
-        okhttp3.Cache cache = new okhttp3.Cache(cacheDir, maxSize);
-        OkHttpClient client = new OkHttpClient.Builder()
-            .cache(cache)
+        unsharedCache = new okhttp3.Cache(cacheDir, maxSize);
+        callFactory = new OkHttpClient.Builder()
+            .cache(unsharedCache)
             .build();
-        downloader = new OkHttp3Downloader(client, cache, false);
+      } else {
+        unsharedCache = null;
       }
       if (cache == null) {
         cache = new LruCache(context);
@@ -842,10 +854,11 @@ public class Picasso {
 
       Stats stats = new Stats(cache);
 
-      Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, downloader, cache, stats);
+      Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, cache, stats);
 
-      return new Picasso(context, dispatcher, cache, listener, transformer, requestHandlers, stats,
-          defaultBitmapConfig, indicatorsEnabled, loggingEnabled);
+      return new Picasso(context, dispatcher, callFactory, unsharedCache, cache, listener,
+          transformer, requestHandlers, stats, defaultBitmapConfig, indicatorsEnabled,
+          loggingEnabled);
     }
   }
 

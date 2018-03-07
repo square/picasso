@@ -19,12 +19,14 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.view.Gravity;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.FutureTask;
+import okhttp3.Call;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,7 +68,6 @@ import static com.squareup.picasso.TestUtils.RESOURCE_ID_URI;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_URI_KEY;
 import static com.squareup.picasso.TestUtils.RESOURCE_TYPE_URI;
 import static com.squareup.picasso.TestUtils.RESOURCE_TYPE_URI_KEY;
-import static com.squareup.picasso.TestUtils.UNUSED_DOWNLOADER;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.makeBitmap;
@@ -83,14 +84,13 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricGradleTestRunner.class)
-public class BitmapHunterTest {
+public final class BitmapHunterTest {
 
   @Mock Context context;
   @Mock Picasso picasso;
   @Mock Cache cache;
   @Mock Stats stats;
   @Mock Dispatcher dispatcher;
-  final OkHttp3Downloader downloader = UNUSED_DOWNLOADER;
 
   final Bitmap bitmap = makeBitmap();
 
@@ -291,9 +291,9 @@ public class BitmapHunterTest {
 
   @Test public void forNetworkRequest() {
     Action action = mockAction(URI_KEY_1, URI_1);
-    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
-        dispatcher, cache, stats, action);
-    assertThat(hunter.requestHandler).isInstanceOf(NetworkRequestHandler.class);
+    NetworkRequestHandler requestHandler = new NetworkRequestHandler(UNUSED_CALL_FACTORY, stats);
+    BitmapHunter hunter = forRequest(mockPicasso(requestHandler), dispatcher, cache, stats, action);
+    assertThat(hunter.requestHandler).isSameAs(requestHandler);
   }
 
   @Test public void forFileWithAuthorityRequest() {
@@ -350,8 +350,9 @@ public class BitmapHunterTest {
     RequestHandler handler = new AssetRequestHandler(context);
     List<RequestHandler> handlers = Collections.singletonList(handler);
     // Must use non-mock constructor because that is where Picasso's list of handlers is created.
-    Picasso picasso = new Picasso(context, dispatcher, cache, null, null, handlers, stats,
-        ARGB_8888, false, false);
+    Picasso picasso =
+        new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, null, null, handlers,
+            stats, ARGB_8888, false, false);
     BitmapHunter hunter = forRequest(picasso, dispatcher, cache, stats, action);
     assertThat(hunter.requestHandler).isEqualTo(handler);
   }
@@ -366,8 +367,8 @@ public class BitmapHunterTest {
 
   @Test public void getPriorityWithNoRequests() {
     Action action = mockAction(URI_KEY_1, URI_1);
-    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
-        dispatcher, cache, stats, action);
+    NetworkRequestHandler requestHandler = new NetworkRequestHandler(UNUSED_CALL_FACTORY, stats);
+    BitmapHunter hunter = forRequest(mockPicasso(requestHandler), dispatcher, cache, stats, action);
     hunter.detach(action);
     assertThat(hunter.getAction()).isNull();
     assertThat(hunter.getActions()).isNull();
@@ -376,8 +377,8 @@ public class BitmapHunterTest {
 
   @Test public void getPriorityWithSingleRequest() {
     Action action = mockAction(URI_KEY_1, URI_1, HIGH);
-    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
-        dispatcher, cache, stats, action);
+    NetworkRequestHandler requestHandler = new NetworkRequestHandler(UNUSED_CALL_FACTORY, stats);
+    BitmapHunter hunter = forRequest(mockPicasso(requestHandler), dispatcher, cache, stats, action);
     assertThat(hunter.getAction()).isEqualTo(action);
     assertThat(hunter.getActions()).isNull();
     assertThat(hunter.getPriority()).isEqualTo(HIGH);
@@ -386,8 +387,8 @@ public class BitmapHunterTest {
   @Test public void getPriorityWithMultipleRequests() {
     Action action1 = mockAction(URI_KEY_1, URI_1, NORMAL);
     Action action2 = mockAction(URI_KEY_1, URI_1, HIGH);
-    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
-        dispatcher, cache, stats, action1);
+    NetworkRequestHandler requestHandler = new NetworkRequestHandler(UNUSED_CALL_FACTORY, stats);
+    BitmapHunter hunter = forRequest(mockPicasso(requestHandler), dispatcher, cache, stats, action1);
     hunter.attach(action2);
     assertThat(hunter.getAction()).isEqualTo(action1);
     assertThat(hunter.getActions()).containsExactly(action2);
@@ -397,7 +398,8 @@ public class BitmapHunterTest {
   @Test public void getPriorityAfterDetach() {
     Action action1 = mockAction(URI_KEY_1, URI_1, NORMAL);
     Action action2 = mockAction(URI_KEY_1, URI_1, HIGH);
-    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
+    NetworkRequestHandler requestHandler = new NetworkRequestHandler(UNUSED_CALL_FACTORY, stats);
+    BitmapHunter hunter = forRequest(mockPicasso(requestHandler),
         dispatcher, cache, stats, action1);
     hunter.attach(action2);
     assertThat(hunter.getAction()).isEqualTo(action1);
@@ -1162,4 +1164,10 @@ public class BitmapHunterTest {
       return new Result(bitmap, MEMORY);
     }
   }
+
+  private static final Call.Factory UNUSED_CALL_FACTORY = new Call.Factory() {
+    @Override public Call newCall(@NonNull okhttp3.Request request) {
+      throw new AssertionError();
+    }
+  };
 }

@@ -32,8 +32,6 @@ import okio.BufferedSource;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.robolectric.RobolectricGradleTestRunner;
 
@@ -53,16 +51,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 public class NetworkRequestHandlerTest {
   final BlockingDeque<Response> responses = new LinkedBlockingDeque<>();
   final BlockingDeque<okhttp3.Request> requests = new LinkedBlockingDeque<>();
-  private final OkHttp3Downloader downloader = new OkHttp3Downloader(new Call.Factory() {
-    @Override public Call newCall(Request request) {
-      requests.add(request);
-      try {
-        return new PremadeCall(request, responses.takeFirst());
-      } catch (InterruptedException e) {
-        throw new AssertionError(e);
-      }
-    }
-  }, null, true);
 
   @Mock Picasso picasso;
   @Mock Cache cache;
@@ -73,7 +61,16 @@ public class NetworkRequestHandlerTest {
 
   @Before public void setUp() {
     initMocks(this);
-    networkHandler = new NetworkRequestHandler(downloader, stats);
+    networkHandler = new NetworkRequestHandler(new Call.Factory() {
+      @Override public Call newCall(Request request) {
+        requests.add(request);
+        try {
+          return new PremadeCall(request, responses.takeFirst());
+        } catch (InterruptedException e) {
+          throw new AssertionError(e);
+        }
+      }
+    }, stats);
   }
 
   @Test public void doesNotForceLocalCacheOnlyWithAirplaneModeOffAndRetryCount() throws Exception {

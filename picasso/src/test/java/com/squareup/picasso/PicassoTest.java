@@ -25,7 +25,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.RobolectricGradleTestRunner;
@@ -38,6 +40,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso.Picasso.Listener;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.RemoteViewsAction.RemoteViewsTarget;
+import static com.squareup.picasso.TestUtils.UNUSED_CALL_FACTORY;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.makeBitmap;
@@ -60,8 +63,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(sdk = 23) // Works around https://github.com/robolectric/robolectric/issues/2566.
-public class PicassoTest {
-
+public final class PicassoTest {
+  @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   @Mock Context context;
   @Mock Dispatcher dispatcher;
   @Mock Picasso.RequestTransformer transformer;
@@ -75,8 +78,9 @@ public class PicassoTest {
 
   @Before public void setUp() {
     initMocks(this);
-    picasso = new Picasso(context, dispatcher, cache, listener, transformer, null, stats, ARGB_8888,
-        false, false);
+    picasso =
+        new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, listener, transformer,
+            null, stats, ARGB_8888, false, false);
   }
 
   @Test public void submitWithNullTargetInvokesDispatcher() {
@@ -339,6 +343,15 @@ public class PicassoTest {
     verify(stats).shutdown();
     verify(dispatcher).shutdown();
     assertThat(picasso.shutdown).isTrue();
+  }
+
+  @Test public void shutdownClosesUnsharedCache() {
+    okhttp3.Cache cache = new okhttp3.Cache(temporaryFolder.getRoot(), 100);
+    Picasso picasso =
+        new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, cache, Cache.NONE, listener,
+            transformer, null, stats, ARGB_8888, false, false);
+    picasso.shutdown();
+    assertThat(cache.isClosed()).isTrue();
   }
 
   @Test public void shutdownTwice() {
