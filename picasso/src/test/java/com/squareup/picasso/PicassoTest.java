@@ -28,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
@@ -404,11 +405,6 @@ public class PicassoTest {
       fail("Null listener should throw exception.");
     } catch (IllegalArgumentException expected) {
     }
-    try {
-      new Picasso.Builder(context).listener(listener).listener(listener);
-      fail("Setting Listener twice should throw exception.");
-    } catch (IllegalStateException expected) {
-    }
   }
 
   @Test public void builderInvalidLoader() {
@@ -417,11 +413,6 @@ public class PicassoTest {
       fail("Null Downloader should throw exception.");
     } catch (IllegalArgumentException expected) {
     }
-    try {
-      new Picasso.Builder(context).downloader(downloader).downloader(downloader);
-      fail("Setting Downloader twice should throw exception.");
-    } catch (IllegalStateException expected) {
-    }
   }
 
   @Test public void builderInvalidExecutor() {
@@ -429,12 +420,6 @@ public class PicassoTest {
       new Picasso.Builder(context).executor(null);
       fail("Null Executor should throw exception.");
     } catch (IllegalArgumentException expected) {
-    }
-    try {
-      ExecutorService executor = mock(ExecutorService.class);
-      new Picasso.Builder(context).executor(executor).executor(executor);
-      fail("Setting Executor twice should throw exception.");
-    } catch (IllegalStateException expected) {
     }
   }
 
@@ -445,12 +430,6 @@ public class PicassoTest {
     } catch (IllegalArgumentException expected) {
       assertThat(expected).hasMessageThat().isEqualTo("maxByteCount < 0: -1");
     }
-    try {
-      new Picasso.Builder(context).withCacheSize(0).withCacheSize(1);
-      fail();
-    } catch (IllegalStateException expected) {
-      assertThat(expected).hasMessageThat().isEqualTo("Memory cache already set.");
-    }
   }
 
   @Test public void builderInvalidRequestTransformer() {
@@ -458,11 +437,6 @@ public class PicassoTest {
       new Picasso.Builder(context).requestTransformer(null);
       fail("Null request transformer should throw exception.");
     } catch (IllegalArgumentException expected) {
-    }
-    try {
-      new Picasso.Builder(context).requestTransformer(transformer).requestTransformer(transformer);
-      fail("Setting request transformer twice should throw exception.");
-    } catch (IllegalStateException expected) {
     }
   }
 
@@ -496,7 +470,7 @@ public class PicassoTest {
 
   @Test public void builderInvalidContext() {
     try {
-      new Picasso.Builder(null);
+      new Picasso.Builder((Context) null);
       fail("Null context should throw exception.");
     } catch (IllegalArgumentException expected) {
     }
@@ -528,5 +502,54 @@ public class PicassoTest {
   @Test public void invalidateUri() {
     picasso.invalidate(Uri.parse("mock://12345"));
     verify(cache).clearKeyUri("mock://12345");
+  }
+
+  @Test public void cloneSharesStatefulInstances() {
+    Bitmap.Config bitmapConfig = Bitmap.Config.ARGB_8888;
+    Downloader downloader = new OkHttp3Downloader(RuntimeEnvironment.application);
+    ExecutorService service = new PicassoExecutorService();
+    int cacheSize = 1000;
+    Listener listener = new Listener() {
+      @Override public void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception) {
+      }
+    };
+    Picasso.RequestTransformer requestTransformer = Picasso.RequestTransformer.IDENTITY;
+    RequestHandler requestHandler = new AssetRequestHandler(RuntimeEnvironment.application);
+
+    Picasso one = new Picasso.Builder(RuntimeEnvironment.application)
+        .defaultBitmapConfig(bitmapConfig)
+        .downloader(downloader)
+        .executor(service)
+        .withCacheSize(cacheSize)
+        .listener(listener)
+        .requestTransformer(requestTransformer)
+        .addRequestHandler(requestHandler)
+        .indicatorsEnabled(true)
+        .loggingEnabled(true)
+        .build();
+
+    Downloader downloader2 = new OkHttp3Downloader(RuntimeEnvironment.application);
+    ExecutorService service2 = new PicassoExecutorService();
+    int cacheSize2 = 2000;
+    Listener listener2 = new Listener() {
+      @Override public void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception) {
+      }
+    };
+    Picasso.RequestTransformer requestTransformer2 = Picasso.RequestTransformer.IDENTITY;
+
+    Picasso two = one.newBuilder()
+        .downloader(downloader2)
+        .executor(service2)
+        .withCacheSize(cacheSize2)
+        .listener(listener2)
+        .requestTransformer(requestTransformer2)
+        .build();
+
+    assertThat(two.context).isEqualTo(one.context);
+    assertThat(two.targetToAction).isEqualTo(one.targetToAction);
+    assertThat(two.targetToDeferredRequestCreator).isEqualTo(one.targetToDeferredRequestCreator);
+    assertThat(two.defaultBitmapConfig).isEqualTo(one.defaultBitmapConfig);
+    assertThat(two.indicatorsEnabled).isEqualTo(one.indicatorsEnabled);
+    assertThat(two.loggingEnabled).isEqualTo(one.loggingEnabled);
   }
 }
