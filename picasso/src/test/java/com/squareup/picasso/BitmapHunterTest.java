@@ -66,6 +66,7 @@ import static com.squareup.picasso.TestUtils.RESOURCE_ID_URI;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_URI_KEY;
 import static com.squareup.picasso.TestUtils.RESOURCE_TYPE_URI;
 import static com.squareup.picasso.TestUtils.RESOURCE_TYPE_URI_KEY;
+import static com.squareup.picasso.TestUtils.UNUSED_DOWNLOADER;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.makeBitmap;
@@ -89,7 +90,7 @@ public class BitmapHunterTest {
   @Mock Cache cache;
   @Mock Stats stats;
   @Mock Dispatcher dispatcher;
-  @Mock Downloader downloader;
+  final OkHttp3Downloader downloader = UNUSED_DOWNLOADER;
 
   final Bitmap bitmap = makeBitmap();
 
