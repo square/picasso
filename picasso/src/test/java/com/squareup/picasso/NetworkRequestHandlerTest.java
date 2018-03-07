@@ -68,11 +68,10 @@ public class NetworkRequestHandlerTest {
   @Mock Cache cache;
   @Mock Stats stats;
   @Mock Dispatcher dispatcher;
-  @Captor ArgumentCaptor<okhttp3.Request> requestCaptor;
 
   private NetworkRequestHandler networkHandler;
 
-  @Before public void setUp() throws Exception {
+  @Before public void setUp() {
     initMocks(this);
     networkHandler = new NetworkRequestHandler(downloader, stats);
   }
@@ -93,7 +92,7 @@ public class NetworkRequestHandlerTest {
     assertThat(requests.takeFirst().cacheControl().toString()).isEqualTo(CacheControl.FORCE_CACHE.toString());
   }
 
-  @Test public void shouldRetryTwiceWithAirplaneModeOffAndNoNetworkInfo() throws Exception {
+  @Test public void shouldRetryTwiceWithAirplaneModeOffAndNoNetworkInfo() {
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     BitmapHunter hunter = new BitmapHunter(picasso, dispatcher, cache, stats, action, networkHandler);
     assertThat(hunter.shouldRetry(false, null)).isTrue();
@@ -101,19 +100,19 @@ public class NetworkRequestHandlerTest {
     assertThat(hunter.shouldRetry(false, null)).isFalse();
   }
 
-  @Test public void shouldRetryWithUnknownNetworkInfo() throws Exception {
+  @Test public void shouldRetryWithUnknownNetworkInfo() {
     assertThat(networkHandler.shouldRetry(false, null)).isTrue();
     assertThat(networkHandler.shouldRetry(true, null)).isTrue();
   }
 
-  @Test public void shouldRetryWithConnectedNetworkInfo() throws Exception {
+  @Test public void shouldRetryWithConnectedNetworkInfo() {
     NetworkInfo info = mockNetworkInfo();
     when(info.isConnected()).thenReturn(true);
     assertThat(networkHandler.shouldRetry(false, info)).isTrue();
     assertThat(networkHandler.shouldRetry(true, info)).isTrue();
   }
 
-  @Test public void shouldNotRetryWithDisconnectedNetworkInfo() throws Exception {
+  @Test public void shouldNotRetryWithDisconnectedNetworkInfo() {
     NetworkInfo info = mockNetworkInfo();
     when(info.isConnectedOrConnecting()).thenReturn(false);
     assertThat(networkHandler.shouldRetry(false, info)).isFalse();
@@ -127,7 +126,7 @@ public class NetworkRequestHandlerTest {
     verify(stats).dispatchDownloadFinished(10);
   }
 
-  @Test public void unknownContentLengthFromDiskThrows() throws Exception {
+  @Test public void unknownContentLengthFromDiskThrows() {
     final AtomicBoolean closed = new AtomicBoolean();
     ResponseBody body = new ResponseBody() {
       @Override public MediaType contentType() { return null; }

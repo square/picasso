@@ -546,7 +546,7 @@ public class RequestCreatorTest {
     }
   }
 
-  @Test public void appWidgetActionWithDefaultPriority() throws Exception {
+  @Test public void appWidgetActionWithDefaultPriority() {
     new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, new int[] { 1, 2, 3 });
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getPriority()).isEqualTo(NORMAL);
@@ -829,13 +829,13 @@ public class RequestCreatorTest {
     }
   }
 
-  @Test public void imageViewActionWithStableKey() throws Exception {
+  @Test public void imageViewActionWithStableKey() {
     new RequestCreator(picasso, URI_1, 0).stableKey(STABLE_1).into(mockImageViewTarget());
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getKey()).isEqualTo(STABLE_URI_KEY_1);
   }
 
-  @Test public void imageViewActionWithStableKeyNull() throws Exception {
+  @Test public void imageViewActionWithStableKeyNull() {
     new RequestCreator(picasso, URI_1, 0).stableKey(null).into(mockImageViewTarget());
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getKey()).isEqualTo(URI_KEY_1);

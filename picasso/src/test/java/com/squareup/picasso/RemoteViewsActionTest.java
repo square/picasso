@@ -37,7 +37,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-@RunWith(RobolectricGradleTestRunner.class) public class RemoteViewsActionTest {
+@RunWith(RobolectricGradleTestRunner.class) //
+public class RemoteViewsActionTest {
 
   private Picasso picasso;
   private RemoteViews remoteViews;
@@ -48,7 +49,7 @@ import static org.mockito.Mockito.when;
     when(remoteViews.getLayoutId()).thenReturn(android.R.layout.list_content);
   }
 
-  @Test public void completeSetsBitmapOnRemoteViews() throws Exception {
+  @Test public void completeSetsBitmapOnRemoteViews() {
     Callback callback = mockCallback();
     Bitmap bitmap = makeBitmap();
     RemoteViewsAction action = createAction(callback);
@@ -57,7 +58,7 @@ import static org.mockito.Mockito.when;
     verify(callback).onSuccess();
   }
 
-  @Test public void errorWithNoResourceIsNoop() throws Exception {
+  @Test public void errorWithNoResourceIsNoop() {
     Callback callback = mockCallback();
     RemoteViewsAction action = createAction(callback);
     Exception e = new RuntimeException();
@@ -66,7 +67,7 @@ import static org.mockito.Mockito.when;
     verify(callback).onError(e);
   }
 
-  @Test public void errorWithResourceSetsResource() throws Exception {
+  @Test public void errorWithResourceSetsResource() {
     Callback callback = mockCallback();
     RemoteViewsAction action = createAction(1, callback);
     Exception e = new RuntimeException();
@@ -75,7 +76,7 @@ import static org.mockito.Mockito.when;
     verify(callback).onError(e);
   }
 
-  @Test public void clearsCallbackOnCancel() throws Exception {
+  @Test public void clearsCallbackOnCancel() {
     Picasso picasso = mock(Picasso.class);
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();

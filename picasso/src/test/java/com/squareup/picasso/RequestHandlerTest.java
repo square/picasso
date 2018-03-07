@@ -31,7 +31,7 @@ import static com.squareup.picasso.TestUtils.URI_1;
 @RunWith(RobolectricGradleTestRunner.class)
 public class RequestHandlerTest {
 
-  @Test public void bitmapConfig() throws Exception {
+  @Test public void bitmapConfig() {
     for (Bitmap.Config config : Bitmap.Config.values()) {
       Request data = new Request.Builder(URI_1).config(config).build();
       Request copy = data.buildUpon().build();

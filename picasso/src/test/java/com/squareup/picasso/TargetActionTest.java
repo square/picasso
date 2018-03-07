@@ -39,14 +39,14 @@ import static org.mockito.Mockito.when;
 public class TargetActionTest {
 
   @Test(expected = AssertionError.class)
-  public void throwsErrorWithNullResult() throws Exception {
+  public void throwsErrorWithNullResult() {
     TargetAction request =
         new TargetAction(mock(Picasso.class), mockTarget(), null, 0, 0, null, URI_KEY_1, null, 0);
     request.complete(null, MEMORY);
   }
 
   @Test
-  public void invokesSuccessIfTargetIsNotNull() throws Exception {
+  public void invokesSuccessIfTargetIsNotNull() {
     Bitmap bitmap = makeBitmap();
     Target target = mockTarget();
     TargetAction request =
@@ -56,7 +56,7 @@ public class TargetActionTest {
   }
 
   @Test
-  public void invokesOnBitmapFailedIfTargetIsNotNullWithErrorDrawable() throws Exception {
+  public void invokesOnBitmapFailedIfTargetIsNotNullWithErrorDrawable() {
     Drawable errorDrawable = mock(Drawable.class);
     Target target = mockTarget();
     TargetAction request =
@@ -68,7 +68,7 @@ public class TargetActionTest {
   }
 
   @Test
-  public void invokesOnBitmapFailedIfTargetIsNotNullWithErrorResourceId() throws Exception {
+  public void invokesOnBitmapFailedIfTargetIsNotNullWithErrorResourceId() {
     Drawable errorDrawable = mock(Drawable.class);
     Target target = mockTarget();
     Context context = mock(Context.class);

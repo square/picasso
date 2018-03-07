@@ -42,7 +42,7 @@ import static org.mockito.Mockito.when;
 public class ImageViewActionTest {
 
   @Test(expected = AssertionError.class)
-  public void throwsErrorWithNullResult() throws Exception {
+  public void throwsErrorWithNullResult() {
     ImageViewAction action =
         new ImageViewAction(mock(Picasso.class), mockImageViewTarget(), null, 0, 0, 0,
             null, URI_KEY_1, null, null, false);
@@ -50,7 +50,7 @@ public class ImageViewActionTest {
   }
 
   @Test
-  public void returnsIfTargetIsNullOnComplete() throws Exception {
+  public void returnsIfTargetIsNullOnComplete() {
     Bitmap bitmap = makeBitmap();
     Picasso picasso = mock(Picasso.class);
     ImageView target = mockImageViewTarget();
@@ -65,7 +65,7 @@ public class ImageViewActionTest {
   }
 
   @Test
-  public void returnsIfTargetIsNullOnError() throws Exception {
+  public void returnsIfTargetIsNullOnError() {
     Picasso picasso = mock(Picasso.class);
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
@@ -79,7 +79,7 @@ public class ImageViewActionTest {
   }
 
   @Test
-  public void invokesTargetAndCallbackSuccessIfTargetIsNotNull() throws Exception {
+  public void invokesTargetAndCallbackSuccessIfTargetIsNotNull() {
     Bitmap bitmap = makeBitmap();
     Picasso picasso =
         new Picasso(RuntimeEnvironment.application, mock(Dispatcher.class), Cache.NONE, null, IDENTITY,
@@ -95,7 +95,7 @@ public class ImageViewActionTest {
   }
 
   @Test
-  public void invokesTargetAndCallbackErrorIfTargetIsNotNullWithErrorResourceId() throws Exception {
+  public void invokesTargetAndCallbackErrorIfTargetIsNotNullWithErrorResourceId() {
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
     Picasso mock = mock(Picasso.class);
@@ -109,7 +109,7 @@ public class ImageViewActionTest {
   }
 
   @Test
-  public void invokesErrorIfTargetIsNotNullWithErrorResourceId() throws Exception {
+  public void invokesErrorIfTargetIsNotNullWithErrorResourceId() {
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
     Picasso mock = mock(Picasso.class);
@@ -123,7 +123,7 @@ public class ImageViewActionTest {
   }
 
   @Test
-  public void invokesErrorIfTargetIsNotNullWithErrorDrawable() throws Exception {
+  public void invokesErrorIfTargetIsNotNullWithErrorDrawable() {
     Drawable errorDrawable = mock(Drawable.class);
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
@@ -138,7 +138,7 @@ public class ImageViewActionTest {
   }
 
   @Test
-  public void clearsCallbackOnCancel() throws Exception {
+  public void clearsCallbackOnCancel() {
     Picasso picasso = mock(Picasso.class);
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
@@ -150,7 +150,7 @@ public class ImageViewActionTest {
   }
 
   @Test
-  public void stopPlaceholderAnimationOnError() throws Exception {
+  public void stopPlaceholderAnimationOnError() {
     Picasso picasso = mock(Picasso.class);
     AnimationDrawable placeholder = mock(AnimationDrawable.class);
     ImageView target = mockImageViewTarget();
