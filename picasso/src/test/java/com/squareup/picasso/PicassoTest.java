@@ -24,6 +24,8 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
+import okhttp3.Call;
+import okhttp3.OkHttpClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -411,16 +413,18 @@ public class PicassoTest {
     }
   }
 
-  @Test public void builderInvalidLoader() {
+  @Test public void builderInvalidClient() {
     try {
-      new Picasso.Builder(context).downloader(null);
-      fail("Null Downloader should throw exception.");
-    } catch (IllegalArgumentException expected) {
+      new Picasso.Builder(context).client(null);
+      fail();
+    } catch (NullPointerException expected) {
+      assertThat(expected).hasMessageThat().isEqualTo("client == null");
     }
     try {
-      new Picasso.Builder(context).downloader(downloader).downloader(downloader);
-      fail("Setting Downloader twice should throw exception.");
-    } catch (IllegalStateException expected) {
+      new Picasso.Builder(context).callFactory(null);
+      fail();
+    } catch (NullPointerException expected) {
+      assertThat(expected).hasMessageThat().isEqualTo("factory == null");
     }
   }
 

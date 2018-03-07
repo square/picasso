@@ -15,12 +15,12 @@
  */
 package com.squareup.picasso;
 
+import okhttp3.Cache;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -34,26 +34,22 @@ import static com.google.common.truth.Truth.assertThat;
 @Config(
     sdk = 23 // Works around https://github.com/robolectric/robolectric/issues/2566.
 )
-public class OkHttp3DownloaderTest {
+public final class OkHttp3DownloaderTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   @Rule public MockWebServer server = new MockWebServer();
-
-  private OkHttp3Downloader downloader;
-
-  @Before public void setUp() throws Exception {
-    downloader = new OkHttp3Downloader(temporaryFolder.getRoot());
-  }
 
   @Test public void works() throws Exception {
     server.enqueue(new MockResponse().setBody("Hi"));
     okhttp3.Request request = new Request.Builder().url(server.url("/")).build();
+    Downloader downloader = new OkHttp3Downloader(new OkHttpClient(), null, true);
     Response response = downloader.load(request);
     assertThat(response.body().string()).isEqualTo("Hi");
   }
 
   @Test public void shutdownClosesCacheIfNotShared() throws Exception {
-    OkHttp3Downloader downloader = new OkHttp3Downloader(temporaryFolder.getRoot());
-    okhttp3.Cache cache = ((OkHttpClient) downloader.client).cache();
+    Cache cache = new Cache(temporaryFolder.getRoot(), 100);
+    OkHttpClient client = new OkHttpClient.Builder().cache(cache).build();
+    Downloader downloader = new OkHttp3Downloader(client, cache, false);
     downloader.shutdown();
     assertThat(cache.isClosed()).isTrue();
   }
@@ -61,7 +57,7 @@ public class OkHttp3DownloaderTest {
   @Test public void shutdownDoesNotCloseCacheIfSharedClient() throws Exception {
     okhttp3.Cache cache = new okhttp3.Cache(temporaryFolder.getRoot(), 100);
     OkHttpClient client = new OkHttpClient.Builder().cache(cache).build();
-    new OkHttp3Downloader(client).shutdown();
+    new OkHttp3Downloader(client, cache, true).shutdown();
     assertThat(cache.isClosed()).isFalse();
   }
 }
