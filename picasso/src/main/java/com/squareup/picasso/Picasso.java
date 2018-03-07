@@ -719,7 +719,10 @@ public class Picasso {
       return this;
     }
 
-    /** Specify the memory cache used for the most recent images. */
+    /**
+     * Specify the memory cache size in bytes to use for the most recent images,
+     * or 0 for no memory caching.
+     */
     public Builder withCacheSize(int maxByteCount) {
       if (maxByteCount < 0) {
         throw new IllegalArgumentException("maxByteCount < 0: " + maxByteCount);
