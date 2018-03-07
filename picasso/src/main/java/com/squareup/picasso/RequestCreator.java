@@ -528,8 +528,8 @@ public class RequestCreator {
    * image is loaded use {@link #into(android.widget.ImageView, Callback)}.
    */
   public void into(@NonNull Target target) {
-    long started = System.nanoTime();
     checkMain();
+    long started = System.nanoTime();
 
     if (target == null) {
       throw new IllegalArgumentException("Target must not be null.");
@@ -588,6 +588,7 @@ public class RequestCreator {
    */
   public void into(@NonNull RemoteViews remoteViews, @IdRes int viewId, int notificationId,
       @NonNull Notification notification, @Nullable String notificationTag, Callback callback) {
+    checkMain();
     long started = System.nanoTime();
 
     if (remoteViews == null) {
@@ -629,6 +630,7 @@ public class RequestCreator {
    */
   public void into(@NonNull RemoteViews remoteViews, @IdRes int viewId, @NonNull int[] appWidgetIds,
       Callback callback) {
+    checkMain();
     long started = System.nanoTime();
 
     if (remoteViews == null) {
@@ -675,8 +677,8 @@ public class RequestCreator {
    * {@link Picasso#cancelRequest(android.widget.ImageView)} call to prevent temporary leaking.
    */
   public void into(ImageView target, Callback callback) {
-    long started = System.nanoTime();
     checkMain();
+    long started = System.nanoTime();
 
     if (target == null) {
       throw new IllegalArgumentException("Target must not be null.");
