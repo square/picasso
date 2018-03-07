@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
+import okhttp3.Call;
+import okhttp3.OkHttpClient;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static com.squareup.picasso.Action.RequestWeakReference;
@@ -52,7 +54,9 @@ import static com.squareup.picasso.Utils.VERB_CANCELED;
 import static com.squareup.picasso.Utils.VERB_COMPLETED;
 import static com.squareup.picasso.Utils.VERB_ERRORED;
 import static com.squareup.picasso.Utils.VERB_RESUMED;
+import static com.squareup.picasso.Utils.calculateDiskCacheSize;
 import static com.squareup.picasso.Utils.checkMain;
+import static com.squareup.picasso.Utils.createDefaultCacheDir;
 import static com.squareup.picasso.Utils.log;
 
 /**
@@ -691,15 +695,29 @@ public class Picasso {
       return this;
     }
 
-    /** Specify the {@link Downloader} that will be used for downloading images. */
-    public Builder downloader(@NonNull Downloader downloader) {
-      if (downloader == null) {
-        throw new IllegalArgumentException("Downloader must not be null.");
+    /**
+     * Specify the HTTP client to be used for network requests.
+     * <p>
+     * Note: Calling {@link #callFactory} overwrites this value.
+     */
+    public Builder client(@NonNull OkHttpClient client) {
+      if (client == null) {
+        throw new NullPointerException("client == null");
       }
-      if (this.downloader != null) {
-        throw new IllegalStateException("Downloader already set.");
+      downloader = new OkHttp3Downloader(client, client.cache(), true);
+      return this;
+    }
+
+    /**
+     * Specify the call factory to be used for network requests.
+     * <p>
+     * Note: Calling {@link #client} overwrites this value.
+     */
+    public Builder callFactory(@NonNull Call.Factory factory) {
+      if (factory == null) {
+        throw new NullPointerException("factory == null");
       }
-      this.downloader = downloader;
+      downloader = new OkHttp3Downloader(factory, null, true);
       return this;
     }
 
@@ -801,7 +819,13 @@ public class Picasso {
       Context context = this.context;
 
       if (downloader == null) {
-        downloader = new OkHttp3Downloader(context);
+        File cacheDir = createDefaultCacheDir(context);
+        long maxSize = calculateDiskCacheSize(cacheDir);
+        okhttp3.Cache cache = new okhttp3.Cache(cacheDir, maxSize);
+        OkHttpClient client = new OkHttpClient.Builder()
+            .cache(cache)
+            .build();
+        downloader = new OkHttp3Downloader(client, cache, false);
       }
       if (cache == null) {
         cache = new LruCache(context);

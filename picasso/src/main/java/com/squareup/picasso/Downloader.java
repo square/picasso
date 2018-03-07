@@ -20,7 +20,7 @@ import java.io.IOException;
 import okhttp3.Response;
 
 /** A mechanism to load images from external resources such as a disk cache and/or the internet. */
-public interface Downloader {
+interface Downloader {
   /**
    * Download the specified image {@code url} from the internet.
    *
