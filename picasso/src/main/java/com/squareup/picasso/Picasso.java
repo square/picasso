@@ -656,6 +656,10 @@ public class Picasso {
     }
   }
 
+  public Builder newBuilder() {
+    return new Builder(this);
+  }
+
   /** Fluent API for creating {@link Picasso} instances. */
   @SuppressWarnings("UnusedDeclaration") // Public API.
   public static class Builder {
@@ -664,12 +668,23 @@ public class Picasso {
     private ExecutorService service;
     private Cache cache;
     private Listener listener;
-    private RequestTransformer transformer;
-    private List<RequestHandler> requestHandlers;
+    private RequestTransformer requestTransformer;
+    private List<RequestHandler> requestHandlers = new ArrayList<>();
     private Bitmap.Config defaultBitmapConfig;
-
     private boolean indicatorsEnabled;
     private boolean loggingEnabled;
+
+    /** Start building a new {@link Picasso} instance. */
+    Builder(@NonNull Picasso picasso) {
+      context = picasso.context;
+      cache = picasso.cache;
+      listener = picasso.listener;
+      requestTransformer = picasso.requestTransformer;
+      requestHandlers.addAll(picasso.requestHandlers);
+      defaultBitmapConfig = picasso.defaultBitmapConfig;
+      indicatorsEnabled = picasso.indicatorsEnabled;
+      loggingEnabled = picasso.loggingEnabled;
+    }
 
     /** Start building a new {@link Picasso} instance. */
     public Builder(@NonNull Context context) {
@@ -696,9 +711,6 @@ public class Picasso {
       if (downloader == null) {
         throw new IllegalArgumentException("Downloader must not be null.");
       }
-      if (this.downloader != null) {
-        throw new IllegalStateException("Downloader already set.");
-      }
       this.downloader = downloader;
       return this;
     }
@@ -712,9 +724,6 @@ public class Picasso {
       if (executorService == null) {
         throw new IllegalArgumentException("Executor service must not be null.");
       }
-      if (this.service != null) {
-        throw new IllegalStateException("Executor service already set.");
-      }
       this.service = executorService;
       return this;
     }
@@ -726,9 +735,6 @@ public class Picasso {
     public Builder withCacheSize(int maxByteCount) {
       if (maxByteCount < 0) {
         throw new IllegalArgumentException("maxByteCount < 0: " + maxByteCount);
-      }
-      if (cache != null) {
-        throw new IllegalStateException("Memory cache already set.");
       }
       if (maxByteCount == 0) {
         cache = Cache.NONE;
@@ -742,9 +748,6 @@ public class Picasso {
     public Builder listener(@NonNull Listener listener) {
       if (listener == null) {
         throw new IllegalArgumentException("Listener must not be null.");
-      }
-      if (this.listener != null) {
-        throw new IllegalStateException("Listener already set.");
       }
       this.listener = listener;
       return this;
@@ -760,10 +763,7 @@ public class Picasso {
       if (transformer == null) {
         throw new IllegalArgumentException("Transformer must not be null.");
       }
-      if (this.transformer != null) {
-        throw new IllegalStateException("Transformer already set.");
-      }
-      this.transformer = transformer;
+      this.requestTransformer = transformer;
       return this;
     }
 
@@ -771,9 +771,6 @@ public class Picasso {
     public Builder addRequestHandler(@NonNull RequestHandler requestHandler) {
       if (requestHandler == null) {
         throw new IllegalArgumentException("RequestHandler must not be null.");
-      }
-      if (requestHandlers == null) {
-        requestHandlers = new ArrayList<>();
       }
       if (requestHandlers.contains(requestHandler)) {
         throw new IllegalStateException("RequestHandler already registered.");
@@ -812,16 +809,19 @@ public class Picasso {
       if (service == null) {
         service = new PicassoExecutorService();
       }
-      if (transformer == null) {
-        transformer = RequestTransformer.IDENTITY;
+      if (requestTransformer == null) {
+        requestTransformer = RequestTransformer.IDENTITY;
       }
 
       Stats stats = new Stats(cache);
 
       Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, downloader, cache, stats);
 
-      return new Picasso(context, dispatcher, cache, listener, transformer, requestHandlers, stats,
-          defaultBitmapConfig, indicatorsEnabled, loggingEnabled);
+      // Make a defensive copy of the converters.
+      List<RequestHandler> requestHandlers = new ArrayList<>(this.requestHandlers);
+
+      return new Picasso(context, dispatcher, cache, listener, requestTransformer, requestHandlers,
+          stats, defaultBitmapConfig, indicatorsEnabled, loggingEnabled);
     }
   }
 
