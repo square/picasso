@@ -1,6 +1,19 @@
 Change Log
 ==========
 
+Version 2.71828 *(2018-03-07)*
+------------------------------
+
+This version is not fully backwards compatible with previous 2.x releases!
+It is intended to be a stable, pre-3.0 release that users of 3.0.0-SNAPSHOT can use in the mean time.
+
+Its changes are many, as evidenced by the nearly 3 years since 2.5.2. If you are interested
+in them you can browse the commits here: https://github.com/square/picasso/compare/picasso-parent-2.5.2...2.71828
+
+Otherwise, stay tuned for 3.0 whose change log will be in relation to 2.5.2 and thus encompass any
+changes present in this release.
+
+
 Version 2.5.2 *(2015-03-20)*
 ----------------------------
 
