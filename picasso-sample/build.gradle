@@ -7,9 +7,6 @@ android {
     minSdkVersion versions.minSdk
     targetSdkVersion versions.targetSdk
     applicationId 'com.example.picasso'
-
-    versionCode 1
-    versionName '1.0'
   }
 
   compileOptions {
