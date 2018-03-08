@@ -421,7 +421,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsExactly("rotate 90.0");
   }
 
- @Test public void exifRotationSizing() throws Exception {
+ @Test public void exifRotationSizing() {
     Request data = new Request.Builder(URI_1).resize(5, 10).build();
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, ORIENTATION_ROTATE_90);
@@ -433,7 +433,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).contains("scale 1.0 0.5");
   }
 
- @Test public void exifRotationNoSizing() throws Exception {
+ @Test public void exifRotationNoSizing() {
     Request data = new Request.Builder(URI_1).build();
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, ORIENTATION_ROTATE_90);
@@ -445,7 +445,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).contains("rotate 90.0");
   }
 
- @Test public void rotation90Sizing() throws Exception {
+ @Test public void rotation90Sizing() {
     Request data = new Request.Builder(URI_1).rotate(90).resize(5, 10).build();
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, 0);
@@ -457,7 +457,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).contains("scale 1.0 0.5");
   }
 
- @Test public void rotation180Sizing() throws Exception {
+ @Test public void rotation180Sizing() {
     Request data = new Request.Builder(URI_1).rotate(180).resize(5, 10).build();
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, 0);
@@ -469,7 +469,7 @@ public class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).contains("scale 0.5 1.0");
   }
 
- @Test public void rotation90WithPivotSizing() throws Exception {
+ @Test public void rotation90WithPivotSizing() {
     Request data = new Request.Builder(URI_1).rotate(90,0,10).resize(5, 10).build();
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, 0);
@@ -1148,7 +1148,7 @@ public class BitmapHunterTest {
       super(null, null);
     }
 
-    @Override public Result load(Request request, int networkPolicy) throws IOException {
+    @Override public Result load(Request request, int networkPolicy) {
       throw new OutOfMemoryError();
     }
   }

@@ -252,7 +252,7 @@ public class PicassoTest {
     assertThat(picasso.targetToDeferredRequestCreator).isEmpty();
   }
 
-  @Test public void enqueueingDeferredRequestCancelsThePreviousOne() throws Exception {
+  @Test public void enqueueingDeferredRequestCancelsThePreviousOne() {
     ImageView target = mockImageViewTarget();
     DeferredRequestCreator firstRequestCreator = mockDeferredRequestCreator();
     picasso.defer(target, firstRequestCreator);

@@ -59,17 +59,17 @@ public class MediaStoreRequestHandlerTest {
     assertBitmapsEqual(result, bitmap);
   }
 
-  @Test public void getPicassoKindMicro() throws Exception {
+  @Test public void getPicassoKindMicro() {
     assertThat(getPicassoKind(96, 96)).isEqualTo(MICRO);
     assertThat(getPicassoKind(95, 95)).isEqualTo(MICRO);
   }
 
-  @Test public void getPicassoKindMini() throws Exception {
+  @Test public void getPicassoKindMini() {
     assertThat(getPicassoKind(512, 384)).isEqualTo(MINI);
     assertThat(getPicassoKind(100, 100)).isEqualTo(MINI);
   }
 
-  @Test public void getPicassoKindFull() throws Exception {
+  @Test public void getPicassoKindFull() {
     assertThat(getPicassoKind(513, 385)).isEqualTo(FULL);
     assertThat(getPicassoKind(1000, 1000)).isEqualTo(FULL);
     assertThat(getPicassoKind(1000, 384)).isEqualTo(FULL);

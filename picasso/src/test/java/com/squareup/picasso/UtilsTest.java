@@ -34,7 +34,7 @@ import static com.squareup.picasso.Utils.isWebPFile;
 @RunWith(RobolectricGradleTestRunner.class)
 public class UtilsTest {
 
-  @Test public void matchingRequestsHaveSameKey() throws Exception {
+  @Test public void matchingRequestsHaveSameKey() {
     Request request = new Request.Builder(URI_1).build();
     String key1 = createKey(request);
     String key2 = createKey(request);
@@ -79,7 +79,7 @@ public class UtilsTest {
     assertThat(isWebPFile(new Buffer().writeUtf8("RIFFxxWEBP"))).isFalse();
   }
 
-  @Test public void ensureBuilderIsCleared() throws Exception {
+  @Test public void ensureBuilderIsCleared() {
     Request request1 = new Request.Builder(RESOURCE_ID_URI).build();
     Request request2 = new Request.Builder(URI_1).build();
     Utils.createKey(request1);

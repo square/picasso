@@ -54,7 +54,7 @@ public final class OkHttp3DownloaderTest {
     assertThat(cache.isClosed()).isTrue();
   }
 
-  @Test public void shutdownDoesNotCloseCacheIfSharedClient() throws Exception {
+  @Test public void shutdownDoesNotCloseCacheIfSharedClient() {
     okhttp3.Cache cache = new okhttp3.Cache(temporaryFolder.getRoot(), 100);
     OkHttpClient client = new OkHttpClient.Builder().cache(cache).build();
     new OkHttp3Downloader(client, cache, true).shutdown();
