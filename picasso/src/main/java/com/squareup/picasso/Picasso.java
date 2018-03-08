@@ -664,7 +664,7 @@ public class Picasso {
   @SuppressWarnings("UnusedDeclaration") // Public API.
   public static class Builder {
     private final Context context;
-    private Downloader downloader;
+    private OkHttp3Downloader downloader;
     private ExecutorService service;
     private Cache cache;
     private Listener listener;

@@ -28,10 +28,10 @@ class NetworkRequestHandler extends RequestHandler {
   private static final String SCHEME_HTTP = "http";
   private static final String SCHEME_HTTPS = "https";
 
-  private final Downloader downloader;
+  private final OkHttp3Downloader downloader;
   private final Stats stats;
 
-  NetworkRequestHandler(Downloader downloader, Stats stats) {
+  NetworkRequestHandler(OkHttp3Downloader downloader, Stats stats) {
     this.downloader = downloader;
     this.stats = stats;
   }

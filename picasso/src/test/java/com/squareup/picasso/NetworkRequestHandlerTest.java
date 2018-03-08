@@ -16,12 +16,13 @@
 package com.squareup.picasso;
 
 import android.net.NetworkInfo;
-import android.support.annotation.NonNull;
+import com.squareup.picasso.TestUtils.PremadeCall;
 import java.io.IOException;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import okhttp3.CacheControl;
+import okhttp3.Call;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -50,21 +51,18 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(RobolectricGradleTestRunner.class)
 public class NetworkRequestHandlerTest {
-  private final BlockingDeque<Response> responses = new LinkedBlockingDeque<>();
-  private final BlockingDeque<okhttp3.Request> requests = new LinkedBlockingDeque<>();
-  private final Downloader downloader = new Downloader() {
-    @NonNull @Override public Response load(@NonNull Request request) throws IOException {
+  final BlockingDeque<Response> responses = new LinkedBlockingDeque<>();
+  final BlockingDeque<okhttp3.Request> requests = new LinkedBlockingDeque<>();
+  private final OkHttp3Downloader downloader = new OkHttp3Downloader(new Call.Factory() {
+    @Override public Call newCall(Request request) {
       requests.add(request);
       try {
-        return responses.takeFirst();
+        return new PremadeCall(request, responses.takeFirst());
       } catch (InterruptedException e) {
-        throw new RuntimeException(e);
+        throw new AssertionError(e);
       }
     }
-
-    @Override public void shutdown() {
-    }
-  };
+  }, null, true);
 
   @Mock Picasso picasso;
   @Mock Cache cache;

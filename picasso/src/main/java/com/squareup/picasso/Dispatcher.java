@@ -82,7 +82,7 @@ class Dispatcher {
   final DispatcherThread dispatcherThread;
   final Context context;
   final ExecutorService service;
-  final Downloader downloader;
+  final OkHttp3Downloader downloader;
   final Map<String, BitmapHunter> hunterMap;
   final Map<Object, Action> failedActions;
   final Map<Object, Action> pausedActions;
@@ -98,7 +98,7 @@ class Dispatcher {
   boolean airplaneMode;
 
   Dispatcher(Context context, ExecutorService service, Handler mainThreadHandler,
-      Downloader downloader, Cache cache, Stats stats) {
+      OkHttp3Downloader downloader, Cache cache, Stats stats) {
     this.dispatcherThread = new DispatcherThread();
     this.dispatcherThread.start();
     Utils.flushStackLocalLeaks(dispatcherThread.getLooper());

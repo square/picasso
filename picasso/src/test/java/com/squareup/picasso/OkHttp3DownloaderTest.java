@@ -41,7 +41,7 @@ public final class OkHttp3DownloaderTest {
   @Test public void works() throws Exception {
     server.enqueue(new MockResponse().setBody("Hi"));
     okhttp3.Request request = new Request.Builder().url(server.url("/")).build();
-    Downloader downloader = new OkHttp3Downloader(new OkHttpClient(), null, true);
+    OkHttp3Downloader downloader = new OkHttp3Downloader(new OkHttpClient(), null, true);
     Response response = downloader.load(request);
     assertThat(response.body().string()).isEqualTo("Hi");
   }
@@ -49,7 +49,7 @@ public final class OkHttp3DownloaderTest {
   @Test public void shutdownClosesCacheIfNotShared() throws Exception {
     Cache cache = new Cache(temporaryFolder.getRoot(), 100);
     OkHttpClient client = new OkHttpClient.Builder().cache(cache).build();
-    Downloader downloader = new OkHttp3Downloader(client, cache, false);
+    OkHttp3Downloader downloader = new OkHttp3Downloader(client, cache, false);
     downloader.shutdown();
     assertThat(cache.isClosed()).isTrue();
   }
