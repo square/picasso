@@ -9,7 +9,7 @@ import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.ToggleButton;
-import com.squareup.picasso.provider.PicassoProvider;
+import com.squareup.picasso3.provider.PicassoProvider;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;

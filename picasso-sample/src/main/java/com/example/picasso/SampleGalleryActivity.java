@@ -5,11 +5,11 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ViewAnimator;
-import com.squareup.picasso.provider.PicassoProvider;
+import com.squareup.picasso3.provider.PicassoProvider;
 
 import static android.content.Intent.ACTION_PICK;
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-import static com.squareup.picasso.Callback.EmptyCallback;
+import static com.squareup.picasso3.Callback.EmptyCallback;
 
 public class SampleGalleryActivity extends PicassoSampleActivity {
   private static final int GALLERY_REQUEST = 9391;
