@@ -27,6 +27,7 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Picasso.RequestTransformer.IDENTITY;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_1;
+import static com.squareup.picasso.TestUtils.UNUSED_CALL_FACTORY;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.makeBitmap;
 import static com.squareup.picasso.TestUtils.mockTarget;
@@ -72,9 +73,10 @@ public class TargetActionTest {
     Drawable errorDrawable = mock(Drawable.class);
     Target target = mockTarget();
     Context context = mock(Context.class);
+    Dispatcher dispatcher = mock(Dispatcher.class);
     Picasso picasso =
-        new Picasso(context, mock(Dispatcher.class), Cache.NONE, null, IDENTITY, null,
-            mock(Stats.class), ARGB_8888, false, false);
+        new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, Cache.NONE, null, IDENTITY,
+            null, mock(Stats.class), ARGB_8888, false, false);
     Resources res = mock(Resources.class);
     TargetAction request =
         new TargetAction(picasso, target, null, 0, 0, null, URI_KEY_1, null, RESOURCE_ID_1);
