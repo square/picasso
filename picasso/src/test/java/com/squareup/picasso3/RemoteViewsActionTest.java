@@ -27,7 +27,7 @@ import org.robolectric.RuntimeEnvironment;
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso3.Picasso.LoadedFrom.NETWORK;
-import static com.squareup.picasso3.Picasso.RequestTransformer.IDENTITY;
+import static com.squareup.picasso3.TestUtils.NO_TRANSFORMERS;
 import static com.squareup.picasso3.TestUtils.UNUSED_CALL_FACTORY;
 import static com.squareup.picasso3.TestUtils.URI_KEY_1;
 import static com.squareup.picasso3.TestUtils.makeBitmap;
@@ -99,7 +99,7 @@ public class RemoteViewsActionTest {
   private Picasso createPicasso() {
     Dispatcher dispatcher = mock(Dispatcher.class);
     return new Picasso(RuntimeEnvironment.application, dispatcher, UNUSED_CALL_FACTORY, null,
-        Cache.NONE, null, IDENTITY, null, mock(Stats.class), ARGB_8888, false, false);
+        Cache.NONE, null, NO_TRANSFORMERS, null, mock(Stats.class), ARGB_8888, false, false);
   }
 
   static class TestableRemoteViewsAction extends RemoteViewsAction {

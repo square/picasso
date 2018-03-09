@@ -25,7 +25,7 @@ import org.robolectric.RobolectricGradleTestRunner;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
-import static com.squareup.picasso3.Picasso.RequestTransformer.IDENTITY;
+import static com.squareup.picasso3.TestUtils.NO_TRANSFORMERS;
 import static com.squareup.picasso3.TestUtils.RESOURCE_ID_1;
 import static com.squareup.picasso3.TestUtils.UNUSED_CALL_FACTORY;
 import static com.squareup.picasso3.TestUtils.URI_KEY_1;
@@ -75,8 +75,8 @@ public class TargetActionTest {
     Context context = mock(Context.class);
     Dispatcher dispatcher = mock(Dispatcher.class);
     Picasso picasso =
-        new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, Cache.NONE, null, IDENTITY,
-            null, mock(Stats.class), ARGB_8888, false, false);
+        new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, Cache.NONE, null,
+            NO_TRANSFORMERS, null, mock(Stats.class), ARGB_8888, false, false);
     Resources res = mock(Resources.class);
     TargetAction request =
         new TargetAction(picasso, target, null, 0, 0, null, URI_KEY_1, null, RESOURCE_ID_1);
