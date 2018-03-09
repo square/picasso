@@ -27,10 +27,13 @@ import android.support.annotation.NonNull;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
+import com.squareup.picasso3.Picasso.RequestTransformer;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import okhttp3.Call;
 import okhttp3.Response;
 import org.mockito.invocation.InvocationOnMock;
@@ -279,6 +282,8 @@ class TestUtils {
       throw new AssertionError();
     }
   };
+
+  static final List<RequestTransformer> NO_TRANSFORMERS = Collections.emptyList();
 
   static final class PremadeCall implements Call {
     private final okhttp3.Request request;

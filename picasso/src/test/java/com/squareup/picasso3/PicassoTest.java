@@ -20,6 +20,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
+import com.squareup.picasso3.Picasso.RequestTransformer;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,6 +41,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso3.Picasso.Listener;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget;
+import static com.squareup.picasso3.TestUtils.NO_TRANSFORMERS;
 import static com.squareup.picasso3.TestUtils.UNUSED_CALL_FACTORY;
 import static com.squareup.picasso3.TestUtils.URI_1;
 import static com.squareup.picasso3.TestUtils.URI_KEY_1;
@@ -67,7 +69,6 @@ public final class PicassoTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   @Mock Context context;
   @Mock Dispatcher dispatcher;
-  @Mock Picasso.RequestTransformer transformer;
   @Mock RequestHandler requestHandler;
   @Mock Cache cache;
   @Mock Listener listener;
@@ -78,9 +79,8 @@ public final class PicassoTest {
 
   @Before public void setUp() {
     initMocks(this);
-    picasso =
-        new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, listener, transformer,
-            null, stats, ARGB_8888, false, false);
+    picasso = new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, listener,
+        NO_TRANSFORMERS, null, stats, ARGB_8888, false, false);
   }
 
   @Test public void submitWithNullTargetInvokesDispatcher() {
@@ -349,7 +349,7 @@ public final class PicassoTest {
     okhttp3.Cache cache = new okhttp3.Cache(temporaryFolder.getRoot(), 100);
     Picasso picasso =
         new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, cache, Cache.NONE, listener,
-            transformer, null, stats, ARGB_8888, false, false);
+            NO_TRANSFORMERS, null, stats, ARGB_8888, false, false);
     picasso.shutdown();
     assertThat(cache.isClosed()).isTrue();
   }
@@ -372,9 +372,15 @@ public final class PicassoTest {
     assertThat(picasso.targetToDeferredRequestCreator).isEmpty();
   }
 
-  @Test public void whenTransformRequestReturnsNullThrows() {
+  @Test public void throwWhenTransformRequestReturnsNull() {
     try {
-      when(transformer.transformRequest(any(Request.class))).thenReturn(null);
+      RequestTransformer transformer = new RequestTransformer() {
+        @Override public Request transformRequest(Request request) {
+          return null;
+        }
+      };
+      picasso = new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, null, listener,
+          Collections.singletonList(transformer), null, stats, ARGB_8888, false, false);
       picasso.transformRequest(new Request.Builder(URI_1).build());
       fail("Returning null from transformRequest() should throw");
     } catch (IllegalStateException expected) {
@@ -467,25 +473,37 @@ public final class PicassoTest {
     }
   }
 
-  @Test public void builderInvalidRequestTransformer() {
+  @Test public void builderNullRequestTransformer() {
     try {
-      new Picasso.Builder(context).requestTransformer(null);
+      new Picasso.Builder(context).addRequestTransformer(null);
       fail("Null request transformer should throw exception.");
     } catch (IllegalArgumentException expected) {
     }
+  }
+
+  @Test public void builderDuplicateRequestTransformer() {
+    RequestTransformer identity = new RequestTransformer() {
+      @Override public Request transformRequest(Request request) {
+        return request;
+      }
+    };
     try {
-      new Picasso.Builder(context).requestTransformer(transformer).requestTransformer(transformer);
+      new Picasso.Builder(context).addRequestTransformer(identity)
+          .addRequestTransformer(identity);
       fail("Setting request transformer twice should throw exception.");
     } catch (IllegalStateException expected) {
     }
   }
 
-  @Test public void builderInvalidRequestHandler() {
+  @Test public void builderNullRequestHandler() {
     try {
       new Picasso.Builder(context).addRequestHandler(null);
       fail("Null request handler should throw exception.");
     } catch (IllegalArgumentException expected) {
     }
+  }
+
+  @Test public void buildDuplicateRequestHandler() {
     try {
       new Picasso.Builder(context).addRequestHandler(requestHandler)
           .addRequestHandler(requestHandler);

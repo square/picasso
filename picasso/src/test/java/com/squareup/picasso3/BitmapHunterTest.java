@@ -19,14 +19,12 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.net.Uri;
-import android.support.annotation.NonNull;
 import android.view.Gravity;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.FutureTask;
-import okhttp3.Call;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,6 +60,7 @@ import static com.squareup.picasso3.TestUtils.FILE_1_URL;
 import static com.squareup.picasso3.TestUtils.FILE_KEY_1;
 import static com.squareup.picasso3.TestUtils.MEDIA_STORE_CONTENT_1_URL;
 import static com.squareup.picasso3.TestUtils.MEDIA_STORE_CONTENT_KEY_1;
+import static com.squareup.picasso3.TestUtils.NO_TRANSFORMERS;
 import static com.squareup.picasso3.TestUtils.RESOURCE_ID_1;
 import static com.squareup.picasso3.TestUtils.RESOURCE_ID_KEY_1;
 import static com.squareup.picasso3.TestUtils.RESOURCE_ID_URI;
@@ -352,8 +351,8 @@ public final class BitmapHunterTest {
     List<RequestHandler> handlers = Collections.singletonList(handler);
     // Must use non-mock constructor because that is where Picasso's list of handlers is created.
     Picasso picasso =
-        new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, null, null, handlers,
-            stats, ARGB_8888, false, false);
+        new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, null, NO_TRANSFORMERS,
+            handlers, stats, ARGB_8888, false, false);
     BitmapHunter hunter = forRequest(picasso, dispatcher, cache, stats, action);
     assertThat(hunter.requestHandler).isEqualTo(handler);
   }
