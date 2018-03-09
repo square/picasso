@@ -2,8 +2,8 @@ package com.example.picasso;
 
 import android.content.Context;
 import android.widget.AbsListView;
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.provider.PicassoProvider;
+import com.squareup.picasso3.Picasso;
+import com.squareup.picasso3.provider.PicassoProvider;
 
 public class SampleScrollListener implements AbsListView.OnScrollListener {
   private final Context context;

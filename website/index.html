@@ -112,18 +112,18 @@ Picasso.get().load(new File(...)).into(imageView3);</pre>
             <p class="screenshot"><img src="static/debug.png" alt="Debug ribbon indicators"></p>
 
             <h3 id="download">Download</h3>
-            <p><a href="https://search.maven.org/remote_content?g=com.squareup.picasso&a=picasso&v=LATEST" class="dl version-href">&darr; <span class="version-tag">Latest</span> JAR</a></p>
+            <p><a href="https://search.maven.org/remote_content?g=com.squareup.picasso3&a=picasso&v=LATEST" class="dl version-href">&darr; <span class="version-tag">Latest</span> JAR</a></p>
             <p>The source code to the Picasso, its samples, and this website is <a href="http://github.com/square/picasso">available on GitHub</a>.</p>
 
             <h4>Maven</h4>
             <pre class="prettyprint">&lt;dependency>
-  &lt;groupId>com.squareup.picasso&lt;/groupId>
+  &lt;groupId>com.squareup.picasso3&lt;/groupId>
   &lt;artifactId>picasso&lt;/artifactId>
   &lt;version><span class="version pln"><em>(insert latest version)</em></span>&lt;/version>
 &lt;/dependency></pre>
 
             <h4>Gradle</h4>
-            <pre class="prettyprint">implementation 'com.squareup.picasso:picasso:<span class="version pln"><em>(insert latest version)</em></span>'</pre>
+            <pre class="prettyprint">implementation 'com.squareup.picasso3:picasso:<span class="version pln"><em>(insert latest version)</em></span>'</pre>
 
             <h3 id="contributing">Contributing</h3>
             <p>If you would like to contribute code you can do so through GitHub by forking the repository and sending a pull request.</p>
@@ -196,7 +196,7 @@ limitations under the License.</pre>
         });
 
         // Look up the latest version of the library.
-        $.fn.artifactVersion('com.squareup.picasso', 'picasso', function(version, url) {
+        $.fn.artifactVersion('com.squareup.picasso3', 'picasso', function(version, url) {
           $('.version').text(version);
           $('.version-tag').text('v' + version);
           $('.version-href').attr('href', url);

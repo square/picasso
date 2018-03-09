@@ -23,8 +23,8 @@ import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Transformation;
+import com.squareup.picasso3.Picasso;
+import com.squareup.picasso3.Transformation;
 import java.io.IOException;
 
 import static android.graphics.Bitmap.createBitmap;
