@@ -39,7 +39,7 @@ public class StatsSnapshot {
 
   public final long timeStamp;
 
-  public StatsSnapshot(int maxSize, int size, long cacheHits, long cacheMisses,
+  StatsSnapshot(int maxSize, int size, long cacheHits, long cacheMisses,
       long totalDownloadSize, long totalOriginalBitmapSize, long totalTransformedBitmapSize,
       long averageDownloadSize, long averageOriginalBitmapSize, long averageTransformedBitmapSize,
       int downloadCount, int originalBitmapCount, int transformedBitmapCount, long timeStamp) {
