@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.squareup.picasso3.BitmapHunter.forRequest;
 import static com.squareup.picasso3.MemoryPolicy.shouldReadFromMemoryCache;
+import static com.squareup.picasso3.MemoryPolicy.shouldWriteToMemoryCache;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso3.Picasso.Priority;
 import static com.squareup.picasso3.PicassoDrawable.setBitmap;
@@ -407,9 +408,6 @@ public class RequestCreator {
 
   /**
    * Synchronously fulfill this request. Must not be called from the main thread.
-   * <p>
-   * <em>Note</em>: The result of this operation is not cached in memory because the underlying
-   * {@link Cache} implementation is not guaranteed to be thread-safe.
    */
   public Bitmap get() throws IOException {
     long started = System.nanoTime();
@@ -426,7 +424,12 @@ public class RequestCreator {
     String key = createKey(finalData, new StringBuilder());
 
     Action action = new GetAction(picasso, finalData, memoryPolicy, networkPolicy, tag, key);
-    return forRequest(picasso, picasso.dispatcher, picasso.cache, picasso.stats, action).hunt();
+    Bitmap result =
+        forRequest(picasso, picasso.dispatcher, picasso.cache, picasso.stats, action).hunt();
+    if (shouldWriteToMemoryCache(memoryPolicy)) {
+      picasso.cache.set(key, result);
+    }
+    return result;
   }
 
   /**
