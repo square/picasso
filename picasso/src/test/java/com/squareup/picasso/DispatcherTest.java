@@ -22,15 +22,11 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.NonNull;
 import com.squareup.picasso.NetworkRequestHandler.ContentLengthException;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
-import okhttp3.Call;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.RobolectricGradleTestRunner;
@@ -44,7 +40,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso.Dispatcher.NetworkBroadcastReceiver;
 import static com.squareup.picasso.Dispatcher.NetworkBroadcastReceiver.EXTRA_AIRPLANE_STATE;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
-import static com.squareup.picasso.TestUtils.UNUSED_DOWNLOADER;
 import static com.squareup.picasso.TestUtils.URI_1;
 import static com.squareup.picasso.TestUtils.URI_2;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
@@ -69,7 +64,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(RobolectricGradleTestRunner.class)
 public class DispatcherTest {
-  @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   @Mock Context context;
   @Mock ConnectivityManager connectivityManager;
   @Mock PicassoExecutorService service;
@@ -78,7 +72,6 @@ public class DispatcherTest {
   @Mock Cache cache;
   @Mock Stats stats;
   private Dispatcher dispatcher;
-  private OkHttp3Downloader downloader = UNUSED_DOWNLOADER;
 
   final Bitmap bitmap1 = makeBitmap();
   final Bitmap bitmap2 = makeBitmap();
@@ -91,20 +84,6 @@ public class DispatcherTest {
   @Test public void shutdownStopsService() {
     dispatcher.shutdown();
     verify(service).shutdown();
-  }
-
-  @Test public void shutdownShutsDownDownloader() {
-    dispatcher.shutdown();
-    okhttp3.Cache cache = new okhttp3.Cache(temporaryFolder.getRoot(), 100);
-    Call.Factory callFactory = new Call.Factory() {
-      @Override public Call newCall(@NonNull okhttp3.Request request) {
-        throw new AssertionError();
-      }
-    };
-    Dispatcher dispatcher = new Dispatcher(context, service, mainThreadHandler,
-        new OkHttp3Downloader(callFactory, cache, false), null, stats);
-    dispatcher.shutdown();
-    assertThat(cache.isClosed()).isTrue();
   }
 
   @Test public void shutdownUnregistersReceiver() {
@@ -598,6 +577,6 @@ public class DispatcherTest {
     when(context.getSystemService(Context.CONNECTIVITY_SERVICE)).thenReturn(connectivityManager);
     when(context.checkCallingOrSelfPermission(anyString())).thenReturn(
         scansNetworkChanges ? PERMISSION_GRANTED : PERMISSION_DENIED);
-    return new Dispatcher(context, service, mainThreadHandler, downloader, cache, stats);
+    return new Dispatcher(context, service, mainThreadHandler, cache, stats);
   }
 }

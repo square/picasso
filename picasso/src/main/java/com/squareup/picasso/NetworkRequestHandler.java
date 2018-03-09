@@ -18,21 +18,22 @@ package com.squareup.picasso;
 import android.net.NetworkInfo;
 import java.io.IOException;
 import okhttp3.CacheControl;
+import okhttp3.Call;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 import static com.squareup.picasso.Picasso.LoadedFrom.DISK;
 import static com.squareup.picasso.Picasso.LoadedFrom.NETWORK;
 
-class NetworkRequestHandler extends RequestHandler {
+final class NetworkRequestHandler extends RequestHandler {
   private static final String SCHEME_HTTP = "http";
   private static final String SCHEME_HTTPS = "https";
 
-  private final OkHttp3Downloader downloader;
+  private final Call.Factory callFactory;
   private final Stats stats;
 
-  NetworkRequestHandler(OkHttp3Downloader downloader, Stats stats) {
-    this.downloader = downloader;
+  NetworkRequestHandler(Call.Factory callFactory, Stats stats) {
+    this.callFactory = callFactory;
     this.stats = stats;
   }
 
@@ -42,8 +43,8 @@ class NetworkRequestHandler extends RequestHandler {
   }
 
   @Override public Result load(Request request, int networkPolicy) throws IOException {
-    okhttp3.Request downloaderRequest = createRequest(request, networkPolicy);
-    Response response = downloader.load(downloaderRequest);
+    okhttp3.Request callRequest = createRequest(request, networkPolicy);
+    Response response = callFactory.newCall(callRequest).execute();
     ResponseBody body = response.body();
 
     if (!response.isSuccessful()) {
