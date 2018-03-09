@@ -274,11 +274,11 @@ class TestUtils {
     return Bitmap.createBitmap(width, height, ALPHA_8);
   }
 
-  static final OkHttp3Downloader UNUSED_DOWNLOADER = new OkHttp3Downloader(new Call.Factory() {
+  static final Call.Factory UNUSED_CALL_FACTORY = new Call.Factory() {
     @Override public Call newCall(okhttp3.Request request) {
       throw new AssertionError();
     }
-  }, null, true);
+  };
 
   static final class PremadeCall implements Call {
     private final okhttp3.Request request;

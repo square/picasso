@@ -28,6 +28,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso.Picasso.RequestTransformer.IDENTITY;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_1;
+import static com.squareup.picasso.TestUtils.UNUSED_CALL_FACTORY;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.makeBitmap;
 import static com.squareup.picasso.TestUtils.mockCallback;
@@ -81,14 +82,15 @@ public class ImageViewActionTest {
   @Test
   public void invokesTargetAndCallbackSuccessIfTargetIsNotNull() {
     Bitmap bitmap = makeBitmap();
+    Dispatcher dispatcher = mock(Dispatcher.class);
     Picasso picasso =
-        new Picasso(RuntimeEnvironment.application, mock(Dispatcher.class), Cache.NONE, null, IDENTITY,
-            null, mock(Stats.class), Bitmap.Config.ARGB_8888, false, false);
+        new Picasso(RuntimeEnvironment.application, dispatcher, UNUSED_CALL_FACTORY, null,
+            Cache.NONE, null, IDENTITY, null, mock(Stats.class), Bitmap.Config.ARGB_8888, false,
+            false);
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
     ImageViewAction request =
-        new ImageViewAction(picasso, target, null, 0, 0, 0, null, URI_KEY_1, null,
-            callback, false);
+        new ImageViewAction(picasso, target, null, 0, 0, 0, null, URI_KEY_1, null, callback, false);
     request.complete(bitmap, MEMORY);
     verify(target).setImageDrawable(any(PicassoDrawable.class));
     verify(callback).onSuccess();

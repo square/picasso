@@ -82,7 +82,6 @@ class Dispatcher {
   final DispatcherThread dispatcherThread;
   final Context context;
   final ExecutorService service;
-  final OkHttp3Downloader downloader;
   final Map<String, BitmapHunter> hunterMap;
   final Map<Object, Action> failedActions;
   final Map<Object, Action> pausedActions;
@@ -97,8 +96,8 @@ class Dispatcher {
 
   boolean airplaneMode;
 
-  Dispatcher(Context context, ExecutorService service, Handler mainThreadHandler,
-      OkHttp3Downloader downloader, Cache cache, Stats stats) {
+  Dispatcher(Context context, ExecutorService service, Handler mainThreadHandler, Cache cache,
+      Stats stats) {
     this.dispatcherThread = new DispatcherThread();
     this.dispatcherThread.start();
     Utils.flushStackLocalLeaks(dispatcherThread.getLooper());
@@ -109,7 +108,6 @@ class Dispatcher {
     this.pausedActions = new WeakHashMap<>();
     this.pausedTags = new LinkedHashSet<>();
     this.handler = new DispatcherHandler(dispatcherThread.getLooper(), this);
-    this.downloader = downloader;
     this.mainThreadHandler = mainThreadHandler;
     this.cache = cache;
     this.stats = stats;
@@ -125,7 +123,6 @@ class Dispatcher {
     if (service instanceof PicassoExecutorService) {
       service.shutdown();
     }
-    downloader.shutdown();
     dispatcherThread.quit();
     // Unregister network broadcast receiver on the main thread.
     Picasso.HANDLER.post(new Runnable() {

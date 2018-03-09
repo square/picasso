@@ -28,6 +28,7 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso.Picasso.LoadedFrom.NETWORK;
 import static com.squareup.picasso.Picasso.RequestTransformer.IDENTITY;
+import static com.squareup.picasso.TestUtils.UNUSED_CALL_FACTORY;
 import static com.squareup.picasso.TestUtils.URI_KEY_1;
 import static com.squareup.picasso.TestUtils.makeBitmap;
 import static com.squareup.picasso.TestUtils.mockCallback;
@@ -96,8 +97,9 @@ public class RemoteViewsActionTest {
   }
 
   private Picasso createPicasso() {
-    return new Picasso(RuntimeEnvironment.application, mock(Dispatcher.class), Cache.NONE, null,
-        IDENTITY, null, mock(Stats.class), ARGB_8888, false, false);
+    Dispatcher dispatcher = mock(Dispatcher.class);
+    return new Picasso(RuntimeEnvironment.application, dispatcher, UNUSED_CALL_FACTORY, null,
+        Cache.NONE, null, IDENTITY, null, mock(Stats.class), ARGB_8888, false, false);
   }
 
   static class TestableRemoteViewsAction extends RemoteViewsAction {
