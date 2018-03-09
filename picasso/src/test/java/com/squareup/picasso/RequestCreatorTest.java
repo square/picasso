@@ -20,10 +20,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,6 +29,11 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RuntimeEnvironment;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.google.common.truth.Truth.assertThat;
@@ -516,6 +518,7 @@ public class RequestCreatorTest {
   public void intoRemoteViewsWidgetWithFitThrows() {
     try {
       RemoteViews remoteViews = mockRemoteViews();
+      //noinspection ResourceType
       new RequestCreator(picasso, URI_1, 0).fit().into(remoteViews, 1, new int[] { 1, 2, 3 });
       fail("Calling fit() into remote views should throw exception");
     } catch (IllegalStateException ignored) {
@@ -526,6 +529,7 @@ public class RequestCreatorTest {
   public void intoRemoteViewsNotificationWithFitThrows() {
     try {
       RemoteViews remoteViews = mockRemoteViews();
+      //noinspection ResourceType
       new RequestCreator(picasso, URI_1, 0).fit().into(remoteViews, 1, 1, mockNotification());
       fail("Calling fit() into remote views should throw exception");
     } catch (IllegalStateException ignored) {
@@ -536,12 +540,17 @@ public class RequestCreatorTest {
   public void intoTargetNoResizeWithCenterInsideOrCenterCropThrows() {
     try {
       new RequestCreator(picasso, URI_1, 0).centerInside().into(mockTarget());
-      fail("Center inside with unknown width should throw exception.");
+      fail("Center inside with unknown height/width should throw exception.");
     } catch (IllegalStateException ignored) {
     }
     try {
       new RequestCreator(picasso, URI_1, 0).centerCrop().into(mockTarget());
-      fail("Center inside with unknown height should throw exception.");
+      fail("Center inside with unknown height/width should throw exception.");
+    } catch (IllegalStateException ignored) {
+    }
+    try {
+      new RequestCreator(picasso, URI_1, 0).onlyScaleDown().into(mockTarget());
+      fail("Only scale down with unknown height/width should throw exception.");
     } catch (IllegalStateException ignored) {
     }
   }
@@ -687,11 +696,13 @@ public class RequestCreatorTest {
     } catch (IllegalArgumentException ignored) {
     }
     try {
+      //noinspection ResourceType
       new RequestCreator().placeholder(1).placeholder(new ColorDrawable(0));
       fail("Two placeholders should throw exception.");
     } catch (IllegalStateException ignored) {
     }
     try {
+      //noinspection ResourceType
       new RequestCreator().placeholder(new ColorDrawable(0)).placeholder(1);
       fail("Two placeholders should throw exception.");
     } catch (IllegalStateException ignored) {
@@ -705,11 +716,13 @@ public class RequestCreatorTest {
     } catch (IllegalStateException ignored) {
     }
     try {
+      //noinspection ResourceType
       new RequestCreator().noPlaceholder().placeholder(1);
       fail("Placeholder after no placeholder should throw exception.");
     } catch (IllegalStateException ignored) {
     }
     try {
+      //noinspection ResourceType
       new RequestCreator().placeholder(1).noPlaceholder();
       fail("No placeholder after placeholder should throw exception.");
     } catch (IllegalStateException ignored) {
@@ -733,11 +746,13 @@ public class RequestCreatorTest {
     } catch (IllegalArgumentException ignored) {
     }
     try {
+      //noinspection ResourceType
       new RequestCreator().error(1).error(new ColorDrawable(0));
       fail("Two placeholders should throw exception.");
     } catch (IllegalStateException ignored) {
     }
     try {
+      //noinspection ResourceType
       new RequestCreator().error(new ColorDrawable(0)).error(1);
       fail("Two placeholders should throw exception.");
     } catch (IllegalStateException ignored) {

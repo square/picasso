@@ -22,7 +22,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.Px;
 import android.view.Gravity;
+
 import com.squareup.picasso.Picasso.Priority;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -391,7 +393,8 @@ public final class Request {
      */
     public Builder onlyScaleDown() {
       if (targetHeight == 0 && targetWidth == 0) {
-        throw new IllegalStateException("onlyScaleDown can not be applied without resize");
+        throw new IllegalStateException(
+                "onlyScaleDown can not be applied without either calling resize or fit");
       }
       onlyScaleDown = true;
       return this;
