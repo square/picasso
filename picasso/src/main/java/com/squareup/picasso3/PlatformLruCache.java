@@ -28,7 +28,7 @@ final class PlatformLruCache {
 
   /** Create a cache with a given maximum size in bytes. */
   PlatformLruCache(int maxByteCount) {
-    cache = new LruCache<String, BitmapAndSize>(maxByteCount != 0 ? maxByteCount : 1) {
+    cache = new LruCache<String, BitmapAndSize>(maxByteCount) {
       @Override protected int sizeOf(String key, BitmapAndSize value) {
         return value.byteCount;
       }

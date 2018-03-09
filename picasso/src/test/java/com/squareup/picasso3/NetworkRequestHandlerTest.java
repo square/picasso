@@ -82,7 +82,7 @@ public class NetworkRequestHandlerTest {
   @Test public void withZeroRetryCountForcesLocalCacheOnly() throws Exception {
     responses.add(responseOf(ResponseBody.create(null, new byte[10])));
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    PlatformLruCache cache = new PlatformLruCache(0);
+    PlatformLruCache cache = new PlatformLruCache(1);
     BitmapHunter hunter =
         new BitmapHunter(picasso, dispatcher, cache, stats, action, networkHandler);
     hunter.retryCount = 0;
@@ -92,7 +92,7 @@ public class NetworkRequestHandlerTest {
 
   @Test public void shouldRetryTwiceWithAirplaneModeOffAndNoNetworkInfo() {
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    PlatformLruCache cache = new PlatformLruCache(0);
+    PlatformLruCache cache = new PlatformLruCache(1);
     BitmapHunter hunter =
         new BitmapHunter(picasso, dispatcher, cache, stats, action, networkHandler);
     assertThat(hunter.shouldRetry(false, null)).isTrue();
