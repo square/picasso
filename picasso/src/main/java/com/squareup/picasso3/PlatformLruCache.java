@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 The Android Open Source Project
+ * Copyright (C) 2018 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,37 +15,32 @@
  */
 package com.squareup.picasso3;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.LruCache;
 
 import static com.squareup.picasso3.Utils.KEY_SEPARATOR;
 
 /** A memory cache which uses a least-recently used eviction policy. */
-final class LruCache implements Cache {
-  final android.util.LruCache<String, LruCache.BitmapAndSize> cache;
-
-  /** Create a cache using an appropriate portion of the available RAM as the maximum size. */
-  LruCache(@NonNull Context context) {
-    this(Utils.calculateMemoryCacheSize(context));
-  }
+final class PlatformLruCache {
+  final LruCache<String, BitmapAndSize> cache;
 
   /** Create a cache with a given maximum size in bytes. */
-  LruCache(int maxByteCount) {
-    cache = new android.util.LruCache<String, LruCache.BitmapAndSize>(maxByteCount) {
+  PlatformLruCache(int maxByteCount) {
+    cache = new LruCache<String, BitmapAndSize>(maxByteCount) {
       @Override protected int sizeOf(String key, BitmapAndSize value) {
         return value.byteCount;
       }
     };
   }
 
-  @Nullable @Override public Bitmap get(@NonNull String key) {
+  @Nullable public Bitmap get(@NonNull String key) {
     BitmapAndSize bitmapAndSize = cache.get(key);
     return bitmapAndSize != null ? bitmapAndSize.bitmap : null;
   }
 
-  @Override public void set(@NonNull String key, @NonNull Bitmap bitmap) {
+  void set(@NonNull String key, @NonNull Bitmap bitmap) {
     if (key == null || bitmap == null) {
       throw new NullPointerException("key == null || bitmap == null");
     }
@@ -63,19 +58,19 @@ final class LruCache implements Cache {
     cache.put(key, new BitmapAndSize(bitmap, byteCount));
   }
 
-  @Override public int size() {
+  int size() {
     return cache.size();
   }
 
-  @Override public int maxSize() {
+  int maxSize() {
     return cache.maxSize();
   }
 
-  @Override public void clear() {
+  void clear() {
     cache.evictAll();
   }
 
-  @Override public void clearKeyUri(String uri) {
+  void clearKeyUri(String uri) {
     // Keys are prefixed with a URI followed by '\n'.
     for (String key : cache.snapshot().keySet()) {
       if (key.startsWith(uri)

@@ -88,7 +88,7 @@ class Dispatcher {
   final Set<Object> pausedTags;
   final Handler handler;
   final Handler mainThreadHandler;
-  final Cache cache;
+  final PlatformLruCache cache;
   final Stats stats;
   final List<BitmapHunter> batch;
   final NetworkBroadcastReceiver receiver;
@@ -96,8 +96,8 @@ class Dispatcher {
 
   boolean airplaneMode;
 
-  Dispatcher(Context context, ExecutorService service, Handler mainThreadHandler, Cache cache,
-      Stats stats) {
+  Dispatcher(Context context, ExecutorService service, Handler mainThreadHandler,
+      PlatformLruCache cache, Stats stats) {
     this.dispatcherThread = new DispatcherThread();
     this.dispatcherThread.start();
     Utils.flushStackLocalLeaks(dispatcherThread.getLooper());

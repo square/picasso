@@ -53,7 +53,6 @@ public class NetworkRequestHandlerTest {
   final BlockingDeque<okhttp3.Request> requests = new LinkedBlockingDeque<>();
 
   @Mock Picasso picasso;
-  @Mock Cache cache;
   @Mock Stats stats;
   @Mock Dispatcher dispatcher;
 
@@ -83,7 +82,9 @@ public class NetworkRequestHandlerTest {
   @Test public void withZeroRetryCountForcesLocalCacheOnly() throws Exception {
     responses.add(responseOf(ResponseBody.create(null, new byte[10])));
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    BitmapHunter hunter = new BitmapHunter(picasso, dispatcher, cache, stats, action, networkHandler);
+    PlatformLruCache cache = new PlatformLruCache(1);
+    BitmapHunter hunter =
+        new BitmapHunter(picasso, dispatcher, cache, stats, action, networkHandler);
     hunter.retryCount = 0;
     hunter.hunt();
     assertThat(requests.takeFirst().cacheControl().toString()).isEqualTo(CacheControl.FORCE_CACHE.toString());
@@ -91,7 +92,9 @@ public class NetworkRequestHandlerTest {
 
   @Test public void shouldRetryTwiceWithAirplaneModeOffAndNoNetworkInfo() {
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    BitmapHunter hunter = new BitmapHunter(picasso, dispatcher, cache, stats, action, networkHandler);
+    PlatformLruCache cache = new PlatformLruCache(1);
+    BitmapHunter hunter =
+        new BitmapHunter(picasso, dispatcher, cache, stats, action, networkHandler);
     assertThat(hunter.shouldRetry(false, null)).isTrue();
     assertThat(hunter.shouldRetry(false, null)).isTrue();
     assertThat(hunter.shouldRetry(false, null)).isFalse();

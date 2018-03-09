@@ -82,7 +82,7 @@ class BitmapHunter implements Runnable {
   final int sequence;
   final Picasso picasso;
   final Dispatcher dispatcher;
-  final Cache cache;
+  final PlatformLruCache cache;
   final Stats stats;
   final String key;
   final Request data;
@@ -100,8 +100,8 @@ class BitmapHunter implements Runnable {
   int retryCount;
   Priority priority;
 
-  BitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats, Action action,
-      RequestHandler requestHandler) {
+  BitmapHunter(Picasso picasso, Dispatcher dispatcher, PlatformLruCache cache,
+      Stats stats, Action action, RequestHandler requestHandler) {
     this.sequence = SEQUENCE_GENERATOR.incrementAndGet();
     this.picasso = picasso;
     this.dispatcher = dispatcher;
@@ -420,8 +420,8 @@ class BitmapHunter implements Runnable {
     Thread.currentThread().setName(builder.toString());
   }
 
-  static BitmapHunter forRequest(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats,
-      Action action) {
+  static BitmapHunter forRequest(Picasso picasso, Dispatcher dispatcher,
+      PlatformLruCache cache, Stats stats, Action action) {
     Request request = action.getRequest();
     List<RequestHandler> requestHandlers = picasso.getRequestHandlers();
 
