@@ -91,14 +91,6 @@ public class PlatformLruCacheTest {
     assertSnapshot(cache, "e", E, "b", B, "c", C);
   }
 
-  @Test public void constructorDoesNotAllowZeroCacheSize() {
-    try {
-      new PlatformLruCache(0);
-      fail();
-    } catch (IllegalArgumentException expected) {
-    }
-  }
-
   @Test public void cannotPutNullKey() {
     PlatformLruCache cache = new PlatformLruCache(3);
     try {
