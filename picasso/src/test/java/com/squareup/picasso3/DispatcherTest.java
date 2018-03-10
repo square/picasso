@@ -392,24 +392,6 @@ public class DispatcherTest {
     assertThat(dispatcher.airplaneMode).isFalse();
   }
 
-  @Test public void performNetworkStateChangeWithNullInfo() {
-    dispatcher.performNetworkStateChange(null);
-    verify(service, times(1)).adjustThreadCount(null);
-  }
-
-  @Test public void performNetworkStateChangeWithDisconnectedInfo() {
-    NetworkInfo info = mockNetworkInfo();
-    when(info.isConnectedOrConnecting()).thenReturn(false);
-    dispatcher.performNetworkStateChange(info);
-    verify(service, times(1)).adjustThreadCount(info);
-  }
-
-  @Test public void performNetworkStateChangeWithConnectedInfoDifferentInstance() {
-    NetworkInfo info = mockNetworkInfo(true);
-    dispatcher.performNetworkStateChange(info);
-    verify(service, times(1)).adjustThreadCount(info);
-  }
-
   @Test public void performNetworkStateChangeWithNullInfoIgnores() {
     Dispatcher dispatcher = createDispatcher(serviceMock);
     dispatcher.performNetworkStateChange(null);
@@ -497,16 +479,6 @@ public class DispatcherTest {
   @Test public void performResumeTagIsIdempotent() {
     dispatcher.performResumeTag("tag");
     verify(mainThreadHandler, never()).sendMessage(any(Message.class));
-  }
-
-  @Test
-  public void performNetworkStateChangeWithConnectedInfoAndPicassoExecutorServiceAdjustsThreads() {
-    PicassoExecutorService service = mock(PicassoExecutorService.class);
-    NetworkInfo info = mockNetworkInfo(true);
-    Dispatcher dispatcher = createDispatcher(service);
-    dispatcher.performNetworkStateChange(info);
-    verify(service).adjustThreadCount(info);
-    verifyZeroInteractions(service);
   }
 
   @Test public void performNetworkStateChangeFlushesFailedHunters() {
