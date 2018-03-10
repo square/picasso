@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static com.squareup.picasso3.Utils.checkNotNull;
 import static java.util.Collections.unmodifiableList;
 
 /** Immutable data about an image and the transformations that will be applied to it. */
@@ -434,18 +435,14 @@ public final class Request {
 
     /** Decode the image using the specified config. */
     public Builder config(@NonNull Bitmap.Config config) {
-      if (config == null) {
-        throw new IllegalArgumentException("config == null");
-      }
+      checkNotNull(config, "config == null");
       this.config = config;
       return this;
     }
 
     /** Execute request using the specified priority. */
     public Builder priority(@NonNull Priority priority) {
-      if (priority == null) {
-        throw new IllegalArgumentException("Priority invalid.");
-      }
+      checkNotNull(priority, "priority == null");
       if (this.priority != null) {
         throw new IllegalStateException("Priority already set.");
       }
@@ -459,9 +456,7 @@ public final class Request {
      * Custom transformations will always be run after the built-in transformations.
      */
     public Builder transform(@NonNull Transformation transformation) {
-      if (transformation == null) {
-        throw new IllegalArgumentException("Transformation must not be null.");
-      }
+      checkNotNull(transformation, "transformation == null");
       if (transformation.key() == null) {
         throw new IllegalArgumentException("Transformation key must not be null.");
       }
@@ -478,9 +473,7 @@ public final class Request {
      * Custom transformations will always be run after the built-in transformations.
      */
     public Builder transform(@NonNull List<? extends Transformation> transformations) {
-      if (transformations == null) {
-        throw new IllegalArgumentException("Transformation list must not be null.");
-      }
+      checkNotNull(transformations, "transformations == null");
       for (int i = 0, size = transformations.size(); i < size; i++) {
         transform(transformations.get(i));
       }

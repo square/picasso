@@ -753,7 +753,7 @@ public class RequestCreatorTest {
     try {
       new RequestCreator().priority(null);
       fail("Null priority should throw exception.");
-    } catch (IllegalArgumentException ignored) {
+    } catch (NullPointerException ignored) {
     }
     try {
       new RequestCreator().priority(LOW).priority(HIGH);
@@ -776,12 +776,12 @@ public class RequestCreatorTest {
     }
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = NullPointerException.class)
   public void nullTransformationsInvalid() {
     new RequestCreator().transform((Transformation) null);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = NullPointerException.class)
   public void nullTransformationListInvalid() {
     new RequestCreator().transform((List<Transformation>) null);
   }
