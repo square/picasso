@@ -199,7 +199,7 @@ public final class Request {
     return transformations != null;
   }
 
-  public Builder buildUpon() {
+  public Builder newBuilder() {
     return new Builder(this);
   }
 

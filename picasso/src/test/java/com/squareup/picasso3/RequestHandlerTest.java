@@ -34,7 +34,7 @@ public class RequestHandlerTest {
   @Test public void bitmapConfig() {
     for (Bitmap.Config config : Bitmap.Config.values()) {
       Request data = new Request.Builder(URI_1).config(config).build();
-      Request copy = data.buildUpon().build();
+      Request copy = data.newBuilder().build();
 
       assertThat(createBitmapOptions(data).inPreferredConfig).isSameAs(config);
       assertThat(createBitmapOptions(copy).inPreferredConfig).isSameAs(config);
