@@ -13,6 +13,7 @@ import static com.squareup.pollexor.ThumborUrlBuilder.format;
 /**
  * A {@link RequestTransformer} that changes requests to use {@link Thumbor} for some remote
  * transformations.
+ * By default images are only transformed with Thumbor if they have a size set.
  */
 public class PollexorRequestTransformer implements RequestTransformer {
   private final Thumbor thumbor;
@@ -23,7 +24,10 @@ public class PollexorRequestTransformer implements RequestTransformer {
     this(thumbor, false);
   }
 
-  /** Create a transformer for the specified {@link Thumbor}. */
+  /**
+   * Create a transformer for the specified {@link Thumbor} which always transforms images using
+   * Thumbor even when resize is not set.
+   */
   public PollexorRequestTransformer(Thumbor thumbor, boolean alwaysTransform) {
     this.thumbor = thumbor;
     this.alwaysTransform = alwaysTransform;
