@@ -36,7 +36,7 @@ public class PollexorRequestTransformer implements RequestTransformer {
     }
 
     // Start building a new request for us to mutate.
-    Request.Builder newRequest = request.buildUpon();
+    Request.Builder newRequest = request.newBuilder();
 
     // Create the url builder to use.
     ThumborUrlBuilder urlBuilder = thumbor.buildImage(uri.toString());
