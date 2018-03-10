@@ -267,7 +267,7 @@ public class RequestCreatorTest {
 
   @Test
   public void intoImageViewWithQuickMemoryCacheCheckDoesNotSubmit() {
-    PlatformLruCache cache = new PlatformLruCache(1);
+    PlatformLruCache cache = new PlatformLruCache(0);
     Picasso picasso =
         spy(new Picasso(RuntimeEnvironment.application, mock(Dispatcher.class), UNUSED_CALL_FACTORY,
             null, cache, null, NO_TRANSFORMERS, null, mock(Stats.class), ARGB_8888, false, false));
@@ -283,7 +283,7 @@ public class RequestCreatorTest {
 
   @Test
   public void intoImageViewSetsPlaceholderDrawable() {
-    PlatformLruCache cache = new PlatformLruCache(1);
+    PlatformLruCache cache = new PlatformLruCache(0);
     Picasso picasso =
         spy(new Picasso(RuntimeEnvironment.application, mock(Dispatcher.class), UNUSED_CALL_FACTORY,
             null, cache, null, NO_TRANSFORMERS, null, mock(Stats.class), ARGB_8888, false, false));
@@ -297,7 +297,7 @@ public class RequestCreatorTest {
 
   @Test
   public void intoImageViewNoPlaceholderDrawable() {
-    PlatformLruCache cache = new PlatformLruCache(1);
+    PlatformLruCache cache = new PlatformLruCache(0);
     Picasso picasso =
         spy(new Picasso(RuntimeEnvironment.application, mock(Dispatcher.class), UNUSED_CALL_FACTORY,
             null, cache, null, NO_TRANSFORMERS, null, mock(Stats.class), ARGB_8888, false, false));
@@ -310,7 +310,7 @@ public class RequestCreatorTest {
 
   @Test
   public void intoImageViewSetsPlaceholderWithResourceId() {
-    PlatformLruCache cache = new PlatformLruCache(1);
+    PlatformLruCache cache = new PlatformLruCache(0);
     Picasso picasso =
         spy(new Picasso(RuntimeEnvironment.application, mock(Dispatcher.class), UNUSED_CALL_FACTORY,
             null, cache, null, NO_TRANSFORMERS, null, mock(Stats.class), ARGB_8888, false, false));

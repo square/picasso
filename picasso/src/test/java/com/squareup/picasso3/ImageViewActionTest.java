@@ -83,7 +83,7 @@ public class ImageViewActionTest {
   public void invokesTargetAndCallbackSuccessIfTargetIsNotNull() {
     Bitmap bitmap = makeBitmap();
     Dispatcher dispatcher = mock(Dispatcher.class);
-    PlatformLruCache cache = new PlatformLruCache(1);
+    PlatformLruCache cache = new PlatformLruCache(0);
     Picasso picasso =
         new Picasso(RuntimeEnvironment.application, dispatcher, UNUSED_CALL_FACTORY, null, cache,
             null, NO_TRANSFORMERS, null, mock(Stats.class), Bitmap.Config.ARGB_8888, false, false);
