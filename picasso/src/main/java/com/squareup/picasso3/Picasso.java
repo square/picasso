@@ -751,7 +751,7 @@ public class Picasso {
       if (maxByteCount < 0) {
         throw new IllegalArgumentException("maxByteCount < 0: " + maxByteCount);
       }
-      cache = new PlatformLruCache(maxByteCount != 0 ? maxByteCount : 1);
+      cache = new PlatformLruCache(maxByteCount);
       return this;
     }
 
