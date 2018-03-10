@@ -57,6 +57,7 @@ import static com.squareup.picasso3.Utils.VERB_ERRORED;
 import static com.squareup.picasso3.Utils.VERB_RESUMED;
 import static com.squareup.picasso3.Utils.calculateDiskCacheSize;
 import static com.squareup.picasso3.Utils.checkMain;
+import static com.squareup.picasso3.Utils.checkNotNull;
 import static com.squareup.picasso3.Utils.createDefaultCacheDir;
 import static com.squareup.picasso3.Utils.log;
 
@@ -204,18 +205,14 @@ public class Picasso {
   /** Cancel any existing requests for the specified target {@link ImageView}. */
   public void cancelRequest(@NonNull ImageView view) {
     // checkMain() is called from cancelExistingRequest()
-    if (view == null) {
-      throw new IllegalArgumentException("view cannot be null.");
-    }
+    checkNotNull(view, "view == null");
     cancelExistingRequest(view);
   }
 
   /** Cancel any existing requests for the specified {@link Target} instance. */
   public void cancelRequest(@NonNull Target target) {
     // checkMain() is called from cancelExistingRequest()
-    if (target == null) {
-      throw new IllegalArgumentException("target cannot be null.");
-    }
+    checkNotNull(target, "target == null");
     cancelExistingRequest(target);
   }
 
@@ -225,9 +222,7 @@ public class Picasso {
    */
   public void cancelRequest(@NonNull RemoteViews remoteViews, @IdRes int viewId) {
     // checkMain() is called from cancelExistingRequest()
-    if (remoteViews == null) {
-      throw new IllegalArgumentException("remoteViews cannot be null.");
-    }
+    checkNotNull(remoteViews, "remoteViews == null");
     cancelExistingRequest(new RemoteViewsAction.RemoteViewsTarget(remoteViews, viewId));
   }
 
@@ -239,9 +234,7 @@ public class Picasso {
    */
   public void cancelTag(@NonNull Object tag) {
     checkMain();
-    if (tag == null) {
-      throw new IllegalArgumentException("Cannot cancel requests with null tag.");
-    }
+    checkNotNull(tag, "tag == null");
 
     List<Action> actions = new ArrayList<>(targetToAction.values());
     //noinspection ForLoopReplaceableByForEach
@@ -271,9 +264,7 @@ public class Picasso {
    * @see RequestCreator#tag(Object)
    */
   public void pauseTag(@NonNull Object tag) {
-    if (tag == null) {
-      throw new IllegalArgumentException("tag == null");
-    }
+    checkNotNull(tag, "tag == null");
     dispatcher.dispatchPauseTag(tag);
   }
 
@@ -285,9 +276,7 @@ public class Picasso {
    * @see RequestCreator#tag(Object)
    */
   public void resumeTag(@NonNull Object tag) {
-    if (tag == null) {
-      throw new IllegalArgumentException("tag == null");
-    }
+    checkNotNull(tag, "tag == null");
     dispatcher.dispatchResumeTag(tag);
   }
 
@@ -343,7 +332,7 @@ public class Picasso {
    * @see #load(String)
    * @see #load(int)
    */
-  public RequestCreator load(@NonNull File file) {
+  public RequestCreator load(@Nullable File file) {
     if (file == null) {
       return new RequestCreator(this, null, 0);
     }
@@ -403,9 +392,7 @@ public class Picasso {
    * @see #invalidate(String)
    */
   public void invalidate(@NonNull File file) {
-    if (file == null) {
-      throw new IllegalArgumentException("file == null");
-    }
+    checkNotNull(file, "file == null");
     invalidate(Uri.fromFile(file));
   }
 
@@ -683,9 +670,7 @@ public class Picasso {
 
     /** Start building a new {@link Picasso} instance. */
     public Builder(@NonNull Context context) {
-      if (context == null) {
-        throw new IllegalArgumentException("Context must not be null.");
-      }
+      checkNotNull(context, "context == null");
       this.context = context.getApplicationContext();
     }
 
@@ -694,9 +679,7 @@ public class Picasso {
      * on a per-request basis using {@link RequestCreator#config(Bitmap.Config) config(..)}.
      */
     public Builder defaultBitmapConfig(@NonNull Bitmap.Config bitmapConfig) {
-      if (bitmapConfig == null) {
-        throw new IllegalArgumentException("Bitmap config must not be null.");
-      }
+      checkNotNull(bitmapConfig, "bitmapConfig == null");
       this.defaultBitmapConfig = bitmapConfig;
       return this;
     }
@@ -707,9 +690,7 @@ public class Picasso {
      * Note: Calling {@link #callFactory} overwrites this value.
      */
     public Builder client(@NonNull OkHttpClient client) {
-      if (client == null) {
-        throw new NullPointerException("client == null");
-      }
+      checkNotNull(client, "client == null");
       callFactory = client;
       return this;
     }
@@ -720,9 +701,7 @@ public class Picasso {
      * Note: Calling {@link #client} overwrites this value.
      */
     public Builder callFactory(@NonNull Call.Factory factory) {
-      if (factory == null) {
-        throw new NullPointerException("factory == null");
-      }
+      checkNotNull(factory, "factory == null");
       callFactory = factory;
       return this;
     }
@@ -733,9 +712,7 @@ public class Picasso {
      * Note: Calling {@link Picasso#shutdown() shutdown()} will not shutdown supplied executors.
      */
     public Builder executor(@NonNull ExecutorService executorService) {
-      if (executorService == null) {
-        throw new IllegalArgumentException("Executor service must not be null.");
-      }
+      checkNotNull(executorService, "executorService == null");
       if (this.service != null) {
         throw new IllegalStateException("Executor service already set.");
       }
@@ -764,9 +741,7 @@ public class Picasso {
 
     /** Specify a listener for interesting events. */
     public Builder listener(@NonNull Listener listener) {
-      if (listener == null) {
-        throw new IllegalArgumentException("Listener must not be null.");
-      }
+      checkNotNull(listener, "listener == null");
       if (this.listener != null) {
         throw new IllegalStateException("Listener already set.");
       }
@@ -775,10 +750,8 @@ public class Picasso {
     }
 
     /** Add a transformer that observes and potentially modify all incoming requests. */
-    public Builder addRequestTransformer(RequestTransformer transformer) {
-      if (transformer == null) {
-        throw new IllegalArgumentException("Transformer must not be null.");
-      }
+    public Builder addRequestTransformer(@NonNull RequestTransformer transformer) {
+      checkNotNull(transformer, "transformer == null");
       if (requestTransformers.contains(transformer)) {
         throw new IllegalStateException("Transformer already set.");
       }
@@ -788,9 +761,7 @@ public class Picasso {
 
     /** Register a {@link RequestHandler}. */
     public Builder addRequestHandler(@NonNull RequestHandler requestHandler) {
-      if (requestHandler == null) {
-        throw new IllegalArgumentException("RequestHandler must not be null.");
-      }
+      checkNotNull(requestHandler, "requestHandler == null");
       if (requestHandlers == null) {
         requestHandlers = new ArrayList<>();
       }

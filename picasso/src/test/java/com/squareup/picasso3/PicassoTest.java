@@ -224,7 +224,7 @@ public final class PicassoTest {
     try {
       picasso.cancelRequest((ImageView) null);
       fail("Canceling with a null ImageView should throw exception.");
-    } catch (IllegalArgumentException expected) {
+    } catch (NullPointerException expected) {
     }
   }
 
@@ -232,7 +232,7 @@ public final class PicassoTest {
     try {
       picasso.cancelRequest((Target) null);
       fail("Canceling with a null target should throw exception.");
-    } catch (IllegalArgumentException expected) {
+    } catch (NullPointerException expected) {
     }
   }
 
@@ -283,7 +283,7 @@ public final class PicassoTest {
     try {
       picasso.cancelRequest(null, 0);
       fail("Canceling with a null RemoteViews should throw exception.");
-    } catch (IllegalArgumentException expected) {
+    } catch (NullPointerException expected) {
     }
   }
 
@@ -306,7 +306,7 @@ public final class PicassoTest {
     try {
       picasso.cancelTag(null);
       fail("Canceling with a null tag should throw exception.");
-    } catch (IllegalArgumentException expected) {
+    } catch (NullPointerException expected) {
     }
   }
 
@@ -420,7 +420,7 @@ public final class PicassoTest {
     try {
       new Picasso.Builder(context).listener(null);
       fail("Null listener should throw exception.");
-    } catch (IllegalArgumentException expected) {
+    } catch (NullPointerException expected) {
     }
     try {
       new Picasso.Builder(context).listener(listener).listener(listener);
@@ -448,7 +448,7 @@ public final class PicassoTest {
     try {
       new Picasso.Builder(context).executor(null);
       fail("Null Executor should throw exception.");
-    } catch (IllegalArgumentException expected) {
+    } catch (NullPointerException expected) {
     }
     try {
       ExecutorService executor = mock(ExecutorService.class);
@@ -477,7 +477,7 @@ public final class PicassoTest {
     try {
       new Picasso.Builder(context).addRequestTransformer(null);
       fail("Null request transformer should throw exception.");
-    } catch (IllegalArgumentException expected) {
+    } catch (NullPointerException expected) {
     }
   }
 
@@ -499,7 +499,7 @@ public final class PicassoTest {
     try {
       new Picasso.Builder(context).addRequestHandler(null);
       fail("Null request handler should throw exception.");
-    } catch (IllegalArgumentException expected) {
+    } catch (NullPointerException expected) {
     }
   }
 
@@ -530,7 +530,7 @@ public final class PicassoTest {
     try {
       new Picasso.Builder(null);
       fail("Null context should throw exception.");
-    } catch (IllegalArgumentException expected) {
+    } catch (NullPointerException expected) {
     }
   }
 
