@@ -15,7 +15,6 @@
  */
 package com.squareup.picasso3;
 
-import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -217,7 +216,6 @@ final class Utils {
     return cache;
   }
 
-  @TargetApi(JELLY_BEAN_MR2)
   static long calculateDiskCacheSize(File dir) {
     long size = MIN_DISK_CACHE_SIZE;
 
