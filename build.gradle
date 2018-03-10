@@ -19,7 +19,7 @@ buildscript {
     supportAnnotations: "com.android.support:support-annotations:${versions.supportLibrary}",
     supportExifInterface: "com.android.support:exifinterface:${versions.supportLibrary}",
     junit: 'junit:junit:4.12',
-    truth: 'com.google.truth:truth:0.36',
+    truth: 'com.google.truth:truth:0.39',
     robolectric: 'org.robolectric:robolectric:3.1',
     mockito: 'org.mockito:mockito-core:1.9.5'
   ]
@@ -33,8 +33,11 @@ buildscript {
 
   dependencies {
     classpath deps.androidPlugin
+    classpath 'com.github.ben-manes:gradle-versions-plugin:0.17.0'
   }
 }
+
+apply plugin: 'com.github.ben-manes.versions'
 
 subprojects {
   repositories {
