@@ -69,7 +69,7 @@ public class DispatcherTest {
   @Mock PicassoExecutorService service;
   @Mock ExecutorService serviceMock;
   @Mock Handler mainThreadHandler;
-  @Mock Cache cache;
+  final PlatformLruCache cache = new PlatformLruCache(2048);
   @Mock Stats stats;
   private Dispatcher dispatcher;
 
@@ -236,7 +236,7 @@ public class DispatcherTest {
   @Test public void performCompleteSetsResultInCache() {
     BitmapHunter hunter = mockHunter(URI_KEY_1, bitmap1, 0, null);
     dispatcher.performComplete(hunter);
-    verify(cache).set(hunter.getKey(), hunter.getResult());
+    assertThat(cache.get(hunter.getKey())).isSameAs(hunter.getResult());
   }
 
   @Test public void performCompleteWithNoStoreMemoryPolicy() {
@@ -245,7 +245,7 @@ public class DispatcherTest {
     BitmapHunter hunter = mockHunter(URI_KEY_1, bitmap1, memoryPolicy, null);
     dispatcher.performComplete(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
-    verifyZeroInteractions(cache);
+    assertThat(cache.size()).isEqualTo(0);
   }
 
   @Test public void performCompleteCleansUpAndAddsToBatch() {

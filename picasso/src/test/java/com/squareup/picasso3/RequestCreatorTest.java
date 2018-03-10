@@ -267,10 +267,10 @@ public class RequestCreatorTest {
 
   @Test
   public void intoImageViewWithQuickMemoryCacheCheckDoesNotSubmit() {
+    PlatformLruCache cache = new PlatformLruCache(0);
     Picasso picasso =
         spy(new Picasso(RuntimeEnvironment.application, mock(Dispatcher.class), UNUSED_CALL_FACTORY,
-            null, Cache.NONE, null, NO_TRANSFORMERS, null, mock(Stats.class), ARGB_8888, false,
-            false));
+            null, cache, null, NO_TRANSFORMERS, null, mock(Stats.class), ARGB_8888, false, false));
     doReturn(bitmap).when(picasso).quickMemoryCacheCheck(URI_KEY_1);
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
@@ -283,10 +283,10 @@ public class RequestCreatorTest {
 
   @Test
   public void intoImageViewSetsPlaceholderDrawable() {
+    PlatformLruCache cache = new PlatformLruCache(0);
     Picasso picasso =
         spy(new Picasso(RuntimeEnvironment.application, mock(Dispatcher.class), UNUSED_CALL_FACTORY,
-            null, Cache.NONE, null, NO_TRANSFORMERS, null, mock(Stats.class), ARGB_8888, false,
-            false));
+            null, cache, null, NO_TRANSFORMERS, null, mock(Stats.class), ARGB_8888, false, false));
     ImageView target = mockImageViewTarget();
     Drawable placeHolderDrawable = mock(Drawable.class);
     new RequestCreator(picasso, URI_1, 0).placeholder(placeHolderDrawable).into(target);
@@ -297,10 +297,10 @@ public class RequestCreatorTest {
 
   @Test
   public void intoImageViewNoPlaceholderDrawable() {
+    PlatformLruCache cache = new PlatformLruCache(0);
     Picasso picasso =
         spy(new Picasso(RuntimeEnvironment.application, mock(Dispatcher.class), UNUSED_CALL_FACTORY,
-            null, Cache.NONE, null, NO_TRANSFORMERS, null, mock(Stats.class), ARGB_8888, false,
-            false));
+            null, cache, null, NO_TRANSFORMERS, null, mock(Stats.class), ARGB_8888, false, false));
     ImageView target = mockImageViewTarget();
     new RequestCreator(picasso, URI_1, 0).noPlaceholder().into(target);
     verifyNoMoreInteractions(target);
@@ -310,15 +310,16 @@ public class RequestCreatorTest {
 
   @Test
   public void intoImageViewSetsPlaceholderWithResourceId() {
+    PlatformLruCache cache = new PlatformLruCache(0);
     Picasso picasso =
         spy(new Picasso(RuntimeEnvironment.application, mock(Dispatcher.class), UNUSED_CALL_FACTORY,
-            null, Cache.NONE, null, NO_TRANSFORMERS, null, mock(Stats.class), ARGB_8888, false,
-            false));
+            null, cache, null, NO_TRANSFORMERS, null, mock(Stats.class), ARGB_8888, false, false));
     ImageView target = mockImageViewTarget();
-    new RequestCreator(picasso, URI_1, 0).placeholder(android.R.drawable.picture_frame).into(target);
+    new RequestCreator(picasso, URI_1, 0).placeholder(android.R.drawable.picture_frame)
+        .into(target);
     ArgumentCaptor<Drawable> drawableCaptor = ArgumentCaptor.forClass(Drawable.class);
     verify(target).setImageDrawable(drawableCaptor.capture());
-    assertThat(shadowOf(drawableCaptor.getValue()).getCreatedFromResId()) //
+    assertThat(shadowOf(drawableCaptor.getValue()).getCreatedFromResId())
         .isEqualTo(android.R.drawable.picture_frame);
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue()).isInstanceOf(ImageViewAction.class);

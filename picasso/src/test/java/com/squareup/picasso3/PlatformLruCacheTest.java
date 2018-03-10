@@ -30,7 +30,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static junit.framework.Assert.fail;
 
 @RunWith(RobolectricGradleTestRunner.class)
-public class LruCacheTest {
+public class PlatformLruCacheTest {
   // The use of ALPHA_8 simplifies the size math in tests since only one byte is used per-pixel.
   private final Bitmap A = Bitmap.createBitmap(1, 1, ALPHA_8);
   private final Bitmap B = Bitmap.createBitmap(1, 1, ALPHA_8);
@@ -44,7 +44,7 @@ public class LruCacheTest {
   private int expectedEvictionCount;
 
   @Test public void testStatistics() {
-    LruCache cache = new LruCache(3);
+    PlatformLruCache cache = new PlatformLruCache(3);
     assertStatistics(cache);
 
     cache.set("a", A);
@@ -91,16 +91,8 @@ public class LruCacheTest {
     assertSnapshot(cache, "e", E, "b", B, "c", C);
   }
 
-  @Test public void constructorDoesNotAllowZeroCacheSize() {
-    try {
-      new LruCache(0);
-      fail();
-    } catch (IllegalArgumentException expected) {
-    }
-  }
-
   @Test public void cannotPutNullKey() {
-    LruCache cache = new LruCache(3);
+    PlatformLruCache cache = new PlatformLruCache(3);
     try {
       cache.set(null, A);
       fail();
@@ -109,7 +101,7 @@ public class LruCacheTest {
   }
 
   @Test public void cannotPutNullValue() {
-    LruCache cache = new LruCache(3);
+    PlatformLruCache cache = new PlatformLruCache(3);
     try {
       cache.set("a", null);
       fail();
@@ -118,14 +110,14 @@ public class LruCacheTest {
   }
 
   @Test public void evictionWithSingletonCache() {
-    LruCache cache = new LruCache(1);
+    PlatformLruCache cache = new PlatformLruCache(1);
     cache.set("a", A);
     cache.set("b", B);
     assertSnapshot(cache, "b", B);
   }
 
   @Test public void throwsWithNullKey() {
-    LruCache cache = new LruCache(1);
+    PlatformLruCache cache = new PlatformLruCache(1);
     try {
       cache.get(null);
       fail("Expected NullPointerException");
@@ -138,7 +130,7 @@ public class LruCacheTest {
    * the front of the queue.
    */
   @Test public void putCauseEviction() {
-    LruCache cache = new LruCache(3);
+    PlatformLruCache cache = new PlatformLruCache(3);
 
     cache.set("a", A);
     cache.set("b", B);
@@ -148,7 +140,7 @@ public class LruCacheTest {
   }
 
   @Test public void evictAll() {
-    LruCache cache = new LruCache(4);
+    PlatformLruCache cache = new PlatformLruCache(4);
     cache.set("a", A);
     cache.set("b", B);
     cache.set("c", C);
@@ -157,7 +149,7 @@ public class LruCacheTest {
   }
 
   @Test public void clearPrefixedKey() {
-    LruCache cache = new LruCache(3);
+    PlatformLruCache cache = new PlatformLruCache(3);
 
     cache.set("Hello\nAlice!", A);
     cache.set("Hello\nBob!", B);
@@ -170,7 +162,7 @@ public class LruCacheTest {
   }
 
   @Test public void invalidate() {
-    LruCache cache = new LruCache(3);
+    PlatformLruCache cache = new PlatformLruCache(3);
     cache.set("Hello\nAlice!", A);
     assertThat(cache.size()).isEqualTo(1);
     cache.clearKeyUri("Hello");
@@ -178,7 +170,7 @@ public class LruCacheTest {
   }
 
   @Test public void overMaxSizeDoesNotClear() {
-    LruCache cache = new LruCache(16);
+    PlatformLruCache cache = new PlatformLruCache(16);
     Bitmap size4 = Bitmap.createBitmap(2, 2, ALPHA_8);
     Bitmap size16 = Bitmap.createBitmap(4, 4, ALPHA_8);
     Bitmap size25 = Bitmap.createBitmap(5, 5, ALPHA_8);
@@ -197,7 +189,7 @@ public class LruCacheTest {
   }
 
   @Test public void overMaxSizeRemovesExisting() {
-    LruCache cache = new LruCache(20);
+    PlatformLruCache cache = new PlatformLruCache(20);
     Bitmap size4 = Bitmap.createBitmap(2, 2, ALPHA_8);
     Bitmap size16 = Bitmap.createBitmap(4, 4, ALPHA_8);
     Bitmap size25 = Bitmap.createBitmap(5, 5, ALPHA_8);
@@ -214,28 +206,28 @@ public class LruCacheTest {
     assertThat(cache.size()).isEqualTo(4);
   }
 
-  private void assertHit(LruCache cache, String key, Bitmap value) {
+  private void assertHit(PlatformLruCache cache, String key, Bitmap value) {
     assertThat(cache.get(key)).isEqualTo(value);
     expectedHitCount++;
     assertStatistics(cache);
   }
 
-  private void assertMiss(LruCache cache, String key) {
+  private void assertMiss(PlatformLruCache cache, String key) {
     assertThat(cache.get(key)).isNull();
     expectedMissCount++;
     assertStatistics(cache);
   }
 
-  private void assertStatistics(LruCache cache) {
+  private void assertStatistics(PlatformLruCache cache) {
     assertThat(cache.putCount()).isEqualTo(expectedPutCount);
     assertThat(cache.hitCount()).isEqualTo(expectedHitCount);
     assertThat(cache.missCount()).isEqualTo(expectedMissCount);
     assertThat(cache.evictionCount()).isEqualTo(expectedEvictionCount);
   }
 
-  private void assertSnapshot(LruCache cache, Object... keysAndValues) {
+  private void assertSnapshot(PlatformLruCache cache, Object... keysAndValues) {
     List<Object> actualKeysAndValues = new ArrayList<>();
-    for (Map.Entry<String, LruCache.BitmapAndSize> entry : cache.cache.snapshot().entrySet()) {
+    for (Map.Entry<String, PlatformLruCache.BitmapAndSize> entry : cache.cache.snapshot().entrySet()) {
       actualKeysAndValues.add(entry.getKey());
       actualKeysAndValues.add(entry.getValue().bitmap);
     }

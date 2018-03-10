@@ -33,7 +33,7 @@ class Stats {
   private static final String STATS_THREAD_NAME = Utils.THREAD_PREFIX + "Stats";
 
   final HandlerThread statsThread;
-  final Cache cache;
+  final PlatformLruCache cache;
   final Handler handler;
 
   long cacheHits;
@@ -48,7 +48,7 @@ class Stats {
   int originalBitmapCount;
   int transformedBitmapCount;
 
-  Stats(Cache cache) {
+  Stats(PlatformLruCache cache) {
     this.cache = cache;
     this.statsThread = new HandlerThread(STATS_THREAD_NAME, THREAD_PRIORITY_BACKGROUND);
     this.statsThread.start();

@@ -88,7 +88,7 @@ public final class BitmapHunterTest {
 
   @Mock Context context;
   @Mock Picasso picasso;
-  @Mock Cache cache;
+  final PlatformLruCache cache = new PlatformLruCache(2048);
   @Mock Stats stats;
   @Mock Dispatcher dispatcher;
 
@@ -158,19 +158,19 @@ public final class BitmapHunterTest {
         new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, bitmap);
 
     Bitmap result = hunter.hunt();
-    verify(cache).get(URI_KEY_1);
+    assertThat(cache.missCount()).isEqualTo(1);
     verify(hunter.requestHandler).load(action.getRequest(), 0);
     assertThat(result).isEqualTo(bitmap);
   }
 
   @Test public void huntReturnsWhenResultInCache() throws Exception {
-    when(cache.get(URI_KEY_1)).thenReturn(bitmap);
+    cache.set(URI_KEY_1, bitmap);
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     TestableBitmapHunter hunter =
         new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, bitmap);
 
     Bitmap result = hunter.hunt();
-    verify(cache).get(URI_KEY_1);
+    assertThat(cache.hitCount()).isEqualTo(1);
     verify(hunter.requestHandler, never()).load(action.getRequest(), 0);
     assertThat(result).isEqualTo(bitmap);
   }
@@ -1093,17 +1093,17 @@ public final class BitmapHunterTest {
   }
 
   private static class TestableBitmapHunter extends BitmapHunter {
-    TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats,
+    TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, PlatformLruCache cache, Stats stats,
         Action action) {
       this(picasso, dispatcher, cache, stats, action, null);
     }
 
-    TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats,
+    TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, PlatformLruCache cache, Stats stats,
         Action action, Bitmap result) {
       this(picasso, dispatcher, cache, stats, action, result, null);
     }
 
-    TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats,
+    TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, PlatformLruCache cache, Stats stats,
         Action action, Bitmap result, IOException exception) {
       super(picasso, dispatcher, cache, stats, action, spy(new TestableRequestHandler(result, exception)));
     }
@@ -1139,7 +1139,7 @@ public final class BitmapHunterTest {
   }
 
   private static class OOMBitmapHunter extends BitmapHunter {
-    OOMBitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats,
+    OOMBitmapHunter(Picasso picasso, Dispatcher dispatcher, PlatformLruCache cache, Stats stats,
         Action action) {
       super(picasso, dispatcher, cache, stats, action, spy(new OOMRequestHandler()));
     }

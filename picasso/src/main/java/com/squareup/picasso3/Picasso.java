@@ -148,7 +148,7 @@ public class Picasso {
   final Context context;
   final Dispatcher dispatcher;
   private final @Nullable okhttp3.Cache closeableCache;
-  final Cache cache;
+  final PlatformLruCache cache;
   final Stats stats;
   final Map<Object, Action> targetToAction;
   final Map<ImageView, DeferredRequestCreator> targetToDeferredRequestCreator;
@@ -161,7 +161,7 @@ public class Picasso {
   boolean shutdown;
 
   Picasso(Context context, Dispatcher dispatcher, Call.Factory callFactory,
-      @Nullable okhttp3.Cache closeableCache, Cache cache, Listener listener,
+      @Nullable okhttp3.Cache closeableCache, PlatformLruCache cache, Listener listener,
       List<RequestTransformer> requestTransformers, List<RequestHandler> extraRequestHandlers,
       Stats stats, Bitmap.Config defaultBitmapConfig, boolean indicatorsEnabled,
       boolean loggingEnabled) {
@@ -659,7 +659,7 @@ public class Picasso {
     private final Context context;
     private Call.Factory callFactory;
     private ExecutorService service;
-    private Cache cache;
+    private PlatformLruCache cache;
     private Listener listener;
     private final List<RequestTransformer> requestTransformers = new ArrayList<>();
     private List<RequestHandler> requestHandlers;
@@ -728,14 +728,7 @@ public class Picasso {
       if (maxByteCount < 0) {
         throw new IllegalArgumentException("maxByteCount < 0: " + maxByteCount);
       }
-      if (cache != null) {
-        throw new IllegalStateException("Memory cache already set.");
-      }
-      if (maxByteCount == 0) {
-        cache = Cache.NONE;
-      } else {
-        cache = new LruCache(maxByteCount);
-      }
+      cache = new PlatformLruCache(maxByteCount);
       return this;
     }
 
@@ -803,7 +796,7 @@ public class Picasso {
             .build();
       }
       if (cache == null) {
-        cache = new LruCache(context);
+        cache = new PlatformLruCache(Utils.calculateMemoryCacheSize(context));
       }
       if (service == null) {
         service = new PicassoExecutorService();

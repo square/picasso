@@ -74,9 +74,10 @@ public class TargetActionTest {
     Target target = mockTarget();
     Context context = mock(Context.class);
     Dispatcher dispatcher = mock(Dispatcher.class);
+    PlatformLruCache cache = new PlatformLruCache(0);
     Picasso picasso =
-        new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, Cache.NONE, null,
-            NO_TRANSFORMERS, null, mock(Stats.class), ARGB_8888, false, false);
+        new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, null, NO_TRANSFORMERS,
+            null, mock(Stats.class), ARGB_8888, false, false);
     Resources res = mock(Resources.class);
     TargetAction request =
         new TargetAction(picasso, target, null, 0, 0, null, URI_KEY_1, null, RESOURCE_ID_1);

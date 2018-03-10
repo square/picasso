@@ -52,6 +52,7 @@ import static com.squareup.picasso3.TestUtils.mockDeferredRequestCreator;
 import static com.squareup.picasso3.TestUtils.mockHunter;
 import static com.squareup.picasso3.TestUtils.mockImageViewTarget;
 import static com.squareup.picasso3.TestUtils.mockTarget;
+import static com.squareup.picasso3.Utils.createKey;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -70,7 +71,7 @@ public final class PicassoTest {
   @Mock Context context;
   @Mock Dispatcher dispatcher;
   @Mock RequestHandler requestHandler;
-  @Mock Cache cache;
+  final PlatformLruCache cache = new PlatformLruCache(2048);
   @Mock Listener listener;
   @Mock Stats stats;
 
@@ -110,7 +111,7 @@ public final class PicassoTest {
   }
 
   @Test public void quickMemoryCheckReturnsBitmapIfInCache() {
-    when(cache.get(URI_KEY_1)).thenReturn(bitmap);
+    cache.set(URI_KEY_1, bitmap);
     Bitmap cached = picasso.quickMemoryCacheCheck(URI_KEY_1);
     assertThat(cached).isEqualTo(bitmap);
     verify(stats).dispatchCacheHit();
@@ -207,7 +208,7 @@ public final class PicassoTest {
   }
 
   @Test public void resumeActionImmediatelyCompletesCachedRequest() {
-    when(cache.get(URI_KEY_1)).thenReturn(bitmap);
+    cache.set(URI_KEY_1, bitmap);
     Action action = mockAction(URI_KEY_1, URI_1);
     picasso.resumeAction(action);
     verify(action).complete(bitmap, MEMORY);
@@ -338,8 +339,10 @@ public final class PicassoTest {
   }
 
   @Test public void shutdown() {
+    cache.set("key", makeBitmap(1, 1));
+    assertThat(cache.size()).isEqualTo(1);
     picasso.shutdown();
-    verify(cache).clear();
+    assertThat(cache.size()).isEqualTo(0);
     verify(stats).shutdown();
     verify(dispatcher).shutdown();
     assertThat(picasso.shutdown).isTrue();
@@ -348,16 +351,18 @@ public final class PicassoTest {
   @Test public void shutdownClosesUnsharedCache() {
     okhttp3.Cache cache = new okhttp3.Cache(temporaryFolder.getRoot(), 100);
     Picasso picasso =
-        new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, cache, Cache.NONE, listener,
+        new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, cache, this.cache, listener,
             NO_TRANSFORMERS, null, stats, ARGB_8888, false, false);
     picasso.shutdown();
     assertThat(cache.isClosed()).isTrue();
   }
 
   @Test public void shutdownTwice() {
+    cache.set("key", makeBitmap(1, 1));
+    assertThat(cache.size()).isEqualTo(1);
     picasso.shutdown();
     picasso.shutdown();
-    verify(cache).clear();
+    assertThat(cache.size()).isEqualTo(0);
     verify(stats).shutdown();
     verify(dispatcher).shutdown();
     assertThat(picasso.shutdown).isTrue();
@@ -373,17 +378,23 @@ public final class PicassoTest {
   }
 
   @Test public void throwWhenTransformRequestReturnsNull() {
+    RequestTransformer brokenTransformer = new RequestTransformer() {
+      @Override public Request transformRequest(Request request) {
+        return null;
+      }
+    };
+    Picasso picasso = new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, listener,
+        Collections.singletonList(brokenTransformer), null, stats, ARGB_8888, false, false);
+    Request request = new Request.Builder(URI_1).build();
     try {
-      RequestTransformer transformer = new RequestTransformer() {
-        @Override public Request transformRequest(Request request) {
-          return null;
-        }
-      };
-      picasso = new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, null, listener,
-          Collections.singletonList(transformer), null, stats, ARGB_8888, false, false);
-      picasso.transformRequest(new Request.Builder(URI_1).build());
+      picasso.transformRequest(request);
       fail("Returning null from transformRequest() should throw");
     } catch (IllegalStateException expected) {
+      assertThat(expected).hasMessageThat()
+          .isEqualTo("Request transformer "
+              + brokenTransformer.getClass().getCanonicalName()
+              + " returned null for "
+              + request);
     }
   }
 
@@ -465,12 +476,6 @@ public final class PicassoTest {
     } catch (IllegalArgumentException expected) {
       assertThat(expected).hasMessageThat().isEqualTo("maxByteCount < 0: -1");
     }
-    try {
-      new Picasso.Builder(context).withCacheSize(0).withCacheSize(1);
-      fail();
-    } catch (IllegalStateException expected) {
-      assertThat(expected).hasMessageThat().isEqualTo("Memory cache already set.");
-    }
   }
 
   @Test public void builderNullRequestTransformer() {
@@ -548,17 +553,25 @@ public final class PicassoTest {
   }
 
   @Test public void invalidateString() {
-    picasso.invalidate("http://example.com");
-    verify(cache).clearKeyUri("http://example.com");
+    cache.set(createKey(new Request.Builder(Uri.parse("https://example.com")).build()),
+        makeBitmap(1, 1));
+    assertThat(cache.size()).isEqualTo(1);
+    picasso.invalidate("https://example.com");
+    assertThat(cache.size()).isEqualTo(0);
   }
 
   @Test public void invalidateFile() {
+    cache.set(createKey(new Request.Builder(Uri.fromFile(new File("/foo/bar/baz"))).build()),
+        makeBitmap(1, 1));
+    assertThat(cache.size()).isEqualTo(1);
     picasso.invalidate(new File("/foo/bar/baz"));
-    verify(cache).clearKeyUri("file:///foo/bar/baz");
+    assertThat(cache.size()).isEqualTo(0);
   }
 
-  @Test public void invalidateUri() {
-    picasso.invalidate(Uri.parse("mock://12345"));
-    verify(cache).clearKeyUri("mock://12345");
+  @Test public void invalidateUri() throws Exception {
+    cache.set(createKey(new Request.Builder(URI_1).build()), makeBitmap(1, 1));
+    assertThat(cache.size()).isEqualTo(1);
+    picasso.invalidate(URI_1);
+    assertThat(cache.size()).isEqualTo(0);
   }
 }
