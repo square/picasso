@@ -17,6 +17,7 @@ package com.squareup.picasso3;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.Nullable;
 
 import static com.squareup.picasso3.Picasso.LoadedFrom;
 
@@ -44,7 +45,7 @@ public interface Target {
    * specified via {@link RequestCreator#error(android.graphics.drawable.Drawable)}
    * or {@link RequestCreator#error(int)}.
    */
-  void onBitmapFailed(Exception e, Drawable errorDrawable);
+  void onBitmapFailed(Exception e, @Nullable Drawable errorDrawable);
 
   /**
    * Callback invoked right before your request is submitted.
@@ -53,5 +54,5 @@ public interface Target {
    * specified via {@link RequestCreator#placeholder(android.graphics.drawable.Drawable)}
    * or {@link RequestCreator#placeholder(int)}.
    */
-  void onPrepareLoad(Drawable placeHolderDrawable);
+  void onPrepareLoad(@Nullable Drawable placeHolderDrawable);
 }
