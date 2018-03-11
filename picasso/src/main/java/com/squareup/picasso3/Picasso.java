@@ -569,7 +569,7 @@ public class Picasso {
     }
     if (result != null) {
       if (from == null) {
-        throw new AssertionError("LoadedFrom cannot be null.");
+        throw new NullPointerException("LoadedFrom cannot be null.");
       }
       action.complete(result, from);
       if (loggingEnabled) {

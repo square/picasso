@@ -29,6 +29,7 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
   final int viewId;
   Callback callback;
 
+  @SuppressWarnings("HidingField")
   private RemoteViewsTarget target;
 
   RemoteViewsAction(Picasso picasso, Request data, RemoteViews remoteViews, int viewId,

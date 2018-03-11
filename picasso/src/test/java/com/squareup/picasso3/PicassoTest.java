@@ -197,7 +197,8 @@ public final class PicassoTest {
     try {
       picasso.complete(hunter);
       fail("Calling complete() with null LoadedFrom should throw");
-    } catch (AssertionError expected) {
+    } catch (NullPointerException expected) {
+      assertThat(expected).hasMessageThat().isEqualTo("LoadedFrom cannot be null.");
     }
   }
 

@@ -22,7 +22,7 @@ import com.squareup.picasso3.Picasso;
  */
 public final class PicassoProvider {
   @SuppressLint("StaticFieldLeak")
-  private static Picasso instance;
+  private static volatile Picasso instance;
 
   public static Picasso get() {
     if (instance == null) {
