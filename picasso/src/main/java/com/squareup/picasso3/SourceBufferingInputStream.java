@@ -91,7 +91,7 @@ final class SourceBufferingInputStream extends InputStream {
   }
 
   @Override public int available() {
-    return (int) Math.max(buffer.size() - position, Integer.MAX_VALUE);
+    return (int) Math.min(buffer.size() - position, Integer.MAX_VALUE);
   }
 
   @Override public void close() {

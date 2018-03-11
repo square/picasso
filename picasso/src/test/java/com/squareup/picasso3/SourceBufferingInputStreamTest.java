@@ -31,11 +31,25 @@ public final class SourceBufferingInputStreamTest {
     assertEquals("Hello, world!", source.readUtf8());
   }
 
+  @Test public void available() throws IOException {
+    Buffer data = new Buffer().writeUtf8("Hello, world!");
+    BufferedSource source = Okio.buffer((Source) data);
+    InputStream stream = new SourceBufferingInputStream(source);
+    assertEquals(0, stream.available());
+    stream.read();
+    // Assume the segment size is >=13 bytes.
+    assertEquals(12, stream.available());
+
+    Buffer buffer = new Buffer().writeUtf8("Hello, world!");
+    stream = new SourceBufferingInputStream(buffer);
+    assertEquals(13, stream.available());
+  }
+
   /** Prevents a consumer from reading large chunks and exercises edge cases. */
   private static final class OneByteSource implements Source {
     private final Source upstream;
 
-    private OneByteSource(Source upstream) {
+    OneByteSource(Source upstream) {
       this.upstream = upstream;
     }
 
