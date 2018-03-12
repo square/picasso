@@ -41,6 +41,7 @@ import static com.squareup.picasso3.Picasso.Priority.LOW;
 import static com.squareup.picasso3.Picasso.Priority.NORMAL;
 import static com.squareup.picasso3.RemoteViewsAction.AppWidgetAction;
 import static com.squareup.picasso3.RemoteViewsAction.NotificationAction;
+import static com.squareup.picasso3.TestUtils.NO_HANDLERS;
 import static com.squareup.picasso3.TestUtils.NO_TRANSFORMERS;
 import static com.squareup.picasso3.TestUtils.STABLE_1;
 import static com.squareup.picasso3.TestUtils.STABLE_URI_KEY_1;
@@ -270,7 +271,8 @@ public class RequestCreatorTest {
     PlatformLruCache cache = new PlatformLruCache(0);
     Picasso picasso =
         spy(new Picasso(RuntimeEnvironment.application, mock(Dispatcher.class), UNUSED_CALL_FACTORY,
-            null, cache, null, NO_TRANSFORMERS, null, mock(Stats.class), ARGB_8888, false, false));
+            null, cache, null, NO_TRANSFORMERS, NO_HANDLERS, mock(Stats.class), ARGB_8888, false,
+            false));
     doReturn(bitmap).when(picasso).quickMemoryCacheCheck(URI_KEY_1);
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
@@ -286,7 +288,8 @@ public class RequestCreatorTest {
     PlatformLruCache cache = new PlatformLruCache(0);
     Picasso picasso =
         spy(new Picasso(RuntimeEnvironment.application, mock(Dispatcher.class), UNUSED_CALL_FACTORY,
-            null, cache, null, NO_TRANSFORMERS, null, mock(Stats.class), ARGB_8888, false, false));
+            null, cache, null, NO_TRANSFORMERS, NO_HANDLERS, mock(Stats.class), ARGB_8888, false,
+            false));
     ImageView target = mockImageViewTarget();
     Drawable placeHolderDrawable = mock(Drawable.class);
     new RequestCreator(picasso, URI_1, 0).placeholder(placeHolderDrawable).into(target);
@@ -300,7 +303,8 @@ public class RequestCreatorTest {
     PlatformLruCache cache = new PlatformLruCache(0);
     Picasso picasso =
         spy(new Picasso(RuntimeEnvironment.application, mock(Dispatcher.class), UNUSED_CALL_FACTORY,
-            null, cache, null, NO_TRANSFORMERS, null, mock(Stats.class), ARGB_8888, false, false));
+            null, cache, null, NO_TRANSFORMERS, NO_HANDLERS, mock(Stats.class), ARGB_8888, false,
+            false));
     ImageView target = mockImageViewTarget();
     new RequestCreator(picasso, URI_1, 0).noPlaceholder().into(target);
     verifyNoMoreInteractions(target);
@@ -313,7 +317,8 @@ public class RequestCreatorTest {
     PlatformLruCache cache = new PlatformLruCache(0);
     Picasso picasso =
         spy(new Picasso(RuntimeEnvironment.application, mock(Dispatcher.class), UNUSED_CALL_FACTORY,
-            null, cache, null, NO_TRANSFORMERS, null, mock(Stats.class), ARGB_8888, false, false));
+            null, cache, null, NO_TRANSFORMERS, NO_HANDLERS, mock(Stats.class), ARGB_8888, false,
+            false));
     ImageView target = mockImageViewTarget();
     new RequestCreator(picasso, URI_1, 0).placeholder(android.R.drawable.picture_frame)
         .into(target);
