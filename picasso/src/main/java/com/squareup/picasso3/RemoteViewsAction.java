@@ -29,7 +29,7 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
   final int viewId;
   Callback callback;
 
-  private RemoteViewsTarget target;
+  private RemoteViewsTarget remoteTarget;
 
   RemoteViewsAction(Picasso picasso, Request data, RemoteViews remoteViews, int viewId,
       int errorResId, int memoryPolicy, int networkPolicy, Object tag, String key,
@@ -65,10 +65,10 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
   }
 
   @Override RemoteViewsTarget getTarget() {
-    if (target == null) {
-      target = new RemoteViewsTarget(remoteViews, viewId);
+    if (remoteTarget == null) {
+      remoteTarget = new RemoteViewsTarget(remoteViews, viewId);
     }
-    return target;
+    return remoteTarget;
   }
 
   void setImageResource(int resId) {

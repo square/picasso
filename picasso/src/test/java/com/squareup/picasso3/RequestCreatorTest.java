@@ -181,6 +181,7 @@ public class RequestCreatorTest {
     }
   }
 
+  @Test
   public void intoTargetNoPlaceholderCallsWithNull() {
     Target target = mockTarget();
     new RequestCreator(picasso, URI_1, 0).noPlaceholder().into(target);

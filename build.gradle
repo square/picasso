@@ -18,6 +18,7 @@ buildscript {
     supportFragment: "com.android.support:support-fragment:${versions.supportLibrary}",
     supportAnnotations: "com.android.support:support-annotations:${versions.supportLibrary}",
     supportExifInterface: "com.android.support:exifinterface:${versions.supportLibrary}",
+    errorProne: "com.google.errorprone:error_prone_core:2.2.0",
     junit: 'junit:junit:4.12',
     truth: 'com.google.truth:truth:0.39',
     robolectric: 'org.robolectric:robolectric:3.1',
@@ -27,13 +28,14 @@ buildscript {
   ext.isCi = "true" == System.getenv('CI')
 
   repositories {
-    jcenter()
     google()
+    maven { url 'https://plugins.gradle.org/m2/' }
   }
 
   dependencies {
     classpath deps.androidPlugin
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.17.0'
+    classpath 'net.ltgt.gradle:gradle-errorprone-plugin:0.0.13'
   }
 }
 
@@ -41,7 +43,7 @@ apply plugin: 'com.github.ben-manes.versions'
 
 subprojects {
   repositories {
-    jcenter()
+    mavenCentral()
     google()
   }
 
@@ -72,5 +74,11 @@ subprojects {
 
   afterEvaluate {
     tasks.findByName('check').dependsOn('checkstyle')
+  }
+
+  apply plugin: 'net.ltgt.errorprone'
+
+  dependencies {
+    errorprone deps.errorProne
   }
 }

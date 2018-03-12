@@ -27,6 +27,7 @@ import android.os.Message;
 import android.os.Process;
 import android.os.StatFs;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -263,7 +264,7 @@ final class Utils {
     }
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({ "unchecked", "TypeParameterUnusedInFormals" })
   static <T> T getService(Context context, String service) {
     return (T) context.getSystemService(service);
   }
@@ -336,8 +337,7 @@ final class Utils {
   }
 
   static class PicassoThreadFactory implements ThreadFactory {
-    @SuppressWarnings("NullableProblems")
-    public Thread newThread(Runnable r) {
+    @Override public Thread newThread(@NonNull Runnable r) {
       return new PicassoThread(r);
     }
   }
