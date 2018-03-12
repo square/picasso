@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
+    tools:ignore="UseCompoundDrawables"
     >
   <ImageView
       android:id="@+id/photo"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
+      android:contentDescription="@string/sample_notification"
       />
   <TextView
       android:layout_width="0dp"
       android:layout_height="wrap_content"
       android:layout_weight="1"
       android:layout_marginLeft="8dp"
+      android:layout_marginStart="8dp"
       android:layout_gravity="center_vertical"
       android:textAppearance="@style/TextAppearance.Compat.Notification"
       android:text="@string/sample_notification"

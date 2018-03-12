@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <style name="Widget.PicassoSample.Button" parent="android:Widget.Button">
     <item name="android:background">@drawable/button_selector</item>
     <item name="android:minHeight">48dip</item>
@@ -15,7 +15,7 @@
     <item name="android:paddingLeft">8dp</item>
     <item name="android:paddingRight">8dp</item>
     <!-- Use 'dp' so that the user's font preference doesn't affect the action bar. -->
-    <item name="android:textSize">19dp</item>
+    <item name="android:textSize" tools:ignore="SpUsage">19dp</item>
     <item name="android:textColor">#ffffffff</item>
     <item name="android:gravity">center_vertical</item>
     <item name="android:singleLine">true</item>
@@ -30,7 +30,7 @@
     <item name="android:paddingRight">16dp</item>
     <item name="android:textColor">#ffffffff</item>
     <!-- Use 'dp' so that the user's font preference doesn't affect the action bar. -->
-    <item name="android:textSize">13dp</item>
+    <item name="android:textSize" tools:ignore="SpUsage">13dp</item>
     <item name="android:background">@drawable/overlay_selector</item>
   </style>
 
