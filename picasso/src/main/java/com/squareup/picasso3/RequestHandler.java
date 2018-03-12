@@ -18,7 +18,6 @@ package com.squareup.picasso3;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.NetworkInfo;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import java.io.IOException;
 import okio.Source;
@@ -56,18 +55,18 @@ public abstract class RequestHandler {
     private final Source source;
     private final int exifOrientation;
 
-    public Result(@NonNull Bitmap bitmap, @NonNull Picasso.LoadedFrom loadedFrom) {
+    public Result(@Nullable Bitmap bitmap, Picasso.LoadedFrom loadedFrom) {
       this(checkNotNull(bitmap, "bitmap == null"), null, loadedFrom, 0);
     }
 
-    public Result(@NonNull Source source, @NonNull Picasso.LoadedFrom loadedFrom) {
+    public Result(Source source, Picasso.LoadedFrom loadedFrom) {
       this(null, checkNotNull(source, "source == null"), loadedFrom, 0);
     }
 
     Result(
         @Nullable Bitmap bitmap,
         @Nullable Source source,
-        @NonNull Picasso.LoadedFrom loadedFrom,
+        Picasso.LoadedFrom loadedFrom,
         int exifOrientation) {
       if ((bitmap != null) == (source != null)) {
         throw new AssertionError();
@@ -92,7 +91,7 @@ public abstract class RequestHandler {
      * Returns the resulting {@link Picasso.LoadedFrom} generated from a
      * {@link #load(Request, int)} call.
      */
-    @NonNull public Picasso.LoadedFrom getLoadedFrom() {
+    public Picasso.LoadedFrom getLoadedFrom() {
       return loadedFrom;
     }
 

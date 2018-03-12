@@ -18,7 +18,6 @@ package com.squareup.picasso3;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.annotation.DrawableRes;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.Px;
 import android.view.Gravity;
@@ -224,7 +223,7 @@ public final class Request {
     private Priority priority;
 
     /** Start building a request using the specified {@link Uri}. */
-    public Builder(@NonNull Uri uri) {
+    public Builder(Uri uri) {
       setUri(uri);
     }
 
@@ -278,7 +277,7 @@ public final class Request {
      * <p>
      * This will clear an image resource ID if one is set.
      */
-    public Builder setUri(@NonNull Uri uri) {
+    public Builder setUri(Uri uri) {
       if (uri == null) {
         throw new IllegalArgumentException("Image URI may not be null.");
       }
@@ -434,14 +433,14 @@ public final class Request {
     }
 
     /** Decode the image using the specified config. */
-    public Builder config(@NonNull Bitmap.Config config) {
+    public Builder config(Bitmap.Config config) {
       checkNotNull(config, "config == null");
       this.config = config;
       return this;
     }
 
     /** Execute request using the specified priority. */
-    public Builder priority(@NonNull Priority priority) {
+    public Builder priority(Priority priority) {
       checkNotNull(priority, "priority == null");
       if (this.priority != null) {
         throw new IllegalStateException("Priority already set.");
@@ -455,7 +454,7 @@ public final class Request {
      * <p>
      * Custom transformations will always be run after the built-in transformations.
      */
-    public Builder transform(@NonNull Transformation transformation) {
+    public Builder transform(Transformation transformation) {
       checkNotNull(transformation, "transformation == null");
       if (transformation.key() == null) {
         throw new IllegalArgumentException("Transformation key must not be null.");
@@ -472,7 +471,7 @@ public final class Request {
      * <p>
      * Custom transformations will always be run after the built-in transformations.
      */
-    public Builder transform(@NonNull List<? extends Transformation> transformations) {
+    public Builder transform(List<? extends Transformation> transformations) {
       checkNotNull(transformations, "transformations == null");
       for (int i = 0, size = transformations.size(); i < size; i++) {
         transform(transformations.get(i));

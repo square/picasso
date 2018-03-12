@@ -1,10 +1,11 @@
 package com.example.picasso;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.widget.GridView;
 
 public class SampleGridViewActivity extends PicassoSampleActivity {
-  @Override protected void onCreate(Bundle savedInstanceState) {
+  @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.sample_gridview_activity);
 

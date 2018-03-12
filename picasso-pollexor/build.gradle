@@ -23,6 +23,7 @@ dependencies {
   api project(':picasso')
   api deps.pollexor
   compileOnly deps.supportAnnotations
+  compileOnly deps.jsr305
   testImplementation deps.junit
   testImplementation deps.robolectric
   testImplementation deps.truth

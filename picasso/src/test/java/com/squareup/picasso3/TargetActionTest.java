@@ -19,6 +19,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.Nullable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
@@ -96,11 +97,11 @@ public class TargetActionTest {
         bitmap.recycle();
       }
 
-      @Override public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+      @Override public void onBitmapFailed(Exception e, @Nullable Drawable errorDrawable) {
         throw new AssertionError();
       }
 
-      @Override public void onPrepareLoad(Drawable placeHolderDrawable) {
+      @Override public void onPrepareLoad(@Nullable Drawable placeHolderDrawable) {
         throw new AssertionError();
       }
     };

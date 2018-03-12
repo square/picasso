@@ -25,7 +25,6 @@ import android.os.Message;
 import android.os.Process;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IdRes;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
@@ -201,14 +200,14 @@ public class Picasso {
   }
 
   /** Cancel any existing requests for the specified target {@link ImageView}. */
-  public void cancelRequest(@NonNull ImageView view) {
+  public void cancelRequest(ImageView view) {
     // checkMain() is called from cancelExistingRequest()
     checkNotNull(view, "view == null");
     cancelExistingRequest(view);
   }
 
   /** Cancel any existing requests for the specified {@link Target} instance. */
-  public void cancelRequest(@NonNull Target target) {
+  public void cancelRequest(Target target) {
     // checkMain() is called from cancelExistingRequest()
     checkNotNull(target, "target == null");
     cancelExistingRequest(target);
@@ -218,7 +217,7 @@ public class Picasso {
    * Cancel any existing requests for the specified {@link RemoteViews} target with the given {@code
    * viewId}.
    */
-  public void cancelRequest(@NonNull RemoteViews remoteViews, @IdRes int viewId) {
+  public void cancelRequest(RemoteViews remoteViews, @IdRes int viewId) {
     // checkMain() is called from cancelExistingRequest()
     checkNotNull(remoteViews, "remoteViews == null");
     cancelExistingRequest(new RemoteViewsAction.RemoteViewsTarget(remoteViews, viewId));
@@ -230,7 +229,7 @@ public class Picasso {
    *
    * @see RequestCreator#tag(Object)
    */
-  public void cancelTag(@NonNull Object tag) {
+  public void cancelTag(Object tag) {
     checkMain();
     checkNotNull(tag, "tag == null");
 
@@ -261,7 +260,7 @@ public class Picasso {
    * @see #resumeTag(Object)
    * @see RequestCreator#tag(Object)
    */
-  public void pauseTag(@NonNull Object tag) {
+  public void pauseTag(Object tag) {
     checkNotNull(tag, "tag == null");
     dispatcher.dispatchPauseTag(tag);
   }
@@ -273,7 +272,7 @@ public class Picasso {
    * @see #pauseTag(Object)
    * @see RequestCreator#tag(Object)
    */
-  public void resumeTag(@NonNull Object tag) {
+  public void resumeTag(Object tag) {
     checkNotNull(tag, "tag == null");
     dispatcher.dispatchResumeTag(tag);
   }
@@ -389,7 +388,7 @@ public class Picasso {
    * @see #invalidate(Uri)
    * @see #invalidate(String)
    */
-  public void invalidate(@NonNull File file) {
+  public void invalidate(File file) {
     checkNotNull(file, "file == null");
     invalidate(Uri.fromFile(file));
   }
@@ -667,7 +666,7 @@ public class Picasso {
     private boolean loggingEnabled;
 
     /** Start building a new {@link Picasso} instance. */
-    public Builder(@NonNull Context context) {
+    public Builder(Context context) {
       checkNotNull(context, "context == null");
       this.context = context.getApplicationContext();
     }
@@ -676,7 +675,7 @@ public class Picasso {
      * Specify the default {@link Bitmap.Config} used when decoding images. This can be overridden
      * on a per-request basis using {@link RequestCreator#config(Bitmap.Config) config(..)}.
      */
-    public Builder defaultBitmapConfig(@NonNull Bitmap.Config bitmapConfig) {
+    public Builder defaultBitmapConfig(Bitmap.Config bitmapConfig) {
       checkNotNull(bitmapConfig, "bitmapConfig == null");
       this.defaultBitmapConfig = bitmapConfig;
       return this;
@@ -687,7 +686,7 @@ public class Picasso {
      * <p>
      * Note: Calling {@link #callFactory} overwrites this value.
      */
-    public Builder client(@NonNull OkHttpClient client) {
+    public Builder client(OkHttpClient client) {
       checkNotNull(client, "client == null");
       callFactory = client;
       return this;
@@ -698,7 +697,7 @@ public class Picasso {
      * <p>
      * Note: Calling {@link #client} overwrites this value.
      */
-    public Builder callFactory(@NonNull Call.Factory factory) {
+    public Builder callFactory(Call.Factory factory) {
       checkNotNull(factory, "factory == null");
       callFactory = factory;
       return this;
@@ -709,7 +708,7 @@ public class Picasso {
      * <p>
      * Note: Calling {@link Picasso#shutdown() shutdown()} will not shutdown supplied executors.
      */
-    public Builder executor(@NonNull ExecutorService executorService) {
+    public Builder executor(ExecutorService executorService) {
       checkNotNull(executorService, "executorService == null");
       if (this.service != null) {
         throw new IllegalStateException("Executor service already set.");
@@ -731,7 +730,7 @@ public class Picasso {
     }
 
     /** Specify a listener for interesting events. */
-    public Builder listener(@NonNull Listener listener) {
+    public Builder listener(Listener listener) {
       checkNotNull(listener, "listener == null");
       if (this.listener != null) {
         throw new IllegalStateException("Listener already set.");
@@ -741,7 +740,7 @@ public class Picasso {
     }
 
     /** Add a transformer that observes and potentially modify all incoming requests. */
-    public Builder addRequestTransformer(@NonNull RequestTransformer transformer) {
+    public Builder addRequestTransformer(RequestTransformer transformer) {
       checkNotNull(transformer, "transformer == null");
       if (requestTransformers.contains(transformer)) {
         throw new IllegalStateException("Transformer already set.");
@@ -751,7 +750,7 @@ public class Picasso {
     }
 
     /** Register a {@link RequestHandler}. */
-    public Builder addRequestHandler(@NonNull RequestHandler requestHandler) {
+    public Builder addRequestHandler(RequestHandler requestHandler) {
       checkNotNull(requestHandler, "requestHandler == null");
       if (requestHandlers.contains(requestHandler)) {
         throw new IllegalStateException("RequestHandler already registered.");

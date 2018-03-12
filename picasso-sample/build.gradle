@@ -26,6 +26,7 @@ android {
 
 dependencies {
   compileOnly deps.supportAnnotations
+  compileOnly deps.jsr305
   implementation deps.supportCompat
   implementation deps.supportFragment
   implementation project(':picasso')

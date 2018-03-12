@@ -19,6 +19,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.net.Uri;
+import android.support.annotation.Nullable;
 import android.view.Gravity;
 import java.io.File;
 import java.io.IOException;
@@ -1099,12 +1100,12 @@ public final class BitmapHunterTest {
     }
 
     TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, PlatformLruCache cache, Stats stats,
-        Action action, Bitmap result) {
+        Action action, @Nullable Bitmap result) {
       this(picasso, dispatcher, cache, stats, action, result, null);
     }
 
     TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, PlatformLruCache cache, Stats stats,
-        Action action, Bitmap result, IOException exception) {
+        Action action, @Nullable Bitmap result, @Nullable IOException exception) {
       super(picasso, dispatcher, cache, stats, action, spy(new TestableRequestHandler(result, exception)));
     }
 
@@ -1117,7 +1118,7 @@ public final class BitmapHunterTest {
     private final Bitmap bitmap;
     private final IOException exception;
 
-    TestableRequestHandler(Bitmap bitmap, IOException exception) {
+    TestableRequestHandler(@Nullable Bitmap bitmap, @Nullable IOException exception) {
       this.bitmap = bitmap;
       this.exception = exception;
     }

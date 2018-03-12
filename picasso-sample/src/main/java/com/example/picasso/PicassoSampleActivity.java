@@ -1,6 +1,7 @@
 package com.example.picasso;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +19,7 @@ abstract class PicassoSampleActivity extends FragmentActivity {
   private ToggleButton showHide;
   private FrameLayout sampleContent;
 
-  @Override protected void onCreate(Bundle savedInstanceState) {
+  @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     super.setContentView(R.layout.picasso_sample_activity);
     sampleContent = findViewById(R.id.sample_content);

@@ -24,7 +24,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IdRes;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.util.TypedValue;
@@ -131,7 +130,7 @@ public class RequestCreator {
    * If you are not using a placeholder image but want to clear an existing image (such as when
    * used in an {@link android.widget.Adapter adapter}), pass in {@code null}.
    */
-  public RequestCreator placeholder(@NonNull Drawable placeholderDrawable) {
+  public RequestCreator placeholder(Drawable placeholderDrawable) {
     if (!setPlaceholder) {
       throw new IllegalStateException("Already explicitly declared as no placeholder.");
     }
@@ -155,7 +154,7 @@ public class RequestCreator {
   }
 
   /** An error drawable to be used if the request image could not be loaded. */
-  public RequestCreator error(@NonNull Drawable errorDrawable) {
+  public RequestCreator error(Drawable errorDrawable) {
     if (errorDrawable == null) {
       throw new IllegalArgumentException("Error image may not be null.");
     }
@@ -184,7 +183,7 @@ public class RequestCreator {
    * @see Picasso#pauseTag(Object)
    * @see Picasso#resumeTag(Object)
    */
-  public RequestCreator tag(@NonNull Object tag) {
+  public RequestCreator tag(Object tag) {
     if (tag == null) {
       throw new IllegalArgumentException("Tag invalid.");
     }
@@ -293,7 +292,7 @@ public class RequestCreator {
    * Note: This value may be ignored by {@link BitmapFactory}. See
    * {@link BitmapFactory.Options#inPreferredConfig its documentation} for more details.
    */
-  public RequestCreator config(@NonNull Bitmap.Config config) {
+  public RequestCreator config(Bitmap.Config config) {
     data.config(config);
     return this;
   }
@@ -302,7 +301,7 @@ public class RequestCreator {
    * Sets the stable key for this request to be used instead of the URI or resource ID when
    * caching. Two requests with the same value are considered to be for the same resource.
    */
-  public RequestCreator stableKey(@NonNull String stableKey) {
+  public RequestCreator stableKey(String stableKey) {
     data.stableKey(stableKey);
     return this;
   }
@@ -314,7 +313,7 @@ public class RequestCreator {
    * By default, all requests have {@link Priority#NORMAL} priority, except for
    * {@link #fetch()} requests, which have {@link Priority#LOW} priority by default.
    */
-  public RequestCreator priority(@NonNull Priority priority) {
+  public RequestCreator priority(Priority priority) {
     data.priority(priority);
     return this;
   }
@@ -325,7 +324,7 @@ public class RequestCreator {
    * Custom transformations will always be run after the built-in transformations.
    */
   // TODO show example of calling resize after a transform in the javadoc
-  public RequestCreator transform(@NonNull Transformation transformation) {
+  public RequestCreator transform(Transformation transformation) {
     data.transform(transformation);
     return this;
   }
@@ -335,7 +334,7 @@ public class RequestCreator {
    * <p>
    * Custom transformations will always be run after the built-in transformations.
    */
-  public RequestCreator transform(@NonNull List<? extends Transformation> transformations) {
+  public RequestCreator transform(List<? extends Transformation> transformations) {
     data.transform(transformations);
     return this;
   }
@@ -344,8 +343,8 @@ public class RequestCreator {
    * Specifies the {@link MemoryPolicy} to use for this request. You may specify additional policy
    * options using the varargs parameter.
    */
-  public RequestCreator memoryPolicy(@NonNull MemoryPolicy policy,
-      @NonNull MemoryPolicy... additional) {
+  public RequestCreator memoryPolicy(MemoryPolicy policy,
+      MemoryPolicy... additional) {
     if (policy == null) {
       throw new IllegalArgumentException("Memory policy cannot be null.");
     }
@@ -368,8 +367,8 @@ public class RequestCreator {
    * Specifies the {@link NetworkPolicy} to use for this request. You may specify additional policy
    * options using the varargs parameter.
    */
-  public RequestCreator networkPolicy(@NonNull NetworkPolicy policy,
-      @NonNull NetworkPolicy... additional) {
+  public RequestCreator networkPolicy(NetworkPolicy policy,
+      NetworkPolicy... additional) {
     if (policy == null) {
       throw new IllegalArgumentException("Network policy cannot be null.");
     }
@@ -530,7 +529,7 @@ public class RequestCreator {
    * garbage collected if you do not keep a strong reference to it. To receive callbacks when an
    * image is loaded use {@link #into(android.widget.ImageView, Callback)}.
    */
-  public void into(@NonNull Target target) {
+  public void into(Target target) {
     long started = System.nanoTime();
     checkMain();
 
@@ -571,8 +570,8 @@ public class RequestCreator {
    * Asynchronously fulfills the request into the specified {@link RemoteViews} object with the
    * given {@code viewId}. This is used for loading bitmaps into a {@link Notification}.
    */
-  public void into(@NonNull RemoteViews remoteViews, @IdRes int viewId, int notificationId,
-      @NonNull Notification notification) {
+  public void into(RemoteViews remoteViews, @IdRes int viewId, int notificationId,
+      Notification notification) {
     into(remoteViews, viewId, notificationId, notification, null);
   }
 
@@ -580,8 +579,8 @@ public class RequestCreator {
    * Asynchronously fulfills the request into the specified {@link RemoteViews} object with the
    * given {@code viewId}. This is used for loading bitmaps into a {@link Notification}.
    */
-  public void into(@NonNull RemoteViews remoteViews, @IdRes int viewId, int notificationId,
-      @NonNull Notification notification, @Nullable String notificationTag) {
+  public void into(RemoteViews remoteViews, @IdRes int viewId, int notificationId,
+      Notification notification, @Nullable String notificationTag) {
     into(remoteViews, viewId, notificationId, notification, notificationTag, null);
   }
 
@@ -589,8 +588,8 @@ public class RequestCreator {
    * Asynchronously fulfills the request into the specified {@link RemoteViews} object with the
    * given {@code viewId}. This is used for loading bitmaps into a {@link Notification}.
    */
-  public void into(@NonNull RemoteViews remoteViews, @IdRes int viewId, int notificationId,
-      @NonNull Notification notification, @Nullable String notificationTag, Callback callback) {
+  public void into(RemoteViews remoteViews, @IdRes int viewId, int notificationId,
+      Notification notification, @Nullable String notificationTag, Callback callback) {
     long started = System.nanoTime();
 
     if (remoteViews == null) {
@@ -621,8 +620,8 @@ public class RequestCreator {
    * Asynchronously fulfills the request into the specified {@link RemoteViews} object with the
    * given {@code viewId}. This is used for loading bitmaps into all instances of a widget.
    */
-  public void into(@NonNull RemoteViews remoteViews, @IdRes int viewId,
-      @NonNull int[] appWidgetIds) {
+  public void into(RemoteViews remoteViews, @IdRes int viewId,
+      int[] appWidgetIds) {
     into(remoteViews, viewId, appWidgetIds, null);
   }
 
@@ -630,7 +629,7 @@ public class RequestCreator {
    * Asynchronously fulfills the request into the specified {@link RemoteViews} object with the
    * given {@code viewId}. This is used for loading bitmaps into all instances of a widget.
    */
-  public void into(@NonNull RemoteViews remoteViews, @IdRes int viewId, @NonNull int[] appWidgetIds,
+  public void into(RemoteViews remoteViews, @IdRes int viewId, int[] appWidgetIds,
       Callback callback) {
     long started = System.nanoTime();
 

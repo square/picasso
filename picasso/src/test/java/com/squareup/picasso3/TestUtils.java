@@ -23,7 +23,6 @@ import android.graphics.Bitmap;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.IBinder;
-import android.support.annotation.NonNull;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
@@ -303,7 +302,7 @@ class TestUtils {
       return response;
     }
 
-    @Override public void enqueue(@NonNull okhttp3.Callback responseCallback) {
+    @Override public void enqueue(okhttp3.Callback responseCallback) {
       try {
         responseCallback.onResponse(this, response);
       } catch (IOException e) {

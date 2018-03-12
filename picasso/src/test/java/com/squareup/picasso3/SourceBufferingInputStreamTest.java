@@ -1,6 +1,5 @@
 package com.squareup.picasso3;
 
-import android.support.annotation.NonNull;
 import java.io.IOException;
 import java.io.InputStream;
 import okio.Buffer;
@@ -53,7 +52,7 @@ public final class SourceBufferingInputStreamTest {
       this.upstream = upstream;
     }
 
-    @Override public long read(@NonNull Buffer sink, long byteCount) throws IOException {
+    @Override public long read(Buffer sink, long byteCount) throws IOException {
       if (byteCount > 0) {
         return upstream.read(sink, 1);
       }
