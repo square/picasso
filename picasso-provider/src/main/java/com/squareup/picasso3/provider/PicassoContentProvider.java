@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.support.annotation.Nullable;
 import android.support.annotation.RestrictTo;
 
 import static android.support.annotation.RestrictTo.Scope.LIBRARY;
@@ -21,8 +22,8 @@ public final class PicassoContentProvider extends ContentProvider {
   }
 
   @Override
-  public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
-      String sortOrder) {
+  public Cursor query(Uri uri, @Nullable String[] projection, @Nullable String selection,
+      @Nullable String[] selectionArgs, @Nullable String sortOrder) {
     return null;
   }
 
@@ -30,16 +31,18 @@ public final class PicassoContentProvider extends ContentProvider {
     return null;
   }
 
-  @Override public Uri insert(Uri uri, ContentValues values) {
+  @Override public Uri insert(Uri uri, @Nullable ContentValues values) {
     return null;
   }
 
-  @Override public int delete(Uri uri, String selection, String[] selectionArgs) {
+  @Override
+  public int delete(Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
     return 0;
   }
 
   @Override
-  public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+  public int update(Uri uri, @Nullable ContentValues values, @Nullable String selection,
+      @Nullable String[] selectionArgs) {
     return 0;
   }
 }

@@ -27,7 +27,7 @@ import android.os.Message;
 import android.os.Process;
 import android.os.StatFs;
 import android.provider.Settings;
-import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -109,7 +109,7 @@ final class Utils {
     return result;
   }
 
-  static <T> T checkNotNull(T value, String message) {
+  static <T> T checkNotNull(@Nullable T value, String message) {
     if (value == null) {
       throw new NullPointerException(message);
     }
@@ -337,7 +337,7 @@ final class Utils {
   }
 
   static class PicassoThreadFactory implements ThreadFactory {
-    @Override public Thread newThread(@NonNull Runnable r) {
+    @Override public Thread newThread(Runnable r) {
       return new PicassoThread(r);
     }
   }

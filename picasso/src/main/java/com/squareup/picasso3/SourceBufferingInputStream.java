@@ -15,7 +15,6 @@
  */
 package com.squareup.picasso3;
 
-import android.support.annotation.NonNull;
 import java.io.IOException;
 import java.io.InputStream;
 import okio.Buffer;
@@ -55,7 +54,7 @@ final class SourceBufferingInputStream extends InputStream {
     return value;
   }
 
-  @Override public int read(@NonNull byte[] b, int off, int len) throws IOException {
+  @Override public int read(byte[] b, int off, int len) throws IOException {
     source.require(position + len);
     int copied = /*buffer.*/copyTo(b, off, len);
     position += copied;

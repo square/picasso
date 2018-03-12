@@ -21,6 +21,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -38,7 +39,7 @@ public class SampleContactsActivity extends PicassoSampleActivity
 
   private SampleContactsAdapter adapter;
 
-  @Override protected void onCreate(Bundle savedInstanceState) {
+  @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.sample_contacts_activity);
 
@@ -60,8 +61,8 @@ public class SampleContactsActivity extends PicassoSampleActivity
     getSupportLoaderManager().initLoader(ContactsQuery.QUERY_ID, null, this);
   }
 
-  @Override public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-      @NonNull int[] grantResults) {
+  @Override public void onRequestPermissionsResult(int requestCode, String[] permissions,
+      int[] grantResults) {
     if (requestCode == REQUEST_READ_CONTACTS) {
       if (grantResults.length > 0
           && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -75,7 +76,7 @@ public class SampleContactsActivity extends PicassoSampleActivity
     }
   }
 
-  @Override public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+  @NonNull @Override public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
     if (id == ContactsQuery.QUERY_ID) {
       return new CursorLoader(this, //
           ContactsQuery.CONTENT_URI, //
@@ -84,7 +85,7 @@ public class SampleContactsActivity extends PicassoSampleActivity
           null, //
           ContactsQuery.SORT_ORDER);
     }
-    return null;
+    return new CursorLoader(this);
   }
 
   @Override public void onLoadFinished(Loader<Cursor> loader, Cursor data) {

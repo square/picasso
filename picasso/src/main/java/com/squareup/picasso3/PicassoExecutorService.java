@@ -15,6 +15,7 @@
  */
 package com.squareup.picasso3;
 
+import android.support.annotation.NonNull;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -35,7 +36,7 @@ class PicassoExecutorService extends ThreadPoolExecutor {
         new PriorityBlockingQueue<Runnable>(), new Utils.PicassoThreadFactory());
   }
 
-  @Override
+  @NonNull @Override
   public Future<?> submit(Runnable task) {
     PicassoFutureTask ftask = new PicassoFutureTask((BitmapHunter) task);
     execute(ftask);

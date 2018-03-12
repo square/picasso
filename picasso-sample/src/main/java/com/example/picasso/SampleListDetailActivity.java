@@ -1,6 +1,7 @@
 package com.example.picasso;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +13,7 @@ import android.widget.TextView;
 import com.squareup.picasso3.provider.PicassoProvider;
 
 public class SampleListDetailActivity extends PicassoSampleActivity {
-  @Override protected void onCreate(Bundle savedInstanceState) {
+  @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
     if (savedInstanceState == null) {
@@ -34,8 +35,8 @@ public class SampleListDetailActivity extends PicassoSampleActivity {
       return new ListFragment();
     }
 
-    @Override public View onCreateView(LayoutInflater inflater, ViewGroup container,
-        Bundle savedInstanceState) {
+    @Override public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
+        @Nullable Bundle savedInstanceState) {
       final SampleListDetailActivity activity = (SampleListDetailActivity) getActivity();
       final SampleListDetailAdapter adapter = new SampleListDetailAdapter(activity);
 
@@ -66,8 +67,8 @@ public class SampleListDetailActivity extends PicassoSampleActivity {
       return fragment;
     }
 
-    @Override public View onCreateView(LayoutInflater inflater, ViewGroup container,
-        Bundle savedInstanceState) {
+    @Override public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
+        @Nullable Bundle savedInstanceState) {
       SampleListDetailActivity activity = (SampleListDetailActivity) getActivity();
 
       View view = LayoutInflater.from(activity)
