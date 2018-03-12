@@ -15,6 +15,7 @@
   limitations under the License.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="?android:attr/listPreferredItemHeight"
     android:orientation="horizontal">
@@ -29,10 +30,12 @@
       android:paddingRight="8dp"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
-      android:gravity="left|center_vertical"
+      android:gravity="start|center_vertical"
       android:fontFamily="sans-serif-light"
       android:singleLine="true"
       android:ellipsize="end"
-      android:textAppearance="?android:attr/textAppearanceLarge"/>
+      android:textAppearance="?android:attr/textAppearanceLarge"
+      tools:ignore="UnusedAttribute"
+      />
 
 </LinearLayout>

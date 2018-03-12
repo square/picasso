@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.picasso">
 
   <!-- This is required for Picasso to work. -->
@@ -18,7 +19,10 @@
   <application
       android:label="@string/app_name"
       android:icon="@drawable/icon"
-      android:theme="@style/Theme.PicassoSample">
+      android:allowBackup="false"
+      android:supportsRtl="false"
+      android:theme="@style/Theme.PicassoSample"
+      tools:ignore="GoogleAppIndexingWarning">
 
     <activity
         android:label="@string/app_name"
