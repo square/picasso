@@ -174,16 +174,14 @@ public class Picasso {
     this.defaultBitmapConfig = defaultBitmapConfig;
 
     int builtInHandlers = 7; // Adjust this as internal handlers are added or removed.
-    int extraCount = (extraRequestHandlers != null ? extraRequestHandlers.size() : 0);
+    int extraCount = extraRequestHandlers.size();
     List<RequestHandler> allRequestHandlers = new ArrayList<>(builtInHandlers + extraCount);
 
     // ResourceRequestHandler needs to be the first in the list to avoid
     // forcing other RequestHandlers to perform null checks on request.uri
     // to cover the (request.resourceId != 0) case.
     allRequestHandlers.add(new ResourceRequestHandler(context));
-    if (extraRequestHandlers != null) {
-      allRequestHandlers.addAll(extraRequestHandlers);
-    }
+    allRequestHandlers.addAll(extraRequestHandlers);
     allRequestHandlers.add(new ContactsPhotoRequestHandler(context));
     allRequestHandlers.add(new MediaStoreRequestHandler(context));
     allRequestHandlers.add(new ContentStreamRequestHandler(context));
@@ -662,7 +660,7 @@ public class Picasso {
     private PlatformLruCache cache;
     private Listener listener;
     private final List<RequestTransformer> requestTransformers = new ArrayList<>();
-    private List<RequestHandler> requestHandlers;
+    private final List<RequestHandler> requestHandlers = new ArrayList<>();
     private Bitmap.Config defaultBitmapConfig;
 
     private boolean indicatorsEnabled;
@@ -755,9 +753,6 @@ public class Picasso {
     /** Register a {@link RequestHandler}. */
     public Builder addRequestHandler(@NonNull RequestHandler requestHandler) {
       checkNotNull(requestHandler, "requestHandler == null");
-      if (requestHandlers == null) {
-        requestHandlers = new ArrayList<>();
-      }
       if (requestHandlers.contains(requestHandler)) {
         throw new IllegalStateException("RequestHandler already registered.");
       }

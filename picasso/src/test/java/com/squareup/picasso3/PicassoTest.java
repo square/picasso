@@ -41,6 +41,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso3.Picasso.Listener;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget;
+import static com.squareup.picasso3.TestUtils.NO_HANDLERS;
 import static com.squareup.picasso3.TestUtils.NO_TRANSFORMERS;
 import static com.squareup.picasso3.TestUtils.UNUSED_CALL_FACTORY;
 import static com.squareup.picasso3.TestUtils.URI_1;
@@ -81,7 +82,7 @@ public final class PicassoTest {
   @Before public void setUp() {
     initMocks(this);
     picasso = new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, listener,
-        NO_TRANSFORMERS, null, stats, ARGB_8888, false, false);
+        NO_TRANSFORMERS, NO_HANDLERS, stats, ARGB_8888, false, false);
   }
 
   @Test public void submitWithNullTargetInvokesDispatcher() {
@@ -352,7 +353,7 @@ public final class PicassoTest {
     okhttp3.Cache cache = new okhttp3.Cache(temporaryFolder.getRoot(), 100);
     Picasso picasso =
         new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, cache, this.cache, listener,
-            NO_TRANSFORMERS, null, stats, ARGB_8888, false, false);
+            NO_TRANSFORMERS, NO_HANDLERS, stats, ARGB_8888, false, false);
     picasso.shutdown();
     assertThat(cache.isClosed()).isTrue();
   }
@@ -384,7 +385,7 @@ public final class PicassoTest {
       }
     };
     Picasso picasso = new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, listener,
-        Collections.singletonList(brokenTransformer), null, stats, ARGB_8888, false, false);
+        Collections.singletonList(brokenTransformer), NO_HANDLERS, stats, ARGB_8888, false, false);
     Request request = new Request.Builder(URI_1).build();
     try {
       picasso.transformRequest(request);

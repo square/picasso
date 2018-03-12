@@ -284,6 +284,7 @@ class TestUtils {
   };
 
   static final List<RequestTransformer> NO_TRANSFORMERS = Collections.emptyList();
+  static final List<RequestHandler> NO_HANDLERS = Collections.emptyList();
 
   static final class PremadeCall implements Call {
     private final okhttp3.Request request;
