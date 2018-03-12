@@ -19,6 +19,7 @@ import android.graphics.Bitmap;
 
 class FetchAction extends Action<Object> {
 
+  @SuppressWarnings("HidingField")
   private final Object target;
   private Callback callback;
 
