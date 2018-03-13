@@ -122,7 +122,7 @@ public final class BitmapHunterTest {
   @Test public void responseExceptionDispatchFailed() {
     Action action = mockAction(URI_KEY_1, URI_1);
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, null,
-        new NetworkRequestHandler.ResponseException(0, 504));
+        new NetworkRequestHandler.ResponseException(504, 0));
     hunter.run();
     verify(dispatcher).dispatchFailed(hunter);
   }
