@@ -29,10 +29,18 @@ public class PollexorRequestTransformerTest {
   private RequestTransformer transformer = new PollexorRequestTransformer(Thumbor.create(HOST));
   private RequestTransformer secureTransformer =
       new PollexorRequestTransformer(Thumbor.create(HOST, KEY));
+  private RequestTransformer alwaysResizeTransformer = new PollexorRequestTransformer(Thumbor.create(HOST), true);
 
   @Test public void resourceIdRequestsAreNotTransformed() {
     Request input = new Request.Builder(12).build();
     Request output = transformer.transformRequest(input);
+    assertThat(output).isSameAs(input);
+  }
+
+
+  @Test public void resourceIdRequestsAreNotTransformedWhenAlwaysTransformIsTrue() {
+    Request input = new Request.Builder(12).build();
+    Request output = alwaysResizeTransformer.transformRequest(input);
     assertThat(output).isSameAs(input);
   }
 
@@ -46,6 +54,15 @@ public class PollexorRequestTransformerTest {
     Request input = new Request.Builder(IMAGE_URI).build();
     Request output = transformer.transformRequest(input);
     assertThat(output).isSameAs(input);
+  }
+
+  @Test public void nonResizedRequestsAreTransformedWhenAlwaysTransformIsSet() {
+    Request input = new Request.Builder(IMAGE_URI).build();
+    Request output = alwaysResizeTransformer.transformRequest(input);
+    assertThat(output).isNotSameAs(input);
+    assertThat(output.hasSize()).isFalse();
+    String expected = Thumbor.create(HOST).buildImage(IMAGE).toUrl();
+    assertThat(output.uri.toString()).isEqualTo(expected);
   }
 
   @Test public void simpleResize() {
