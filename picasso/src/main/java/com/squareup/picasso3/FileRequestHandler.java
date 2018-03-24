@@ -16,6 +16,7 @@
 package com.squareup.picasso3;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.media.ExifInterface;
 import java.io.IOException;
@@ -40,8 +41,9 @@ class FileRequestHandler extends ContentStreamRequestHandler {
     boolean signaledCallback = false;
     try {
       Source source = getSource(request);
+      Bitmap bitmap = decodeStream(source, request);
       signaledCallback = true;
-      callback.onSuccess(new Result(null, source, DISK, getFileExifRotation(request.uri)));
+      callback.onSuccess(new Result(bitmap, DISK, getFileExifRotation(request.uri)));
     } catch (Exception e) {
       if (!signaledCallback) {
         callback.onError(e);

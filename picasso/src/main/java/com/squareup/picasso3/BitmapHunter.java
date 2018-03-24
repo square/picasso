@@ -16,15 +16,12 @@
 package com.squareup.picasso3;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.NetworkInfo;
-import android.os.Build;
 import android.support.annotation.Nullable;
 import android.view.Gravity;
 import com.squareup.picasso3.RequestHandler.Result;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -34,9 +31,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import okio.BufferedSource;
-import okio.Okio;
-import okio.Source;
 
 import static android.support.media.ExifInterface.ORIENTATION_FLIP_HORIZONTAL;
 import static android.support.media.ExifInterface.ORIENTATION_FLIP_VERTICAL;
@@ -120,46 +114,6 @@ class BitmapHunter implements Runnable {
     this.networkPolicy = action.getNetworkPolicy();
     this.requestHandler = requestHandler;
     this.retryCount = requestHandler.getRetryCount();
-  }
-
-  /**
-   * Decode a byte stream into a Bitmap. This method will take into account additional information
-   * about the supplied request in order to do the decoding efficiently (such as through leveraging
-   * {@code inSampleSize}).
-   */
-  static Bitmap decodeStream(Source source, Request request) throws IOException {
-    BufferedSource bufferedSource = Okio.buffer(source);
-
-    boolean isWebPFile = Utils.isWebPFile(bufferedSource);
-    boolean isPurgeable = request.purgeable && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP;
-    BitmapFactory.Options options = RequestHandler.createBitmapOptions(request);
-    boolean calculateSize = RequestHandler.requiresInSampleSize(options);
-
-    // We decode from a byte array because, a) when decoding a WebP network stream, BitmapFactory
-    // throws a JNI Exception, so we workaround by decoding a byte array, or b) user requested
-    // purgeable, which only affects bitmaps decoded from byte arrays.
-    if (isWebPFile || isPurgeable) {
-      byte[] bytes = bufferedSource.readByteArray();
-      if (calculateSize) {
-        BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
-        RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight, options,
-            request);
-      }
-      return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
-    } else {
-      if (calculateSize) {
-        InputStream stream = new SourceBufferingInputStream(bufferedSource);
-        BitmapFactory.decodeStream(stream, null, options);
-        RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight, options,
-            request);
-      }
-      Bitmap bitmap = BitmapFactory.decodeStream(bufferedSource.inputStream(), null, options);
-      if (bitmap == null) {
-        // Treat null as an IO exception, we will eventually retry.
-        throw new IOException("Failed to decode stream.");
-      }
-      return bitmap;
-    }
   }
 
   @Override public void run() {
@@ -252,20 +206,6 @@ class BitmapHunter implements Runnable {
         loadedFrom = result.getLoadedFrom();
         exifOrientation = result.getExifOrientation();
         bitmap = result.getBitmap();
-
-        // If there was no Bitmap then we need to decode it from the stream.
-        if (bitmap == null) {
-          Source source = result.getSource();
-          try {
-            bitmap = decodeStream(source, data);
-          } finally {
-            try {
-              //noinspection ConstantConditions If bitmap is null then source is guranteed non-null.
-              source.close();
-            } catch (IOException ignored) {
-            }
-          }
-        }
       }
 
       if (bitmap != null) {

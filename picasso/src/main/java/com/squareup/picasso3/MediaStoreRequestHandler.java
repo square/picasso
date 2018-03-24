@@ -64,8 +64,9 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
         PicassoKind picassoKind = getPicassoKind(request.targetWidth, request.targetHeight);
         if (!isVideo && picassoKind == FULL) {
           Source source = getSource(request);
+          Bitmap bitmap = decodeStream(source, request);
           signaledCallback = true;
-          callback.onSuccess(new Result(null, source, DISK, exifOrientation));
+          callback.onSuccess(new Result(bitmap, DISK, exifOrientation));
           return;
         }
 
@@ -91,14 +92,15 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
 
         if (bitmap != null) {
           signaledCallback = true;
-          callback.onSuccess(new Result(bitmap, null, DISK, exifOrientation));
+          callback.onSuccess(new Result(bitmap, DISK, exifOrientation));
           return;
         }
       }
 
       Source source = getSource(request);
+      Bitmap bitmap = decodeStream(source, request);
       signaledCallback = true;
-      callback.onSuccess(new Result(null, source, DISK, exifOrientation));
+      callback.onSuccess(new Result(bitmap, DISK, exifOrientation));
     } catch (Exception e) {
       if (!signaledCallback) {
         callback.onError(e);

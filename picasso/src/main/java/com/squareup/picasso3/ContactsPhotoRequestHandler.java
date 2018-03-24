@@ -18,6 +18,7 @@ package com.squareup.picasso3;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.UriMatcher;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import java.io.IOException;
@@ -73,10 +74,12 @@ class ContactsPhotoRequestHandler extends RequestHandler {
       if (source == null) {
         signaledCallback = true;
         callback.onError(new IOException("no contact found"));
-      } else {
-        signaledCallback = true;
-        callback.onSuccess(new Result(source, DISK));
+        return;
       }
+
+      Bitmap bitmap = decodeStream(source, request);
+      signaledCallback = true;
+      callback.onSuccess(new Result(bitmap, DISK));
     } catch (Exception e) {
       if (!signaledCallback) {
         callback.onError(e);
