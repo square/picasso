@@ -75,6 +75,8 @@ import static com.squareup.picasso3.TestUtils.mockAction;
 import static com.squareup.picasso3.TestUtils.mockImageViewTarget;
 import static com.squareup.picasso3.TestUtils.mockPicasso;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -159,7 +161,8 @@ public final class BitmapHunterTest {
 
     Bitmap result = hunter.hunt();
     assertThat(cache.missCount()).isEqualTo(1);
-    verify(hunter.requestHandler).load(action.getRequest(), 0);
+    verify(hunter.requestHandler).load(
+        eq(action.getRequest()), eq(0), any(RequestHandler.Callback.class));
     assertThat(result).isEqualTo(bitmap);
   }
 
@@ -171,7 +174,8 @@ public final class BitmapHunterTest {
 
     Bitmap result = hunter.hunt();
     assertThat(cache.hitCount()).isEqualTo(1);
-    verify(hunter.requestHandler, never()).load(action.getRequest(), 0);
+    verify(hunter.requestHandler, never()).load(eq(action.getRequest()), eq(0),
+        any(RequestHandler.Callback.class));
     assertThat(result).isEqualTo(bitmap);
   }
 
@@ -1126,11 +1130,12 @@ public final class BitmapHunterTest {
       return true;
     }
 
-    @Override public Result load(Request request, int networkPolicy) throws IOException {
+    @Override public void load(Request request, int networkPolicy, Callback callback) {
       if (exception != null) {
-        throw exception;
+        callback.onError(exception);
+      } else {
+        callback.onSuccess(new Result(bitmap, MEMORY));
       }
-      return new Result(bitmap, MEMORY);
     }
 
     @Override int getRetryCount() {
@@ -1150,8 +1155,8 @@ public final class BitmapHunterTest {
       super(null, null);
     }
 
-    @Override public Result load(Request request, int networkPolicy) {
-      throw new OutOfMemoryError();
+    @Override public void load(Request request, int networkPolicy, Callback callback) {
+      callback.onError(new OutOfMemoryError());
     }
   }
 
@@ -1160,8 +1165,8 @@ public final class BitmapHunterTest {
         return CUSTOM_URI.getScheme().equals(data.uri.getScheme());
     }
 
-    @Override public Result load(Request request, int networkPolicy) {
-      return new Result(bitmap, MEMORY);
+    @Override public void load(Request request, int networkPolicy, Callback callback) {
+      callback.onSuccess(new Result(bitmap, MEMORY));
     }
   }
 }

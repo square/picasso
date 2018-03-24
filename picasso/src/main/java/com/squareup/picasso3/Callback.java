@@ -18,14 +18,14 @@ package com.squareup.picasso3;
 public interface Callback {
   void onSuccess();
 
-  void onError(Exception e);
+  void onError(Throwable t);
 
   class EmptyCallback implements Callback {
 
     @Override public void onSuccess() {
     }
 
-    @Override public void onError(Exception e) {
+    @Override public void onError(Throwable t) {
     }
   }
 }

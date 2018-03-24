@@ -16,8 +16,8 @@
 package com.squareup.picasso3;
 
 import android.net.NetworkInfo;
+import com.squareup.picasso3.RequestHandler.Result;
 import com.squareup.picasso3.TestUtils.PremadeCall;
-import java.io.IOException;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -72,11 +72,22 @@ public class NetworkRequestHandlerTest {
     }, stats);
   }
 
-  @Test public void doesNotForceLocalCacheOnlyWithAirplaneModeOffAndRetryCount() throws Exception {
+  @Test public void doesNotForceLocalCacheOnlyWithAirplaneModeOffAndRetryCount() {
     responses.add(responseOf(ResponseBody.create(null, new byte[10])));
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    networkHandler.load(action.getRequest(), 0);
-    assertThat(requests.takeFirst().cacheControl().toString()).isEmpty();
+    networkHandler.load(action.getRequest(), 0, new RequestHandler.Callback() {
+      @Override public void onSuccess(Result result) {
+        try {
+          assertThat(requests.takeFirst().cacheControl().toString()).isEmpty();
+        } catch (InterruptedException e) {
+          fail(e.getMessage());
+        }
+      }
+
+      @Override public void onError(Throwable t) {
+        fail(t.getMessage());
+      }
+    });
   }
 
   @Test public void withZeroRetryCountForcesLocalCacheOnly() throws Exception {
@@ -119,11 +130,18 @@ public class NetworkRequestHandlerTest {
     assertThat(networkHandler.shouldRetry(true, info)).isFalse();
   }
 
-  @Test public void noCacheAndKnownContentLengthDispatchToStats() throws Exception {
+  @Test public void noCacheAndKnownContentLengthDispatchToStats() {
     responses.add(responseOf(ResponseBody.create(null, new byte[10])));
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    networkHandler.load(action.getRequest(), 0);
-    verify(stats).dispatchDownloadFinished(10);
+    networkHandler.load(action.getRequest(), 0, new RequestHandler.Callback() {
+      @Override public void onSuccess(Result result) {
+        verify(stats).dispatchDownloadFinished(10);
+      }
+
+      @Override public void onError(Throwable t) {
+        fail(t.getMessage());
+      }
+    });
   }
 
   @Test public void unknownContentLengthFromDiskThrows() {
@@ -142,23 +160,33 @@ public class NetworkRequestHandlerTest {
         .cacheResponse(responseOf(null))
         .build());
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    try {
-      networkHandler.load(action.getRequest(), 0);
-      fail();
-    } catch(IOException expected) {
-      verifyZeroInteractions(stats);
-      assertTrue(closed.get());
-    }
+    networkHandler.load(action.getRequest(), 0, new RequestHandler.Callback() {
+      @Override public void onSuccess(Result result) {
+        fail();
+      }
+
+      @Override public void onError(Throwable t) {
+        verifyZeroInteractions(stats);
+        assertTrue(closed.get());
+      }
+    });
   }
 
-  @Test public void cachedResponseDoesNotDispatchToStats() throws Exception {
+  @Test public void cachedResponseDoesNotDispatchToStats() {
     responses.add(responseOf(ResponseBody.create(null, new byte[10]))
         .newBuilder()
         .cacheResponse(responseOf(null))
         .build());
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    networkHandler.load(action.getRequest(), 0);
-    verifyZeroInteractions(stats);
+    networkHandler.load(action.getRequest(), 0, new RequestHandler.Callback() {
+      @Override public void onSuccess(Result result) {
+        verifyZeroInteractions(stats);
+      }
+
+      @Override public void onError(Throwable t) {
+        fail(t.getMessage());
+      }
+    });
   }
 
   private static Response responseOf(ResponseBody body) {

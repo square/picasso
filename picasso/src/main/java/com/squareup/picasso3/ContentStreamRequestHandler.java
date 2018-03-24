@@ -18,7 +18,6 @@ package com.squareup.picasso3;
 import android.content.ContentResolver;
 import android.content.Context;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import okio.Okio;
 import okio.Source;
@@ -37,9 +36,17 @@ class ContentStreamRequestHandler extends RequestHandler {
     return SCHEME_CONTENT.equals(data.uri.getScheme());
   }
 
-  @Override public Result load(Request request, int networkPolicy) throws IOException {
-    Source source = Okio.source(getInputStream(request));
-    return new Result(source, DISK);
+  @Override public void load(Request request, int networkPolicy, Callback callback) {
+    boolean signaledCallback = false;
+    try {
+      Source source = Okio.source(getInputStream(request));
+      signaledCallback = true;
+      callback.onSuccess(new Result(source, DISK));
+    } catch (Exception e) {
+      if (!signaledCallback) {
+        callback.onError(e);
+      }
+    }
   }
 
   InputStream getInputStream(Request request) throws FileNotFoundException {

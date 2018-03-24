@@ -22,17 +22,16 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
-import java.io.IOException;
 import okio.Okio;
 import okio.Source;
 
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentUris.parseId;
 import static android.provider.MediaStore.Images;
-import static android.provider.MediaStore.Video;
 import static android.provider.MediaStore.Images.Thumbnails.FULL_SCREEN_KIND;
 import static android.provider.MediaStore.Images.Thumbnails.MICRO_KIND;
 import static android.provider.MediaStore.Images.Thumbnails.MINI_KIND;
+import static android.provider.MediaStore.Video;
 import static com.squareup.picasso3.MediaStoreRequestHandler.PicassoKind.FULL;
 import static com.squareup.picasso3.MediaStoreRequestHandler.PicassoKind.MICRO;
 import static com.squareup.picasso3.MediaStoreRequestHandler.PicassoKind.MINI;
@@ -53,47 +52,59 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
             && MediaStore.AUTHORITY.equals(uri.getAuthority()));
   }
 
-  @Override public Result load(Request request, int networkPolicy) throws IOException {
-    ContentResolver contentResolver = context.getContentResolver();
-    int exifOrientation = getExifOrientation(contentResolver, request.uri);
+  @Override public void load(Request request, int networkPolicy, Callback callback) {
+    boolean signaledCallback = false;
+    try {
+      ContentResolver contentResolver = context.getContentResolver();
+      int exifOrientation = getExifOrientation(contentResolver, request.uri);
 
-    String mimeType = contentResolver.getType(request.uri);
-    boolean isVideo = mimeType != null && mimeType.startsWith("video/");
+      String mimeType = contentResolver.getType(request.uri);
+      boolean isVideo = mimeType != null && mimeType.startsWith("video/");
 
-    if (request.hasSize()) {
-      PicassoKind picassoKind = getPicassoKind(request.targetWidth, request.targetHeight);
-      if (!isVideo && picassoKind == FULL) {
-        Source source = Okio.source(getInputStream(request));
-        return new Result(null, source, DISK, exifOrientation);
+      if (request.hasSize()) {
+        PicassoKind picassoKind = getPicassoKind(request.targetWidth, request.targetHeight);
+        if (!isVideo && picassoKind == FULL) {
+          Source source = Okio.source(getInputStream(request));
+          signaledCallback = true;
+          callback.onSuccess(new Result(null, source, DISK, exifOrientation));
+          return;
+        }
+
+        long id = parseId(request.uri);
+
+        BitmapFactory.Options options = createBitmapOptions(request);
+        options.inJustDecodeBounds = true;
+
+        calculateInSampleSize(request.targetWidth, request.targetHeight, picassoKind.width,
+            picassoKind.height, options, request);
+
+        Bitmap bitmap;
+
+        if (isVideo) {
+          // Since MediaStore doesn't provide the full screen kind thumbnail, we use the mini kind
+          // instead which is the largest thumbnail size can be fetched from MediaStore.
+          int kind = (picassoKind == FULL) ? Video.Thumbnails.MINI_KIND : picassoKind.androidKind;
+          bitmap = Video.Thumbnails.getThumbnail(contentResolver, id, kind, options);
+        } else {
+          bitmap =
+              Images.Thumbnails.getThumbnail(contentResolver, id, picassoKind.androidKind, options);
+        }
+
+        if (bitmap != null) {
+          signaledCallback = true;
+          callback.onSuccess(new Result(bitmap, null, DISK, exifOrientation));
+          return;
+        }
       }
 
-      long id = parseId(request.uri);
-
-      BitmapFactory.Options options = createBitmapOptions(request);
-      options.inJustDecodeBounds = true;
-
-      calculateInSampleSize(request.targetWidth, request.targetHeight, picassoKind.width,
-              picassoKind.height, options, request);
-
-      Bitmap bitmap;
-
-      if (isVideo) {
-        // Since MediaStore doesn't provide the full screen kind thumbnail, we use the mini kind
-        // instead which is the largest thumbnail size can be fetched from MediaStore.
-        int kind = (picassoKind == FULL) ? Video.Thumbnails.MINI_KIND : picassoKind.androidKind;
-        bitmap = Video.Thumbnails.getThumbnail(contentResolver, id, kind, options);
-      } else {
-        bitmap =
-            Images.Thumbnails.getThumbnail(contentResolver, id, picassoKind.androidKind, options);
-      }
-
-      if (bitmap != null) {
-        return new Result(bitmap, null, DISK, exifOrientation);
+      Source source = Okio.source(getInputStream(request));
+      signaledCallback = true;
+      callback.onSuccess(new Result(null, source, DISK, exifOrientation));
+    } catch (Exception e) {
+      if (!signaledCallback) {
+        callback.onError(e);
       }
     }
-
-    Source source = Okio.source(getInputStream(request));
-    return new Result(null, source, DISK, exifOrientation);
   }
 
   static PicassoKind getPicassoKind(int targetWidth, int targetHeight) {
