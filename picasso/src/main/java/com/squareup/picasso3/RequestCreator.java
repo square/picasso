@@ -21,13 +21,12 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
-import android.util.TypedValue;
+import android.support.v4.content.ContextCompat;
 import android.view.Gravity;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
@@ -68,7 +67,7 @@ public class RequestCreator {
   private int errorResId;
   private int memoryPolicy;
   private int networkPolicy;
-  private Drawable placeholderDrawable;
+  private @Nullable Drawable placeholderDrawable;
   private Drawable errorDrawable;
   private Object tag;
 
@@ -739,19 +738,9 @@ public class RequestCreator {
   }
 
   private Drawable getPlaceholderDrawable() {
-    if (placeholderResId != 0) {
-      if (Build.VERSION.SDK_INT >= 21) {
-        return picasso.context.getDrawable(placeholderResId);
-      } else if (Build.VERSION.SDK_INT >= 16) {
-        return picasso.context.getResources().getDrawable(placeholderResId);
-      } else {
-        TypedValue value = new TypedValue();
-        picasso.context.getResources().getValue(placeholderResId, value, true);
-        return picasso.context.getResources().getDrawable(value.resourceId);
-      }
-    } else {
-      return placeholderDrawable; // This may be null which is expected and desired behavior.
-    }
+    return placeholderResId == 0
+        ? placeholderDrawable
+        : ContextCompat.getDrawable(picasso.context, placeholderResId);
   }
 
   /** Create the request optionally passing it through the request transformer. */

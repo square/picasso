@@ -23,6 +23,7 @@ android {
 dependencies {
   api deps.okhttp
   implementation deps.supportAnnotations
+  implementation deps.supportCompat
   implementation deps.supportExifInterface
   testImplementation deps.junit
   testImplementation deps.truth
