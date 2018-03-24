@@ -42,41 +42,38 @@ final class NetworkRequestHandler extends RequestHandler {
     return (SCHEME_HTTP.equals(scheme) || SCHEME_HTTPS.equals(scheme));
   }
 
-  @Override public void load(Request request, int networkPolicy, Callback callback) {
-    boolean signaledCallback = false;
-    try {
-      okhttp3.Request callRequest = createRequest(request, networkPolicy);
-      Response response = callFactory.newCall(callRequest).execute();
-      if (!response.isSuccessful()) {
-        signaledCallback = true;
-        callback.onError(new ResponseException(response.code(), request.networkPolicy));
-        return;
+  @Override public void load(final Request request, int networkPolicy, final Callback callback) {
+    okhttp3.Request callRequest = createRequest(request, networkPolicy);
+    callFactory.newCall(callRequest).enqueue(new okhttp3.Callback() {
+      @Override public void onResponse(Call call, Response response) {
+        if (!response.isSuccessful()) {
+          callback.onError(new ResponseException(response.code(), request.networkPolicy));
+          return;
+        }
+
+        // Cache response is only null when the response comes fully from the network. Both
+        // completely cached and conditionally cached responses will have a non-null cache response.
+        Picasso.LoadedFrom loadedFrom = response.cacheResponse() == null ? NETWORK : DISK;
+
+        // Sometimes response content length is zero when requests are being replayed. Haven't found
+        // root cause to this but retrying the request seems safe to do so.
+        ResponseBody body = response.body();
+        if (loadedFrom == DISK && body.contentLength() == 0) {
+          body.close();
+          callback.onError(
+              new ContentLengthException("Received response with 0 content-length header."));
+          return;
+        }
+        if (loadedFrom == NETWORK && body.contentLength() > 0) {
+          stats.dispatchDownloadFinished(body.contentLength());
+        }
+        callback.onSuccess(new Result(body.source(), loadedFrom));
       }
 
-      // Cache response is only null when the response comes fully from the network. Both completely
-      // cached and conditionally cached responses will have a non-null cache response.
-      Picasso.LoadedFrom loadedFrom = response.cacheResponse() == null ? NETWORK : DISK;
-
-      // Sometimes response content length is zero when requests are being replayed. Haven't found
-      // root cause to this but retrying the request seems safe to do so.
-      ResponseBody body = response.body();
-      if (loadedFrom == DISK && body.contentLength() == 0) {
-        body.close();
-        signaledCallback = true;
-        callback.onError(
-            new ContentLengthException("Received response with 0 content-length header."));
-        return;
-      }
-      if (loadedFrom == NETWORK && body.contentLength() > 0) {
-        stats.dispatchDownloadFinished(body.contentLength());
-      }
-      signaledCallback = true;
-      callback.onSuccess(new Result(body.source(), loadedFrom));
-    } catch (IOException e) {
-      if (!signaledCallback) {
+      @Override public void onFailure(Call call, IOException e) {
         callback.onError(e);
       }
-    }
+    });
   }
 
   @Override int getRetryCount() {
