@@ -22,7 +22,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
-import okio.Okio;
 import okio.Source;
 
 import static android.content.ContentResolver.SCHEME_CONTENT;
@@ -64,7 +63,7 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
       if (request.hasSize()) {
         PicassoKind picassoKind = getPicassoKind(request.targetWidth, request.targetHeight);
         if (!isVideo && picassoKind == FULL) {
-          Source source = Okio.source(getInputStream(request));
+          Source source = getSource(request);
           signaledCallback = true;
           callback.onSuccess(new Result(null, source, DISK, exifOrientation));
           return;
@@ -97,7 +96,7 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
         }
       }
 
-      Source source = Okio.source(getInputStream(request));
+      Source source = getSource(request);
       signaledCallback = true;
       callback.onSuccess(new Result(null, source, DISK, exifOrientation));
     } catch (Exception e) {
