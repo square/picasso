@@ -15,6 +15,7 @@
  */
 package com.squareup.picasso3;
 
+import android.graphics.Bitmap;
 import android.net.NetworkInfo;
 import java.io.IOException;
 import okhttp3.CacheControl;
@@ -67,7 +68,13 @@ final class NetworkRequestHandler extends RequestHandler {
         if (loadedFrom == NETWORK && body.contentLength() > 0) {
           stats.dispatchDownloadFinished(body.contentLength());
         }
-        callback.onSuccess(new Result(body.source(), loadedFrom));
+        try {
+          Bitmap bitmap = decodeStream(body.source(), request);
+          callback.onSuccess(new Result(bitmap, loadedFrom));
+        } catch (IOException e) {
+          body.close();
+          callback.onError(e);
+        }
       }
 
       @Override public void onFailure(Call call, IOException e) {

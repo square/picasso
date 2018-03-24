@@ -17,7 +17,9 @@ package com.squareup.picasso3;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import java.io.IOException;
 import okio.Okio;
 import okio.Source;
 
@@ -54,8 +56,16 @@ class AssetRequestHandler extends RequestHandler {
     boolean signaledCallback = false;
     try {
       Source source = Okio.source(assetManager.open(getFilePath(request)));
-      signaledCallback = true;
-      callback.onSuccess(new Result(source, DISK));
+      try {
+        Bitmap bitmap = decodeStream(source, request);
+        signaledCallback = true;
+        callback.onSuccess(new Result(bitmap, DISK));
+      } finally {
+        try {
+          source.close();
+        } catch (IOException ignored) {
+        }
+      }
     } catch (Exception e) {
       if (!signaledCallback) {
         callback.onError(e);

@@ -18,9 +18,13 @@ package com.squareup.picasso3;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import java.io.IOException;
+import java.io.InputStream;
+import okio.BufferedSource;
+import okio.Okio;
 import okio.Source;
 
 import static com.squareup.picasso3.Utils.checkNotNull;
@@ -53,39 +57,24 @@ public abstract class RequestHandler {
   public static final class Result {
     private final Picasso.LoadedFrom loadedFrom;
     private final Bitmap bitmap;
-    private final Source source;
     private final int exifOrientation;
 
     public Result(@NonNull Bitmap bitmap, @NonNull Picasso.LoadedFrom loadedFrom) {
-      this(checkNotNull(bitmap, "bitmap == null"), null, loadedFrom, 0);
-    }
-
-    public Result(@NonNull Source source, @NonNull Picasso.LoadedFrom loadedFrom) {
-      this(null, checkNotNull(source, "source == null"), loadedFrom, 0);
+      this(checkNotNull(bitmap, "bitmap == null"), loadedFrom, 0);
     }
 
     Result(
         @Nullable Bitmap bitmap,
-        @Nullable Source source,
         @NonNull Picasso.LoadedFrom loadedFrom,
         int exifOrientation) {
-      if ((bitmap != null) == (source != null)) {
-        throw new AssertionError();
-      }
       this.bitmap = bitmap;
-      this.source = source;
       this.loadedFrom = checkNotNull(loadedFrom, "loadedFrom == null");
       this.exifOrientation = exifOrientation;
     }
 
-    /** The loaded {@link Bitmap}. Mutually exclusive with {@link #getSource()}. */
+    /** The loaded {@link Bitmap}. */
     @Nullable public Bitmap getBitmap() {
       return bitmap;
-    }
-
-    /** A stream of image data. Mutually exclusive with {@link #getBitmap()}. */
-    @Nullable public Source getSource() {
-      return source;
     }
 
     /**
@@ -187,5 +176,45 @@ public abstract class RequestHandler {
     }
     options.inSampleSize = sampleSize;
     options.inJustDecodeBounds = false;
+  }
+
+  /**
+   * Decode a byte stream into a Bitmap. This method will take into account additional information
+   * about the supplied request in order to do the decoding efficiently (such as through leveraging
+   * {@code inSampleSize}).
+   */
+  static Bitmap decodeStream(Source source, Request request) throws IOException {
+    BufferedSource bufferedSource = Okio.buffer(source);
+
+    boolean isWebPFile = Utils.isWebPFile(bufferedSource);
+    boolean isPurgeable = request.purgeable && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP;
+    BitmapFactory.Options options = RequestHandler.createBitmapOptions(request);
+    boolean calculateSize = RequestHandler.requiresInSampleSize(options);
+
+    // We decode from a byte array because, a) when decoding a WebP network stream, BitmapFactory
+    // throws a JNI Exception, so we workaround by decoding a byte array, or b) user requested
+    // purgeable, which only affects bitmaps decoded from byte arrays.
+    if (isWebPFile || isPurgeable) {
+      byte[] bytes = bufferedSource.readByteArray();
+      if (calculateSize) {
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+        RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight, options,
+            request);
+      }
+      return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+    } else {
+      if (calculateSize) {
+        InputStream stream = new SourceBufferingInputStream(bufferedSource);
+        BitmapFactory.decodeStream(stream, null, options);
+        RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight, options,
+            request);
+      }
+      Bitmap bitmap = BitmapFactory.decodeStream(bufferedSource.inputStream(), null, options);
+      if (bitmap == null) {
+        // Treat null as an IO exception, we will eventually retry.
+        throw new IOException("Failed to decode stream.");
+      }
+      return bitmap;
+    }
   }
 }

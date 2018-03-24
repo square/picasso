@@ -17,6 +17,7 @@ package com.squareup.picasso3;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.graphics.Bitmap;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import okio.Okio;
@@ -40,8 +41,13 @@ class ContentStreamRequestHandler extends RequestHandler {
     boolean signaledCallback = false;
     try {
       Source source = getSource(request);
+      if (source == null) {
+        callback.onError(new IllegalStateException("null source from " + request.uri));
+        return;
+      }
+      Bitmap bitmap = decodeStream(source, request);
       signaledCallback = true;
-      callback.onSuccess(new Result(source, DISK));
+      callback.onSuccess(new Result(bitmap, DISK));
     } catch (Exception e) {
       if (!signaledCallback) {
         callback.onError(e);
