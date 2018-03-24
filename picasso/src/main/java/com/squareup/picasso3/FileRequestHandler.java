@@ -19,7 +19,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.support.media.ExifInterface;
 import java.io.IOException;
-import okio.Okio;
 import okio.Source;
 
 import static android.content.ContentResolver.SCHEME_FILE;
@@ -40,7 +39,7 @@ class FileRequestHandler extends ContentStreamRequestHandler {
   @Override public void load(Request request, int networkPolicy, Callback callback) {
     boolean signaledCallback = false;
     try {
-      Source source = Okio.source(getInputStream(request));
+      Source source = getSource(request);
       signaledCallback = true;
       callback.onSuccess(new Result(null, source, DISK, getFileExifRotation(request.uri)));
     } catch (Exception e) {

@@ -39,7 +39,7 @@ class ContentStreamRequestHandler extends RequestHandler {
   @Override public void load(Request request, int networkPolicy, Callback callback) {
     boolean signaledCallback = false;
     try {
-      Source source = Okio.source(getInputStream(request));
+      Source source = getSource(request);
       signaledCallback = true;
       callback.onSuccess(new Result(source, DISK));
     } catch (Exception e) {
@@ -49,8 +49,9 @@ class ContentStreamRequestHandler extends RequestHandler {
     }
   }
 
-  InputStream getInputStream(Request request) throws FileNotFoundException {
+  Source getSource(Request request) throws FileNotFoundException {
     ContentResolver contentResolver = context.getContentResolver();
-    return contentResolver.openInputStream(request.uri);
+    InputStream inputStream = contentResolver.openInputStream(request.uri);
+    return inputStream == null ? null : Okio.source(inputStream);
   }
 }

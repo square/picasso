@@ -23,6 +23,7 @@ import android.provider.ContactsContract;
 import java.io.IOException;
 import java.io.InputStream;
 import okio.Okio;
+import okio.Source;
 
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.provider.ContactsContract.Contacts.openContactPhotoInputStream;
@@ -68,13 +69,13 @@ class ContactsPhotoRequestHandler extends RequestHandler {
   @Override public void load(Request request, int networkPolicy, Callback callback) {
     boolean signaledCallback = false;
     try {
-      InputStream is = getInputStream(request);
-      if (is == null) {
+      Source source = getSource(request);
+      if (source == null) {
         signaledCallback = true;
         callback.onError(new IOException("no contact found"));
       } else {
         signaledCallback = true;
-        callback.onSuccess(new Result(Okio.source(is), DISK));
+        callback.onSuccess(new Result(source, DISK));
       }
     } catch (Exception e) {
       if (!signaledCallback) {
@@ -83,9 +84,10 @@ class ContactsPhotoRequestHandler extends RequestHandler {
     }
   }
 
-  private InputStream getInputStream(Request data) throws IOException {
+  private Source getSource(Request data) throws IOException {
     ContentResolver contentResolver = context.getContentResolver();
     Uri uri = data.uri;
+    InputStream is;
     switch (matcher.match(uri)) {
       case ID_LOOKUP:
         uri = ContactsContract.Contacts.lookupContact(contentResolver, uri);
@@ -94,12 +96,15 @@ class ContactsPhotoRequestHandler extends RequestHandler {
         }
         // Resolved the uri to a contact uri, intentionally fall through to process the resolved uri
       case ID_CONTACT:
-        return openContactPhotoInputStream(contentResolver, uri, true);
+        is = openContactPhotoInputStream(contentResolver, uri, true);
+        break;
       case ID_THUMBNAIL:
       case ID_DISPLAY_PHOTO:
-        return contentResolver.openInputStream(uri);
+        is = contentResolver.openInputStream(uri);
+        break;
       default:
         throw new IllegalStateException("Invalid uri: " + uri);
     }
+    return is == null ? null : Okio.source(is);
   }
 }
