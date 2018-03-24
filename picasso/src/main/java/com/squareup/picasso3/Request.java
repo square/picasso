@@ -39,7 +39,8 @@ public final class Request {
   /** The time that the request was first submitted (in nanos). */
   long started;
   /** The {@link NetworkPolicy} to use for this request. */
-  int networkPolicy;
+  final int networkPolicy;
+  final int memoryPolicy;
 
   /**
    * The image URI.
@@ -98,7 +99,8 @@ public final class Request {
       int targetWidth, int targetHeight, boolean centerCrop, boolean centerInside,
       int centerCropGravity, boolean onlyScaleDown, float rotationDegrees,
       float rotationPivotX, float rotationPivotY, boolean hasRotationPivot,
-      boolean purgeable, Bitmap.Config config, Priority priority) {
+      boolean purgeable, Bitmap.Config config, Priority priority,
+      int networkPolicy, int memoryPolicy) {
     this.uri = uri;
     this.resourceId = resourceId;
     this.stableKey = stableKey;
@@ -120,6 +122,8 @@ public final class Request {
     this.purgeable = purgeable;
     this.config = config;
     this.priority = priority;
+    this.networkPolicy = networkPolicy;
+    this.memoryPolicy = memoryPolicy;
   }
 
   @Override public String toString() {
@@ -222,6 +226,8 @@ public final class Request {
     private List<Transformation> transformations;
     private Bitmap.Config config;
     private Priority priority;
+    private int networkPolicy;
+    private int memoryPolicy;
 
     /** Start building a request using the specified {@link Uri}. */
     public Builder(@NonNull Uri uri) {
@@ -259,6 +265,8 @@ public final class Request {
       }
       config = request.config;
       priority = request.priority;
+      networkPolicy = request.networkPolicy;
+      memoryPolicy = request.memoryPolicy;
     }
 
     boolean hasImage() {
@@ -271,6 +279,10 @@ public final class Request {
 
     boolean hasPriority() {
       return priority != null;
+    }
+
+    boolean shouldReadFromMemoryCache() {
+      return MemoryPolicy.shouldReadFromMemoryCache(memoryPolicy);
     }
 
     /**
@@ -480,6 +492,50 @@ public final class Request {
       return this;
     }
 
+    /**
+     * Specifies the {@link MemoryPolicy} to use for this request. You may specify additional policy
+     * options using the varargs parameter.
+     */
+    Builder memoryPolicy(@NonNull MemoryPolicy policy,
+        @NonNull MemoryPolicy... additional) {
+      if (policy == null) {
+        throw new NullPointerException("policy == null");
+      }
+      if (additional == null) {
+        throw new NullPointerException("additional == null");
+      }
+      this.memoryPolicy |= policy.index;
+      for (MemoryPolicy memoryPolicy : additional) {
+        if (memoryPolicy == null) {
+          throw new NullPointerException("memoryPolicy == null");
+        }
+        this.memoryPolicy |= memoryPolicy.index;
+      }
+      return this;
+    }
+
+    /**
+     * Specifies the {@link NetworkPolicy} to use for this request. You may specify additional
+     * policy options using the varargs parameter.
+     */
+    Builder networkPolicy(@NonNull NetworkPolicy policy,
+        @NonNull NetworkPolicy... additional) {
+      if (policy == null) {
+        throw new NullPointerException("policy == null");
+      }
+      if (additional == null) {
+        throw new NullPointerException("additional == null");
+      }
+      this.networkPolicy |= policy.index;
+      for (NetworkPolicy networkPolicy : additional) {
+        if (networkPolicy == null) {
+          throw new NullPointerException("networkPolicy == null");
+        }
+        this.networkPolicy |= networkPolicy.index;
+      }
+      return this;
+    }
+
     /** Create the immutable {@link Request} object. */
     public Request build() {
       if (centerInside && centerCrop) {
@@ -498,7 +554,8 @@ public final class Request {
       }
       return new Request(uri, resourceId, stableKey, transformations, targetWidth, targetHeight,
           centerCrop, centerInside, centerCropGravity, onlyScaleDown, rotationDegrees,
-          rotationPivotX, rotationPivotY, hasRotationPivot, purgeable, config, priority);
+          rotationPivotX, rotationPivotY, hasRotationPivot, purgeable, config, priority,
+          networkPolicy, memoryPolicy);
     }
   }
 }

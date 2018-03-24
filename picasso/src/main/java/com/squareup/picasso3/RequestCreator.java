@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.squareup.picasso3.BitmapHunter.forRequest;
-import static com.squareup.picasso3.MemoryPolicy.shouldReadFromMemoryCache;
 import static com.squareup.picasso3.MemoryPolicy.shouldWriteToMemoryCache;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso3.Picasso.Priority;
@@ -66,8 +65,6 @@ public class RequestCreator {
   private boolean setPlaceholder = true;
   private int placeholderResId;
   private int errorResId;
-  private int memoryPolicy;
-  private int networkPolicy;
   private Drawable placeholderDrawable;
   private Drawable errorDrawable;
   private Object tag;
@@ -346,21 +343,7 @@ public class RequestCreator {
    */
   public RequestCreator memoryPolicy(@NonNull MemoryPolicy policy,
       @NonNull MemoryPolicy... additional) {
-    if (policy == null) {
-      throw new IllegalArgumentException("Memory policy cannot be null.");
-    }
-    this.memoryPolicy |= policy.index;
-    if (additional == null) {
-      throw new IllegalArgumentException("Memory policy cannot be null.");
-    }
-    if (additional.length > 0) {
-      for (MemoryPolicy memoryPolicy : additional) {
-        if (memoryPolicy == null) {
-          throw new IllegalArgumentException("Memory policy cannot be null.");
-        }
-        this.memoryPolicy |= memoryPolicy.index;
-      }
-    }
+    data.memoryPolicy(policy, additional);
     return this;
   }
 
@@ -370,21 +353,7 @@ public class RequestCreator {
    */
   public RequestCreator networkPolicy(@NonNull NetworkPolicy policy,
       @NonNull NetworkPolicy... additional) {
-    if (policy == null) {
-      throw new IllegalArgumentException("Network policy cannot be null.");
-    }
-    this.networkPolicy |= policy.index;
-    if (additional == null) {
-      throw new IllegalArgumentException("Network policy cannot be null.");
-    }
-    if (additional.length > 0) {
-      for (NetworkPolicy networkPolicy : additional) {
-        if (networkPolicy == null) {
-          throw new IllegalArgumentException("Network policy cannot be null.");
-        }
-        this.networkPolicy |= networkPolicy.index;
-      }
-    }
+    data.networkPolicy(policy, additional);
     return this;
   }
 
@@ -423,10 +392,10 @@ public class RequestCreator {
     Request finalData = createRequest(started);
     String key = createKey(finalData, new StringBuilder());
 
-    Action action = new GetAction(picasso, finalData, memoryPolicy, networkPolicy, tag, key);
+    Action action = new GetAction(picasso, finalData, tag, key);
     Bitmap result =
         forRequest(picasso, picasso.dispatcher, picasso.cache, picasso.stats, action).hunt();
-    if (shouldWriteToMemoryCache(memoryPolicy)) {
+    if (shouldWriteToMemoryCache(finalData.memoryPolicy)) {
       picasso.cache.set(key, result);
     }
     return result;
@@ -466,7 +435,7 @@ public class RequestCreator {
       Request request = createRequest(started);
       String key = createKey(request, new StringBuilder());
 
-      if (shouldReadFromMemoryCache(memoryPolicy)) {
+      if (data.shouldReadFromMemoryCache()) {
         Bitmap bitmap = picasso.quickMemoryCacheCheck(key);
         if (bitmap != null) {
           if (picasso.loggingEnabled) {
@@ -479,8 +448,7 @@ public class RequestCreator {
         }
       }
 
-      Action action =
-          new FetchAction(picasso, request, memoryPolicy, networkPolicy, tag, key, callback);
+      Action action = new FetchAction(picasso, request, tag, key, callback);
       picasso.submit(action);
     }
   }
@@ -550,7 +518,7 @@ public class RequestCreator {
     Request request = createRequest(started);
     String requestKey = createKey(request);
 
-    if (shouldReadFromMemoryCache(memoryPolicy)) {
+    if (data.shouldReadFromMemoryCache()) {
       Bitmap bitmap = picasso.quickMemoryCacheCheck(requestKey);
       if (bitmap != null) {
         picasso.cancelRequest(target);
@@ -562,8 +530,7 @@ public class RequestCreator {
     target.onPrepareLoad(setPlaceholder ? getPlaceholderDrawable() : null);
 
     Action action =
-        new TargetAction(picasso, target, request, memoryPolicy, networkPolicy, errorDrawable,
-            requestKey, tag, errorResId);
+        new TargetAction(picasso, target, request, errorDrawable, requestKey, tag, errorResId);
     picasso.enqueueAndSubmit(action);
   }
 
@@ -612,7 +579,7 @@ public class RequestCreator {
 
     RemoteViewsAction action =
         new NotificationAction(picasso, request, remoteViews, viewId, notificationId, notification,
-            notificationTag, memoryPolicy, networkPolicy, key, tag, errorResId, callback);
+            notificationTag, key, tag, errorResId, callback);
 
     performRemoteViewInto(action);
   }
@@ -652,8 +619,8 @@ public class RequestCreator {
     String key = createKey(request, new StringBuilder()); // Non-main thread needs own builder.
 
     RemoteViewsAction action =
-        new AppWidgetAction(picasso, request, remoteViews, viewId, appWidgetIds, memoryPolicy,
-            networkPolicy, key, tag, errorResId, callback);
+        new AppWidgetAction(picasso, request, remoteViews, viewId, appWidgetIds, key, tag,
+            errorResId, callback);
 
     performRemoteViewInto(action);
   }
@@ -712,7 +679,7 @@ public class RequestCreator {
     Request request = createRequest(started);
     String requestKey = createKey(request);
 
-    if (shouldReadFromMemoryCache(memoryPolicy)) {
+    if (data.shouldReadFromMemoryCache()) {
       Bitmap bitmap = picasso.quickMemoryCacheCheck(requestKey);
       if (bitmap != null) {
         picasso.cancelRequest(target);
@@ -732,8 +699,8 @@ public class RequestCreator {
     }
 
     Action action =
-        new ImageViewAction(picasso, target, request, memoryPolicy, networkPolicy, errorResId,
-            errorDrawable, requestKey, tag, callback, noFade);
+        new ImageViewAction(picasso, target, request, errorResId, errorDrawable, requestKey, tag,
+            callback, noFade);
 
     picasso.enqueueAndSubmit(action);
   }
@@ -782,7 +749,7 @@ public class RequestCreator {
   }
 
   private void performRemoteViewInto(RemoteViewsAction action) {
-    if (shouldReadFromMemoryCache(memoryPolicy)) {
+    if (data.shouldReadFromMemoryCache()) {
       Bitmap bitmap = picasso.quickMemoryCacheCheck(action.getKey());
       if (bitmap != null) {
         action.complete(bitmap, MEMORY);

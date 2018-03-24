@@ -141,10 +141,10 @@ public class DispatcherTest {
     assertThat(dispatcher.pausedActions).isEmpty();
 
     FetchAction fetchAction1 =
-        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, 0, pausedTag,
+        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), pausedTag,
             URI_KEY_1, null);
     FetchAction fetchAction2 =
-        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, 0, pausedTag,
+        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), pausedTag,
             URI_KEY_1, null);
     dispatcher.performSubmit(fetchAction1);
     dispatcher.performSubmit(fetchAction2);
@@ -157,7 +157,7 @@ public class DispatcherTest {
     Callback callback = mockCallback();
 
     FetchAction fetchAction =
-        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, 0, pausedTag,
+        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), pausedTag,
             URI_KEY_1, callback);
     dispatcher.performSubmit(fetchAction);
     fetchAction.complete(bitmap1, MEMORY);
@@ -170,7 +170,7 @@ public class DispatcherTest {
     Callback callback = mockCallback();
 
     FetchAction fetchAction =
-        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, 0, pausedTag,
+        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), pausedTag,
             URI_KEY_1, callback);
     dispatcher.performSubmit(fetchAction, false);
     Exception e = new RuntimeException();
@@ -186,7 +186,7 @@ public class DispatcherTest {
     Callback callback = mockCallback();
 
     FetchAction fetchAction1 =
-        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, 0, pausedTag,
+        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), pausedTag,
             URI_KEY_1, callback);
     dispatcher.performCancel(fetchAction1);
     fetchAction1.cancel();
