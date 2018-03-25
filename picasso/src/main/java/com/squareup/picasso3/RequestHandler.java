@@ -35,8 +35,8 @@ import static com.squareup.picasso3.Utils.checkNotNull;
  * <p>
  * <h2>Usage</h2>
  * {@code RequestHandler} must be subclassed to be used. You will have to override two methods
- * ({@link #canHandleRequest(Request)} and {@link #load(Request, int, Callback)}) with your custom
- * logic to load images.
+ * ({@link #canHandleRequest(Request)} and {@link #load(Picasso, Request, int, Callback)}) with
+ * your custom logic to load images.
  * <p>
  * You should then register your {@link RequestHandler} using
  * {@link Picasso.Builder#addRequestHandler(RequestHandler)}
@@ -48,11 +48,11 @@ import static com.squareup.picasso3.Utils.checkNotNull;
  */
 public abstract class RequestHandler {
   /**
-   * {@link Result} represents the result of a {@link #load(Request, int, Callback)} call in a
-   * {@link RequestHandler}.
+   * {@link Result} represents the result of a {@link #load(Picasso, Request, int, Callback)} call
+   * in a {@link RequestHandler}.
    *
    * @see RequestHandler
-   * @see #load(Request, int, Callback)
+   * @see #load(Picasso, Request, int, Callback)
    */
   public static final class Result {
     private final Picasso.LoadedFrom loadedFrom;
@@ -79,15 +79,16 @@ public abstract class RequestHandler {
 
     /**
      * Returns the resulting {@link Picasso.LoadedFrom} generated from a
-     * {@link #load(Request, int, Callback)} call.
+     * {@link #load(Picasso, Request, int, Callback)} call.
      */
     @NonNull public Picasso.LoadedFrom getLoadedFrom() {
       return loadedFrom;
     }
 
     /**
-     * Returns the resulting EXIF orientation generated from a {@link #load(Request, int, Callback)}
-     * call. This is only accessible to built-in RequestHandlers.
+     * Returns the resulting EXIF orientation generated from a
+     * {@link #load(Picasso, Request, int, Callback)} call. This is only accessible to built-in
+     * RequestHandlers.
      */
     int getExifOrientation() {
       return exifOrientation;
@@ -109,9 +110,8 @@ public abstract class RequestHandler {
    * Loads an image for the given {@link Request}.
    * @param request the data from which the image should be resolved.
    * @param networkPolicy the {@link NetworkPolicy} for this request.
-   * @param callback
    */
-  public abstract void load(Request request, int networkPolicy, Callback callback)
+  public abstract void load(Picasso picasso, Request request, int networkPolicy, Callback callback)
       throws IOException;
 
   int getRetryCount() {

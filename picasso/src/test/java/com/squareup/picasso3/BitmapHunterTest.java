@@ -161,8 +161,9 @@ public final class BitmapHunterTest {
 
     Bitmap result = hunter.hunt();
     assertThat(cache.missCount()).isEqualTo(1);
-    verify(hunter.requestHandler).load(
-        eq(action.getRequest()), eq(0), any(RequestHandler.Callback.class));
+    Request request = action.getRequest();
+    verify(hunter.requestHandler)
+        .load(eq(picasso), eq(request), eq(0), any(RequestHandler.Callback.class));
     assertThat(result).isEqualTo(bitmap);
   }
 
@@ -174,8 +175,9 @@ public final class BitmapHunterTest {
 
     Bitmap result = hunter.hunt();
     assertThat(cache.hitCount()).isEqualTo(1);
-    verify(hunter.requestHandler, never()).load(eq(action.getRequest()), eq(0),
-        any(RequestHandler.Callback.class));
+    Request request = action.getRequest();
+    verify(hunter.requestHandler, never())
+        .load(eq(picasso), eq(request), eq(0), any(RequestHandler.Callback.class));
     assertThat(result).isEqualTo(bitmap);
   }
 
@@ -1130,7 +1132,8 @@ public final class BitmapHunterTest {
       return true;
     }
 
-    @Override public void load(Request request, int networkPolicy, Callback callback) {
+    @Override public void load(Picasso picasso, Request request,
+        int networkPolicy, Callback callback) {
       if (exception != null) {
         callback.onError(exception);
       } else {
@@ -1155,7 +1158,8 @@ public final class BitmapHunterTest {
       super(null, null);
     }
 
-    @Override public void load(Request request, int networkPolicy, Callback callback) {
+    @Override public void load(Picasso picasso, Request request,
+        int networkPolicy, Callback callback) {
       callback.onError(new OutOfMemoryError());
     }
   }
@@ -1165,7 +1169,8 @@ public final class BitmapHunterTest {
         return CUSTOM_URI.getScheme().equals(data.uri.getScheme());
     }
 
-    @Override public void load(Request request, int networkPolicy, Callback callback) {
+    @Override public void load(Picasso picasso, Request request,
+        int networkPolicy, Callback callback) {
       callback.onSuccess(new Result(bitmap, MEMORY));
     }
   }

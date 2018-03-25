@@ -73,7 +73,8 @@ class BitmapHunter implements Runnable {
       return true;
     }
 
-    @Override public void load(Request request, int networkPolicy, Callback callback) {
+    @Override public void load(Picasso picasso, Request request,
+        int networkPolicy, Callback callback) {
       callback.onError(new IllegalStateException("Unrecognized type of request: " + request));
     }
   };
@@ -173,7 +174,7 @@ class BitmapHunter implements Runnable {
     final AtomicReference<Throwable> exceptionReference = new AtomicReference<>();
     final CountDownLatch latch = new CountDownLatch(1);
     try {
-      requestHandler.load(data, networkPolicy, new RequestHandler.Callback() {
+      requestHandler.load(picasso, data, networkPolicy, new RequestHandler.Callback() {
         @Override public void onSuccess(@Nullable Result result) {
           resultReference.set(result);
           latch.countDown();
