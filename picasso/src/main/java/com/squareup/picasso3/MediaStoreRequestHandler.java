@@ -51,7 +51,8 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
             && MediaStore.AUTHORITY.equals(uri.getAuthority()));
   }
 
-  @Override public void load(Request request, int networkPolicy, Callback callback) {
+  @Override public void load(Picasso picasso, Request request,
+      int networkPolicy, Callback callback) {
     boolean signaledCallback = false;
     try {
       ContentResolver contentResolver = context.getContentResolver();

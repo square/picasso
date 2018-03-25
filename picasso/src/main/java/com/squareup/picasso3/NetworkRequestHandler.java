@@ -43,7 +43,8 @@ final class NetworkRequestHandler extends RequestHandler {
     return (SCHEME_HTTP.equals(scheme) || SCHEME_HTTPS.equals(scheme));
   }
 
-  @Override public void load(final Request request, int networkPolicy, final Callback callback) {
+  @Override public void load(Picasso picasso, final Request request,
+      int networkPolicy, final Callback callback) {
     okhttp3.Request callRequest = createRequest(request, networkPolicy);
     callFactory.newCall(callRequest).enqueue(new okhttp3.Callback() {
       @Override public void onResponse(Call call, Response response) {

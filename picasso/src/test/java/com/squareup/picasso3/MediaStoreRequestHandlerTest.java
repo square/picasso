@@ -40,13 +40,13 @@ public class MediaStoreRequestHandlerTest {
     initMocks(this);
   }
 
-  @Test public void decodesVideoThumbnailWithVideoMimeType() throws Exception {
+  @Test public void decodesVideoThumbnailWithVideoMimeType() {
     final Bitmap bitmap = makeBitmap();
     Request request =
         new Request.Builder(MEDIA_STORE_CONTENT_1_URL, 0, ARGB_8888).resize(100, 100).build();
     Action action = mockAction(MEDIA_STORE_CONTENT_KEY_1, request);
     MediaStoreRequestHandler requestHandler = create("video/");
-    requestHandler.load(action.getRequest(), 0, new RequestHandler.Callback() {
+    requestHandler.load(null, action.getRequest(), 0, new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
         assertBitmapsEqual(result.getBitmap(), bitmap);
       }
@@ -63,7 +63,7 @@ public class MediaStoreRequestHandlerTest {
         new Request.Builder(MEDIA_STORE_CONTENT_1_URL, 0, ARGB_8888).resize(100, 100).build();
     Action action = mockAction(MEDIA_STORE_CONTENT_KEY_1, request);
     MediaStoreRequestHandler requestHandler = create("image/png");
-    requestHandler.load(action.getRequest(), 0, new RequestHandler.Callback() {
+    requestHandler.load(null, action.getRequest(), 0, new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
         assertBitmapsEqual(result.getBitmap(), bitmap);
       }

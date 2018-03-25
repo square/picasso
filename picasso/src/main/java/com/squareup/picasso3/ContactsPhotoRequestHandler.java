@@ -67,7 +67,8 @@ class ContactsPhotoRequestHandler extends RequestHandler {
         && matcher.match(data.uri) != UriMatcher.NO_MATCH);
   }
 
-  @Override public void load(Request request, int networkPolicy, Callback callback) {
+  @Override public void load(Picasso picasso, Request request,
+      int networkPolicy, Callback callback) {
     boolean signaledCallback = false;
     try {
       Source source = getSource(request);
