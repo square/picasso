@@ -15,6 +15,7 @@
  */
 package com.squareup.picasso3;
 
+import android.app.Notification;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -518,7 +519,7 @@ public class RequestCreatorTest {
   @Test
   public void intoRemoteViewsNotificationWithNullNotificationThrows() {
     try {
-      new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, 0, null);
+      new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, 0, (Notification) null);
       fail("Calling into() with null Notification should throw exception");
     } catch (IllegalArgumentException ignored) {
     }

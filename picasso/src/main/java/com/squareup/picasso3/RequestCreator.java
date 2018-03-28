@@ -620,9 +620,26 @@ public class RequestCreator {
    * Asynchronously fulfills the request into the specified {@link RemoteViews} object with the
    * given {@code viewId}. This is used for loading bitmaps into all instances of a widget.
    */
+  public void into(@NonNull RemoteViews remoteViews, @IdRes int viewId, int appWidgetId) {
+    into(remoteViews, viewId, new int[] { appWidgetId }, null);
+  }
+
+  /**
+   * Asynchronously fulfills the request into the specified {@link RemoteViews} object with the
+   * given {@code viewId}. This is used for loading bitmaps into all instances of a widget.
+   */
   public void into(@NonNull RemoteViews remoteViews, @IdRes int viewId,
       @NonNull int[] appWidgetIds) {
     into(remoteViews, viewId, appWidgetIds, null);
+  }
+
+  /**
+   * Asynchronously fulfills the request into the specified {@link RemoteViews} object with the
+   * given {@code viewId}. This is used for loading bitmaps into all instances of a widget.
+   */
+  public void into(@NonNull RemoteViews remoteViews, @IdRes int viewId, int appWidgetId,
+      Callback callback) {
+    into(remoteViews, viewId, new int[] { appWidgetId }, callback);
   }
 
   /**
