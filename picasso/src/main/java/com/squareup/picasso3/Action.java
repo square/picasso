@@ -15,7 +15,6 @@
  */
 package com.squareup.picasso3;
 
-import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
@@ -61,7 +60,7 @@ abstract class Action<T> {
     this.tag = (tag != null ? tag : this);
   }
 
-  abstract void complete(Bitmap result, Picasso.LoadedFrom from);
+  abstract void complete(RequestHandler.Result result);
 
   abstract void error(Exception e);
 

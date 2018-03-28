@@ -15,8 +15,6 @@
  */
 package com.squareup.picasso3;
 
-import android.graphics.Bitmap;
-
 class FetchAction extends Action<Object> {
 
   private final Object fetchTarget;
@@ -29,7 +27,7 @@ class FetchAction extends Action<Object> {
     this.callback = callback;
   }
 
-  @Override void complete(Bitmap result, Picasso.LoadedFrom from) {
+  @Override void complete(RequestHandler.Result result) {
     if (callback != null) {
       callback.onSuccess();
     }
