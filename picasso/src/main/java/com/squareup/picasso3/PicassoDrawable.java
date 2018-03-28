@@ -40,15 +40,19 @@ final class PicassoDrawable extends BitmapDrawable {
    * Create or update the drawable on the target {@link ImageView} to display the supplied bitmap
    * image.
    */
-  static void setBitmap(ImageView target, Context context, Bitmap bitmap,
-      Picasso.LoadedFrom loadedFrom, boolean noFade, boolean debugging) {
+  static void setResult(ImageView target, Context context, RequestHandler.Result result,
+      boolean noFade, boolean debugging) {
     Drawable placeholder = target.getDrawable();
     if (placeholder instanceof Animatable) {
       ((Animatable) placeholder).stop();
     }
-    PicassoDrawable drawable =
-        new PicassoDrawable(context, bitmap, placeholder, loadedFrom, noFade, debugging);
-    target.setImageDrawable(drawable);
+    if (result.hasBitmap()) {
+      Picasso.LoadedFrom loadedFrom = result.getLoadedFrom();
+      Bitmap bitmap = result.getBitmap();
+      PicassoDrawable drawable =
+          new PicassoDrawable(context, bitmap, placeholder, loadedFrom, noFade, debugging);
+      target.setImageDrawable(drawable);
+    }
   }
 
   /**

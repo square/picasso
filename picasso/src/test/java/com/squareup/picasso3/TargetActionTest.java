@@ -44,7 +44,7 @@ public class TargetActionTest {
   public void throwsErrorWithNullResult() {
     TargetAction request =
         new TargetAction(mock(Picasso.class), mockTarget(), null, 0, 0, null, URI_KEY_1, null, 0);
-    request.complete(null, MEMORY);
+    request.complete(null);
   }
 
   @Test
@@ -53,7 +53,7 @@ public class TargetActionTest {
     Target target = mockTarget();
     TargetAction request =
         new TargetAction(mock(Picasso.class), target, null, 0, 0, null, URI_KEY_1, null, 0);
-    request.complete(bitmap, MEMORY);
+    request.complete(new RequestHandler.Result(bitmap, MEMORY));
     verify(target).onBitmapLoaded(bitmap, MEMORY);
   }
 
@@ -105,11 +105,10 @@ public class TargetActionTest {
       }
     };
     Picasso picasso = mock(Picasso.class);
-
     Bitmap bitmap = makeBitmap();
     TargetAction tr = new TargetAction(picasso, bad, null, 0, 0, null, URI_KEY_1, null, 0);
     try {
-      tr.complete(bitmap, MEMORY);
+      tr.complete(new RequestHandler.Result(bitmap, MEMORY));
       fail();
     } catch (IllegalStateException ignored) {
     }

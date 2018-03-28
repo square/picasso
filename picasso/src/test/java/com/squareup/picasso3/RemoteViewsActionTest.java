@@ -55,7 +55,7 @@ public class RemoteViewsActionTest {
     Callback callback = mockCallback();
     Bitmap bitmap = makeBitmap();
     RemoteViewsAction action = createAction(callback);
-    action.complete(bitmap, NETWORK);
+    action.complete(new RequestHandler.Result(bitmap, NETWORK));
     verify(remoteViews).setImageViewBitmap(1, bitmap);
     verify(callback).onSuccess();
   }

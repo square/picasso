@@ -48,7 +48,7 @@ public class ImageViewActionTest {
     ImageViewAction action =
         new ImageViewAction(mock(Picasso.class), mockImageViewTarget(), null, 0, 0, 0,
             null, URI_KEY_1, null, null, false);
-    action.complete(null, MEMORY);
+    action.complete(null);
   }
 
   @Test
@@ -61,7 +61,7 @@ public class ImageViewActionTest {
         new ImageViewAction(picasso, target, null, 0, 0, 0, null, URI_KEY_1, null,
             callback, false);
     request.target.clear();
-    request.complete(bitmap, MEMORY);
+    request.complete(new RequestHandler.Result(bitmap, MEMORY));
     verifyZeroInteractions(target);
     verifyZeroInteractions(callback);
   }
@@ -93,7 +93,7 @@ public class ImageViewActionTest {
     Callback callback = mockCallback();
     ImageViewAction request =
         new ImageViewAction(picasso, target, null, 0, 0, 0, null, URI_KEY_1, null, callback, false);
-    request.complete(bitmap, MEMORY);
+    request.complete(new RequestHandler.Result(bitmap, MEMORY));
     verify(target).setImageDrawable(any(PicassoDrawable.class));
     verify(callback).onSuccess();
   }

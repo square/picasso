@@ -159,12 +159,12 @@ public final class BitmapHunterTest {
     TestableBitmapHunter hunter =
         new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, bitmap);
 
-    Bitmap result = hunter.hunt();
+    RequestHandler.Result result = hunter.hunt();
     assertThat(cache.missCount()).isEqualTo(1);
     Request request = action.getRequest();
     verify(hunter.requestHandler)
         .load(eq(picasso), eq(request), eq(0), any(RequestHandler.Callback.class));
-    assertThat(result).isEqualTo(bitmap);
+    assertThat(result.getBitmap()).isEqualTo(bitmap);
   }
 
   @Test public void huntReturnsWhenResultInCache() throws Exception {
@@ -173,12 +173,12 @@ public final class BitmapHunterTest {
     TestableBitmapHunter hunter =
         new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, bitmap);
 
-    Bitmap result = hunter.hunt();
+    RequestHandler.Result result = hunter.hunt();
     assertThat(cache.hitCount()).isEqualTo(1);
     Request request = action.getRequest();
     verify(hunter.requestHandler, never())
         .load(eq(picasso), eq(request), eq(0), any(RequestHandler.Callback.class));
-    assertThat(result).isEqualTo(bitmap);
+    assertThat(result.getBitmap()).isEqualTo(bitmap);
   }
 
   @Test public void huntUnrecognizedUri() throws Exception {
@@ -195,8 +195,8 @@ public final class BitmapHunterTest {
     Action action = mockAction(CUSTOM_URI_KEY, CUSTOM_URI);
     BitmapHunter hunter = forRequest(mockPicasso(new CustomRequestHandler()), dispatcher,
         cache, stats, action);
-    Bitmap result = hunter.hunt();
-    assertThat(result).isEqualTo(bitmap);
+    RequestHandler.Result result = hunter.hunt();
+    assertThat(result.getBitmap()).isEqualTo(bitmap);
   }
 
   @Test public void attachSingleRequest() {
@@ -1112,10 +1112,6 @@ public final class BitmapHunterTest {
     TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, PlatformLruCache cache, Stats stats,
         Action action, Bitmap result, IOException exception) {
       super(picasso, dispatcher, cache, stats, action, spy(new TestableRequestHandler(result, exception)));
-    }
-
-    @Override Picasso.LoadedFrom getLoadedFrom() {
-      return MEMORY;
     }
   }
 

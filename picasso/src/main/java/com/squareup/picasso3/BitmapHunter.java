@@ -92,11 +92,9 @@ class BitmapHunter implements Runnable {
 
   Action action;
   List<Action> actions;
-  Bitmap result;
+  Result result;
   Future<?> future;
-  Picasso.LoadedFrom loadedFrom;
   Exception exception;
-  int exifOrientation; // Determined during decoding of original resource.
   int retryCount;
   Priority priority;
 
@@ -127,7 +125,7 @@ class BitmapHunter implements Runnable {
 
       result = hunt();
 
-      if (result == null) {
+      if (!result.hasBitmap()) {
         dispatcher.dispatchFailed(this);
       } else {
         dispatcher.dispatchComplete(this);
@@ -153,18 +151,17 @@ class BitmapHunter implements Runnable {
     }
   }
 
-  Bitmap hunt() throws IOException {
+  Result hunt() throws IOException {
     Bitmap bitmap = null;
 
     if (shouldReadFromMemoryCache(memoryPolicy)) {
       bitmap = cache.get(key);
       if (bitmap != null) {
         stats.dispatchCacheHit();
-        loadedFrom = MEMORY;
         if (picasso.loggingEnabled) {
           log(OWNER_HUNTER, VERB_DECODED, data.logId(), "from cache");
         }
-        return bitmap;
+        return new Result(bitmap, MEMORY);
       }
     }
 
@@ -203,8 +200,12 @@ class BitmapHunter implements Runnable {
       }
 
       Result result = resultReference.get();
+      Picasso.LoadedFrom loadedFrom = null;
+      // Determined during decoding of original resource.
+      int exifOrientation = 0;
       if (result != null) {
         loadedFrom = result.getLoadedFrom();
+        // Determined during decoding of original resource.
         exifOrientation = result.getExifOrientation();
         bitmap = result.getBitmap();
       }
@@ -235,11 +236,11 @@ class BitmapHunter implements Runnable {
           }
         }
       }
+
+      return new Result(bitmap, loadedFrom, exifOrientation);
     } catch (InterruptedException ie) {
       throw new InterruptedIOException(ie.getMessage());
     }
-
-    return bitmap;
   }
 
   void attach(Action action) {
@@ -346,7 +347,7 @@ class BitmapHunter implements Runnable {
     return requestHandler.supportsReplay();
   }
 
-  Bitmap getResult() {
+  Result getResult() {
     return result;
   }
 
@@ -376,10 +377,6 @@ class BitmapHunter implements Runnable {
 
   Exception getException() {
     return exception;
-  }
-
-  Picasso.LoadedFrom getLoadedFrom() {
-    return loadedFrom;
   }
 
   Priority getPriority() {

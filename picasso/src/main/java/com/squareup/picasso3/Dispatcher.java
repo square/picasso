@@ -21,6 +21,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
@@ -350,7 +351,10 @@ class Dispatcher {
 
   void performComplete(BitmapHunter hunter) {
     if (shouldWriteToMemoryCache(hunter.getMemoryPolicy())) {
-      cache.set(hunter.getKey(), hunter.getResult());
+      RequestHandler.Result result = hunter.getResult();
+      if (result.hasBitmap()) {
+        cache.set(hunter.getKey(), result.getBitmap());
+      }
     }
     hunterMap.remove(hunter.getKey());
     batch(hunter);
@@ -427,8 +431,10 @@ class Dispatcher {
     if (hunter.isCancelled()) {
       return;
     }
-    if (hunter.result != null) {
-      hunter.result.prepareToDraw();
+    RequestHandler.Result result = hunter.getResult();
+    if (result.hasBitmap()) {
+      Bitmap bitmap = result.getBitmap();
+      bitmap.prepareToDraw();
     }
     batch.add(hunter);
     if (!handler.hasMessages(HUNTER_DELAY_NEXT_BATCH)) {

@@ -39,7 +39,7 @@ import static com.squareup.picasso3.MemoryPolicy.shouldReadFromMemoryCache;
 import static com.squareup.picasso3.MemoryPolicy.shouldWriteToMemoryCache;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso3.Picasso.Priority;
-import static com.squareup.picasso3.PicassoDrawable.setBitmap;
+import static com.squareup.picasso3.PicassoDrawable.setResult;
 import static com.squareup.picasso3.PicassoDrawable.setPlaceholder;
 import static com.squareup.picasso3.RemoteViewsAction.AppWidgetAction;
 import static com.squareup.picasso3.RemoteViewsAction.NotificationAction;
@@ -423,12 +423,12 @@ public class RequestCreator {
     String key = createKey(finalData, new StringBuilder());
 
     Action action = new GetAction(picasso, finalData, memoryPolicy, networkPolicy, tag, key);
-    Bitmap result =
+    RequestHandler.Result result =
         forRequest(picasso, picasso.dispatcher, picasso.cache, picasso.stats, action).hunt();
-    if (shouldWriteToMemoryCache(memoryPolicy)) {
-      picasso.cache.set(key, result);
+    if (result.hasBitmap() && shouldWriteToMemoryCache(memoryPolicy)) {
+      picasso.cache.set(key, result.getBitmap());
     }
-    return result;
+    return result.getBitmap();
   }
 
   /**
@@ -732,7 +732,8 @@ public class RequestCreator {
       Bitmap bitmap = picasso.quickMemoryCacheCheck(requestKey);
       if (bitmap != null) {
         picasso.cancelRequest(target);
-        setBitmap(target, picasso.context, bitmap, MEMORY, noFade, picasso.indicatorsEnabled);
+        RequestHandler.Result result = new RequestHandler.Result(bitmap, MEMORY);
+        setResult(target, picasso.context, result, noFade, picasso.indicatorsEnabled);
         if (picasso.loggingEnabled) {
           log(OWNER_MAIN, VERB_COMPLETED, request.plainId(), "from " + MEMORY);
         }
@@ -791,7 +792,7 @@ public class RequestCreator {
     if (shouldReadFromMemoryCache(memoryPolicy)) {
       Bitmap bitmap = picasso.quickMemoryCacheCheck(action.getKey());
       if (bitmap != null) {
-        action.complete(bitmap, MEMORY);
+        action.complete(new RequestHandler.Result(bitmap, MEMORY));
         return;
       }
     }

@@ -517,18 +517,17 @@ public class Picasso {
 
     Uri uri = hunter.getData().uri;
     Exception exception = hunter.getException();
-    Bitmap result = hunter.getResult();
-    LoadedFrom from = hunter.getLoadedFrom();
+    RequestHandler.Result result = hunter.getResult();
 
     if (single != null) {
-      deliverAction(result, from, single, exception);
+      deliverAction(result, single, exception);
     }
 
     if (hasMultiple) {
       //noinspection ForLoopReplaceableByForEach
       for (int i = 0, n = joined.size(); i < n; i++) {
         Action join = joined.get(i);
-        deliverAction(result, from, join, exception);
+        deliverAction(result, join, exception);
       }
     }
 
@@ -545,7 +544,7 @@ public class Picasso {
 
     if (bitmap != null) {
       // Resumed action is cached, complete immediately.
-      deliverAction(bitmap, MEMORY, action, null);
+      deliverAction(new RequestHandler.Result(bitmap, MEMORY), action, null);
       if (loggingEnabled) {
         log(OWNER_MAIN, VERB_COMPLETED, action.request.logId(), "from " + MEMORY);
       }
@@ -558,7 +557,7 @@ public class Picasso {
     }
   }
 
-  private void deliverAction(Bitmap result, LoadedFrom from, Action action, Exception e) {
+  private void deliverAction(RequestHandler.Result result, Action action, Exception e) {
     if (action.isCancelled()) {
       return;
     }
@@ -566,12 +565,9 @@ public class Picasso {
       targetToAction.remove(action.getTarget());
     }
     if (result != null) {
-      if (from == null) {
-        throw new NullPointerException("LoadedFrom cannot be null.");
-      }
-      action.complete(result, from);
+      action.complete(result);
       if (loggingEnabled) {
-        log(OWNER_MAIN, VERB_COMPLETED, action.request.logId(), "from " + from);
+        log(OWNER_MAIN, VERB_COMPLETED, action.request.logId(), "from " + result.getLoadedFrom());
       }
     } else {
       action.error(e);

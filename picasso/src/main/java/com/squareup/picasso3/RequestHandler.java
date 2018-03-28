@@ -77,6 +77,10 @@ public abstract class RequestHandler {
       return bitmap;
     }
 
+    public boolean hasBitmap() {
+      return bitmap != null;
+    }
+
     /**
      * Returns the resulting {@link Picasso.LoadedFrom} generated from a
      * {@link #load(Picasso, Request, int, Callback)} call.

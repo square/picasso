@@ -16,7 +16,6 @@
 package com.squareup.picasso3;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
@@ -33,7 +32,7 @@ class ImageViewAction extends Action<ImageView> {
     this.callback = callback;
   }
 
-  @Override public void complete(Bitmap result, Picasso.LoadedFrom from) {
+  @Override public void complete(RequestHandler.Result result) {
     if (result == null) {
       throw new AssertionError(
           String.format("Attempted to complete action with no result!\n%s", this));
@@ -46,7 +45,7 @@ class ImageViewAction extends Action<ImageView> {
 
     Context context = picasso.context;
     boolean indicatorsEnabled = picasso.indicatorsEnabled;
-    PicassoDrawable.setBitmap(target, context, result, from, noFade, indicatorsEnabled);
+    PicassoDrawable.setResult(target, context, result, noFade, indicatorsEnabled);
 
     if (callback != null) {
       callback.onSuccess();

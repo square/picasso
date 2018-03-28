@@ -18,7 +18,6 @@ package com.squareup.picasso3;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.appwidget.AppWidgetManager;
-import android.graphics.Bitmap;
 import android.widget.RemoteViews;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
@@ -40,8 +39,8 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
     this.callback = callback;
   }
 
-  @Override void complete(Bitmap result, Picasso.LoadedFrom from) {
-    remoteViews.setImageViewBitmap(viewId, result);
+  @Override void complete(RequestHandler.Result result) {
+    remoteViews.setImageViewBitmap(viewId, result.getBitmap());
     update();
     if (callback != null) {
       callback.onSuccess();
