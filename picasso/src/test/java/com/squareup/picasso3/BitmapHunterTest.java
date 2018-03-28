@@ -16,6 +16,7 @@
 package com.squareup.picasso3;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.net.Uri;
@@ -48,6 +49,7 @@ import static com.squareup.picasso3.Picasso.Priority.LOW;
 import static com.squareup.picasso3.Picasso.Priority.NORMAL;
 import static com.squareup.picasso3.TestUtils.ASSET_KEY_1;
 import static com.squareup.picasso3.TestUtils.ASSET_URI_1;
+import static com.squareup.picasso3.TestUtils.BITMAP_RESOURCE_VALUE;
 import static com.squareup.picasso3.TestUtils.CONTACT_KEY_1;
 import static com.squareup.picasso3.TestUtils.CONTACT_PHOTO_KEY_1;
 import static com.squareup.picasso3.TestUtils.CONTACT_PHOTO_URI_1;
@@ -70,10 +72,13 @@ import static com.squareup.picasso3.TestUtils.RESOURCE_TYPE_URI_KEY;
 import static com.squareup.picasso3.TestUtils.UNUSED_CALL_FACTORY;
 import static com.squareup.picasso3.TestUtils.URI_1;
 import static com.squareup.picasso3.TestUtils.URI_KEY_1;
+import static com.squareup.picasso3.TestUtils.XML_RESOURCE_VALUE;
 import static com.squareup.picasso3.TestUtils.makeBitmap;
+import static com.squareup.picasso3.TestUtils.makeLoaderWithDrawable;
 import static com.squareup.picasso3.TestUtils.mockAction;
 import static com.squareup.picasso3.TestUtils.mockImageViewTarget;
 import static com.squareup.picasso3.TestUtils.mockPicasso;
+import static com.squareup.picasso3.TestUtils.mockResources;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -309,25 +314,38 @@ public final class BitmapHunterTest {
     assertThat(hunter.requestHandler).isInstanceOf(FileRequestHandler.class);
   }
 
-  @Test public void forAndroidResourceRequest() {
+  @Test public void forAndroidBitmapResourceRequest() {
+    Resources resources = mockResources(BITMAP_RESOURCE_VALUE);
+    when(context.getResources()).thenReturn(resources);
     Action action = mockAction(RESOURCE_ID_KEY_1, null, null, RESOURCE_ID_1);
     BitmapHunter hunter = forRequest(mockPicasso(new ResourceRequestHandler(context)), dispatcher,
         cache, stats, action);
     assertThat(hunter.requestHandler).isInstanceOf(ResourceRequestHandler.class);
   }
 
-  @Test public void forAndroidResourceUriWithId() {
+  @Test public void forAndroidBitmapResourceUriWithId() {
     Action action = mockAction(RESOURCE_ID_URI_KEY, RESOURCE_ID_URI);
     BitmapHunter hunter = forRequest(mockPicasso(new ResourceRequestHandler(context)), dispatcher,
         cache, stats, action);
     assertThat(hunter.requestHandler).isInstanceOf(ResourceRequestHandler.class);
   }
 
-  @Test public void forAndroidResourceUriWithType() {
+  @Test public void forAndroidBitmapResourceUriWithType() {
     Action action = mockAction(RESOURCE_TYPE_URI_KEY, RESOURCE_TYPE_URI);
     BitmapHunter hunter = forRequest(mockPicasso(new ResourceRequestHandler(context)), dispatcher,
         cache, stats, action);
     assertThat(hunter.requestHandler).isInstanceOf(ResourceRequestHandler.class);
+  }
+
+  @Test public void forAndroidXmlResourceRequest() {
+    Resources resources = mockResources(XML_RESOURCE_VALUE);
+    when(context.getResources()).thenReturn(resources);
+    Action action = mockAction(RESOURCE_ID_KEY_1, null, null, RESOURCE_ID_1);
+    ResourceDrawableRequestHandler requestHandler =
+        new ResourceDrawableRequestHandler(context, makeLoaderWithDrawable(null));
+    BitmapHunter hunter =
+        forRequest(mockPicasso(requestHandler), dispatcher, cache, stats, action);
+    assertThat(hunter.requestHandler).isInstanceOf(ResourceDrawableRequestHandler.class);
   }
 
   @Test public void forAssetRequest() {

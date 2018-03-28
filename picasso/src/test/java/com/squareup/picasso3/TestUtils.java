@@ -20,10 +20,12 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
+import android.util.TypedValue;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
@@ -46,6 +48,10 @@ import static android.provider.ContactsContract.Contacts.Photo.CONTENT_DIRECTORY
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso3.Picasso.Priority;
 import static com.squareup.picasso3.Utils.createKey;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -98,6 +104,8 @@ class TestUtils {
       createKey(new Request.Builder(RESOURCE_TYPE_URI).build());
   static final Uri CUSTOM_URI = Uri.parse("foo://bar");
   static final String CUSTOM_URI_KEY = createKey(new Request.Builder(CUSTOM_URI).build());
+  static final String BITMAP_RESOURCE_VALUE = "foo.png";
+  static final String XML_RESOURCE_VALUE = "foo.xml";
 
   static Context mockPackageResourceContext() {
     Context context = mock(Context.class);
@@ -112,6 +120,19 @@ class TestUtils {
     }
     doReturn(RESOURCE_ID_1).when(res).getIdentifier(RESOURCE_NAME, RESOURCE_TYPE, RESOURCE_PACKAGE);
     return context;
+  }
+
+  static Resources mockResources(final String resValueString) {
+    Resources resources = mock(Resources.class);
+    doAnswer(new Answer<Void>() {
+      @Override public Void answer(InvocationOnMock invocation) {
+        Object[] args = invocation.getArguments();
+        ((TypedValue) args[1]).string = resValueString;
+        return null;
+      }
+    }).when(resources).getValue(anyInt(), any(TypedValue.class), anyBoolean());
+
+    return resources;
   }
 
   static Action mockAction(String key, Uri uri) {
@@ -275,6 +296,14 @@ class TestUtils {
 
   static Bitmap makeBitmap(int width, int height) {
     return Bitmap.createBitmap(width, height, ALPHA_8);
+  }
+
+  static DrawableLoader makeLoaderWithDrawable(final Drawable drawable) {
+    return new DrawableLoader() {
+      @Override public Drawable load(int resId) {
+        return drawable;
+      }
+    };
   }
 
   static final Call.Factory UNUSED_CALL_FACTORY = new Call.Factory() {
