@@ -432,7 +432,7 @@ class Dispatcher {
       return;
     }
     RequestHandler.Result result = hunter.getResult();
-    if (result.hasBitmap()) {
+    if (result != null && result.hasBitmap()) {
       Bitmap bitmap = result.getBitmap();
       bitmap.prepareToDraw();
     }
