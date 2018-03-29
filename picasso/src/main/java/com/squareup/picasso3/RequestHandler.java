@@ -226,6 +226,7 @@ public abstract class RequestHandler {
     BitmapFactory.Options options = RequestHandler.createBitmapOptions(request);
     boolean calculateSize = RequestHandler.requiresInSampleSize(options);
 
+    Bitmap bitmap;
     // We decode from a byte array because, a) when decoding a WebP network stream, BitmapFactory
     // throws a JNI Exception, so we workaround by decoding a byte array, or b) user requested
     // purgeable, which only affects bitmaps decoded from byte arrays.
@@ -236,7 +237,7 @@ public abstract class RequestHandler {
         RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight, options,
             request);
       }
-      return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+      bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
     } else {
       if (calculateSize) {
         InputStream stream = new SourceBufferingInputStream(bufferedSource);
@@ -244,13 +245,13 @@ public abstract class RequestHandler {
         RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight, options,
             request);
       }
-      Bitmap bitmap = BitmapFactory.decodeStream(bufferedSource.inputStream(), null, options);
-      if (bitmap == null) {
-        // Treat null as an IO exception, we will eventually retry.
-        throw new IOException("Failed to decode stream.");
-      }
-      return bitmap;
+      bitmap = BitmapFactory.decodeStream(bufferedSource.inputStream(), null, options);
     }
+    if (bitmap == null) {
+      // Treat null as an IO exception, we will eventually retry.
+      throw new IOException("Failed to decode bitmap.");
+    }
+    return bitmap;
   }
 
   static boolean isXmlResource(Resources resources, @DrawableRes int drawableId) {
