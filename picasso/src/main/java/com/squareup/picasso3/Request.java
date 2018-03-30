@@ -24,11 +24,11 @@ import android.support.annotation.Px;
 import android.view.Gravity;
 import com.squareup.picasso3.Picasso.Priority;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.squareup.picasso3.Utils.checkNotNull;
-import static java.util.Collections.unmodifiableList;
 
 /** Immutable data about an image and the transformations that will be applied to it. */
 public final class Request {
@@ -94,32 +94,28 @@ public final class Request {
   /** The priority of this request. */
   public final Priority priority;
 
-  Request(Uri uri, int resourceId, String stableKey, List<Transformation> transformations,
-      int targetWidth, int targetHeight, boolean centerCrop, boolean centerInside,
-      int centerCropGravity, boolean onlyScaleDown, float rotationDegrees,
-      float rotationPivotX, float rotationPivotY, boolean hasRotationPivot,
-      boolean purgeable, Bitmap.Config config, Priority priority) {
-    this.uri = uri;
-    this.resourceId = resourceId;
-    this.stableKey = stableKey;
-    if (transformations == null) {
+  Request(Builder builder) {
+    this.uri = builder.uri;
+    this.resourceId = builder.resourceId;
+    this.stableKey = builder.stableKey;
+    if (builder.transformations == null) {
       this.transformations = null;
     } else {
-      this.transformations = unmodifiableList(transformations);
+      this.transformations = Collections.unmodifiableList(new ArrayList<>(builder.transformations));
     }
-    this.targetWidth = targetWidth;
-    this.targetHeight = targetHeight;
-    this.centerCrop = centerCrop;
-    this.centerInside = centerInside;
-    this.centerCropGravity = centerCropGravity;
-    this.onlyScaleDown = onlyScaleDown;
-    this.rotationDegrees = rotationDegrees;
-    this.rotationPivotX = rotationPivotX;
-    this.rotationPivotY = rotationPivotY;
-    this.hasRotationPivot = hasRotationPivot;
-    this.purgeable = purgeable;
-    this.config = config;
-    this.priority = priority;
+    this.targetWidth = builder.targetWidth;
+    this.targetHeight = builder.targetHeight;
+    this.centerCrop = builder.centerCrop;
+    this.centerInside = builder.centerInside;
+    this.centerCropGravity = builder.centerCropGravity;
+    this.onlyScaleDown = builder.onlyScaleDown;
+    this.rotationDegrees = builder.rotationDegrees;
+    this.rotationPivotX = builder.rotationPivotX;
+    this.rotationPivotY = builder.rotationPivotY;
+    this.hasRotationPivot = builder.hasRotationPivot;
+    this.purgeable = builder.purgeable;
+    this.config = builder.config;
+    this.priority = builder.priority;
   }
 
   @Override public String toString() {
@@ -496,9 +492,8 @@ public final class Request {
       if (priority == null) {
         priority = Priority.NORMAL;
       }
-      return new Request(uri, resourceId, stableKey, transformations, targetWidth, targetHeight,
-          centerCrop, centerInside, centerCropGravity, onlyScaleDown, rotationDegrees,
-          rotationPivotX, rotationPivotY, hasRotationPivot, purgeable, config, priority);
+
+      return new Request(this);
     }
   }
 }
