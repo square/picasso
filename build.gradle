@@ -43,8 +43,8 @@ apply plugin: 'com.github.ben-manes.versions'
 
 subprojects {
   repositories {
-    mavenCentral()
     google()
+    jcenter()
   }
 
   tasks.withType(Test) {
