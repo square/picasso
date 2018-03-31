@@ -38,6 +38,8 @@ public final class Request {
   int id;
   /** The time that the request was first submitted (in nanos). */
   long started;
+  /** The {@link MemoryPolicy} to use for this request. */
+  int memoryPolicy;
   /** The {@link NetworkPolicy} to use for this request. */
   int networkPolicy;
 

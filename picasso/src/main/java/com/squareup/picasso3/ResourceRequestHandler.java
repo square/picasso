@@ -37,8 +37,7 @@ class ResourceRequestHandler extends RequestHandler {
     return data.uri != null && SCHEME_ANDROID_RESOURCE.equals(data.uri.getScheme());
   }
 
-  @Override public void load(Picasso picasso, Request request,
-      int networkPolicy, Callback callback) {
+  @Override public void load(Picasso picasso, Request request, Callback callback) {
     boolean signaledCallback = false;
     try {
       Resources res = Utils.getResources(context, request);

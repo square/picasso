@@ -422,7 +422,7 @@ public class RequestCreator {
     Request finalData = createRequest(started);
     String key = createKey(finalData, new StringBuilder());
 
-    Action action = new GetAction(picasso, finalData, memoryPolicy, networkPolicy, tag, key);
+    Action action = new GetAction(picasso, finalData, tag, key);
     RequestHandler.Result result =
         forRequest(picasso, picasso.dispatcher, picasso.cache, picasso.stats, action).hunt();
     if (result.hasBitmap() && shouldWriteToMemoryCache(memoryPolicy)) {
@@ -478,8 +478,7 @@ public class RequestCreator {
         }
       }
 
-      Action action =
-          new FetchAction(picasso, request, memoryPolicy, networkPolicy, tag, key, callback);
+      Action action = new FetchAction(picasso, request, tag, key, callback);
       picasso.submit(action);
     }
   }
@@ -549,7 +548,7 @@ public class RequestCreator {
     Request request = createRequest(started);
     String requestKey = createKey(request);
 
-    if (shouldReadFromMemoryCache(memoryPolicy)) {
+    if (shouldReadFromMemoryCache(request.memoryPolicy)) {
       Bitmap bitmap = picasso.quickMemoryCacheCheck(requestKey);
       if (bitmap != null) {
         picasso.cancelRequest(target);
@@ -561,8 +560,7 @@ public class RequestCreator {
     target.onPrepareLoad(setPlaceholder ? getPlaceholderDrawable() : null);
 
     Action action =
-        new TargetAction(picasso, target, request, memoryPolicy, networkPolicy, errorDrawable,
-            requestKey, tag, errorResId);
+        new TargetAction(picasso, target, request, errorDrawable, requestKey, tag, errorResId);
     picasso.enqueueAndSubmit(action);
   }
 
@@ -611,7 +609,7 @@ public class RequestCreator {
 
     RemoteViewsAction action =
         new NotificationAction(picasso, request, remoteViews, viewId, notificationId, notification,
-            notificationTag, memoryPolicy, networkPolicy, key, tag, errorResId, callback);
+            notificationTag, key, tag, errorResId, callback);
 
     performRemoteViewInto(action);
   }
@@ -668,8 +666,8 @@ public class RequestCreator {
     String key = createKey(request, new StringBuilder()); // Non-main thread needs own builder.
 
     RemoteViewsAction action =
-        new AppWidgetAction(picasso, request, remoteViews, viewId, appWidgetIds, memoryPolicy,
-            networkPolicy, key, tag, errorResId, callback);
+        new AppWidgetAction(picasso, request, remoteViews, viewId, appWidgetIds, key, tag,
+            errorResId, callback);
 
     performRemoteViewInto(action);
   }
@@ -749,7 +747,7 @@ public class RequestCreator {
     }
 
     Action action =
-        new ImageViewAction(picasso, target, request, memoryPolicy, networkPolicy, errorResId,
+        new ImageViewAction(picasso, target, request, errorResId,
             errorDrawable, requestKey, tag, callback, noFade);
 
     picasso.enqueueAndSubmit(action);
@@ -768,6 +766,8 @@ public class RequestCreator {
     Request request = data.build();
     request.id = id;
     request.started = started;
+    request.memoryPolicy = memoryPolicy;
+    request.networkPolicy = networkPolicy;
 
     boolean loggingEnabled = picasso.loggingEnabled;
     if (loggingEnabled) {

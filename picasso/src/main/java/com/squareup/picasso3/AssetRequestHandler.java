@@ -46,7 +46,7 @@ class AssetRequestHandler extends RequestHandler {
   }
 
   @Override
-  public void load(Picasso picasso, Request request, int networkPolicy, Callback callback) {
+  public void load(Picasso picasso, Request request, Callback callback) {
     if (assetManager == null) {
       synchronized (lock) {
         if (assetManager == null) {

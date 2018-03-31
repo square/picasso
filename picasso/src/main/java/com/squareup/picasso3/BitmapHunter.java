@@ -73,8 +73,7 @@ class BitmapHunter implements Runnable {
       return true;
     }
 
-    @Override public void load(Picasso picasso, Request request,
-        int networkPolicy, Callback callback) {
+    @Override public void load(Picasso picasso, Request request, Callback callback) {
       callback.onError(new IllegalStateException("Unrecognized type of request: " + request));
     }
   };
@@ -86,8 +85,6 @@ class BitmapHunter implements Runnable {
   final Stats stats;
   final String key;
   final Request data;
-  final int memoryPolicy;
-  int networkPolicy;
   final RequestHandler requestHandler;
 
   Action action;
@@ -109,8 +106,6 @@ class BitmapHunter implements Runnable {
     this.key = action.getKey();
     this.data = action.getRequest();
     this.priority = action.getPriority();
-    this.memoryPolicy = action.getMemoryPolicy();
-    this.networkPolicy = action.getNetworkPolicy();
     this.requestHandler = requestHandler;
     this.retryCount = requestHandler.getRetryCount();
   }
@@ -154,7 +149,7 @@ class BitmapHunter implements Runnable {
   Result hunt() throws IOException {
     Bitmap bitmap = null;
 
-    if (shouldReadFromMemoryCache(memoryPolicy)) {
+    if (shouldReadFromMemoryCache(data.memoryPolicy)) {
       bitmap = cache.get(key);
       if (bitmap != null) {
         stats.dispatchCacheHit();
@@ -165,13 +160,13 @@ class BitmapHunter implements Runnable {
       }
     }
 
-    networkPolicy = retryCount == 0 ? NetworkPolicy.OFFLINE.index : networkPolicy;
+    data.networkPolicy = retryCount == 0 ? NetworkPolicy.OFFLINE.index : data.networkPolicy;
 
     final AtomicReference<Result> resultReference = new AtomicReference<>();
     final AtomicReference<Throwable> exceptionReference = new AtomicReference<>();
     final CountDownLatch latch = new CountDownLatch(1);
     try {
-      requestHandler.load(picasso, data, networkPolicy, new RequestHandler.Callback() {
+      requestHandler.load(picasso, data, new RequestHandler.Callback() {
         @Override public void onSuccess(@Nullable Result result) {
           resultReference.set(result);
           latch.countDown();
@@ -353,10 +348,6 @@ class BitmapHunter implements Runnable {
 
   String getKey() {
     return key;
-  }
-
-  int getMemoryPolicy() {
-    return memoryPolicy;
   }
 
   Request getData() {

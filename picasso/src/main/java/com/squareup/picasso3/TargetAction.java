@@ -20,10 +20,9 @@ import android.graphics.drawable.Drawable;
 
 final class TargetAction extends Action<Target> {
 
-  TargetAction(Picasso picasso, Target target, Request data, int memoryPolicy, int networkPolicy,
-      Drawable errorDrawable, String key, Object tag, int errorResId) {
-    super(picasso, target, data, memoryPolicy, networkPolicy, errorResId, errorDrawable, key, tag,
-        false);
+  TargetAction(Picasso picasso, Target target, Request data, Drawable errorDrawable, String key,
+      Object tag, int errorResId) {
+    super(picasso, target, data, errorResId, errorDrawable, key, tag, false);
   }
 
   @Override void complete(RequestHandler.Result result) {

@@ -75,7 +75,7 @@ public class NetworkRequestHandlerTest {
   @Test public void doesNotForceLocalCacheOnlyWithAirplaneModeOffAndRetryCount() {
     responses.add(responseOf(ResponseBody.create(null, new byte[10])));
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    networkHandler.load(picasso, action.getRequest(), 0, new RequestHandler.Callback() {
+    networkHandler.load(picasso, action.getRequest(), new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
         try {
           assertThat(requests.takeFirst().cacheControl().toString()).isEmpty();
@@ -133,7 +133,7 @@ public class NetworkRequestHandlerTest {
   @Test public void noCacheAndKnownContentLengthDispatchToStats() {
     responses.add(responseOf(ResponseBody.create(null, new byte[10])));
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    networkHandler.load(picasso, action.getRequest(), 0, new RequestHandler.Callback() {
+    networkHandler.load(picasso, action.getRequest(), new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
         verify(stats).dispatchDownloadFinished(10);
       }
@@ -160,7 +160,7 @@ public class NetworkRequestHandlerTest {
         .cacheResponse(responseOf(null))
         .build());
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    networkHandler.load(picasso, action.getRequest(), 0, new RequestHandler.Callback() {
+    networkHandler.load(picasso, action.getRequest(), new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
         fail();
       }
@@ -178,7 +178,7 @@ public class NetworkRequestHandlerTest {
         .cacheResponse(responseOf(null))
         .build());
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    networkHandler.load(picasso, action.getRequest(), 0, new RequestHandler.Callback() {
+    networkHandler.load(picasso, action.getRequest(), new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
         verifyZeroInteractions(stats);
       }

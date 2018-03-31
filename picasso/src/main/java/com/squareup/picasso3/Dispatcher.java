@@ -336,7 +336,7 @@ class Dispatcher {
         log(OWNER_DISPATCHER, VERB_RETRYING, getLogIdsForHunter(hunter));
       }
       if (hunter.getException() instanceof NetworkRequestHandler.ContentLengthException) {
-        hunter.networkPolicy |= NetworkPolicy.NO_CACHE.index;
+        hunter.data.networkPolicy |= NetworkPolicy.NO_CACHE.index;
       }
       hunter.future = service.submit(hunter);
     } else {
@@ -350,7 +350,7 @@ class Dispatcher {
   }
 
   void performComplete(BitmapHunter hunter) {
-    if (shouldWriteToMemoryCache(hunter.getMemoryPolicy())) {
+    if (shouldWriteToMemoryCache(hunter.data.memoryPolicy)) {
       RequestHandler.Result result = hunter.getResult();
       if (result.hasBitmap()) {
         cache.set(hunter.getKey(), result.getBitmap());

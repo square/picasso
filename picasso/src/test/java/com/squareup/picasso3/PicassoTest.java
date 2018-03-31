@@ -53,6 +53,7 @@ import static com.squareup.picasso3.TestUtils.mockCanceledAction;
 import static com.squareup.picasso3.TestUtils.mockDeferredRequestCreator;
 import static com.squareup.picasso3.TestUtils.mockHunter;
 import static com.squareup.picasso3.TestUtils.mockImageViewTarget;
+import static com.squareup.picasso3.TestUtils.mockPicasso;
 import static com.squareup.picasso3.TestUtils.mockTarget;
 import static com.squareup.picasso3.Utils.createKey;
 import static org.junit.Assert.fail;
@@ -127,7 +128,7 @@ public final class PicassoTest {
   @Test public void completeInvokesSuccessOnAllSuccessfulRequests() {
     Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     Action action2 = mockCanceledAction();
-    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap, MEMORY), false);
+    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap, MEMORY));
     when(hunter.getActions()).thenReturn(Arrays.asList(action1, action2));
     picasso.complete(hunter);
 
@@ -140,7 +141,7 @@ public final class PicassoTest {
     Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     Action action2 = mockCanceledAction();
     Exception exception = mock(Exception.class);
-    BitmapHunter hunter = mockHunter(URI_KEY_1, null, false);
+    BitmapHunter hunter = mockHunter(URI_KEY_1, null);
     when(hunter.getException()).thenReturn(exception);
     when(hunter.getActions()).thenReturn(Arrays.asList(action1, action2));
     picasso.complete(hunter);
@@ -151,7 +152,7 @@ public final class PicassoTest {
 
   @Test public void completeDeliversToSingle() {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
-    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap, MEMORY), false);
+    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap, MEMORY));
     when(hunter.getAction()).thenReturn(action);
     when(hunter.getActions()).thenReturn(Collections.<Action>emptyList());
     picasso.complete(hunter);
@@ -162,7 +163,7 @@ public final class PicassoTest {
   @Test public void completeWithReplayDoesNotRemove() {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     when(action.willReplay()).thenReturn(true);
-    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap, MEMORY), false);
+    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap, MEMORY));
     when(hunter.getAction()).thenReturn(action);
     picasso.enqueueAndSubmit(action);
     assertThat(picasso.targetToAction).hasSize(1);
@@ -175,7 +176,7 @@ public final class PicassoTest {
   @Test public void completeDeliversToSingleAndMultiple() {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     Action action2 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
-    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap, MEMORY), false);
+    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap, MEMORY));
     when(hunter.getAction()).thenReturn(action);
     when(hunter.getActions()).thenReturn(Arrays.asList(action2));
     picasso.complete(hunter);
@@ -185,7 +186,7 @@ public final class PicassoTest {
   }
 
   @Test public void completeSkipsIfNoActions() {
-    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap, MEMORY), false);
+    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap, MEMORY));
     picasso.complete(hunter);
     verify(hunter).getAction();
     verify(hunter).getActions();
@@ -193,17 +194,37 @@ public final class PicassoTest {
   }
 
   @Test public void resumeActionTriggersSubmitOnPausedAction() {
-    Action action = mockAction(URI_KEY_1, URI_1);
+    Request request = new Request.Builder(URI_1, 0, ARGB_8888).build();
+    Action action =
+        new Action<Void>(mockPicasso(), null, request, 0, null, URI_KEY_1, "tag", true) {
+          @Override void complete(RequestHandler.Result result) {
+            fail("Test execution should not call this method");
+          }
+
+          @Override void error(Exception e) {
+            fail("Test execution should not call this method");
+          }
+        };
     picasso.resumeAction(action);
     verify(dispatcher).dispatchSubmit(action);
   }
 
   @Test public void resumeActionImmediatelyCompletesCachedRequest() {
     cache.set(URI_KEY_1, bitmap);
-    Action action = mockAction(URI_KEY_1, URI_1);
-    picasso.resumeAction(action);
+    Request request = new Request.Builder(URI_1, 0, ARGB_8888).build();
+    Action action =
+        new Action<Void>(mockPicasso(), null, request, 0, null, URI_KEY_1, "tag", true) {
+          @Override void complete(RequestHandler.Result result) {
+            assertThat(result.getBitmap()).isEqualTo(bitmap);
+            assertThat(result.getLoadedFrom()).isEqualTo(MEMORY);
+          }
 
-    verifyActionComplete(action);
+          @Override void error(Exception e) {
+            fail("Reading from memory cache should not throw an exception");
+          }
+        };
+
+    picasso.resumeAction(action);
   }
 
   @Test public void cancelExistingRequestWithUnknownTarget() {
