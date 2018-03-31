@@ -20,9 +20,8 @@ class FetchAction extends Action<Object> {
   private final Object fetchTarget;
   private Callback callback;
 
-  FetchAction(Picasso picasso, Request data, int memoryPolicy, Object tag, String key,
-      Callback callback) {
-    super(picasso, null, data, memoryPolicy, 0, null, key, tag, false);
+  FetchAction(Picasso picasso, Request data, Object tag, String key, Callback callback) {
+    super(picasso, null, data, 0, null, key, tag, false);
     this.fetchTarget = new Object();
     this.callback = callback;
   }

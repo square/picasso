@@ -31,8 +31,8 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
   private RemoteViewsTarget remoteTarget;
 
   RemoteViewsAction(Picasso picasso, Request data, RemoteViews remoteViews, int viewId,
-      int errorResId, int memoryPolicy, Object tag, String key, Callback callback) {
-    super(picasso, null, data, memoryPolicy, errorResId, null, key, tag, false);
+      int errorResId, Object tag, String key, Callback callback) {
+    super(picasso, null, data, errorResId, null, key, tag, false);
     this.remoteViews = remoteViews;
     this.viewId = viewId;
     this.callback = callback;
@@ -102,10 +102,9 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
     private final int[] appWidgetIds;
 
     AppWidgetAction(Picasso picasso, Request data, RemoteViews remoteViews, int viewId,
-        int[] appWidgetIds, int memoryPolicy, String key, Object tag, int errorResId,
+        int[] appWidgetIds, String key, Object tag, int errorResId,
         Callback callback) {
-      super(picasso, data, remoteViews, viewId, errorResId, memoryPolicy, tag, key,
-          callback);
+      super(picasso, data, remoteViews, viewId, errorResId, tag, key, callback);
       this.appWidgetIds = appWidgetIds;
     }
 
@@ -121,10 +120,9 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
     private final Notification notification;
 
     NotificationAction(Picasso picasso, Request data, RemoteViews remoteViews, int viewId,
-        int notificationId, Notification notification, String notificationTag, int memoryPolicy,
-        String key, Object tag, int errorResId, Callback callback) {
-      super(picasso, data, remoteViews, viewId, errorResId, memoryPolicy, tag, key,
-          callback);
+        int notificationId, Notification notification, String notificationTag, String key,
+        Object tag, int errorResId, Callback callback) {
+      super(picasso, data, remoteViews, viewId, errorResId, tag, key, callback);
       this.notificationId = notificationId;
       this.notificationTag = notificationTag;
       this.notification = notification;

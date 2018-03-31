@@ -46,7 +46,7 @@ public class ImageViewActionTest {
   @Test(expected = AssertionError.class)
   public void throwsErrorWithNullResult() {
     ImageViewAction action =
-        new ImageViewAction(mock(Picasso.class), mockImageViewTarget(), null, 0, 0,
+        new ImageViewAction(mock(Picasso.class), mockImageViewTarget(), null, 0,
             null, URI_KEY_1, null, null, false);
     action.complete(null);
   }
@@ -58,7 +58,7 @@ public class ImageViewActionTest {
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
     ImageViewAction request =
-        new ImageViewAction(picasso, target, null, 0, 0, null, URI_KEY_1, null,
+        new ImageViewAction(picasso, target, null, 0, null, URI_KEY_1, null,
             callback, false);
     request.target.clear();
     request.complete(new RequestHandler.Result(bitmap, MEMORY));
@@ -72,7 +72,7 @@ public class ImageViewActionTest {
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
     ImageViewAction request =
-        new ImageViewAction(picasso, target, null, 0, 0, null, URI_KEY_1, null,
+        new ImageViewAction(picasso, target, null, 0, null, URI_KEY_1, null,
             callback, false);
     request.target.clear();
     request.error(new RuntimeException());
@@ -92,7 +92,7 @@ public class ImageViewActionTest {
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
     ImageViewAction request =
-        new ImageViewAction(picasso, target, null, 0, 0, null, URI_KEY_1, null, callback, false);
+        new ImageViewAction(picasso, target, null, 0, null, URI_KEY_1, null, callback, false);
     request.complete(new RequestHandler.Result(bitmap, MEMORY));
     verify(target).setImageDrawable(any(PicassoDrawable.class));
     verify(callback).onSuccess();
@@ -104,7 +104,7 @@ public class ImageViewActionTest {
     Callback callback = mockCallback();
     Picasso mock = mock(Picasso.class);
     ImageViewAction request =
-        new ImageViewAction(mock, target, null, 0, RESOURCE_ID_1, null, null, null,
+        new ImageViewAction(mock, target, null, RESOURCE_ID_1, null, null, null,
             callback, false);
     Exception e = new RuntimeException();
     request.error(e);
@@ -118,7 +118,7 @@ public class ImageViewActionTest {
     Callback callback = mockCallback();
     Picasso mock = mock(Picasso.class);
     ImageViewAction request =
-        new ImageViewAction(mock, target, null, 0, RESOURCE_ID_1, null, null, null,
+        new ImageViewAction(mock, target, null, RESOURCE_ID_1, null, null, null,
             callback, false);
     Exception e = new RuntimeException();
     request.error(e);
@@ -133,7 +133,7 @@ public class ImageViewActionTest {
     Callback callback = mockCallback();
     Picasso mock = mock(Picasso.class);
     ImageViewAction request =
-        new ImageViewAction(mock, target, null, 0, 0, errorDrawable, URI_KEY_1, null,
+        new ImageViewAction(mock, target, null, 0, errorDrawable, URI_KEY_1, null,
             callback, false);
     Exception e = new RuntimeException();
     request.error(e);
@@ -147,7 +147,7 @@ public class ImageViewActionTest {
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
     ImageViewAction request =
-        new ImageViewAction(picasso, target, null, 0, 0, null, URI_KEY_1, null,
+        new ImageViewAction(picasso, target, null, 0, null, URI_KEY_1, null,
             callback, false);
     request.cancel();
     assertThat(request.callback).isNull();
@@ -160,7 +160,7 @@ public class ImageViewActionTest {
     ImageView target = mockImageViewTarget();
     when(target.getDrawable()).thenReturn(placeholder);
     ImageViewAction request =
-        new ImageViewAction(picasso, target, null, 0, 0, null, URI_KEY_1, null,
+        new ImageViewAction(picasso, target, null, 0, null, URI_KEY_1, null,
             null, false);
     request.error(new RuntimeException());
     verify(placeholder).stop();

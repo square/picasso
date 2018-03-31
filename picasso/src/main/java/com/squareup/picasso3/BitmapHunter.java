@@ -85,7 +85,6 @@ class BitmapHunter implements Runnable {
   final Stats stats;
   final String key;
   final Request data;
-  final int memoryPolicy;
   final RequestHandler requestHandler;
 
   Action action;
@@ -107,7 +106,6 @@ class BitmapHunter implements Runnable {
     this.key = action.getKey();
     this.data = action.getRequest();
     this.priority = action.getPriority();
-    this.memoryPolicy = action.getMemoryPolicy();
     this.requestHandler = requestHandler;
     this.retryCount = requestHandler.getRetryCount();
   }
@@ -151,7 +149,7 @@ class BitmapHunter implements Runnable {
   Result hunt() throws IOException {
     Bitmap bitmap = null;
 
-    if (shouldReadFromMemoryCache(memoryPolicy)) {
+    if (shouldReadFromMemoryCache(data.memoryPolicy)) {
       bitmap = cache.get(key);
       if (bitmap != null) {
         stats.dispatchCacheHit();
@@ -350,10 +348,6 @@ class BitmapHunter implements Runnable {
 
   String getKey() {
     return key;
-  }
-
-  int getMemoryPolicy() {
-    return memoryPolicy;
   }
 
   Request getData() {

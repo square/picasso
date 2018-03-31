@@ -539,7 +539,7 @@ public class Picasso {
 
   void resumeAction(Action action) {
     Bitmap bitmap = null;
-    if (shouldReadFromMemoryCache(action.memoryPolicy)) {
+    if (shouldReadFromMemoryCache(action.request.memoryPolicy)) {
       bitmap = quickMemoryCacheCheck(action.getKey());
     }
 

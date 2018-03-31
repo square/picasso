@@ -350,7 +350,7 @@ class Dispatcher {
   }
 
   void performComplete(BitmapHunter hunter) {
-    if (shouldWriteToMemoryCache(hunter.getMemoryPolicy())) {
+    if (shouldWriteToMemoryCache(hunter.data.memoryPolicy)) {
       RequestHandler.Result result = hunter.getResult();
       if (result.hasBitmap()) {
         cache.set(hunter.getKey(), result.getBitmap());

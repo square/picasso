@@ -243,22 +243,16 @@ class TestUtils {
     return mock(InputStream.class);
   }
 
-  static BitmapHunter mockHunter(String key, RequestHandler.Result result, boolean skipCache) {
-    return mockHunter(key, result, skipCache, null);
+  static BitmapHunter mockHunter(String key, RequestHandler.Result result) {
+    return mockHunter(key, result, null);
   }
 
-  static BitmapHunter mockHunter(String key, RequestHandler.Result result, boolean skipCache, Action action) {
-    int memoryPolicy = skipCache ? MemoryPolicy.NO_STORE.index | MemoryPolicy.NO_CACHE.index : 0;
-    return mockHunter(key, result, memoryPolicy, action);
-  }
-
-  static BitmapHunter mockHunter(String key, RequestHandler.Result result, int memoryPolicy, Action action) {
+  static BitmapHunter mockHunter(String key, RequestHandler.Result result, Action action) {
     Request data = new Request.Builder(URI_1).build();
     BitmapHunter hunter = mock(BitmapHunter.class);
     when(hunter.getKey()).thenReturn(key);
     when(hunter.getResult()).thenReturn(result);
     when(hunter.getData()).thenReturn(data);
-    when(hunter.getMemoryPolicy()).thenReturn(memoryPolicy);
     when(hunter.getAction()).thenReturn(action);
     Picasso picasso = mockPicasso();
     when(hunter.getPicasso()).thenReturn(picasso);
