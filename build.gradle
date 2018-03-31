@@ -21,7 +21,8 @@ buildscript {
     errorProne: "com.google.errorprone:error_prone_core:2.2.0",
     junit: 'junit:junit:4.12',
     truth: 'com.google.truth:truth:0.39',
-    robolectric: 'org.robolectric:robolectric:3.1',
+    // TODO update when https://github.com/robolectric/robolectric/pull/3841 lands
+    robolectric: 'org.robolectric:robolectric:3.9',
     mockito: 'org.mockito:mockito-core:1.9.5'
   ]
 

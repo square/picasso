@@ -21,7 +21,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
@@ -37,7 +37,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(RobolectricGradleTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
 public class TargetActionTest {
 
   @Test(expected = AssertionError.class)

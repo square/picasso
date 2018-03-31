@@ -30,7 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.ShadowBitmap;
 import org.robolectric.shadows.ShadowMatrix;
 
@@ -90,7 +90,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(RobolectricGradleTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
 public final class BitmapHunterTest {
 
   @Mock Context context;
@@ -591,17 +591,8 @@ public final class BitmapHunterTest {
 
     Bitmap result = transformResult(request, source, 0);
 
-    ShadowBitmap shadowBitmap = shadowOf(result);
-    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
-    ShadowMatrix shadowMatrix = shadowOf(matrix);
-    String scalePreOperation = shadowMatrix.getPreOperations().get(0);
-
-    assertThat(scalePreOperation).startsWith("scale ");
-    float scaleX = Float.valueOf(scalePreOperation.split(" ")[1]);
-    float scaleY = Float.valueOf(scalePreOperation.split(" ")[2]);
-
-    int transformedWidth = Math.round(result.getWidth() * scaleX);
-    int transformedHeight = Math.round(result.getHeight() * scaleY);
+    int transformedWidth = Math.round(result.getWidth());
+    int transformedHeight = Math.round(result.getHeight());
     assertThat(transformedWidth).isEqualTo(1080);
     assertThat(transformedHeight).isEqualTo(642);
   }
@@ -612,17 +603,8 @@ public final class BitmapHunterTest {
 
     Bitmap result = transformResult(request, source, 0);
 
-    ShadowBitmap shadowBitmap = shadowOf(result);
-    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
-    ShadowMatrix shadowMatrix = shadowOf(matrix);
-    String scalePreOperation = shadowMatrix.getPreOperations().get(0);
-
-    assertThat(scalePreOperation).startsWith("scale ");
-    float scaleX = Float.valueOf(scalePreOperation.split(" ")[1]);
-    float scaleY = Float.valueOf(scalePreOperation.split(" ")[2]);
-
-    int transformedWidth = Math.round(result.getWidth() * scaleX);
-    int transformedHeight = Math.round(result.getHeight() * scaleY);
+    int transformedWidth = Math.round(result.getWidth());
+    int transformedHeight = Math.round(result.getHeight());
     assertThat(transformedWidth).isEqualTo(642);
     assertThat(transformedHeight).isEqualTo(642);
   }
@@ -633,17 +615,8 @@ public final class BitmapHunterTest {
 
     Bitmap result = transformResult(request, source, 0);
 
-    ShadowBitmap shadowBitmap = shadowOf(result);
-    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
-    ShadowMatrix shadowMatrix = shadowOf(matrix);
-    String scalePreOperation = shadowMatrix.getPreOperations().get(0);
-
-    assertThat(scalePreOperation).startsWith("scale ");
-    float scaleX = Float.valueOf(scalePreOperation.split(" ")[1]);
-    float scaleY = Float.valueOf(scalePreOperation.split(" ")[2]);
-
-    int transformedWidth = Math.round(result.getWidth() * scaleX);
-    int transformedHeight = Math.round(result.getHeight() * scaleY);
+    int transformedWidth = Math.round(result.getWidth());
+    int transformedHeight = Math.round(result.getHeight());
     assertThat(transformedWidth).isEqualTo(1080);
     assertThat(transformedHeight).isEqualTo(1080);
   }
@@ -654,17 +627,8 @@ public final class BitmapHunterTest {
 
     Bitmap result = transformResult(request, source, 0);
 
-    ShadowBitmap shadowBitmap = shadowOf(result);
-    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
-    ShadowMatrix shadowMatrix = shadowOf(matrix);
-    String scalePreOperation = shadowMatrix.getPreOperations().get(0);
-
-    assertThat(scalePreOperation).startsWith("scale ");
-    float scaleX = Float.valueOf(scalePreOperation.split(" ")[1]);
-    float scaleY = Float.valueOf(scalePreOperation.split(" ")[2]);
-
-    int transformedWidth = Math.round(result.getWidth() * scaleX);
-    int transformedHeight = Math.round(result.getHeight() * scaleY);
+    int transformedWidth = Math.round(result.getWidth());
+    int transformedHeight = Math.round(result.getHeight());
     assertThat(transformedWidth).isEqualTo(642);
     assertThat(transformedHeight).isEqualTo(642);
   }
@@ -675,17 +639,8 @@ public final class BitmapHunterTest {
 
     Bitmap result = transformResult(request, source, 0);
 
-    ShadowBitmap shadowBitmap = shadowOf(result);
-    Matrix matrix = shadowBitmap.getCreatedFromMatrix();
-    ShadowMatrix shadowMatrix = shadowOf(matrix);
-    String scalePreOperation = shadowMatrix.getPreOperations().get(0);
-
-    assertThat(scalePreOperation).startsWith("scale ");
-    float scaleX = Float.valueOf(scalePreOperation.split(" ")[1]);
-    float scaleY = Float.valueOf(scalePreOperation.split(" ")[2]);
-
-    int transformedWidth = Math.round(result.getWidth() * scaleX);
-    int transformedHeight = Math.round(result.getHeight() * scaleY);
+    int transformedWidth = Math.round(result.getWidth());
+    int transformedHeight = Math.round(result.getHeight());
     assertThat(transformedWidth).isEqualTo(1080);
     assertThat(transformedHeight).isEqualTo(1080);
   }

@@ -20,7 +20,7 @@ import java.io.IOException;
 import okio.Buffer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso3.TestUtils.RESOURCE_ID_1;
@@ -31,7 +31,7 @@ import static com.squareup.picasso3.TestUtils.mockPackageResourceContext;
 import static com.squareup.picasso3.Utils.createKey;
 import static com.squareup.picasso3.Utils.isWebPFile;
 
-@RunWith(RobolectricGradleTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
 public class UtilsTest {
 
   @Test public void matchingRequestsHaveSameKey() {
