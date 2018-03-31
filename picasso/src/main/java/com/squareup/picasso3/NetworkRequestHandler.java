@@ -43,9 +43,8 @@ final class NetworkRequestHandler extends RequestHandler {
     return (SCHEME_HTTP.equals(scheme) || SCHEME_HTTPS.equals(scheme));
   }
 
-  @Override public void load(Picasso picasso, final Request request,
-      int networkPolicy, final Callback callback) {
-    okhttp3.Request callRequest = createRequest(request, networkPolicy);
+  @Override public void load(Picasso picasso, final Request request, final Callback callback) {
+    okhttp3.Request callRequest = createRequest(request);
     callFactory.newCall(callRequest).enqueue(new okhttp3.Callback() {
       @Override public void onResponse(Call call, Response response) {
         if (!response.isSuccessful()) {
@@ -96,8 +95,9 @@ final class NetworkRequestHandler extends RequestHandler {
     return true;
   }
 
-  private static okhttp3.Request createRequest(Request request, int networkPolicy) {
+  private static okhttp3.Request createRequest(Request request) {
     CacheControl cacheControl = null;
+    int networkPolicy = request.networkPolicy;
     if (networkPolicy != 0) {
       if (NetworkPolicy.isOfflineOnly(networkPolicy)) {
         cacheControl = CacheControl.FORCE_CACHE;

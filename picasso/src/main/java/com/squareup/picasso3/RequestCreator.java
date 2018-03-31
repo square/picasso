@@ -422,7 +422,7 @@ public class RequestCreator {
     Request finalData = createRequest(started);
     String key = createKey(finalData, new StringBuilder());
 
-    Action action = new GetAction(picasso, finalData, memoryPolicy, networkPolicy, tag, key);
+    Action action = new GetAction(picasso, finalData, memoryPolicy, tag, key);
     RequestHandler.Result result =
         forRequest(picasso, picasso.dispatcher, picasso.cache, picasso.stats, action).hunt();
     if (result.hasBitmap() && shouldWriteToMemoryCache(memoryPolicy)) {
@@ -479,7 +479,7 @@ public class RequestCreator {
       }
 
       Action action =
-          new FetchAction(picasso, request, memoryPolicy, networkPolicy, tag, key, callback);
+          new FetchAction(picasso, request, memoryPolicy, tag, key, callback);
       picasso.submit(action);
     }
   }
@@ -561,7 +561,7 @@ public class RequestCreator {
     target.onPrepareLoad(setPlaceholder ? getPlaceholderDrawable() : null);
 
     Action action =
-        new TargetAction(picasso, target, request, memoryPolicy, networkPolicy, errorDrawable,
+        new TargetAction(picasso, target, request, memoryPolicy, errorDrawable,
             requestKey, tag, errorResId);
     picasso.enqueueAndSubmit(action);
   }
@@ -611,7 +611,7 @@ public class RequestCreator {
 
     RemoteViewsAction action =
         new NotificationAction(picasso, request, remoteViews, viewId, notificationId, notification,
-            notificationTag, memoryPolicy, networkPolicy, key, tag, errorResId, callback);
+            notificationTag, memoryPolicy, key, tag, errorResId, callback);
 
     performRemoteViewInto(action);
   }
@@ -669,7 +669,7 @@ public class RequestCreator {
 
     RemoteViewsAction action =
         new AppWidgetAction(picasso, request, remoteViews, viewId, appWidgetIds, memoryPolicy,
-            networkPolicy, key, tag, errorResId, callback);
+            key, tag, errorResId, callback);
 
     performRemoteViewInto(action);
   }
@@ -749,7 +749,7 @@ public class RequestCreator {
     }
 
     Action action =
-        new ImageViewAction(picasso, target, request, memoryPolicy, networkPolicy, errorResId,
+        new ImageViewAction(picasso, target, request, memoryPolicy, errorResId,
             errorDrawable, requestKey, tag, callback, noFade);
 
     picasso.enqueueAndSubmit(action);
@@ -768,6 +768,7 @@ public class RequestCreator {
     Request request = data.build();
     request.id = id;
     request.started = started;
+    request.networkPolicy = networkPolicy;
 
     boolean loggingEnabled = picasso.loggingEnabled;
     if (loggingEnabled) {

@@ -336,7 +336,7 @@ class Dispatcher {
         log(OWNER_DISPATCHER, VERB_RETRYING, getLogIdsForHunter(hunter));
       }
       if (hunter.getException() instanceof NetworkRequestHandler.ContentLengthException) {
-        hunter.networkPolicy |= NetworkPolicy.NO_CACHE.index;
+        hunter.data.networkPolicy |= NetworkPolicy.NO_CACHE.index;
       }
       hunter.future = service.submit(hunter);
     } else {

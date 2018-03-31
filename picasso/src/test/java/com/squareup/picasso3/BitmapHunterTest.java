@@ -168,7 +168,7 @@ public final class BitmapHunterTest {
     assertThat(cache.missCount()).isEqualTo(1);
     Request request = action.getRequest();
     verify(hunter.requestHandler)
-        .load(eq(picasso), eq(request), eq(0), any(RequestHandler.Callback.class));
+        .load(eq(picasso), eq(request), any(RequestHandler.Callback.class));
     assertThat(result.getBitmap()).isEqualTo(bitmap);
   }
 
@@ -182,7 +182,7 @@ public final class BitmapHunterTest {
     assertThat(cache.hitCount()).isEqualTo(1);
     Request request = action.getRequest();
     verify(hunter.requestHandler, never())
-        .load(eq(picasso), eq(request), eq(0), any(RequestHandler.Callback.class));
+        .load(eq(picasso), eq(request), any(RequestHandler.Callback.class));
     assertThat(result.getBitmap()).isEqualTo(bitmap);
   }
 
@@ -1146,8 +1146,7 @@ public final class BitmapHunterTest {
       return true;
     }
 
-    @Override public void load(Picasso picasso, Request request,
-        int networkPolicy, Callback callback) {
+    @Override public void load(Picasso picasso, Request request, Callback callback) {
       if (exception != null) {
         callback.onError(exception);
       } else {
@@ -1172,8 +1171,7 @@ public final class BitmapHunterTest {
       super(null, null);
     }
 
-    @Override public void load(Picasso picasso, Request request,
-        int networkPolicy, Callback callback) {
+    @Override public void load(Picasso picasso, Request request, Callback callback) {
       callback.onError(new OutOfMemoryError());
     }
   }
@@ -1183,8 +1181,7 @@ public final class BitmapHunterTest {
         return CUSTOM_URI.getScheme().equals(data.uri.getScheme());
     }
 
-    @Override public void load(Picasso picasso, Request request,
-        int networkPolicy, Callback callback) {
+    @Override public void load(Picasso picasso, Request request, Callback callback) {
       callback.onSuccess(new Result(bitmap, MEMORY));
     }
   }

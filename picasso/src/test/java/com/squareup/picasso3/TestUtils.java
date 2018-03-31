@@ -273,8 +273,7 @@ class TestUtils {
         return true;
       }
 
-      @Override public void load(Picasso picasso, Request request,
-          int networkPolicy, Callback callback) {
+      @Override public void load(Picasso picasso, Request request, Callback callback) {
         Bitmap defaultResult = makeBitmap();
         RequestHandler.Result result = new RequestHandler.Result(defaultResult, MEMORY);
         callback.onSuccess(result);

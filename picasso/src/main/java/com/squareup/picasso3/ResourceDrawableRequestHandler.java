@@ -35,7 +35,7 @@ public final class ResourceDrawableRequestHandler extends RequestHandler {
   }
 
   @Override
-  public void load(Picasso picasso, Request request, int networkPolicy, Callback callback) {
+  public void load(Picasso picasso, Request request, Callback callback) {
     Drawable drawable = loader.load(request.resourceId);
     if (drawable == null) {
       callback.onError(new IllegalArgumentException(

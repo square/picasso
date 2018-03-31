@@ -142,10 +142,10 @@ public class DispatcherTest {
     assertThat(dispatcher.pausedActions).isEmpty();
 
     FetchAction fetchAction1 =
-        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, 0, pausedTag,
+        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, pausedTag,
             URI_KEY_1, null);
     FetchAction fetchAction2 =
-        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, 0, pausedTag,
+        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, pausedTag,
             URI_KEY_1, null);
     dispatcher.performSubmit(fetchAction1);
     dispatcher.performSubmit(fetchAction2);
@@ -158,7 +158,7 @@ public class DispatcherTest {
     Callback callback = mockCallback();
 
     FetchAction fetchAction =
-        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, 0, pausedTag,
+        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, pausedTag,
             URI_KEY_1, callback);
     dispatcher.performSubmit(fetchAction);
     fetchAction.complete(new RequestHandler.Result(bitmap1, MEMORY));
@@ -171,7 +171,7 @@ public class DispatcherTest {
     Callback callback = mockCallback();
 
     FetchAction fetchAction =
-        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, 0, pausedTag,
+        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, pausedTag,
             URI_KEY_1, callback);
     dispatcher.performSubmit(fetchAction, false);
     Exception e = new RuntimeException();
@@ -187,7 +187,7 @@ public class DispatcherTest {
     Callback callback = mockCallback();
 
     FetchAction fetchAction1 =
-        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, 0, pausedTag,
+        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), 0, pausedTag,
             URI_KEY_1, callback);
     dispatcher.performCancel(fetchAction1);
     fetchAction1.cancel();
@@ -305,12 +305,12 @@ public class DispatcherTest {
 
   @Test public void performRetryForContentLengthResetsNetworkPolicy() {
     NetworkInfo networkInfo = mockNetworkInfo(true);
-    BitmapHunter hunter = mockHunter(URI_KEY_2, new RequestHandler.Result(bitmap1, MEMORY), false);
-    when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(true);
-    when(hunter.getException()).thenReturn(new ContentLengthException("304 error"));
     when(connectivityManager.getActiveNetworkInfo()).thenReturn(networkInfo);
+    BitmapHunter hunter = new BitmapHunter(mockPicasso(), dispatcher, null, null,
+        mockAction(URI_KEY_2, URI_2), RETRYING_REQUEST_HANDLER);
+    hunter.exception = new ContentLengthException("304 error");
     dispatcher.performRetry(hunter);
-    assertThat(NetworkPolicy.shouldReadFromDiskCache(hunter.networkPolicy)).isFalse();
+    assertThat(NetworkPolicy.shouldReadFromDiskCache(hunter.data.networkPolicy)).isFalse();
   }
 
   @Test public void performRetryDoesNotMarkForReplayIfNotSupported() {
@@ -565,4 +565,21 @@ public class DispatcherTest {
         scansNetworkChanges ? PERMISSION_GRANTED : PERMISSION_DENIED);
     return new Dispatcher(context, service, mainThreadHandler, cache, stats);
   }
+
+  private static final RequestHandler RETRYING_REQUEST_HANDLER = new RequestHandler() {
+    @Override public boolean canHandleRequest(Request data) {
+      return true;
+    }
+
+    @Override public void load(Picasso picasso, Request request, Callback callback) {
+    }
+
+    @Override int getRetryCount() {
+      return 1;
+    }
+
+    @Override boolean shouldRetry(boolean airplaneMode, NetworkInfo info) {
+      return true;
+    }
+  };
 }
