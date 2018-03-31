@@ -51,6 +51,7 @@ import static com.squareup.picasso3.TestUtils.mockHunter;
 import static com.squareup.picasso3.TestUtils.mockNetworkInfo;
 import static com.squareup.picasso3.TestUtils.mockPicasso;
 import static com.squareup.picasso3.TestUtils.mockTarget;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
@@ -354,7 +355,7 @@ public class DispatcherTest {
   @Test public void performRetryRetriesIfNoNetworkScanning() {
     BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap1, MEMORY), false,
         mockAction(URI_KEY_1, URI_1));
-    when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(true);
+    when(hunter.shouldRetry(anyBoolean(), isNull(NetworkInfo.class))).thenReturn(true);
     Dispatcher dispatcher = createDispatcher(false);
     dispatcher.performRetry(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
@@ -558,6 +559,7 @@ public class DispatcherTest {
   }
 
   private Dispatcher createDispatcher(ExecutorService service, boolean scansNetworkChanges) {
+    when(connectivityManager.getActiveNetworkInfo()).thenReturn(scansNetworkChanges ? mock(NetworkInfo.class) : null);
     when(context.getSystemService(Context.CONNECTIVITY_SERVICE)).thenReturn(connectivityManager);
     when(context.checkCallingOrSelfPermission(anyString())).thenReturn(
         scansNetworkChanges ? PERMISSION_GRANTED : PERMISSION_DENIED);
