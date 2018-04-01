@@ -29,7 +29,6 @@ import static com.squareup.picasso3.TestUtils.NO_HANDLERS;
 import static com.squareup.picasso3.TestUtils.NO_TRANSFORMERS;
 import static com.squareup.picasso3.TestUtils.RESOURCE_ID_1;
 import static com.squareup.picasso3.TestUtils.UNUSED_CALL_FACTORY;
-import static com.squareup.picasso3.TestUtils.URI_KEY_1;
 import static com.squareup.picasso3.TestUtils.makeBitmap;
 import static com.squareup.picasso3.TestUtils.mockTarget;
 import static org.junit.Assert.fail;
@@ -43,7 +42,7 @@ public class TargetActionTest {
   @Test(expected = AssertionError.class)
   public void throwsErrorWithNullResult() {
     TargetAction request =
-        new TargetAction(mock(Picasso.class), mockTarget(), null, null, URI_KEY_1, null, 0);
+        new TargetAction(mock(Picasso.class), mockTarget(), null, null, 0);
     request.complete(null);
   }
 
@@ -52,7 +51,7 @@ public class TargetActionTest {
     Bitmap bitmap = makeBitmap();
     Target target = mockTarget();
     TargetAction request =
-        new TargetAction(mock(Picasso.class), target, null, null, URI_KEY_1, null, 0);
+        new TargetAction(mock(Picasso.class), target, null, null, 0);
     request.complete(new RequestHandler.Result(bitmap, MEMORY));
     verify(target).onBitmapLoaded(bitmap, MEMORY);
   }
@@ -62,8 +61,7 @@ public class TargetActionTest {
     Drawable errorDrawable = mock(Drawable.class);
     Target target = mockTarget();
     TargetAction request =
-        new TargetAction(mock(Picasso.class), target, null, errorDrawable, URI_KEY_1, null,
-            0);
+        new TargetAction(mock(Picasso.class), target, null, errorDrawable, 0);
     Exception e = new RuntimeException();
     request.error(e);
     verify(target).onBitmapFailed(e, errorDrawable);
@@ -81,7 +79,7 @@ public class TargetActionTest {
             NO_HANDLERS, mock(Stats.class), ARGB_8888, false, false);
     Resources res = mock(Resources.class);
     TargetAction request =
-        new TargetAction(picasso, target, null, null, URI_KEY_1, null, RESOURCE_ID_1);
+        new TargetAction(picasso, target, null, null, RESOURCE_ID_1);
 
     when(context.getResources()).thenReturn(res);
     when(res.getDrawable(RESOURCE_ID_1)).thenReturn(errorDrawable);
@@ -106,7 +104,7 @@ public class TargetActionTest {
     };
     Picasso picasso = mock(Picasso.class);
     Bitmap bitmap = makeBitmap();
-    TargetAction tr = new TargetAction(picasso, bad, null, null, URI_KEY_1, null, 0);
+    TargetAction tr = new TargetAction(picasso, bad, null, null, 0);
     try {
       tr.complete(new RequestHandler.Result(bitmap, MEMORY));
       fail();

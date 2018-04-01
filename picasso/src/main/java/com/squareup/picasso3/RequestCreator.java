@@ -39,8 +39,8 @@ import static com.squareup.picasso3.MemoryPolicy.shouldReadFromMemoryCache;
 import static com.squareup.picasso3.MemoryPolicy.shouldWriteToMemoryCache;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso3.Picasso.Priority;
-import static com.squareup.picasso3.PicassoDrawable.setResult;
 import static com.squareup.picasso3.PicassoDrawable.setPlaceholder;
+import static com.squareup.picasso3.PicassoDrawable.setResult;
 import static com.squareup.picasso3.RemoteViewsAction.AppWidgetAction;
 import static com.squareup.picasso3.RemoteViewsAction.NotificationAction;
 import static com.squareup.picasso3.Utils.OWNER_MAIN;
@@ -49,7 +49,6 @@ import static com.squareup.picasso3.Utils.VERB_COMPLETED;
 import static com.squareup.picasso3.Utils.VERB_CREATED;
 import static com.squareup.picasso3.Utils.checkMain;
 import static com.squareup.picasso3.Utils.checkNotMain;
-import static com.squareup.picasso3.Utils.createKey;
 import static com.squareup.picasso3.Utils.log;
 
 /** Fluent API for building an image download request. */
@@ -69,7 +68,6 @@ public class RequestCreator {
   private int networkPolicy;
   private @Nullable Drawable placeholderDrawable;
   private Drawable errorDrawable;
-  private Object tag;
 
   RequestCreator(Picasso picasso, Uri uri, int resourceId) {
     if (picasso.shutdown) {
@@ -184,13 +182,7 @@ public class RequestCreator {
    * @see Picasso#resumeTag(Object)
    */
   public RequestCreator tag(@NonNull Object tag) {
-    if (tag == null) {
-      throw new IllegalArgumentException("Tag invalid.");
-    }
-    if (this.tag != null) {
-      throw new IllegalStateException("Tag already set.");
-    }
-    this.tag = tag;
+    data.tag(tag);
     return this;
   }
 
@@ -213,13 +205,13 @@ public class RequestCreator {
 
   /** Internal use only. Used by {@link DeferredRequestCreator}. */
   RequestCreator clearTag() {
-    this.tag = null;
+    data.clearTag();
     return this;
   }
 
   /** Internal use only. Used by {@link DeferredRequestCreator}. */
   Object getTag() {
-    return tag;
+    return data.getTag();
   }
 
   /** Resize the image to the specified dimension size. */
@@ -419,14 +411,13 @@ public class RequestCreator {
       return null;
     }
 
-    Request finalData = createRequest(started);
-    String key = createKey(finalData, new StringBuilder());
+    Request request = createRequest(started);
 
-    Action action = new GetAction(picasso, finalData, tag, key);
+    Action action = new GetAction(picasso, request);
     RequestHandler.Result result =
         forRequest(picasso, picasso.dispatcher, picasso.cache, picasso.stats, action).hunt();
     if (result.hasBitmap() && shouldWriteToMemoryCache(memoryPolicy)) {
-      picasso.cache.set(key, result.getBitmap());
+      picasso.cache.set(request.key, result.getBitmap());
     }
     return result.getBitmap();
   }
@@ -463,10 +454,9 @@ public class RequestCreator {
       }
 
       Request request = createRequest(started);
-      String key = createKey(request, new StringBuilder());
 
       if (shouldReadFromMemoryCache(memoryPolicy)) {
-        Bitmap bitmap = picasso.quickMemoryCacheCheck(key);
+        Bitmap bitmap = picasso.quickMemoryCacheCheck(request.key);
         if (bitmap != null) {
           if (picasso.loggingEnabled) {
             log(OWNER_MAIN, VERB_COMPLETED, request.plainId(), "from " + MEMORY);
@@ -478,7 +468,7 @@ public class RequestCreator {
         }
       }
 
-      Action action = new FetchAction(picasso, request, tag, key, callback);
+      Action action = new FetchAction(picasso, request, callback);
       picasso.submit(action);
     }
   }
@@ -546,10 +536,9 @@ public class RequestCreator {
     }
 
     Request request = createRequest(started);
-    String requestKey = createKey(request);
 
     if (shouldReadFromMemoryCache(request.memoryPolicy)) {
-      Bitmap bitmap = picasso.quickMemoryCacheCheck(requestKey);
+      Bitmap bitmap = picasso.quickMemoryCacheCheck(request.key);
       if (bitmap != null) {
         picasso.cancelRequest(target);
         target.onBitmapLoaded(bitmap, MEMORY);
@@ -560,7 +549,7 @@ public class RequestCreator {
     target.onPrepareLoad(setPlaceholder ? getPlaceholderDrawable() : null);
 
     Action action =
-        new TargetAction(picasso, target, request, errorDrawable, requestKey, tag, errorResId);
+        new TargetAction(picasso, target, request, errorDrawable, errorResId);
     picasso.enqueueAndSubmit(action);
   }
 
@@ -605,11 +594,9 @@ public class RequestCreator {
     }
 
     Request request = createRequest(started);
-    String key = createKey(request, new StringBuilder()); // Non-main thread needs own builder.
-
     RemoteViewsAction action =
         new NotificationAction(picasso, request, remoteViews, viewId, notificationId, notification,
-            notificationTag, key, tag, errorResId, callback);
+            notificationTag, errorResId, callback);
 
     performRemoteViewInto(action);
   }
@@ -663,10 +650,8 @@ public class RequestCreator {
     }
 
     Request request = createRequest(started);
-    String key = createKey(request, new StringBuilder()); // Non-main thread needs own builder.
-
     RemoteViewsAction action =
-        new AppWidgetAction(picasso, request, remoteViews, viewId, appWidgetIds, key, tag,
+        new AppWidgetAction(picasso, request, remoteViews, viewId, appWidgetIds,
             errorResId, callback);
 
     performRemoteViewInto(action);
@@ -724,10 +709,9 @@ public class RequestCreator {
     }
 
     Request request = createRequest(started);
-    String requestKey = createKey(request);
 
     if (shouldReadFromMemoryCache(memoryPolicy)) {
-      Bitmap bitmap = picasso.quickMemoryCacheCheck(requestKey);
+      Bitmap bitmap = picasso.quickMemoryCacheCheck(request.key);
       if (bitmap != null) {
         picasso.cancelRequest(target);
         RequestHandler.Result result = new RequestHandler.Result(bitmap, MEMORY);
@@ -747,9 +731,7 @@ public class RequestCreator {
     }
 
     Action action =
-        new ImageViewAction(picasso, target, request, errorResId,
-            errorDrawable, requestKey, tag, callback, noFade);
-
+        new ImageViewAction(picasso, target, request, errorResId, errorDrawable, callback, noFade);
     picasso.enqueueAndSubmit(action);
   }
 

@@ -55,7 +55,6 @@ import static com.squareup.picasso3.TestUtils.mockHunter;
 import static com.squareup.picasso3.TestUtils.mockImageViewTarget;
 import static com.squareup.picasso3.TestUtils.mockPicasso;
 import static com.squareup.picasso3.TestUtils.mockTarget;
-import static com.squareup.picasso3.Utils.createKey;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -196,7 +195,7 @@ public final class PicassoTest {
   @Test public void resumeActionTriggersSubmitOnPausedAction() {
     Request request = new Request.Builder(URI_1, 0, ARGB_8888).build();
     Action action =
-        new Action<Void>(mockPicasso(), null, request, 0, null, URI_KEY_1, "tag", true) {
+        new Action<Void>(mockPicasso(), null, request, 0, null, true) {
           @Override void complete(RequestHandler.Result result) {
             fail("Test execution should not call this method");
           }
@@ -213,7 +212,7 @@ public final class PicassoTest {
     cache.set(URI_KEY_1, bitmap);
     Request request = new Request.Builder(URI_1, 0, ARGB_8888).build();
     Action action =
-        new Action<Void>(mockPicasso(), null, request, 0, null, URI_KEY_1, "tag", true) {
+        new Action<Void>(mockPicasso(), null, request, 0, null, true) {
           @Override void complete(RequestHandler.Result result) {
             assertThat(result.getBitmap()).isEqualTo(bitmap);
             assertThat(result.getLoadedFrom()).isEqualTo(MEMORY);
@@ -566,23 +565,24 @@ public final class PicassoTest {
   }
 
   @Test public void invalidateString() {
-    cache.set(createKey(new Request.Builder(Uri.parse("https://example.com")).build()),
-        makeBitmap(1, 1));
+    Request request = new Request.Builder(Uri.parse("https://example.com")).build();
+    cache.set(request.key, makeBitmap(1, 1));
     assertThat(cache.size()).isEqualTo(1);
     picasso.invalidate("https://example.com");
     assertThat(cache.size()).isEqualTo(0);
   }
 
   @Test public void invalidateFile() {
-    cache.set(createKey(new Request.Builder(Uri.fromFile(new File("/foo/bar/baz"))).build()),
-        makeBitmap(1, 1));
+    Request request = new Request.Builder(Uri.fromFile(new File("/foo/bar/baz"))).build();
+    cache.set(request.key, makeBitmap(1, 1));
     assertThat(cache.size()).isEqualTo(1);
     picasso.invalidate(new File("/foo/bar/baz"));
     assertThat(cache.size()).isEqualTo(0);
   }
 
-  @Test public void invalidateUri() throws Exception {
-    cache.set(createKey(new Request.Builder(URI_1).build()), makeBitmap(1, 1));
+  @Test public void invalidateUri() {
+    Request request = new Request.Builder(URI_1).build();
+    cache.set(request.key, makeBitmap(1, 1));
     assertThat(cache.size()).isEqualTo(1);
     picasso.invalidate(URI_1);
     assertThat(cache.size()).isEqualTo(0);

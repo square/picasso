@@ -143,42 +143,13 @@ public class DispatcherTest {
     assertThat(dispatcher.pausedActions).isEmpty();
 
     FetchAction fetchAction1 =
-        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), pausedTag,
-            URI_KEY_1, null);
+        new FetchAction(mockPicasso(), new Request.Builder(URI_1).tag(pausedTag).build(), null);
     FetchAction fetchAction2 =
-        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), pausedTag,
-            URI_KEY_1, null);
+        new FetchAction(mockPicasso(), new Request.Builder(URI_1).tag(pausedTag).build(), null);
     dispatcher.performSubmit(fetchAction1);
     dispatcher.performSubmit(fetchAction2);
 
     assertThat(dispatcher.pausedActions).hasSize(2);
-  }
-
-  @Test public void performSubmitWithFetchActionWithSuccessCompletionCallback() {
-    String pausedTag = "pausedTag";
-    Callback callback = mockCallback();
-
-    FetchAction fetchAction =
-        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), pausedTag,
-            URI_KEY_1, callback);
-    dispatcher.performSubmit(fetchAction);
-    fetchAction.complete(new RequestHandler.Result(bitmap1, MEMORY));
-
-    verify(callback).onSuccess();
-  }
-
-  @Test public void performSubmitWithFetchActionWithErrorCompletionCallback() {
-    String pausedTag = "pausedTag";
-    Callback callback = mockCallback();
-
-    FetchAction fetchAction =
-        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), pausedTag,
-            URI_KEY_1, callback);
-    dispatcher.performSubmit(fetchAction, false);
-    Exception e = new RuntimeException();
-    fetchAction.error(e);
-
-    verify(callback).onError(e);
   }
 
   @Test public void performCancelWithFetchActionWithCallback() {
@@ -188,8 +159,7 @@ public class DispatcherTest {
     Callback callback = mockCallback();
 
     FetchAction fetchAction1 =
-        new FetchAction(mockPicasso(), new Request.Builder(URI_1).build(), pausedTag,
-            URI_KEY_1, callback);
+        new FetchAction(mockPicasso(), new Request.Builder(URI_1).tag(pausedTag).build(), callback);
     dispatcher.performCancel(fetchAction1);
     fetchAction1.cancel();
     assertThat(dispatcher.pausedActions).isEmpty();
@@ -615,7 +585,7 @@ public class DispatcherTest {
   };
 
   private static Action<Void> noopAction(Request data) {
-    return new Action<Void>(null, null, data, 0, null, URI_KEY_1, "tag", true) {
+    return new Action<Void>(null, null, data, 0, null, true) {
       @Override void complete(RequestHandler.Result result) {
       }
 

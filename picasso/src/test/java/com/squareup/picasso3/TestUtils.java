@@ -47,7 +47,6 @@ import static android.provider.ContactsContract.Contacts.CONTENT_URI;
 import static android.provider.ContactsContract.Contacts.Photo.CONTENT_DIRECTORY;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso3.Picasso.Priority;
-import static com.squareup.picasso3.Utils.createKey;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
@@ -65,28 +64,27 @@ class TestUtils {
   static final Uri URI_1 = Uri.parse("http://example.com/1.png");
   static final Uri URI_2 = Uri.parse("http://example.com/2.png");
   static final String STABLE_1 = "stableExampleKey1";
-  static final String URI_KEY_1 = createKey(new Request.Builder(URI_1).build());
-  static final String URI_KEY_2 = createKey(new Request.Builder(URI_2).build());
-  static final String STABLE_URI_KEY_1 = createKey(new Request.Builder(URI_1).stableKey(STABLE_1).build());
+  static final String URI_KEY_1 = new Request.Builder(URI_1).build().key;
+  static final String URI_KEY_2 = new Request.Builder(URI_2).build().key;
+  static final String STABLE_URI_KEY_1 = new Request.Builder(URI_1).stableKey(STABLE_1).build().key;
   static final File FILE_1 = new File("C:\\windows\\system32\\logo.exe");
-  static final String FILE_KEY_1 = createKey(new Request.Builder(Uri.fromFile(FILE_1)).build());
+  static final String FILE_KEY_1 = new Request.Builder(Uri.fromFile(FILE_1)).build().key;
   static final Uri FILE_1_URL = Uri.parse("file:///" + FILE_1.getPath());
   static final Uri FILE_1_URL_NO_AUTHORITY = Uri.parse("file:/" + FILE_1.getParent());
   static final Uri MEDIA_STORE_CONTENT_1_URL = Uri.parse("content://media/external/images/media/1");
   static final String MEDIA_STORE_CONTENT_KEY_1 =
-      createKey(new Request.Builder(MEDIA_STORE_CONTENT_1_URL).build());
+      new Request.Builder(MEDIA_STORE_CONTENT_1_URL).build().key;
   static final Uri CONTENT_1_URL = Uri.parse("content://zip/zap/zoop.jpg");
-  static final String CONTENT_KEY_1 = createKey(new Request.Builder(CONTENT_1_URL).build());
+  static final String CONTENT_KEY_1 = new Request.Builder(CONTENT_1_URL).build().key;
   static final Uri CONTACT_URI_1 = CONTENT_URI.buildUpon().appendPath("1234").build();
-  static final String CONTACT_KEY_1 = createKey(new Request.Builder(CONTACT_URI_1).build());
+  static final String CONTACT_KEY_1 = new Request.Builder(CONTACT_URI_1).build().key;
   static final Uri CONTACT_PHOTO_URI_1 =
       CONTENT_URI.buildUpon().appendPath("1234").appendPath(CONTENT_DIRECTORY).build();
-  static final String CONTACT_PHOTO_KEY_1 =
-      createKey(new Request.Builder(CONTACT_PHOTO_URI_1).build());
+  static final String CONTACT_PHOTO_KEY_1 = new Request.Builder(CONTACT_PHOTO_URI_1).build().key;
   static final int RESOURCE_ID_1 = 1;
-  static final String RESOURCE_ID_KEY_1 = createKey(new Request.Builder(RESOURCE_ID_1).build());
+  static final String RESOURCE_ID_KEY_1 = new Request.Builder(RESOURCE_ID_1).build().key;
   static final Uri ASSET_URI_1 = Uri.parse("file:///android_asset/foo/bar.png");
-  static final String ASSET_KEY_1 = createKey(new Request.Builder(ASSET_URI_1).build());
+  static final String ASSET_KEY_1 = new Request.Builder(ASSET_URI_1).build().key;
   static final String RESOURCE_PACKAGE = "com.squareup.picasso3";
   static final String RESOURCE_TYPE = "drawable";
   static final String RESOURCE_NAME = "foo";
@@ -94,16 +92,16 @@ class TestUtils {
       .authority(RESOURCE_PACKAGE)
       .appendPath(Integer.toString(RESOURCE_ID_1))
       .build();
-  static final String RESOURCE_ID_URI_KEY = createKey(new Request.Builder(RESOURCE_ID_URI).build());
+  static final String RESOURCE_ID_URI_KEY = new Request.Builder(RESOURCE_ID_URI).build().key;
   static final Uri RESOURCE_TYPE_URI = new Uri.Builder().scheme(SCHEME_ANDROID_RESOURCE)
       .authority(RESOURCE_PACKAGE)
       .appendPath(RESOURCE_TYPE)
       .appendPath(RESOURCE_NAME)
       .build();
   static final String RESOURCE_TYPE_URI_KEY =
-      createKey(new Request.Builder(RESOURCE_TYPE_URI).build());
+      new Request.Builder(RESOURCE_TYPE_URI).build().key;
   static final Uri CUSTOM_URI = Uri.parse("foo://bar");
-  static final String CUSTOM_URI_KEY = createKey(new Request.Builder(CUSTOM_URI).build());
+  static final String CUSTOM_URI_KEY = new Request.Builder(CUSTOM_URI).build().key;
   static final String BITMAP_RESOURCE_VALUE = "foo.png";
   static final String XML_RESOURCE_VALUE = "foo.xml";
 

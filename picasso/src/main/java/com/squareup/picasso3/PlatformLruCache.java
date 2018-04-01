@@ -20,7 +20,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.LruCache;
 
-import static com.squareup.picasso3.Utils.KEY_SEPARATOR;
+import static com.squareup.picasso3.Request.KEY_SEPARATOR;
 
 /** A memory cache which uses a least-recently used eviction policy. */
 final class PlatformLruCache {
