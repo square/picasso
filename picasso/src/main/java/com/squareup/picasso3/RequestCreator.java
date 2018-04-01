@@ -588,7 +588,7 @@ public class RequestCreator {
     if (deferred) {
       throw new IllegalStateException("Fit cannot be used with RemoteViews.");
     }
-    if (placeholderDrawable != null || placeholderResId != 0 || errorDrawable != null) {
+    if (placeholderDrawable != null || errorDrawable != null) {
       throw new IllegalArgumentException(
           "Cannot use placeholder or error drawables with remote views.");
     }
