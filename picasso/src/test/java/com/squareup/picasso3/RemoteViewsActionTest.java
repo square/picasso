@@ -30,7 +30,6 @@ import static com.squareup.picasso3.Picasso.LoadedFrom.NETWORK;
 import static com.squareup.picasso3.TestUtils.NO_HANDLERS;
 import static com.squareup.picasso3.TestUtils.NO_TRANSFORMERS;
 import static com.squareup.picasso3.TestUtils.UNUSED_CALL_FACTORY;
-import static com.squareup.picasso3.TestUtils.URI_KEY_1;
 import static com.squareup.picasso3.TestUtils.makeBitmap;
 import static com.squareup.picasso3.TestUtils.mockCallback;
 import static com.squareup.picasso3.TestUtils.mockImageViewTarget;
@@ -83,7 +82,7 @@ public class RemoteViewsActionTest {
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
     ImageViewAction request =
-        new ImageViewAction(picasso, target, null, 0, null, URI_KEY_1, null, callback, false);
+        new ImageViewAction(picasso, target, null, 0, null, null, callback, false);
     request.cancel();
     assertThat(request.callback).isNull();
   }
@@ -93,8 +92,7 @@ public class RemoteViewsActionTest {
   }
 
   private TestableRemoteViewsAction createAction(int errorResId, Callback callback) {
-    return new TestableRemoteViewsAction(picasso, null, remoteViews, 1, errorResId, null,
-        URI_KEY_1, callback);
+    return new TestableRemoteViewsAction(picasso, null, remoteViews, 1, errorResId, null, callback);
   }
 
   private Picasso createPicasso() {
@@ -106,8 +104,8 @@ public class RemoteViewsActionTest {
 
   static class TestableRemoteViewsAction extends RemoteViewsAction {
     TestableRemoteViewsAction(Picasso picasso, Request data, RemoteViews remoteViews, int viewId,
-        int errorResId, String tag, String key, Callback callback) {
-      super(picasso, data, remoteViews, viewId, errorResId, tag, key, callback);
+        int errorResId, String tag, Callback callback) {
+      super(picasso, data, remoteViews, viewId, errorResId, tag, callback);
     }
 
     @Override void update() {

@@ -17,6 +17,7 @@ package com.squareup.picasso3;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Looper;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -28,11 +29,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static com.squareup.picasso3.Utils.MAIN_THREAD_KEY_BUILDER;
 import static com.squareup.picasso3.Utils.checkNotNull;
 
 /** Immutable data about an image and the transformations that will be applied to it. */
 public final class Request {
   private static final long TOO_LONG_LOG = TimeUnit.SECONDS.toNanos(5);
+  private static final int KEY_PADDING = 50; // Determined by exact science.
+  static final char KEY_SEPARATOR = '\n';
 
   /** A unique ID for the request. */
   int id;
@@ -95,6 +99,8 @@ public final class Request {
   public final Bitmap.Config config;
   /** The priority of this request. */
   public final Priority priority;
+  /** The cache key for this request. */
+  public final String key;
 
   Request(Builder builder) {
     this.uri = builder.uri;
@@ -118,6 +124,12 @@ public final class Request {
     this.purgeable = builder.purgeable;
     this.config = builder.config;
     this.priority = builder.priority;
+
+    if (Looper.myLooper() == Looper.getMainLooper()) {
+      this.key = createKey();
+    } else {
+      this.key = createKey(new StringBuilder());
+    }
   }
 
   @Override public String toString() {
@@ -199,6 +211,55 @@ public final class Request {
 
   public Builder newBuilder() {
     return new Builder(this);
+  }
+
+  private String createKey() {
+    String result = createKey(MAIN_THREAD_KEY_BUILDER);
+    MAIN_THREAD_KEY_BUILDER.setLength(0);
+    return result;
+  }
+
+  private String createKey(StringBuilder builder) {
+    Request data = this;
+    if (data.stableKey != null) {
+      builder.ensureCapacity(data.stableKey.length() + KEY_PADDING);
+      builder.append(data.stableKey);
+    } else if (data.uri != null) {
+      String path = data.uri.toString();
+      builder.ensureCapacity(path.length() + KEY_PADDING);
+      builder.append(path);
+    } else {
+      builder.ensureCapacity(KEY_PADDING);
+      builder.append(data.resourceId);
+    }
+    builder.append(KEY_SEPARATOR);
+
+    if (data.rotationDegrees != 0) {
+      builder.append("rotation:").append(data.rotationDegrees);
+      if (data.hasRotationPivot) {
+        builder.append('@').append(data.rotationPivotX).append('x').append(data.rotationPivotY);
+      }
+      builder.append(KEY_SEPARATOR);
+    }
+    if (data.hasSize()) {
+      builder.append("resize:").append(data.targetWidth).append('x').append(data.targetHeight);
+      builder.append(KEY_SEPARATOR);
+    }
+    if (data.centerCrop) {
+      builder.append("centerCrop:").append(data.centerCropGravity).append(KEY_SEPARATOR);
+    } else if (data.centerInside) {
+      builder.append("centerInside").append(KEY_SEPARATOR);
+    }
+
+    if (data.transformations != null) {
+      //noinspection ForLoopReplaceableByForEach
+      for (int i = 0, count = data.transformations.size(); i < count; i++) {
+        builder.append(data.transformations.get(i).key());
+        builder.append(KEY_SEPARATOR);
+      }
+    }
+
+    return builder.toString();
   }
 
   /** Builder for creating {@link Request} instances. */
