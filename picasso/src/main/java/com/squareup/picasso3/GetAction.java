@@ -16,8 +16,8 @@
 package com.squareup.picasso3;
 
 class GetAction extends Action<Void> {
-  GetAction(Picasso picasso, Request data, Object tag) {
-    super(picasso, null, data, 0, null, tag, false);
+  GetAction(Picasso picasso, Request data) {
+    super(picasso, null, data, 0, null, false);
   }
 
   @Override void complete(RequestHandler.Result result) {

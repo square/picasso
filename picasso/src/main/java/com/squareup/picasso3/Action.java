@@ -37,13 +37,12 @@ abstract class Action<T> {
   final boolean noFade;
   final int errorResId;
   final Drawable errorDrawable;
-  final Object tag;
 
   boolean willReplay;
   boolean cancelled;
 
   Action(Picasso picasso, T target, Request request, int errorResId, Drawable errorDrawable,
-      Object tag, boolean noFade) {
+      boolean noFade) {
     this.picasso = picasso;
     this.request = request;
     this.target =
@@ -51,7 +50,6 @@ abstract class Action<T> {
     this.noFade = noFade;
     this.errorResId = errorResId;
     this.errorDrawable = errorDrawable;
-    this.tag = (tag != null ? tag : this);
   }
 
   abstract void complete(RequestHandler.Result result);
@@ -91,6 +89,6 @@ abstract class Action<T> {
   }
 
   Object getTag() {
-    return tag;
+    return request.tag != null ? request.tag : this;
   }
 }

@@ -68,7 +68,6 @@ public class RequestCreator {
   private int networkPolicy;
   private @Nullable Drawable placeholderDrawable;
   private Drawable errorDrawable;
-  private Object tag;
 
   RequestCreator(Picasso picasso, Uri uri, int resourceId) {
     if (picasso.shutdown) {
@@ -183,13 +182,7 @@ public class RequestCreator {
    * @see Picasso#resumeTag(Object)
    */
   public RequestCreator tag(@NonNull Object tag) {
-    if (tag == null) {
-      throw new IllegalArgumentException("Tag invalid.");
-    }
-    if (this.tag != null) {
-      throw new IllegalStateException("Tag already set.");
-    }
-    this.tag = tag;
+    data.tag(tag);
     return this;
   }
 
@@ -212,13 +205,13 @@ public class RequestCreator {
 
   /** Internal use only. Used by {@link DeferredRequestCreator}. */
   RequestCreator clearTag() {
-    this.tag = null;
+    data.clearTag();
     return this;
   }
 
   /** Internal use only. Used by {@link DeferredRequestCreator}. */
   Object getTag() {
-    return tag;
+    return data.getTag();
   }
 
   /** Resize the image to the specified dimension size. */
@@ -420,7 +413,7 @@ public class RequestCreator {
 
     Request request = createRequest(started);
 
-    Action action = new GetAction(picasso, request, tag);
+    Action action = new GetAction(picasso, request);
     RequestHandler.Result result =
         forRequest(picasso, picasso.dispatcher, picasso.cache, picasso.stats, action).hunt();
     if (result.hasBitmap() && shouldWriteToMemoryCache(memoryPolicy)) {
@@ -475,7 +468,7 @@ public class RequestCreator {
         }
       }
 
-      Action action = new FetchAction(picasso, request, tag, callback);
+      Action action = new FetchAction(picasso, request, callback);
       picasso.submit(action);
     }
   }
@@ -556,7 +549,7 @@ public class RequestCreator {
     target.onPrepareLoad(setPlaceholder ? getPlaceholderDrawable() : null);
 
     Action action =
-        new TargetAction(picasso, target, request, errorDrawable, tag, errorResId);
+        new TargetAction(picasso, target, request, errorDrawable, errorResId);
     picasso.enqueueAndSubmit(action);
   }
 
@@ -603,7 +596,7 @@ public class RequestCreator {
     Request request = createRequest(started);
     RemoteViewsAction action =
         new NotificationAction(picasso, request, remoteViews, viewId, notificationId, notification,
-            notificationTag, tag, errorResId, callback);
+            notificationTag, errorResId, callback);
 
     performRemoteViewInto(action);
   }
@@ -658,7 +651,7 @@ public class RequestCreator {
 
     Request request = createRequest(started);
     RemoteViewsAction action =
-        new AppWidgetAction(picasso, request, remoteViews, viewId, appWidgetIds, tag,
+        new AppWidgetAction(picasso, request, remoteViews, viewId, appWidgetIds,
             errorResId, callback);
 
     performRemoteViewInto(action);
@@ -738,9 +731,7 @@ public class RequestCreator {
     }
 
     Action action =
-        new ImageViewAction(picasso, target, request, errorResId, errorDrawable, tag, callback,
-            noFade);
-
+        new ImageViewAction(picasso, target, request, errorResId, errorDrawable, callback, noFade);
     picasso.enqueueAndSubmit(action);
   }
 

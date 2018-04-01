@@ -31,8 +31,8 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
   private RemoteViewsTarget remoteTarget;
 
   RemoteViewsAction(Picasso picasso, Request data, RemoteViews remoteViews, int viewId,
-      int errorResId, Object tag, Callback callback) {
-    super(picasso, null, data, errorResId, null, tag, false);
+      int errorResId, Callback callback) {
+    super(picasso, null, data, errorResId, null, false);
     this.remoteViews = remoteViews;
     this.viewId = viewId;
     this.callback = callback;
@@ -102,8 +102,8 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
     private final int[] appWidgetIds;
 
     AppWidgetAction(Picasso picasso, Request data, RemoteViews remoteViews, int viewId,
-        int[] appWidgetIds, Object tag, int errorResId, Callback callback) {
-      super(picasso, data, remoteViews, viewId, errorResId, tag, callback);
+        int[] appWidgetIds, int errorResId, Callback callback) {
+      super(picasso, data, remoteViews, viewId, errorResId, callback);
       this.appWidgetIds = appWidgetIds;
     }
 
@@ -119,9 +119,9 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
     private final Notification notification;
 
     NotificationAction(Picasso picasso, Request data, RemoteViews remoteViews, int viewId,
-        int notificationId, Notification notification, String notificationTag, Object tag,
+        int notificationId, Notification notification, String notificationTag,
         int errorResId, Callback callback) {
-      super(picasso, data, remoteViews, viewId, errorResId, tag, callback);
+      super(picasso, data, remoteViews, viewId, errorResId, callback);
       this.notificationId = notificationId;
       this.notificationTag = notificationTag;
       this.notification = notification;
