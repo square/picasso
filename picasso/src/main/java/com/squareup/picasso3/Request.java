@@ -101,6 +101,8 @@ public final class Request {
   public final Priority priority;
   /** The cache key for this request. */
   public final String key;
+  /** User-provided value to track this request. */
+  public final Object tag;
 
   Request(Builder builder) {
     this.uri = builder.uri;
@@ -130,6 +132,8 @@ public final class Request {
     } else {
       this.key = createKey(new StringBuilder());
     }
+
+    this.tag = builder.tag;
   }
 
   @Override public String toString() {
@@ -281,6 +285,7 @@ public final class Request {
     private List<Transformation> transformations;
     private Bitmap.Config config;
     private Priority priority;
+    private Object tag;
 
     /** Start building a request using the specified {@link Uri}. */
     public Builder(@NonNull Uri uri) {
@@ -367,6 +372,31 @@ public final class Request {
     public Builder stableKey(@Nullable String stableKey) {
       this.stableKey = stableKey;
       return this;
+    }
+
+    /**
+     * Assign a tag to this request.
+     */
+    public Builder tag(@NonNull Object tag) {
+      if (tag == null) {
+        throw new IllegalArgumentException("Tag invalid.");
+      }
+      if (this.tag != null) {
+        throw new IllegalStateException("Tag already set.");
+      }
+      this.tag = tag;
+      return this;
+    }
+
+    /** Internal use only. Used by {@link DeferredRequestCreator}. */
+    Builder clearTag() {
+      this.tag = null;
+      return this;
+    }
+
+    /** Internal use only. Used by {@link DeferredRequestCreator}. */
+    Object getTag() {
+      return tag;
     }
 
     /**
