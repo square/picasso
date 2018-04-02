@@ -22,7 +22,7 @@ import java.io.StringWriter;
 import static com.squareup.picasso3.Picasso.TAG;
 
 /** Represents all stats for a {@link Picasso} instance at a single point in time. */
-public class StatsSnapshot {
+public final class StatsSnapshot {
   public final int maxSize;
   public final int size;
   public final long cacheHits;

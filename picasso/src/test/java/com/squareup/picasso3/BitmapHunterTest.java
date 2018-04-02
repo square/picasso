@@ -96,7 +96,7 @@ public final class BitmapHunterTest {
   @Mock Context context;
   @Mock Picasso picasso;
   final PlatformLruCache cache = new PlatformLruCache(2048);
-  @Mock Stats stats;
+  final Stats stats = new Stats(cache);
   @Mock Dispatcher dispatcher;
 
   final Bitmap bitmap = makeBitmap();
@@ -135,20 +135,14 @@ public final class BitmapHunterTest {
   }
 
   @Test public void outOfMemoryDispatchFailed() {
-    when(stats.createSnapshot()).thenReturn(mock(StatsSnapshot.class));
-
     Action action = mockAction(URI_KEY_1, URI_1);
     BitmapHunter hunter = new OOMBitmapHunter(picasso, dispatcher, cache, stats, action);
-    try {
-      hunter.run();
-    } catch (Throwable t) {
-      Exception exception = hunter.getException();
-      verify(dispatcher).dispatchFailed(hunter);
-      verify(stats).createSnapshot();
-      assertThat(hunter.getResult()).isNull();
-      assertThat(exception).isNotNull();
-      assertThat(exception.getCause()).isInstanceOf(OutOfMemoryError.class);
-    }
+    hunter.run();
+    Exception exception = hunter.getException();
+    verify(dispatcher).dispatchFailed(hunter);
+    assertThat(hunter.getResult()).isNull();
+    assertThat(exception).hasMessageThat().contains("BEGIN PICASSO STATS");
+    assertThat(exception.getCause()).isInstanceOf(OutOfMemoryError.class);
   }
 
   @Test public void runWithIoExceptionDispatchRetry() {
