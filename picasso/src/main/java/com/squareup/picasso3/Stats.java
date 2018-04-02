@@ -20,6 +20,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import android.support.v4.graphics.BitmapCompat;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 
@@ -115,7 +116,7 @@ class Stats {
 
   private void processBitmap(Bitmap bitmap, int what) {
     // Never send bitmaps to the handler as they could be recycled before we process them.
-    int bitmapSize = Utils.getBitmapBytes(bitmap);
+    int bitmapSize = BitmapCompat.getAllocationByteCount(bitmap);
     handler.sendMessage(handler.obtainMessage(what, bitmapSize, 0));
   }
 
