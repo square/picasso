@@ -20,7 +20,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -42,7 +41,6 @@ import static android.content.pm.ApplicationInfo.FLAG_LARGE_HEAP;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static com.squareup.picasso3.Picasso.TAG;
 import static java.lang.String.format;
@@ -97,14 +95,6 @@ final class Utils {
 
   private Utils() {
     // No instances.
-  }
-
-  static int getBitmapBytes(Bitmap bitmap) {
-    int result = SDK_INT >= KITKAT ? bitmap.getAllocationByteCount() : bitmap.getByteCount();
-    if (result < 0) {
-      throw new IllegalStateException("Negative size: " + bitmap);
-    }
-    return result;
   }
 
   static <T> T checkNotNull(T value, String message) {
