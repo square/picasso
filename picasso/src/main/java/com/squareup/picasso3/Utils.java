@@ -27,6 +27,7 @@ import android.os.Process;
 import android.os.StatFs;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -36,7 +37,6 @@ import java.util.concurrent.ThreadFactory;
 import okio.BufferedSource;
 import okio.ByteString;
 
-import static android.content.Context.ACTIVITY_SERVICE;
 import static android.content.pm.ApplicationInfo.FLAG_LARGE_HEAP;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
@@ -179,7 +179,7 @@ final class Utils {
   }
 
   static int calculateMemoryCacheSize(Context context) {
-    ActivityManager am = getService(context, ACTIVITY_SERVICE);
+    ActivityManager am = ContextCompat.getSystemService(context, ActivityManager.class);
     boolean largeHeap = (context.getApplicationInfo().flags & FLAG_LARGE_HEAP) != 0;
     int memoryClass = largeHeap ? am.getLargeMemoryClass() : am.getMemoryClass();
     // Target ~15% of the available heap.
@@ -202,11 +202,6 @@ final class Utils {
       //https://github.com/square/picasso/issues/1197
       return false;
     }
-  }
-
-  @SuppressWarnings({ "unchecked", "TypeParameterUnusedInFormals" })
-  static <T> T getService(Context context, String service) {
-    return (T) context.getSystemService(service);
   }
 
   static boolean hasPermission(Context context, String permission) {
