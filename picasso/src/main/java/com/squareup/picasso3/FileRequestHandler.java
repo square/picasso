@@ -17,7 +17,6 @@ package com.squareup.picasso3;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.support.media.ExifInterface;
 import java.io.IOException;
 import okio.Source;
@@ -42,8 +41,9 @@ class FileRequestHandler extends ContentStreamRequestHandler {
     try {
       Source source = getSource(request);
       Bitmap bitmap = decodeStream(source, request);
+      int exifRotation = getExifOrientation(request);
       signaledCallback = true;
-      callback.onSuccess(new Result(bitmap, DISK, getFileExifRotation(request.uri)));
+      callback.onSuccess(new Result(bitmap, DISK, exifRotation));
     } catch (Exception e) {
       if (!signaledCallback) {
         callback.onError(e);
@@ -51,8 +51,8 @@ class FileRequestHandler extends ContentStreamRequestHandler {
     }
   }
 
-  static int getFileExifRotation(Uri uri) throws IOException {
-    ExifInterface exifInterface = new ExifInterface(uri.getPath());
+  @Override protected int getExifOrientation(Request request) throws IOException {
+    ExifInterface exifInterface = new ExifInterface(request.uri.getPath());
     return exifInterface.getAttributeInt(TAG_ORIENTATION, ORIENTATION_NORMAL);
   }
 }

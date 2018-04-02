@@ -55,7 +55,7 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
     boolean signaledCallback = false;
     try {
       ContentResolver contentResolver = context.getContentResolver();
-      int exifOrientation = getExifOrientation(contentResolver, request.uri);
+      int exifOrientation = getExifOrientation(request);
 
       String mimeType = contentResolver.getType(request.uri);
       boolean isVideo = mimeType != null && mimeType.startsWith("video/");
@@ -117,10 +117,12 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
     return FULL;
   }
 
-  static int getExifOrientation(ContentResolver contentResolver, Uri uri) {
+  @Override
+  protected int getExifOrientation(Request request) {
     Cursor cursor = null;
     try {
-      cursor = contentResolver.query(uri, CONTENT_ORIENTATION, null, null, null);
+      ContentResolver contentResolver = context.getContentResolver();
+      cursor = contentResolver.query(request.uri, CONTENT_ORIENTATION, null, null, null);
       if (cursor == null || !cursor.moveToFirst()) {
         return 0;
       }
