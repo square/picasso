@@ -18,12 +18,16 @@ package com.squareup.picasso3;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.support.media.ExifInterface;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import okio.Okio;
 import okio.Source;
 
 import static android.content.ContentResolver.SCHEME_CONTENT;
+import static android.support.media.ExifInterface.ORIENTATION_NORMAL;
+import static android.support.media.ExifInterface.TAG_ORIENTATION;
 import static com.squareup.picasso3.Picasso.LoadedFrom.DISK;
 
 class ContentStreamRequestHandler extends RequestHandler {
@@ -46,8 +50,9 @@ class ContentStreamRequestHandler extends RequestHandler {
         return;
       }
       Bitmap bitmap = decodeStream(source, request);
+      int exifRotation = getExifOrientation(request);
       signaledCallback = true;
-      callback.onSuccess(new Result(bitmap, DISK));
+      callback.onSuccess(new Result(bitmap, DISK, exifRotation));
     } catch (Exception e) {
       if (!signaledCallback) {
         callback.onError(e);
@@ -59,5 +64,22 @@ class ContentStreamRequestHandler extends RequestHandler {
     ContentResolver contentResolver = context.getContentResolver();
     InputStream inputStream = contentResolver.openInputStream(request.uri);
     return inputStream == null ? null : Okio.source(inputStream);
+  }
+
+  protected int getExifOrientation(Request request) throws IOException {
+    ContentResolver contentResolver = context.getContentResolver();
+    InputStream inputStream = null;
+    try {
+      inputStream = contentResolver.openInputStream(request.uri);
+      ExifInterface exifInterface = new ExifInterface(inputStream);
+      return exifInterface.getAttributeInt(TAG_ORIENTATION, ORIENTATION_NORMAL);
+    } finally {
+      try {
+        if (inputStream != null) {
+          inputStream.close();
+        }
+      } catch (IOException ignored) {
+      }
+    }
   }
 }
