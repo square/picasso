@@ -28,6 +28,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import android.support.v4.content.ContextCompat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -38,7 +39,6 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 
-import static android.content.Context.CONNECTIVITY_SERVICE;
 import static android.content.Intent.ACTION_AIRPLANE_MODE_CHANGED;
 import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
@@ -54,7 +54,6 @@ import static com.squareup.picasso3.Utils.VERB_PAUSED;
 import static com.squareup.picasso3.Utils.VERB_REPLAYING;
 import static com.squareup.picasso3.Utils.VERB_RETRYING;
 import static com.squareup.picasso3.Utils.getLogIdsForHunter;
-import static com.squareup.picasso3.Utils.getService;
 import static com.squareup.picasso3.Utils.hasPermission;
 import static com.squareup.picasso3.Utils.log;
 
@@ -327,7 +326,8 @@ class Dispatcher {
 
     NetworkInfo networkInfo = null;
     if (scansNetworkChanges) {
-      ConnectivityManager connectivityManager = getService(context, CONNECTIVITY_SERVICE);
+      ConnectivityManager connectivityManager =
+          ContextCompat.getSystemService(context, ConnectivityManager.class);
       networkInfo = connectivityManager.getActiveNetworkInfo();
     }
 
@@ -566,7 +566,8 @@ class Dispatcher {
         }
         dispatcher.dispatchAirplaneModeChange(intent.getBooleanExtra(EXTRA_AIRPLANE_STATE, false));
       } else if (CONNECTIVITY_ACTION.equals(action)) {
-        ConnectivityManager connectivityManager = getService(context, CONNECTIVITY_SERVICE);
+        ConnectivityManager connectivityManager =
+            ContextCompat.getSystemService(context, ConnectivityManager.class);
         dispatcher.dispatchNetworkStateChange(connectivityManager.getActiveNetworkInfo());
       }
     }
