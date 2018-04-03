@@ -16,13 +16,12 @@
 package com.squareup.picasso3;
 
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 
 final class TargetAction extends Action<Target> {
 
-  TargetAction(Picasso picasso, Target target, Request data, Drawable errorDrawable,
-      int errorResId) {
-    super(picasso, target, data, errorResId, errorDrawable, false);
+  TargetAction(Picasso picasso, Target2<Target> wrapper, Request data) {
+    super(picasso, wrapper, data);
   }
 
   @Override void complete(RequestHandler.Result result) {
@@ -45,10 +44,11 @@ final class TargetAction extends Action<Target> {
   @Override void error(Exception e) {
     Target target = getTarget();
     if (target != null) {
-      if (errorResId != 0) {
-        target.onBitmapFailed(e, picasso.context.getResources().getDrawable(errorResId));
+      if (wrapper.errorResId != 0) {
+        target.onBitmapFailed(e,
+            ContextCompat.getDrawable(picasso.context, wrapper.errorResId));
       } else {
-        target.onBitmapFailed(e, errorDrawable);
+        target.onBitmapFailed(e, wrapper.errorDrawable);
       }
     }
   }

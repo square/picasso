@@ -41,8 +41,9 @@ public class TargetActionTest {
 
   @Test(expected = AssertionError.class)
   public void throwsErrorWithNullResult() {
+    Target target = mockTarget();
     TargetAction request =
-        new TargetAction(mock(Picasso.class), mockTarget(), null, null, 0);
+        new TargetAction(mock(Picasso.class), new Target2<>(target), null);
     request.complete(null);
   }
 
@@ -51,7 +52,7 @@ public class TargetActionTest {
     Bitmap bitmap = makeBitmap();
     Target target = mockTarget();
     TargetAction request =
-        new TargetAction(mock(Picasso.class), target, null, null, 0);
+        new TargetAction(mock(Picasso.class), new Target2<>(target), null);
     request.complete(new RequestHandler.Result(bitmap, MEMORY));
     verify(target).onBitmapLoaded(bitmap, MEMORY);
   }
@@ -60,10 +61,12 @@ public class TargetActionTest {
   public void invokesOnBitmapFailedIfTargetIsNotNullWithErrorDrawable() {
     Drawable errorDrawable = mock(Drawable.class);
     Target target = mockTarget();
-    TargetAction request =
-        new TargetAction(mock(Picasso.class), target, null, errorDrawable, 0);
+    Target2<Target> wrapper = new Target2<>(target, errorDrawable);
+    TargetAction request = new TargetAction(mock(Picasso.class), wrapper, null);
     Exception e = new RuntimeException();
+
     request.error(e);
+
     verify(target).onBitmapFailed(e, errorDrawable);
   }
 
@@ -78,13 +81,15 @@ public class TargetActionTest {
         new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, null, NO_TRANSFORMERS,
             NO_HANDLERS, mock(Stats.class), ARGB_8888, false, false);
     Resources res = mock(Resources.class);
-    TargetAction request =
-        new TargetAction(picasso, target, null, null, RESOURCE_ID_1);
+    Target2<Target> wrapper = new Target2<>(target, RESOURCE_ID_1);
+    TargetAction request = new TargetAction(picasso, wrapper, null);
 
     when(context.getResources()).thenReturn(res);
     when(res.getDrawable(RESOURCE_ID_1)).thenReturn(errorDrawable);
     Exception e = new RuntimeException();
+
     request.error(e);
+
     verify(target).onBitmapFailed(e, errorDrawable);
   }
 
@@ -104,7 +109,7 @@ public class TargetActionTest {
     };
     Picasso picasso = mock(Picasso.class);
     Bitmap bitmap = makeBitmap();
-    TargetAction tr = new TargetAction(picasso, bad, null, null, 0);
+    TargetAction tr = new TargetAction(picasso, new Target2<>(bad), null);
     try {
       tr.complete(new RequestHandler.Result(bitmap, MEMORY));
       fail();

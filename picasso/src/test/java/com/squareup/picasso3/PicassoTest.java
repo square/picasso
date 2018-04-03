@@ -195,7 +195,7 @@ public final class PicassoTest {
   @Test public void resumeActionTriggersSubmitOnPausedAction() {
     Request request = new Request.Builder(URI_1, 0, ARGB_8888).build();
     Action action =
-        new Action<Void>(mockPicasso(), null, request, 0, null, true) {
+        new Action<Void>(mockPicasso(), null, request) {
           @Override void complete(RequestHandler.Result result) {
             fail("Test execution should not call this method");
           }
@@ -212,7 +212,7 @@ public final class PicassoTest {
     cache.set(URI_KEY_1, bitmap);
     Request request = new Request.Builder(URI_1, 0, ARGB_8888).build();
     Action action =
-        new Action<Void>(mockPicasso(), null, request, 0, null, true) {
+        new Action<Void>(mockPicasso(), null, request) {
           @Override void complete(RequestHandler.Result result) {
             assertThat(result.getBitmap()).isEqualTo(bitmap);
             assertThat(result.getLoadedFrom()).isEqualTo(MEMORY);

@@ -18,6 +18,7 @@ package com.squareup.picasso3;
 import android.graphics.Bitmap;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
+import com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -82,7 +83,7 @@ public class RemoteViewsActionTest {
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
     ImageViewAction request =
-        new ImageViewAction(picasso, target, null, 0, null, callback, false);
+        new ImageViewAction(picasso, new Target2<>(target), null, callback);
     request.cancel();
     assertThat(request.callback).isNull();
   }
@@ -92,7 +93,9 @@ public class RemoteViewsActionTest {
   }
 
   private TestableRemoteViewsAction createAction(int errorResId, Callback callback) {
-    return new TestableRemoteViewsAction(picasso, null, remoteViews, 1, errorResId, callback);
+    Target2<RemoteViewsTarget> wrapper =
+        new Target2<>(new RemoteViewsTarget(remoteViews, 1), errorResId);
+    return new TestableRemoteViewsAction(picasso, null, wrapper, callback);
   }
 
   private Picasso createPicasso() {
@@ -103,9 +106,9 @@ public class RemoteViewsActionTest {
   }
 
   static class TestableRemoteViewsAction extends RemoteViewsAction {
-    TestableRemoteViewsAction(Picasso picasso, Request data, RemoteViews remoteViews, int viewId,
-        int errorResId, Callback callback) {
-      super(picasso, data, remoteViews, viewId, errorResId, callback);
+    TestableRemoteViewsAction(Picasso picasso, Request data, Target2<RemoteViewsTarget> target,
+        Callback callback) {
+      super(picasso, data, target, callback);
     }
 
     @Override void update() {

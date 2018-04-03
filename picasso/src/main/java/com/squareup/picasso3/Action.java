@@ -15,7 +15,6 @@
  */
 package com.squareup.picasso3;
 
-import android.graphics.drawable.Drawable;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 
@@ -34,22 +33,22 @@ abstract class Action<T> {
   final Picasso picasso;
   final Request request;
   final WeakReference<T> target;
-  final boolean noFade;
-  final int errorResId;
-  final Drawable errorDrawable;
+  final Target2<T> wrapper;
 
   boolean willReplay;
   boolean cancelled;
 
-  Action(Picasso picasso, T target, Request request, int errorResId, Drawable errorDrawable,
-      boolean noFade) {
+  Action(Picasso picasso, Target2<T> wrapper, Request request) {
     this.picasso = picasso;
     this.request = request;
-    this.target =
-        target == null ? null : new RequestWeakReference<>(this, target, picasso.referenceQueue);
-    this.noFade = noFade;
-    this.errorResId = errorResId;
-    this.errorDrawable = errorDrawable;
+    if (wrapper == null) {
+      this.target = null;
+    } else {
+      this.target = new RequestWeakReference<>(this, wrapper.target, picasso.referenceQueue);
+      // Release the reference.
+      wrapper.target = null;
+    }
+    this.wrapper = wrapper;
   }
 
   abstract void complete(RequestHandler.Result result);

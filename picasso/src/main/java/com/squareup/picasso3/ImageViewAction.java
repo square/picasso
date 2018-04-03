@@ -24,9 +24,8 @@ class ImageViewAction extends Action<ImageView> {
 
   Callback callback;
 
-  ImageViewAction(Picasso picasso, ImageView imageView, Request data, int errorResId,
-      Drawable errorDrawable, Callback callback, boolean noFade) {
-    super(picasso, imageView, data, errorResId, errorDrawable, noFade);
+  ImageViewAction(Picasso picasso, Target2<ImageView> target, Request data, Callback callback) {
+    super(picasso, target, data);
     this.callback = callback;
   }
 
@@ -43,7 +42,7 @@ class ImageViewAction extends Action<ImageView> {
 
     Context context = picasso.context;
     boolean indicatorsEnabled = picasso.indicatorsEnabled;
-    PicassoDrawable.setResult(target, context, result, noFade, indicatorsEnabled);
+    PicassoDrawable.setResult(target, context, result, wrapper.noFade, indicatorsEnabled);
 
     if (callback != null) {
       callback.onSuccess();
@@ -59,10 +58,10 @@ class ImageViewAction extends Action<ImageView> {
     if (placeholder instanceof Animatable) {
       ((Animatable) placeholder).stop();
     }
-    if (errorResId != 0) {
-      target.setImageResource(errorResId);
-    } else if (errorDrawable != null) {
-      target.setImageDrawable(errorDrawable);
+    if (wrapper.errorResId != 0) {
+      target.setImageResource(wrapper.errorResId);
+    } else if (wrapper.errorDrawable != null) {
+      target.setImageDrawable(wrapper.errorDrawable);
     }
 
     if (callback != null) {

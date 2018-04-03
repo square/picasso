@@ -22,22 +22,20 @@ import android.support.v4.content.ContextCompat;
 import android.widget.RemoteViews;
 
 abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTarget> {
-  final RemoteViews remoteViews;
-  final int viewId;
+  Target2<RemoteViewsTarget> remoteWrapper;
   Callback callback;
 
-  private RemoteViewsTarget remoteTarget;
 
-  RemoteViewsAction(Picasso picasso, Request data, RemoteViews remoteViews, int viewId,
-      int errorResId, Callback callback) {
-    super(picasso, null, data, errorResId, null, false);
-    this.remoteViews = remoteViews;
-    this.viewId = viewId;
+  RemoteViewsAction(Picasso picasso, Request data, Target2<RemoteViewsTarget> wrapper,
+      Callback callback) {
+    super(picasso, null, data);
+    this.remoteWrapper = wrapper;
     this.callback = callback;
   }
 
   @Override void complete(RequestHandler.Result result) {
-    remoteViews.setImageViewBitmap(viewId, result.getBitmap());
+    RemoteViewsTarget target = remoteWrapper.target;
+    target.remoteViews.setImageViewBitmap(target.viewId, result.getBitmap());
     update();
     if (callback != null) {
       callback.onSuccess();
@@ -52,8 +50,8 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
   }
 
   @Override public void error(Exception e) {
-    if (errorResId != 0) {
-      setImageResource(errorResId);
+    if (remoteWrapper.errorResId != 0) {
+      setImageResource(remoteWrapper.errorResId);
     }
     if (callback != null) {
       callback.onError(e);
@@ -61,14 +59,12 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
   }
 
   @Override RemoteViewsTarget getTarget() {
-    if (remoteTarget == null) {
-      remoteTarget = new RemoteViewsTarget(remoteViews, viewId);
-    }
-    return remoteTarget;
+    return remoteWrapper.target;
   }
 
   void setImageResource(int resId) {
-    remoteViews.setImageViewResource(viewId, resId);
+    RemoteViewsTarget target = remoteWrapper.target;
+    target.remoteViews.setImageViewResource(target.viewId, resId);
     update();
   }
 
@@ -99,15 +95,15 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
   static class AppWidgetAction extends RemoteViewsAction {
     private final int[] appWidgetIds;
 
-    AppWidgetAction(Picasso picasso, Request data, RemoteViews remoteViews, int viewId,
-        int[] appWidgetIds, int errorResId, Callback callback) {
-      super(picasso, data, remoteViews, viewId, errorResId, callback);
+    AppWidgetAction(Picasso picasso, Request data, Target2<RemoteViewsTarget> wrapper,
+        int[] appWidgetIds, Callback callback) {
+      super(picasso, data, wrapper, callback);
       this.appWidgetIds = appWidgetIds;
     }
 
     @Override void update() {
       AppWidgetManager manager = AppWidgetManager.getInstance(picasso.context);
-      manager.updateAppWidget(appWidgetIds, remoteViews);
+      manager.updateAppWidget(appWidgetIds, remoteWrapper.target.remoteViews);
     }
   }
 
@@ -116,10 +112,9 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
     private final String notificationTag;
     private final Notification notification;
 
-    NotificationAction(Picasso picasso, Request data, RemoteViews remoteViews, int viewId,
-        int notificationId, Notification notification, String notificationTag,
-        int errorResId, Callback callback) {
-      super(picasso, data, remoteViews, viewId, errorResId, callback);
+    NotificationAction(Picasso picasso, Request data, Target2<RemoteViewsTarget> wrapper,
+        int notificationId, Notification notification, String notificationTag, Callback callback) {
+      super(picasso, data, wrapper, callback);
       this.notificationId = notificationId;
       this.notificationTag = notificationTag;
       this.notification = notification;
