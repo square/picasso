@@ -585,7 +585,7 @@ public class DispatcherTest {
   };
 
   private static Action<Void> noopAction(Request data) {
-    return new Action<Void>(null, null, data, 0, null, true) {
+    return new Action<Void>(null, null, data) {
       @Override void complete(RequestHandler.Result result) {
       }
 

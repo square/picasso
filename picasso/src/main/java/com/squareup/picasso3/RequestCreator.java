@@ -30,6 +30,7 @@ import android.support.v4.content.ContextCompat;
 import android.view.Gravity;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
+import com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -548,8 +549,8 @@ public class RequestCreator {
 
     target.onPrepareLoad(setPlaceholder ? getPlaceholderDrawable() : null);
 
-    Action action =
-        new TargetAction(picasso, target, request, errorDrawable, errorResId);
+    Target2<Target> wrapper = new Target2<>(target, errorResId, errorDrawable, noFade);
+    Action action = new TargetAction(picasso, wrapper, request);
     picasso.enqueueAndSubmit(action);
   }
 
@@ -594,9 +595,11 @@ public class RequestCreator {
     }
 
     Request request = createRequest(started);
+    Target2<RemoteViewsTarget> remoteTarget =
+        new Target2<>(new RemoteViewsTarget(remoteViews, viewId), errorResId);
     RemoteViewsAction action =
-        new NotificationAction(picasso, request, remoteViews, viewId, notificationId, notification,
-            notificationTag, errorResId, callback);
+        new NotificationAction(picasso, request, remoteTarget, notificationId, notification,
+            notificationTag, callback);
 
     performRemoteViewInto(action);
   }
@@ -650,9 +653,10 @@ public class RequestCreator {
     }
 
     Request request = createRequest(started);
+    Target2<RemoteViewsTarget> remoteTarget =
+        new Target2<>(new RemoteViewsTarget(remoteViews, viewId), errorResId);
     RemoteViewsAction action =
-        new AppWidgetAction(picasso, request, remoteViews, viewId, appWidgetIds,
-            errorResId, callback);
+        new AppWidgetAction(picasso, request, remoteTarget, appWidgetIds, callback);
 
     performRemoteViewInto(action);
   }
@@ -730,8 +734,8 @@ public class RequestCreator {
       setPlaceholder(target, getPlaceholderDrawable());
     }
 
-    Action action =
-        new ImageViewAction(picasso, target, request, errorResId, errorDrawable, callback, noFade);
+    Target2<ImageView> wrapper = new Target2<>(target, errorResId, errorDrawable, noFade);
+    Action action = new ImageViewAction(picasso, wrapper, request, callback);
     picasso.enqueueAndSubmit(action);
   }
 
