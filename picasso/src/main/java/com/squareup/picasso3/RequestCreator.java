@@ -65,8 +65,6 @@ public class RequestCreator {
   private boolean setPlaceholder = true;
   private int placeholderResId;
   private int errorResId;
-  private int memoryPolicy;
-  private int networkPolicy;
   private @Nullable Drawable placeholderDrawable;
   private Drawable errorDrawable;
 
@@ -338,21 +336,7 @@ public class RequestCreator {
    */
   public RequestCreator memoryPolicy(@NonNull MemoryPolicy policy,
       @NonNull MemoryPolicy... additional) {
-    if (policy == null) {
-      throw new IllegalArgumentException("Memory policy cannot be null.");
-    }
-    this.memoryPolicy |= policy.index;
-    if (additional == null) {
-      throw new IllegalArgumentException("Memory policy cannot be null.");
-    }
-    if (additional.length > 0) {
-      for (MemoryPolicy memoryPolicy : additional) {
-        if (memoryPolicy == null) {
-          throw new IllegalArgumentException("Memory policy cannot be null.");
-        }
-        this.memoryPolicy |= memoryPolicy.index;
-      }
-    }
+    data.memoryPolicy(policy, additional);
     return this;
   }
 
@@ -362,21 +346,7 @@ public class RequestCreator {
    */
   public RequestCreator networkPolicy(@NonNull NetworkPolicy policy,
       @NonNull NetworkPolicy... additional) {
-    if (policy == null) {
-      throw new IllegalArgumentException("Network policy cannot be null.");
-    }
-    this.networkPolicy |= policy.index;
-    if (additional == null) {
-      throw new IllegalArgumentException("Network policy cannot be null.");
-    }
-    if (additional.length > 0) {
-      for (NetworkPolicy networkPolicy : additional) {
-        if (networkPolicy == null) {
-          throw new IllegalArgumentException("Network policy cannot be null.");
-        }
-        this.networkPolicy |= networkPolicy.index;
-      }
-    }
+    data.networkPolicy(policy, additional);
     return this;
   }
 
@@ -417,7 +387,7 @@ public class RequestCreator {
     Action action = new GetAction(picasso, request);
     RequestHandler.Result result =
         forRequest(picasso, picasso.dispatcher, picasso.cache, picasso.stats, action).hunt();
-    if (result.hasBitmap() && shouldWriteToMemoryCache(memoryPolicy)) {
+    if (result.hasBitmap() && shouldWriteToMemoryCache(request.memoryPolicy)) {
       picasso.cache.set(request.key, result.getBitmap());
     }
     return result.getBitmap();
@@ -456,7 +426,7 @@ public class RequestCreator {
 
       Request request = createRequest(started);
 
-      if (shouldReadFromMemoryCache(memoryPolicy)) {
+      if (shouldReadFromMemoryCache(request.memoryPolicy)) {
         Bitmap bitmap = picasso.quickMemoryCacheCheck(request.key);
         if (bitmap != null) {
           if (picasso.loggingEnabled) {
@@ -601,7 +571,7 @@ public class RequestCreator {
         new NotificationAction(picasso, request, remoteTarget, notificationId, notification,
             notificationTag, callback);
 
-    performRemoteViewInto(action);
+    performRemoteViewInto(request, action);
   }
 
   /**
@@ -658,7 +628,7 @@ public class RequestCreator {
     RemoteViewsAction action =
         new AppWidgetAction(picasso, request, remoteTarget, appWidgetIds, callback);
 
-    performRemoteViewInto(action);
+    performRemoteViewInto(request, action);
   }
 
   /**
@@ -714,7 +684,7 @@ public class RequestCreator {
 
     Request request = createRequest(started);
 
-    if (shouldReadFromMemoryCache(memoryPolicy)) {
+    if (shouldReadFromMemoryCache(request.memoryPolicy)) {
       Bitmap bitmap = picasso.quickMemoryCacheCheck(request.key);
       if (bitmap != null) {
         picasso.cancelRequest(target);
@@ -752,8 +722,6 @@ public class RequestCreator {
     Request request = data.build();
     request.id = id;
     request.started = started;
-    request.memoryPolicy = memoryPolicy;
-    request.networkPolicy = networkPolicy;
 
     boolean loggingEnabled = picasso.loggingEnabled;
     if (loggingEnabled) {
@@ -774,8 +742,8 @@ public class RequestCreator {
     return transformed;
   }
 
-  private void performRemoteViewInto(RemoteViewsAction action) {
-    if (shouldReadFromMemoryCache(memoryPolicy)) {
+  private void performRemoteViewInto(Request request, RemoteViewsAction action) {
+    if (shouldReadFromMemoryCache(request.memoryPolicy)) {
       Bitmap bitmap = picasso.quickMemoryCacheCheck(action.getKey());
       if (bitmap != null) {
         action.complete(new RequestHandler.Result(bitmap, MEMORY));
