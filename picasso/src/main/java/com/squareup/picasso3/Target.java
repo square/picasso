@@ -15,44 +15,41 @@
  */
 package com.squareup.picasso3;
 
-import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.Nullable;
+import android.support.annotation.DrawableRes;
+import android.support.annotation.NonNull;
 
-import static com.squareup.picasso3.Picasso.LoadedFrom;
+public class Target<T> {
+  T target;
+  final Drawable errorDrawable;
+  final int errorResId;
+  final boolean noFade;
 
-/**
- * Represents an arbitrary listener for image loading.
- * <p>
- * Objects implementing this class <strong>must</strong> have a working implementation of
- * {@link Object#equals(Object)} and {@link Object#hashCode()} for proper storage internally.
- * Instances of this interface will also be compared to determine if view recycling is occurring.
- * It is recommended that you add this interface directly on to a custom view type when using in an
- * adapter to ensure correct recycling behavior.
- */
-public interface Target {
-  /**
-   * Callback when an image has been successfully loaded.
-   * <p>
-   * <strong>Note:</strong> You must not recycle the bitmap.
-   */
-  void onBitmapLoaded(Bitmap bitmap, LoadedFrom from);
+  Target(@NonNull T target) {
+    this.target = target;
+    this.errorResId = 0;
+    this.errorDrawable = null;
+    this.noFade = false;
+  }
 
-  /**
-   * Callback indicating the image could not be successfully loaded.
-   * <p>
-   * <strong>Note:</strong> The passed {@link Drawable} may be {@code null} if none has been
-   * specified via {@link RequestCreator#error(android.graphics.drawable.Drawable)}
-   * or {@link RequestCreator#error(int)}.
-   */
-  void onBitmapFailed(Exception e, @Nullable Drawable errorDrawable);
+  Target(@NonNull T target, @DrawableRes int errorResId) {
+    this.target = target;
+    this.errorResId = errorResId;
+    this.errorDrawable = null;
+    this.noFade = false;
+  }
 
-  /**
-   * Callback invoked right before your request is submitted.
-   * <p>
-   * <strong>Note:</strong> The passed {@link Drawable} may be {@code null} if none has been
-   * specified via {@link RequestCreator#placeholder(android.graphics.drawable.Drawable)}
-   * or {@link RequestCreator#placeholder(int)}.
-   */
-  void onPrepareLoad(@Nullable Drawable placeHolderDrawable);
+  Target(@NonNull T target, Drawable errorDrawable) {
+    this.target = target;
+    this.errorResId = 0;
+    this.errorDrawable = errorDrawable;
+    this.noFade = false;
+  }
+
+  Target(@NonNull T target, @DrawableRes int errorResId, Drawable errorDrawable, boolean noFade) {
+    this.target = target;
+    this.errorResId = errorResId;
+    this.errorDrawable = errorDrawable;
+    this.noFade = noFade;
+  }
 }

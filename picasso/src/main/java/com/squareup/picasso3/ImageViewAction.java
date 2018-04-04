@@ -24,7 +24,7 @@ class ImageViewAction extends Action<ImageView> {
 
   Callback callback;
 
-  ImageViewAction(Picasso picasso, Target2<ImageView> target, Request data, Callback callback) {
+  ImageViewAction(Picasso picasso, Target<ImageView> target, Request data, Callback callback) {
     super(picasso, target, data);
     this.callback = callback;
   }

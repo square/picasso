@@ -243,7 +243,7 @@ public final class PicassoTest {
 
   @Test public void cancelExistingRequestWithNullTarget() {
     try {
-      picasso.cancelRequest((Target) null);
+      picasso.cancelRequest((BitmapTarget) null);
       fail("Canceling with a null target should throw exception.");
     } catch (NullPointerException expected) {
     }
@@ -282,7 +282,7 @@ public final class PicassoTest {
   }
 
   @Test public void cancelExistingRequestWithTarget() {
-    Target target = mockTarget();
+    BitmapTarget target = mockTarget();
     Action action = mockAction(URI_KEY_1, URI_1, target);
     picasso.enqueueAndSubmit(action);
     assertThat(picasso.targetToAction).hasSize(1);

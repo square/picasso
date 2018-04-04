@@ -33,12 +33,12 @@ abstract class Action<T> {
   final Picasso picasso;
   final Request request;
   final WeakReference<T> target;
-  final Target2<T> wrapper;
+  final Target<T> wrapper;
 
   boolean willReplay;
   boolean cancelled;
 
-  Action(Picasso picasso, Target2<T> wrapper, Request request) {
+  Action(Picasso picasso, Target<T> wrapper, Request request) {
     this.picasso = picasso;
     this.request = request;
     if (wrapper == null) {

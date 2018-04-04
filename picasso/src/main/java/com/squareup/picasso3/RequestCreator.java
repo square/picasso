@@ -424,8 +424,8 @@ public class RequestCreator {
   }
 
   /**
-   * Asynchronously fulfills the request without a {@link ImageView} or {@link Target}. This is
-   * useful when you want to warm up the cache with an image.
+   * Asynchronously fulfills the request without a {@link ImageView} or {@link BitmapTarget}. This
+   * is useful when you want to warm up the cache with an image.
    * <p>
    * <em>Note:</em> It is safe to invoke this method from any thread.
    */
@@ -434,7 +434,7 @@ public class RequestCreator {
   }
 
   /**
-   * Asynchronously fulfills the request without a {@link ImageView} or {@link Target},
+   * Asynchronously fulfills the request without a {@link ImageView} or {@link BitmapTarget},
    * and invokes the target {@link Callback} with the result. This is useful when you want to warm
    * up the cache with an image.
    * <p>
@@ -475,9 +475,9 @@ public class RequestCreator {
   }
 
   /**
-   * Asynchronously fulfills the request into the specified {@link Target}. In most cases, you
+   * Asynchronously fulfills the request into the specified {@link BitmapTarget}. In most cases, you
    * should use this when you are dealing with a custom {@link android.view.View View} or view
-   * holder which should implement the {@link Target} interface.
+   * holder which should implement the {@link BitmapTarget} interface.
    * <p>
    * Implementing on a {@link android.view.View View}:
    * <blockquote><pre>
@@ -515,11 +515,11 @@ public class RequestCreator {
    * }
    * </pre></blockquote>
    * <p>
-   * <em>Note:</em> This method keeps a weak reference to the {@link Target} instance and will be
-   * garbage collected if you do not keep a strong reference to it. To receive callbacks when an
+   * <em>Note:</em> This method keeps a weak reference to the {@link BitmapTarget} instance and will
+   * be garbage collected if you do not keep a strong reference to it. To receive callbacks when an
    * image is loaded use {@link #into(android.widget.ImageView, Callback)}.
    */
-  public void into(@NonNull Target target) {
+  public void into(@NonNull BitmapTarget target) {
     long started = System.nanoTime();
     checkMain();
 
@@ -549,8 +549,8 @@ public class RequestCreator {
 
     target.onPrepareLoad(setPlaceholder ? getPlaceholderDrawable() : null);
 
-    Target2<Target> wrapper = new Target2<>(target, errorResId, errorDrawable, noFade);
-    Action action = new TargetAction(picasso, wrapper, request);
+    Target<BitmapTarget> wrapper = new Target<>(target, errorResId, errorDrawable, noFade);
+    Action action = new BitmapTargetAction(picasso, wrapper, request);
     picasso.enqueueAndSubmit(action);
   }
 
@@ -595,8 +595,8 @@ public class RequestCreator {
     }
 
     Request request = createRequest(started);
-    Target2<RemoteViewsTarget> remoteTarget =
-        new Target2<>(new RemoteViewsTarget(remoteViews, viewId), errorResId);
+    Target<RemoteViewsTarget> remoteTarget =
+        new Target<>(new RemoteViewsTarget(remoteViews, viewId), errorResId);
     RemoteViewsAction action =
         new NotificationAction(picasso, request, remoteTarget, notificationId, notification,
             notificationTag, callback);
@@ -653,8 +653,8 @@ public class RequestCreator {
     }
 
     Request request = createRequest(started);
-    Target2<RemoteViewsTarget> remoteTarget =
-        new Target2<>(new RemoteViewsTarget(remoteViews, viewId), errorResId);
+    Target<RemoteViewsTarget> remoteTarget =
+        new Target<>(new RemoteViewsTarget(remoteViews, viewId), errorResId);
     RemoteViewsAction action =
         new AppWidgetAction(picasso, request, remoteTarget, appWidgetIds, callback);
 
@@ -734,7 +734,7 @@ public class RequestCreator {
       setPlaceholder(target, getPlaceholderDrawable());
     }
 
-    Target2<ImageView> wrapper = new Target2<>(target, errorResId, errorDrawable, noFade);
+    Target<ImageView> wrapper = new Target<>(target, errorResId, errorDrawable, noFade);
     Action action = new ImageViewAction(picasso, wrapper, request, callback);
     picasso.enqueueAndSubmit(action);
   }
