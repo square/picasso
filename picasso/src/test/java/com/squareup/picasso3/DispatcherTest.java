@@ -166,7 +166,7 @@ public class DispatcherTest {
   }
 
   @Test public void performCancelDetachesRequestAndCleansUp() {
-    Target target = mockTarget();
+    BitmapTarget target = mockTarget();
     Action action = mockAction(URI_KEY_1, URI_1, target);
     BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap1, MEMORY));
     hunter.attach(action);

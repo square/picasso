@@ -22,11 +22,11 @@ import android.support.v4.content.ContextCompat;
 import android.widget.RemoteViews;
 
 abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTarget> {
-  Target2<RemoteViewsTarget> remoteWrapper;
+  Target<RemoteViewsTarget> remoteWrapper;
   Callback callback;
 
 
-  RemoteViewsAction(Picasso picasso, Request data, Target2<RemoteViewsTarget> wrapper,
+  RemoteViewsAction(Picasso picasso, Request data, Target<RemoteViewsTarget> wrapper,
       Callback callback) {
     super(picasso, null, data);
     this.remoteWrapper = wrapper;
@@ -95,7 +95,7 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
   static class AppWidgetAction extends RemoteViewsAction {
     private final int[] appWidgetIds;
 
-    AppWidgetAction(Picasso picasso, Request data, Target2<RemoteViewsTarget> wrapper,
+    AppWidgetAction(Picasso picasso, Request data, Target<RemoteViewsTarget> wrapper,
         int[] appWidgetIds, Callback callback) {
       super(picasso, data, wrapper, callback);
       this.appWidgetIds = appWidgetIds;
@@ -112,7 +112,7 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
     private final String notificationTag;
     private final Notification notification;
 
-    NotificationAction(Picasso picasso, Request data, Target2<RemoteViewsTarget> wrapper,
+    NotificationAction(Picasso picasso, Request data, Target<RemoteViewsTarget> wrapper,
         int notificationId, Notification notification, String notificationTag, Callback callback) {
       super(picasso, data, wrapper, callback);
       this.notificationId = notificationId;

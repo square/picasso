@@ -83,7 +83,7 @@ public class RemoteViewsActionTest {
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
     ImageViewAction request =
-        new ImageViewAction(picasso, new Target2<>(target), null, callback);
+        new ImageViewAction(picasso, new Target<>(target), null, callback);
     request.cancel();
     assertThat(request.callback).isNull();
   }
@@ -93,8 +93,8 @@ public class RemoteViewsActionTest {
   }
 
   private TestableRemoteViewsAction createAction(int errorResId, Callback callback) {
-    Target2<RemoteViewsTarget> wrapper =
-        new Target2<>(new RemoteViewsTarget(remoteViews, 1), errorResId);
+    Target<RemoteViewsTarget> wrapper =
+        new Target<>(new RemoteViewsTarget(remoteViews, 1), errorResId);
     return new TestableRemoteViewsAction(picasso, null, wrapper, callback);
   }
 
@@ -106,7 +106,7 @@ public class RemoteViewsActionTest {
   }
 
   static class TestableRemoteViewsAction extends RemoteViewsAction {
-    TestableRemoteViewsAction(Picasso picasso, Request data, Target2<RemoteViewsTarget> target,
+    TestableRemoteViewsAction(Picasso picasso, Request data, Target<RemoteViewsTarget> target,
         Callback callback) {
       super(picasso, data, target, callback);
     }

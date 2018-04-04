@@ -18,9 +18,9 @@ package com.squareup.picasso3;
 import android.graphics.Bitmap;
 import android.support.v4.content.ContextCompat;
 
-final class TargetAction extends Action<Target> {
+final class BitmapTargetAction extends Action<BitmapTarget> {
 
-  TargetAction(Picasso picasso, Target2<Target> wrapper, Request data) {
+  BitmapTargetAction(Picasso picasso, Target<BitmapTarget> wrapper, Request data) {
     super(picasso, wrapper, data);
   }
 
@@ -29,7 +29,7 @@ final class TargetAction extends Action<Target> {
       throw new AssertionError(
           String.format("Attempted to complete action with no result!\n%s", this));
     }
-    Target target = getTarget();
+    BitmapTarget target = getTarget();
     if (target != null) {
       Bitmap bitmap = result.getBitmap();
       if (bitmap != null) {
@@ -42,7 +42,7 @@ final class TargetAction extends Action<Target> {
   }
 
   @Override void error(Exception e) {
-    Target target = getTarget();
+    BitmapTarget target = getTarget();
     if (target != null) {
       if (wrapper.errorResId != 0) {
         target.onBitmapFailed(e,

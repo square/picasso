@@ -208,8 +208,8 @@ public class Picasso {
     cancelExistingRequest(view);
   }
 
-  /** Cancel any existing requests for the specified {@link Target} instance. */
-  public void cancelRequest(@NonNull Target target) {
+  /** Cancel any existing requests for the specified {@link BitmapTarget} instance. */
+  public void cancelRequest(@NonNull BitmapTarget target) {
     // checkMain() is called from cancelExistingRequest()
     checkNotNull(target, "target == null");
     cancelExistingRequest(target);

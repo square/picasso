@@ -210,8 +210,8 @@ class TestUtils {
     return mock;
   }
 
-  static Target mockTarget() {
-    return mock(Target.class);
+  static BitmapTarget mockTarget() {
+    return mock(BitmapTarget.class);
   }
 
   static RemoteViewsAction.RemoteViewsTarget mockRemoteViewsTarget() {

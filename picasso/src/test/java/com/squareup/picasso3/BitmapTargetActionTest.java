@@ -37,22 +37,22 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(RobolectricGradleTestRunner.class)
-public class TargetActionTest {
+public class BitmapTargetActionTest {
 
   @Test(expected = AssertionError.class)
   public void throwsErrorWithNullResult() {
-    Target target = mockTarget();
-    TargetAction request =
-        new TargetAction(mock(Picasso.class), new Target2<>(target), null);
+    BitmapTarget target = mockTarget();
+    BitmapTargetAction request =
+        new BitmapTargetAction(mock(Picasso.class), new Target<>(target), null);
     request.complete(null);
   }
 
   @Test
   public void invokesSuccessIfTargetIsNotNull() {
     Bitmap bitmap = makeBitmap();
-    Target target = mockTarget();
-    TargetAction request =
-        new TargetAction(mock(Picasso.class), new Target2<>(target), null);
+    BitmapTarget target = mockTarget();
+    BitmapTargetAction request =
+        new BitmapTargetAction(mock(Picasso.class), new Target<>(target), null);
     request.complete(new RequestHandler.Result(bitmap, MEMORY));
     verify(target).onBitmapLoaded(bitmap, MEMORY);
   }
@@ -60,9 +60,9 @@ public class TargetActionTest {
   @Test
   public void invokesOnBitmapFailedIfTargetIsNotNullWithErrorDrawable() {
     Drawable errorDrawable = mock(Drawable.class);
-    Target target = mockTarget();
-    Target2<Target> wrapper = new Target2<>(target, errorDrawable);
-    TargetAction request = new TargetAction(mock(Picasso.class), wrapper, null);
+    BitmapTarget target = mockTarget();
+    Target<BitmapTarget> wrapper = new Target<>(target, errorDrawable);
+    BitmapTargetAction request = new BitmapTargetAction(mock(Picasso.class), wrapper, null);
     Exception e = new RuntimeException();
 
     request.error(e);
@@ -73,7 +73,7 @@ public class TargetActionTest {
   @Test
   public void invokesOnBitmapFailedIfTargetIsNotNullWithErrorResourceId() {
     Drawable errorDrawable = mock(Drawable.class);
-    Target target = mockTarget();
+    BitmapTarget target = mockTarget();
     Context context = mock(Context.class);
     Dispatcher dispatcher = mock(Dispatcher.class);
     PlatformLruCache cache = new PlatformLruCache(0);
@@ -81,8 +81,8 @@ public class TargetActionTest {
         new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, null, NO_TRANSFORMERS,
             NO_HANDLERS, mock(Stats.class), ARGB_8888, false, false);
     Resources res = mock(Resources.class);
-    Target2<Target> wrapper = new Target2<>(target, RESOURCE_ID_1);
-    TargetAction request = new TargetAction(picasso, wrapper, null);
+    Target<BitmapTarget> wrapper = new Target<>(target, RESOURCE_ID_1);
+    BitmapTargetAction request = new BitmapTargetAction(picasso, wrapper, null);
 
     when(context.getResources()).thenReturn(res);
     when(res.getDrawable(RESOURCE_ID_1)).thenReturn(errorDrawable);
@@ -94,7 +94,7 @@ public class TargetActionTest {
   }
 
   @Test public void recyclingInSuccessThrowsException() {
-    Target bad = new Target() {
+    BitmapTarget bad = new BitmapTarget() {
       @Override public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
         bitmap.recycle();
       }
@@ -109,7 +109,7 @@ public class TargetActionTest {
     };
     Picasso picasso = mock(Picasso.class);
     Bitmap bitmap = makeBitmap();
-    TargetAction tr = new TargetAction(picasso, new Target2<>(bad), null);
+    BitmapTargetAction tr = new BitmapTargetAction(picasso, new Target<>(bad), null);
     try {
       tr.complete(new RequestHandler.Result(bitmap, MEMORY));
       fail();
