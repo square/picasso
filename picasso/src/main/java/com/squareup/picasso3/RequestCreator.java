@@ -59,14 +59,9 @@ public class RequestCreator {
 
   private final Picasso picasso;
   private final Request.Builder data;
+  private final Target.Builder targetBuilder;
 
-  private boolean noFade;
   private boolean deferred;
-  private boolean setPlaceholder = true;
-  private int placeholderResId;
-  private int errorResId;
-  private @Nullable Drawable placeholderDrawable;
-  private Drawable errorDrawable;
 
   RequestCreator(Picasso picasso, Uri uri, int resourceId) {
     if (picasso.shutdown) {
@@ -75,90 +70,52 @@ public class RequestCreator {
     }
     this.picasso = picasso;
     this.data = new Request.Builder(uri, resourceId, picasso.defaultBitmapConfig);
+    this.targetBuilder = new Target.Builder();
   }
 
   @VisibleForTesting RequestCreator() {
     this.picasso = null;
     this.data = new Request.Builder(null, 0, null);
+    this.targetBuilder = new Target.Builder();
   }
 
   /**
-   * Explicitly opt-out to having a placeholder set when calling {@code into}.
-   * <p>
-   * By default, Picasso will either set a supplied placeholder or clear the target
-   * {@link ImageView} in order to ensure behavior in situations where views are recycled. This
-   * method will prevent that behavior and retain any already set image.
+   * See {@link Target.Builder#noPlaceholder()}
    */
   public RequestCreator noPlaceholder() {
-    if (placeholderResId != 0) {
-      throw new IllegalStateException("Placeholder resource already set.");
-    }
-    if (placeholderDrawable != null) {
-      throw new IllegalStateException("Placeholder image already set.");
-    }
-    setPlaceholder = false;
+    targetBuilder.noPlaceholder();
     return this;
   }
 
   /**
-   * A placeholder drawable to be used while the image is being loaded. If the requested image is
-   * not immediately available in the memory cache then this resource will be set on the target
-   * {@link ImageView}.
+   * See {@link Target.Builder#placeholder(int)}
    */
   public RequestCreator placeholder(@DrawableRes int placeholderResId) {
-    if (!setPlaceholder) {
-      throw new IllegalStateException("Already explicitly declared as no placeholder.");
-    }
-    if (placeholderResId == 0) {
-      throw new IllegalArgumentException("Placeholder image resource invalid.");
-    }
-    if (placeholderDrawable != null) {
-      throw new IllegalStateException("Placeholder image already set.");
-    }
-    this.placeholderResId = placeholderResId;
+    targetBuilder.placeholder(placeholderResId);
     return this;
   }
 
   /**
-   * A placeholder drawable to be used while the image is being loaded. If the requested image is
-   * not immediately available in the memory cache then this resource will be set on the target
-   * {@link ImageView}.
-   * <p>
-   * If you are not using a placeholder image but want to clear an existing image (such as when
-   * used in an {@link android.widget.Adapter adapter}), pass in {@code null}.
+   * See {@link Target.Builder#placeholder(Drawable)}
    */
   public RequestCreator placeholder(@NonNull Drawable placeholderDrawable) {
-    if (!setPlaceholder) {
-      throw new IllegalStateException("Already explicitly declared as no placeholder.");
-    }
-    if (placeholderResId != 0) {
-      throw new IllegalStateException("Placeholder image already set.");
-    }
-    this.placeholderDrawable = placeholderDrawable;
+    targetBuilder.placeholder(placeholderDrawable);
     return this;
   }
 
-  /** An error drawable to be used if the request image could not be loaded. */
+  /**
+   * See {@link Target.Builder#error(int)}
+   */
   public RequestCreator error(@DrawableRes int errorResId) {
-    if (errorResId == 0) {
-      throw new IllegalArgumentException("Error image resource invalid.");
-    }
-    if (errorDrawable != null) {
-      throw new IllegalStateException("Error image already set.");
-    }
-    this.errorResId = errorResId;
+    targetBuilder.error(errorResId);
     return this;
   }
 
-  /** An error drawable to be used if the request image could not be loaded. */
+  /**
+   * See {@link Target.Builder#error(Drawable)}
+   */
   public RequestCreator error(@NonNull Drawable errorDrawable) {
-    if (errorDrawable == null) {
-      throw new IllegalArgumentException("Error image may not be null.");
-    }
-    if (errorResId != 0) {
-      throw new IllegalStateException("Error image already set.");
-    }
-    this.errorDrawable = errorDrawable;
+    targetBuilder.error(errorDrawable);
     return this;
   }
 
@@ -364,7 +321,7 @@ public class RequestCreator {
 
   /** Disable brief fade in of images loaded from the disk cache or network. */
   public RequestCreator noFade() {
-    noFade = true;
+    targetBuilder.noFade(true);
     return this;
   }
 
@@ -500,9 +457,11 @@ public class RequestCreator {
       throw new IllegalStateException("Fit cannot be used with a Target.");
     }
 
+    Target<BitmapTarget> wrapper = targetBuilder.target(target).build();
+
     if (!data.hasImage()) {
       picasso.cancelRequest(target);
-      target.onPrepareLoad(setPlaceholder ? getPlaceholderDrawable() : null);
+      target.onPrepareLoad(wrapper.setPlaceholder ? getPlaceholderDrawable() : null);
       return;
     }
 
@@ -517,9 +476,8 @@ public class RequestCreator {
       }
     }
 
-    target.onPrepareLoad(setPlaceholder ? getPlaceholderDrawable() : null);
+    target.onPrepareLoad(wrapper.setPlaceholder ? getPlaceholderDrawable() : null);
 
-    Target<BitmapTarget> wrapper = new Target<>(target, errorResId, errorDrawable, noFade);
     Action action = new BitmapTargetAction(picasso, wrapper, request);
     picasso.enqueueAndSubmit(action);
   }
@@ -566,7 +524,7 @@ public class RequestCreator {
 
     Request request = createRequest(started);
     Target<RemoteViewsTarget> remoteTarget =
-        new Target<>(new RemoteViewsTarget(remoteViews, viewId), errorResId);
+        new Target<>(new RemoteViewsTarget(remoteViews, viewId));
     RemoteViewsAction action =
         new NotificationAction(picasso, request, remoteTarget, notificationId, notification,
             notificationTag, callback);
@@ -689,7 +647,7 @@ public class RequestCreator {
       if (bitmap != null) {
         picasso.cancelRequest(target);
         RequestHandler.Result result = new RequestHandler.Result(bitmap, MEMORY);
-        setResult(target, picasso.context, result, noFade, picasso.indicatorsEnabled);
+        setResult(target, picasso.context, result, targetBuilder.noFade, picasso.indicatorsEnabled);
         if (picasso.loggingEnabled) {
           log(OWNER_MAIN, VERB_COMPLETED, request.plainId(), "from " + MEMORY);
         }
@@ -704,7 +662,7 @@ public class RequestCreator {
       setPlaceholder(target, getPlaceholderDrawable());
     }
 
-    Target<ImageView> wrapper = new Target<>(target, errorResId, errorDrawable, noFade);
+    Target<ImageView> wrapper = new Target<>(target);
     Action action = new ImageViewAction(picasso, wrapper, request, callback);
     picasso.enqueueAndSubmit(action);
   }
