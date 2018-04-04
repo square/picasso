@@ -615,7 +615,7 @@ public class RequestCreatorTest {
     try {
       new RequestCreator().memoryPolicy(null);
       fail("Null memory policy should throw exception.");
-    } catch (IllegalArgumentException ignored) {
+    } catch (NullPointerException ignored) {
     }
   }
 
@@ -623,7 +623,7 @@ public class RequestCreatorTest {
     try {
       new RequestCreator().memoryPolicy(MemoryPolicy.NO_CACHE, (MemoryPolicy[]) null);
       fail("Null additional memory policy should throw exception.");
-    } catch (IllegalArgumentException ignored) {
+    } catch (NullPointerException ignored) {
     }
   }
 
@@ -631,7 +631,7 @@ public class RequestCreatorTest {
     try {
       new RequestCreator().memoryPolicy(MemoryPolicy.NO_CACHE, new MemoryPolicy[] { null });
       fail("Null additional memory policy should throw exception.");
-    } catch (IllegalArgumentException ignored) {
+    } catch (NullPointerException ignored) {
     }
   }
 
@@ -639,7 +639,7 @@ public class RequestCreatorTest {
     try {
       new RequestCreator().networkPolicy(null);
       fail("Null network policy should throw exception.");
-    } catch (IllegalArgumentException ignored) {
+    } catch (NullPointerException ignored) {
     }
   }
 
@@ -647,7 +647,7 @@ public class RequestCreatorTest {
     try {
       new RequestCreator().networkPolicy(NetworkPolicy.NO_CACHE, (NetworkPolicy[]) null);
       fail("Null additional network policy should throw exception.");
-    } catch (IllegalArgumentException ignored) {
+    } catch (NullPointerException ignored) {
     }
   }
 
@@ -655,7 +655,7 @@ public class RequestCreatorTest {
     try {
       new RequestCreator().networkPolicy(NetworkPolicy.NO_CACHE, new NetworkPolicy[] { null });
       fail("Null additional network policy should throw exception.");
-    } catch (IllegalArgumentException ignored) {
+    } catch (NullPointerException ignored) {
     }
   }
 

@@ -219,8 +219,7 @@ public class DispatcherTest {
   }
 
   @Test public void performCompleteWithNoStoreMemoryPolicy() {
-    Request data = new Request.Builder(URI_1).build();
-    data.memoryPolicy = MemoryPolicy.NO_STORE.index;
+    Request data = new Request.Builder(URI_1).memoryPolicy(MemoryPolicy.NO_STORE).build();
     Action action = noopAction(data);
     BitmapHunter hunter =
         new BitmapHunter(mockPicasso(), null, null, null, action, EMPTY_REQUEST_HANDLER);

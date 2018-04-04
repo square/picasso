@@ -43,9 +43,9 @@ public final class Request {
   /** The time that the request was first submitted (in nanos). */
   long started;
   /** The {@link MemoryPolicy} to use for this request. */
-  int memoryPolicy;
+  final int memoryPolicy;
   /** The {@link NetworkPolicy} to use for this request. */
-  int networkPolicy;
+  final int networkPolicy;
 
   /**
    * The image URI.
@@ -134,6 +134,8 @@ public final class Request {
     }
 
     this.tag = builder.tag;
+    this.memoryPolicy = builder.memoryPolicy;
+    this.networkPolicy = builder.networkPolicy;
   }
 
   @Override public String toString() {
@@ -286,6 +288,8 @@ public final class Request {
     private Bitmap.Config config;
     private Priority priority;
     private Object tag;
+    private int memoryPolicy;
+    private int networkPolicy;
 
     /** Start building a request using the specified {@link Uri}. */
     public Builder(@NonNull Uri uri) {
@@ -323,6 +327,8 @@ public final class Request {
       }
       config = request.config;
       priority = request.priority;
+      memoryPolicy = request.memoryPolicy;
+      networkPolicy = request.networkPolicy;
     }
 
     boolean hasImage() {
@@ -565,6 +571,50 @@ public final class Request {
       checkNotNull(transformations, "transformations == null");
       for (int i = 0, size = transformations.size(); i < size; i++) {
         transform(transformations.get(i));
+      }
+      return this;
+    }
+
+    /**
+     * Specifies the {@link MemoryPolicy} to use for this request. You may specify additional policy
+     * options using the varargs parameter.
+     */
+    public Builder memoryPolicy(@NonNull MemoryPolicy policy,
+        @NonNull MemoryPolicy... additional) {
+      if (policy == null) {
+        throw new NullPointerException("policy == null");
+      }
+      this.memoryPolicy |= policy.index;
+      if (additional == null) {
+        throw new NullPointerException("additional == null");
+      }
+      for (MemoryPolicy memoryPolicy : additional) {
+        if (memoryPolicy == null) {
+          throw new NullPointerException("additional[i] == null");
+        }
+        this.memoryPolicy |= memoryPolicy.index;
+      }
+      return this;
+    }
+
+    /**
+     * Specifies the {@link NetworkPolicy} to use for this request. You may specify additional
+     * policy options using the varargs parameter.
+     */
+    public Builder networkPolicy(@NonNull NetworkPolicy policy,
+        @NonNull NetworkPolicy... additional) {
+      if (policy == null) {
+        throw new NullPointerException("policy == null");
+      }
+      this.networkPolicy |= policy.index;
+      if (additional == null) {
+        throw new NullPointerException("additional == null");
+      }
+      for (NetworkPolicy networkPolicy : additional) {
+        if (networkPolicy == null) {
+          throw new NullPointerException("additional[i] == null");
+        }
+        this.networkPolicy |= networkPolicy.index;
       }
       return this;
     }

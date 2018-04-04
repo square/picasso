@@ -84,7 +84,7 @@ class BitmapHunter implements Runnable {
   final PlatformLruCache cache;
   final Stats stats;
   final String key;
-  final Request data;
+  Request data;
   final RequestHandler requestHandler;
 
   Action action;
@@ -160,7 +160,9 @@ class BitmapHunter implements Runnable {
       }
     }
 
-    data.networkPolicy = retryCount == 0 ? NetworkPolicy.OFFLINE.index : data.networkPolicy;
+    if (retryCount == 0) {
+      data = data.newBuilder().networkPolicy(NetworkPolicy.OFFLINE).build();
+    }
 
     final AtomicReference<Result> resultReference = new AtomicReference<>();
     final AtomicReference<Throwable> exceptionReference = new AtomicReference<>();
