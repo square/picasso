@@ -181,63 +181,63 @@ class BitmapHunter implements Runnable {
       });
 
       latch.await();
-
-      Throwable throwable = exceptionReference.get();
-      if (throwable != null) {
-        if (throwable instanceof IOException) {
-          throw (IOException) throwable;
-        }
-        if (throwable instanceof Error) {
-          throw (Error) throwable;
-        }
-        if (throwable instanceof RuntimeException) {
-          throw (RuntimeException) throwable;
-        }
-        throw new RuntimeException(throwable);
-      }
-
-      Result result = resultReference.get();
-      Picasso.LoadedFrom loadedFrom = null;
-      // Determined during decoding of original resource.
-      int exifOrientation = 0;
-      if (result != null) {
-        loadedFrom = result.getLoadedFrom();
-        // Determined during decoding of original resource.
-        exifOrientation = result.getExifOrientation();
-        bitmap = result.getBitmap();
-      }
-
-      if (bitmap != null) {
-        if (picasso.loggingEnabled) {
-          log(OWNER_HUNTER, VERB_DECODED, data.logId());
-        }
-        stats.dispatchBitmapDecoded(bitmap);
-        if (data.needsTransformation() || exifOrientation != 0) {
-          synchronized (DECODE_LOCK) {
-            if (data.needsMatrixTransform() || exifOrientation != 0) {
-              bitmap = transformResult(data, bitmap, exifOrientation);
-              if (picasso.loggingEnabled) {
-                log(OWNER_HUNTER, VERB_TRANSFORMED, data.logId());
-              }
-            }
-            if (data.hasCustomTransformations()) {
-              bitmap = applyCustomTransformations(data.transformations, bitmap);
-              if (picasso.loggingEnabled) {
-                log(OWNER_HUNTER, VERB_TRANSFORMED, data.logId(),
-                    "from custom transformations");
-              }
-            }
-          }
-          if (bitmap != null) {
-            stats.dispatchBitmapTransformed(bitmap);
-          }
-        }
-      }
-
-      return new Result(bitmap, loadedFrom, exifOrientation);
     } catch (InterruptedException ie) {
       throw new InterruptedIOException(ie.getMessage());
     }
+
+    Throwable throwable = exceptionReference.get();
+    if (throwable != null) {
+      if (throwable instanceof IOException) {
+        throw (IOException) throwable;
+      }
+      if (throwable instanceof Error) {
+        throw (Error) throwable;
+      }
+      if (throwable instanceof RuntimeException) {
+        throw (RuntimeException) throwable;
+      }
+      throw new RuntimeException(throwable);
+    }
+
+    Result result = resultReference.get();
+    Picasso.LoadedFrom loadedFrom = null;
+    // Determined during decoding of original resource.
+    int exifOrientation = 0;
+    if (result != null) {
+      loadedFrom = result.getLoadedFrom();
+      // Determined during decoding of original resource.
+      exifOrientation = result.getExifOrientation();
+      bitmap = result.getBitmap();
+    }
+
+    if (bitmap != null) {
+      if (picasso.loggingEnabled) {
+        log(OWNER_HUNTER, VERB_DECODED, data.logId());
+      }
+      stats.dispatchBitmapDecoded(bitmap);
+      if (data.needsTransformation() || exifOrientation != 0) {
+        synchronized (DECODE_LOCK) {
+          if (data.needsMatrixTransform() || exifOrientation != 0) {
+            bitmap = transformResult(data, bitmap, exifOrientation);
+            if (picasso.loggingEnabled) {
+              log(OWNER_HUNTER, VERB_TRANSFORMED, data.logId());
+            }
+          }
+          if (data.hasCustomTransformations()) {
+            bitmap = applyCustomTransformations(data.transformations, bitmap);
+            if (picasso.loggingEnabled) {
+              log(OWNER_HUNTER, VERB_TRANSFORMED, data.logId(),
+                  "from custom transformations");
+            }
+          }
+        }
+        if (bitmap != null) {
+          stats.dispatchBitmapTransformed(bitmap);
+        }
+      }
+    }
+
+    return new Result(bitmap, loadedFrom, exifOrientation);
   }
 
   void attach(Action action) {
