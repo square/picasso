@@ -76,7 +76,7 @@ public class NetworkRequestHandlerTest {
   @Test public void doesNotForceLocalCacheOnlyWithAirplaneModeOffAndRetryCount() throws Exception {
     responses.add(responseOf(ResponseBody.create(null, new byte[10])));
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    CountDownLatch latch = new CountDownLatch(1);
+    final CountDownLatch latch = new CountDownLatch(1);
     networkHandler.load(picasso, action.getRequest(), new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
         try {
@@ -137,7 +137,7 @@ public class NetworkRequestHandlerTest {
   @Test public void noCacheAndKnownContentLengthDispatchToStats() throws Exception {
     responses.add(responseOf(ResponseBody.create(null, new byte[10])));
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    CountDownLatch latch = new CountDownLatch(1);
+    final CountDownLatch latch = new CountDownLatch(1);
     networkHandler.load(picasso, action.getRequest(), new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
         verify(stats).dispatchDownloadFinished(10);
@@ -167,7 +167,7 @@ public class NetworkRequestHandlerTest {
         .cacheResponse(responseOf(null))
         .build());
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    CountDownLatch latch = new CountDownLatch(1);
+    final CountDownLatch latch = new CountDownLatch(1);
     networkHandler.load(picasso, action.getRequest(), new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
         throw new AssertionError();
@@ -188,7 +188,7 @@ public class NetworkRequestHandlerTest {
         .cacheResponse(responseOf(null))
         .build());
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    CountDownLatch latch = new CountDownLatch(1);
+    final CountDownLatch latch = new CountDownLatch(1);
     networkHandler.load(picasso, action.getRequest(), new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
         verifyZeroInteractions(stats);
