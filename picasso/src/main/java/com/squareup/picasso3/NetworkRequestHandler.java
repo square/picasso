@@ -31,7 +31,7 @@ final class NetworkRequestHandler extends RequestHandler {
   private static final String SCHEME_HTTPS = "https";
 
   private final Call.Factory callFactory;
-  private final Stats stats;
+  final Stats stats;
 
   NetworkRequestHandler(Call.Factory callFactory, Stats stats) {
     this.callFactory = callFactory;
