@@ -19,6 +19,7 @@ import android.net.NetworkInfo;
 import com.squareup.picasso3.RequestHandler.Result;
 import com.squareup.picasso3.TestUtils.PremadeCall;
 import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import okhttp3.CacheControl;
@@ -39,9 +40,9 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso3.TestUtils.URI_1;
 import static com.squareup.picasso3.TestUtils.URI_KEY_1;
 import static com.squareup.picasso3.TestUtils.mockNetworkInfo;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static okhttp3.Protocol.HTTP_1_1;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -72,22 +73,25 @@ public class NetworkRequestHandlerTest {
     }, stats);
   }
 
-  @Test public void doesNotForceLocalCacheOnlyWithAirplaneModeOffAndRetryCount() {
+  @Test public void doesNotForceLocalCacheOnlyWithAirplaneModeOffAndRetryCount() throws Exception {
     responses.add(responseOf(ResponseBody.create(null, new byte[10])));
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
+    CountDownLatch latch = new CountDownLatch(1);
     networkHandler.load(picasso, action.getRequest(), new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
         try {
           assertThat(requests.takeFirst().cacheControl().toString()).isEmpty();
+          latch.countDown();
         } catch (InterruptedException e) {
-          fail(e.getMessage());
+          throw new AssertionError(e);
         }
       }
 
       @Override public void onError(Throwable t) {
-        fail(t.getMessage());
+        throw new AssertionError(t);
       }
     });
+    assertThat(latch.await(10, SECONDS)).isTrue();
   }
 
   @Test public void withZeroRetryCountForcesLocalCacheOnly() throws Exception {
@@ -130,21 +134,24 @@ public class NetworkRequestHandlerTest {
     assertThat(networkHandler.shouldRetry(true, info)).isFalse();
   }
 
-  @Test public void noCacheAndKnownContentLengthDispatchToStats() {
+  @Test public void noCacheAndKnownContentLengthDispatchToStats() throws Exception {
     responses.add(responseOf(ResponseBody.create(null, new byte[10])));
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
+    CountDownLatch latch = new CountDownLatch(1);
     networkHandler.load(picasso, action.getRequest(), new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
         verify(stats).dispatchDownloadFinished(10);
+        latch.countDown();
       }
 
       @Override public void onError(Throwable t) {
-        fail(t.getMessage());
+        throw new AssertionError(t);
       }
     });
+    assertThat(latch.await(10, SECONDS)).isTrue();
   }
 
-  @Test public void unknownContentLengthFromDiskThrows() {
+  @Test public void unknownContentLengthFromDiskThrows() throws Exception {
     final AtomicBoolean closed = new AtomicBoolean();
     ResponseBody body = new ResponseBody() {
       @Override public MediaType contentType() { return null; }
@@ -160,33 +167,39 @@ public class NetworkRequestHandlerTest {
         .cacheResponse(responseOf(null))
         .build());
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
+    CountDownLatch latch = new CountDownLatch(1);
     networkHandler.load(picasso, action.getRequest(), new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
-        fail();
+        throw new AssertionError();
       }
 
       @Override public void onError(Throwable t) {
         verifyZeroInteractions(stats);
         assertTrue(closed.get());
+        latch.countDown();
       }
     });
+    assertThat(latch.await(10, SECONDS)).isTrue();
   }
 
-  @Test public void cachedResponseDoesNotDispatchToStats() {
+  @Test public void cachedResponseDoesNotDispatchToStats() throws Exception {
     responses.add(responseOf(ResponseBody.create(null, new byte[10]))
         .newBuilder()
         .cacheResponse(responseOf(null))
         .build());
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
+    CountDownLatch latch = new CountDownLatch(1);
     networkHandler.load(picasso, action.getRequest(), new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
         verifyZeroInteractions(stats);
+        latch.countDown();
       }
 
       @Override public void onError(Throwable t) {
-        fail(t.getMessage());
+        throw new AssertionError(t);
       }
     });
+    assertThat(latch.await(10, SECONDS)).isTrue();
   }
 
   private static Response responseOf(ResponseBody body) {
