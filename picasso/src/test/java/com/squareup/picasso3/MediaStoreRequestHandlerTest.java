@@ -103,7 +103,7 @@ public class MediaStoreRequestHandlerTest {
     return new MediaStoreRequestHandler(context);
   }
 
-  private static void assertBitmapsEqual(Bitmap a, Bitmap b) {
+  static void assertBitmapsEqual(Bitmap a, Bitmap b) {
     ShadowBitmap shadowA = shadowOf(a);
     ShadowBitmap shadowB = shadowOf(b);
 

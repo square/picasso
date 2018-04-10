@@ -16,7 +16,7 @@ public class SampleGalleryActivity extends PicassoSampleActivity {
   private static final String KEY_IMAGE = "com.example.picasso:image";
 
   private ImageView imageView;
-  private ViewAnimator animator;
+  ViewAnimator animator;
   private String image;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
