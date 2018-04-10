@@ -53,13 +53,6 @@ import static com.squareup.picasso3.Utils.getLogIdsForHunter;
 import static com.squareup.picasso3.Utils.log;
 
 class BitmapHunter implements Runnable {
-  /**
-   * Global lock for bitmap decoding to ensure that we are only decoding one at a time. Since
-   * this will only ever happen in background threads we help avoid excessive memory thrashing as
-   * well as potential OOMs. Shamelessly stolen from Volley.
-   */
-  private static final Object DECODE_LOCK = new Object();
-
   private static final ThreadLocal<StringBuilder> NAME_BUILDER = new ThreadLocal<StringBuilder>() {
     @Override protected StringBuilder initialValue() {
       return new StringBuilder(Utils.THREAD_PREFIX);
@@ -216,24 +209,22 @@ class BitmapHunter implements Runnable {
       }
       stats.dispatchBitmapDecoded(bitmap);
       if (data.needsTransformation() || exifOrientation != 0) {
-        synchronized (DECODE_LOCK) {
-          if (data.needsMatrixTransform() || exifOrientation != 0) {
-            bitmap = transformResult(data, bitmap, exifOrientation);
-            if (picasso.loggingEnabled) {
-              log(OWNER_HUNTER, VERB_TRANSFORMED, data.logId());
-            }
-          }
-          if (data.hasCustomTransformations()) {
-            bitmap = applyCustomTransformations(data.transformations, bitmap);
-            if (picasso.loggingEnabled) {
-              log(OWNER_HUNTER, VERB_TRANSFORMED, data.logId(),
-                  "from custom transformations");
-            }
+        if (data.needsMatrixTransform() || exifOrientation != 0) {
+          bitmap = transformResult(data, bitmap, exifOrientation);
+          if (picasso.loggingEnabled) {
+            log(OWNER_HUNTER, VERB_TRANSFORMED, data.logId());
           }
         }
-        if (bitmap != null) {
-          stats.dispatchBitmapTransformed(bitmap);
+        if (data.hasCustomTransformations()) {
+          bitmap = applyCustomTransformations(data.transformations, bitmap);
+          if (picasso.loggingEnabled) {
+            log(OWNER_HUNTER, VERB_TRANSFORMED, data.logId(),
+                "from custom transformations");
+          }
         }
+      }
+      if (bitmap != null) {
+        stats.dispatchBitmapTransformed(bitmap);
       }
     }
 
