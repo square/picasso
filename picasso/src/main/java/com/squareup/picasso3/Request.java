@@ -270,26 +270,26 @@ public final class Request {
 
   /** Builder for creating {@link Request} instances. */
   public static final class Builder {
-    private Uri uri;
-    private int resourceId;
-    private String stableKey;
-    private int targetWidth;
-    private int targetHeight;
-    private boolean centerCrop;
-    private int centerCropGravity;
-    private boolean centerInside;
-    private boolean onlyScaleDown;
-    private float rotationDegrees;
-    private float rotationPivotX;
-    private float rotationPivotY;
-    private boolean hasRotationPivot;
-    private boolean purgeable;
-    private List<Transformation> transformations;
-    private Bitmap.Config config;
-    private Priority priority;
-    private Object tag;
-    private int memoryPolicy;
-    private int networkPolicy;
+    Uri uri;
+    int resourceId;
+    String stableKey;
+    int targetWidth;
+    int targetHeight;
+    boolean centerCrop;
+    int centerCropGravity;
+    boolean centerInside;
+    boolean onlyScaleDown;
+    float rotationDegrees;
+    float rotationPivotX;
+    float rotationPivotY;
+    boolean hasRotationPivot;
+    boolean purgeable;
+    List<Transformation> transformations;
+    Bitmap.Config config;
+    Priority priority;
+    Object tag;
+    int memoryPolicy;
+    int networkPolicy;
 
     /** Start building a request using the specified {@link Uri}. */
     public Builder(@NonNull Uri uri) {
