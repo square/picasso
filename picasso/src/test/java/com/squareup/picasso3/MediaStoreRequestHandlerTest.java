@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import com.squareup.picasso3.RequestHandler.Result;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,7 +52,7 @@ public class MediaStoreRequestHandlerTest {
         assertBitmapsEqual(result.getBitmap(), bitmap);
       }
 
-      @Override public void onError(Throwable t) {
+      @Override public void onError(@NonNull Throwable t) {
         fail(t.getMessage());
       }
     });
@@ -68,7 +69,7 @@ public class MediaStoreRequestHandlerTest {
         assertBitmapsEqual(result.getBitmap(), bitmap);
       }
 
-      @Override public void onError(Throwable t) {
+      @Override public void onError(@NonNull Throwable t) {
         fail(t.getMessage());
       }
     });

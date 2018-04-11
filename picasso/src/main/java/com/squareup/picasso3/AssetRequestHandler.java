@@ -19,6 +19,7 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import java.io.IOException;
 import okio.Okio;
 import okio.Source;
@@ -39,14 +40,14 @@ class AssetRequestHandler extends RequestHandler {
     this.context = context;
   }
 
-  @Override public boolean canHandleRequest(Request data) {
+  @Override public boolean canHandleRequest(@NonNull Request data) {
     Uri uri = data.uri;
     return (SCHEME_FILE.equals(uri.getScheme())
         && !uri.getPathSegments().isEmpty() && ANDROID_ASSET.equals(uri.getPathSegments().get(0)));
   }
 
   @Override
-  public void load(Picasso picasso, Request request, Callback callback) {
+  public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull Callback callback) {
     if (assetManager == null) {
       synchronized (lock) {
         if (assetManager == null) {

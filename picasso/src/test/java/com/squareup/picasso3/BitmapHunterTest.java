@@ -20,6 +20,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.view.Gravity;
 import java.io.File;
 import java.io.IOException;
@@ -336,7 +337,7 @@ public final class BitmapHunterTest {
     when(context.getResources()).thenReturn(resources);
     Action action = mockAction(RESOURCE_ID_KEY_1, null, null, RESOURCE_ID_1);
     ResourceDrawableRequestHandler requestHandler =
-        new ResourceDrawableRequestHandler(context, makeLoaderWithDrawable(null));
+        ResourceDrawableRequestHandler.create(context, makeLoaderWithDrawable(null));
     BitmapHunter hunter =
         forRequest(mockPicasso(requestHandler), dispatcher, cache, stats, action);
     assertThat(hunter.requestHandler).isInstanceOf(ResourceDrawableRequestHandler.class);
@@ -1136,11 +1137,11 @@ public final class BitmapHunterTest {
       this.exception = exception;
     }
 
-    @Override public boolean canHandleRequest(Request data) {
+    @Override public boolean canHandleRequest(@NonNull Request data) {
       return true;
     }
 
-    @Override public void load(Picasso picasso, Request request, Callback callback) {
+    @Override public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull Callback callback) {
       if (exception != null) {
         callback.onError(exception);
       } else {
@@ -1165,17 +1166,17 @@ public final class BitmapHunterTest {
       super(null, null);
     }
 
-    @Override public void load(Picasso picasso, Request request, Callback callback) {
+    @Override public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull Callback callback) {
       callback.onError(new OutOfMemoryError());
     }
   }
 
   private class CustomRequestHandler extends RequestHandler {
-    @Override public boolean canHandleRequest(Request data) {
+    @Override public boolean canHandleRequest(@NonNull Request data) {
         return CUSTOM_URI.getScheme().equals(data.uri.getScheme());
     }
 
-    @Override public void load(Picasso picasso, Request request, Callback callback) {
+    @Override public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull Callback callback) {
       callback.onSuccess(new Result(bitmap, MEMORY));
     }
   }

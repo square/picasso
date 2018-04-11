@@ -16,6 +16,7 @@
 package com.squareup.picasso3;
 
 import android.net.NetworkInfo;
+import android.support.annotation.NonNull;
 import com.squareup.picasso3.RequestHandler.Result;
 import com.squareup.picasso3.TestUtils.PremadeCall;
 import java.util.concurrent.BlockingDeque;
@@ -87,7 +88,7 @@ public class NetworkRequestHandlerTest {
         }
       }
 
-      @Override public void onError(Throwable t) {
+      @Override public void onError(@NonNull Throwable t) {
         throw new AssertionError(t);
       }
     });
@@ -144,7 +145,7 @@ public class NetworkRequestHandlerTest {
         latch.countDown();
       }
 
-      @Override public void onError(Throwable t) {
+      @Override public void onError(@NonNull Throwable t) {
         throw new AssertionError(t);
       }
     });
@@ -173,7 +174,7 @@ public class NetworkRequestHandlerTest {
         throw new AssertionError();
       }
 
-      @Override public void onError(Throwable t) {
+      @Override public void onError(@NonNull Throwable t) {
         verifyZeroInteractions(stats);
         assertTrue(closed.get());
         latch.countDown();
@@ -195,7 +196,7 @@ public class NetworkRequestHandlerTest {
         latch.countDown();
       }
 
-      @Override public void onError(Throwable t) {
+      @Override public void onError(@NonNull Throwable t) {
         throw new AssertionError(t);
       }
     });

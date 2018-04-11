@@ -75,7 +75,8 @@ public class Picasso {
      * Invoked when an image has failed to load. This is useful for reporting image failures to a
      * remote analytics service, for example.
      */
-    void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception);
+    void onImageLoadFailed(@NonNull Picasso picasso, @NonNull Uri uri,
+        @NonNull Exception exception);
   }
 
   /**
@@ -91,7 +92,7 @@ public class Picasso {
      *
      * @return The original request or a new request to replace it. Must not be null.
      */
-    Request transformRequest(Request request);
+    @NonNull Request transformRequest(@NonNull Request request);
   }
 
   /**
@@ -285,6 +286,7 @@ public class Picasso {
    * @see #load(String)
    * @see #load(int)
    */
+  @NonNull
   public RequestCreator load(@Nullable Uri uri) {
     return new RequestCreator(this, uri, 0);
   }
@@ -304,6 +306,7 @@ public class Picasso {
    * @see #load(File)
    * @see #load(int)
    */
+  @NonNull
   public RequestCreator load(@Nullable String path) {
     if (path == null) {
       return new RequestCreator(this, null, 0);
@@ -327,6 +330,7 @@ public class Picasso {
    * @see #load(String)
    * @see #load(int)
    */
+  @NonNull
   public RequestCreator load(@Nullable File file) {
     if (file == null) {
       return new RequestCreator(this, null, 0);
@@ -341,6 +345,7 @@ public class Picasso {
    * @see #load(String)
    * @see #load(File)
    */
+  @NonNull
   public RequestCreator load(@DrawableRes int resourceId) {
     if (resourceId == 0) {
       throw new IllegalArgumentException("Resource ID must not be zero.");
@@ -397,7 +402,7 @@ public class Picasso {
   }
 
   /** {@code true} if debug indicators should are displayed on images. */
-  @SuppressWarnings("UnusedDeclaration") public boolean areIndicatorsEnabled() {
+  @SuppressWarnings("UnusedDeclaration") public boolean getIndicatorsEnabled() {
     return indicatorsEnabled;
   }
 
@@ -423,6 +428,7 @@ public class Picasso {
    * <b>NOTE:</b> The snapshot may not always be completely up-to-date if requests are still in
    * progress.
    */
+  @NonNull
   @SuppressWarnings("UnusedDeclaration") public StatsSnapshot getSnapshot() {
     return stats.createSnapshot();
   }
@@ -669,6 +675,7 @@ public class Picasso {
      * Specify the default {@link Bitmap.Config} used when decoding images. This can be overridden
      * on a per-request basis using {@link RequestCreator#config(Bitmap.Config) config(..)}.
      */
+    @NonNull
     public Builder defaultBitmapConfig(@NonNull Bitmap.Config bitmapConfig) {
       checkNotNull(bitmapConfig, "bitmapConfig == null");
       this.defaultBitmapConfig = bitmapConfig;
@@ -680,6 +687,7 @@ public class Picasso {
      * <p>
      * Note: Calling {@link #callFactory} overwrites this value.
      */
+    @NonNull
     public Builder client(@NonNull OkHttpClient client) {
       checkNotNull(client, "client == null");
       callFactory = client;
@@ -691,6 +699,7 @@ public class Picasso {
      * <p>
      * Note: Calling {@link #client} overwrites this value.
      */
+    @NonNull
     public Builder callFactory(@NonNull Call.Factory factory) {
       checkNotNull(factory, "factory == null");
       callFactory = factory;
@@ -702,6 +711,7 @@ public class Picasso {
      * <p>
      * Note: Calling {@link Picasso#shutdown() shutdown()} will not shutdown supplied executors.
      */
+    @NonNull
     public Builder executor(@NonNull ExecutorService executorService) {
       checkNotNull(executorService, "executorService == null");
       if (this.service != null) {
@@ -715,6 +725,7 @@ public class Picasso {
      * Specify the memory cache size in bytes to use for the most recent images.
      * A size of 0 disables in-memory caching.
      */
+    @NonNull
     public Builder withCacheSize(int maxByteCount) {
       if (maxByteCount < 0) {
         throw new IllegalArgumentException("maxByteCount < 0: " + maxByteCount);
@@ -724,6 +735,7 @@ public class Picasso {
     }
 
     /** Specify a listener for interesting events. */
+    @NonNull
     public Builder listener(@NonNull Listener listener) {
       checkNotNull(listener, "listener == null");
       if (this.listener != null) {
@@ -734,6 +746,7 @@ public class Picasso {
     }
 
     /** Add a transformer that observes and potentially modify all incoming requests. */
+    @NonNull
     public Builder addRequestTransformer(@NonNull RequestTransformer transformer) {
       checkNotNull(transformer, "transformer == null");
       if (requestTransformers.contains(transformer)) {
@@ -744,6 +757,7 @@ public class Picasso {
     }
 
     /** Register a {@link RequestHandler}. */
+    @NonNull
     public Builder addRequestHandler(@NonNull RequestHandler requestHandler) {
       checkNotNull(requestHandler, "requestHandler == null");
       if (requestHandlers.contains(requestHandler)) {
@@ -754,6 +768,7 @@ public class Picasso {
     }
 
     /** Toggle whether to display debug indicators on images. */
+    @NonNull
     public Builder indicatorsEnabled(boolean enabled) {
       this.indicatorsEnabled = enabled;
       return this;
@@ -765,12 +780,14 @@ public class Picasso {
      * <b>WARNING:</b> Enabling this will result in excessive object allocation. This should be only
      * be used for debugging purposes. Do NOT pass {@code BuildConfig.DEBUG}.
      */
+    @NonNull
     public Builder loggingEnabled(boolean enabled) {
       this.loggingEnabled = enabled;
       return this;
     }
 
     /** Create the {@link Picasso} instance. */
+    @NonNull
     public Picasso build() {
       Context context = this.context;
 

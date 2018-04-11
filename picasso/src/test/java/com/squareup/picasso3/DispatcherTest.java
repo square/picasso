@@ -23,6 +23,7 @@ import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import com.squareup.picasso3.NetworkRequestHandler.ContentLengthException;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
@@ -553,11 +554,11 @@ public class DispatcherTest {
   }
 
   private static final RequestHandler RETRYING_REQUEST_HANDLER = new RequestHandler() {
-    @Override public boolean canHandleRequest(Request data) {
+    @Override public boolean canHandleRequest(@NonNull Request data) {
       return true;
     }
 
-    @Override public void load(Picasso picasso, Request request, Callback callback) {
+    @Override public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull Callback callback) {
     }
 
     @Override int getRetryCount() {
@@ -570,11 +571,11 @@ public class DispatcherTest {
   };
 
   private static final RequestHandler EMPTY_REQUEST_HANDLER = new RequestHandler() {
-    @Override public boolean canHandleRequest(Request data) {
+    @Override public boolean canHandleRequest(@NonNull Request data) {
       return false;
     }
 
-    @Override public void load(Picasso picasso, Request request, Callback callback) {
+    @Override public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull Callback callback) {
     }
   };
 

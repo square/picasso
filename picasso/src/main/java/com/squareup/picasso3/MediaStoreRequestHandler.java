@@ -22,6 +22,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import okio.Source;
 
 import static android.content.ContentResolver.SCHEME_CONTENT;
@@ -45,13 +46,14 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
     super(context);
   }
 
-  @Override public boolean canHandleRequest(Request data) {
+  @Override public boolean canHandleRequest(@NonNull Request data) {
     final Uri uri = data.uri;
     return (SCHEME_CONTENT.equals(uri.getScheme())
             && MediaStore.AUTHORITY.equals(uri.getAuthority()));
   }
 
-  @Override public void load(Picasso picasso, Request request, Callback callback) {
+  @Override
+  public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull Callback callback) {
     boolean signaledCallback = false;
     try {
       ContentResolver contentResolver = context.getContentResolver();

@@ -133,25 +133,26 @@ public abstract class RequestHandler {
   public interface Callback {
     void onSuccess(@Nullable Result result);
 
-    void onError(Throwable t);
+    void onError(@NonNull Throwable t);
   }
 
   /**
    * Whether or not this {@link RequestHandler} can handle a request with the given {@link Request}.
    */
-  public abstract boolean canHandleRequest(Request data);
+  public abstract boolean canHandleRequest(@NonNull Request data);
 
   /**
    * Loads an image for the given {@link Request}.
    * @param request the data from which the image should be resolved.
    */
-  public abstract void load(Picasso picasso, Request request, Callback callback) throws IOException;
+  public abstract void load(@NonNull Picasso picasso, @NonNull Request request,
+      @NonNull Callback callback) throws IOException;
 
   int getRetryCount() {
     return 0;
   }
 
-  boolean shouldRetry(boolean airplaneMode, NetworkInfo info) {
+  boolean shouldRetry(boolean airplaneMode, @Nullable NetworkInfo info) {
     return false;
   }
 

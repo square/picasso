@@ -21,6 +21,7 @@ import android.content.UriMatcher;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.ContactsContract;
+import android.support.annotation.NonNull;
 import java.io.IOException;
 import java.io.InputStream;
 import okio.Okio;
@@ -60,14 +61,15 @@ class ContactsPhotoRequestHandler extends RequestHandler {
     this.context = context;
   }
 
-  @Override public boolean canHandleRequest(Request data) {
+  @Override public boolean canHandleRequest(@NonNull Request data) {
     final Uri uri = data.uri;
     return (SCHEME_CONTENT.equals(uri.getScheme())
         && ContactsContract.Contacts.CONTENT_URI.getHost().equals(uri.getHost())
         && matcher.match(data.uri) != UriMatcher.NO_MATCH);
   }
 
-  @Override public void load(Picasso picasso, Request request, Callback callback) {
+  @Override
+  public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull Callback callback) {
     boolean signaledCallback = false;
     try {
       Source source = getSource(request);

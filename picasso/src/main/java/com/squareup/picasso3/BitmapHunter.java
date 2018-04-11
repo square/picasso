@@ -18,6 +18,7 @@ package com.squareup.picasso3;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.net.NetworkInfo;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.Gravity;
 import com.squareup.picasso3.RequestHandler.Result;
@@ -62,11 +63,12 @@ class BitmapHunter implements Runnable {
   private static final AtomicInteger SEQUENCE_GENERATOR = new AtomicInteger();
 
   private static final RequestHandler ERRORING_HANDLER = new RequestHandler() {
-    @Override public boolean canHandleRequest(Request data) {
+    @Override public boolean canHandleRequest(@NonNull Request data) {
       return true;
     }
 
-    @Override public void load(Picasso picasso, Request request, Callback callback) {
+    @Override public void load(@NonNull Picasso picasso, @NonNull Request request,
+        @NonNull Callback callback) {
       callback.onError(new IllegalStateException("Unrecognized type of request: " + request));
     }
   };
@@ -167,7 +169,7 @@ class BitmapHunter implements Runnable {
           latch.countDown();
         }
 
-        @Override public void onError(Throwable t) {
+        @Override public void onError(@NonNull Throwable t) {
           exceptionReference.set(t);
           latch.countDown();
         }

@@ -416,9 +416,9 @@ public final class PicassoTest {
   }
 
   @Test public void enableIndicators() {
-    assertThat(picasso.areIndicatorsEnabled()).isFalse();
+    assertThat(picasso.getIndicatorsEnabled()).isFalse();
     picasso.setIndicatorsEnabled(true);
-    assertThat(picasso.areIndicatorsEnabled()).isTrue();
+    assertThat(picasso.getIndicatorsEnabled()).isTrue();
   }
 
   @Test public void loadThrowsWithInvalidInput() {
@@ -553,7 +553,7 @@ public final class PicassoTest {
 
   @Test public void builderWithDebugIndicators() {
     Picasso picasso = new Picasso.Builder(RuntimeEnvironment.application).indicatorsEnabled(true).build();
-    assertThat(picasso.areIndicatorsEnabled()).isTrue();
+    assertThat(picasso.getIndicatorsEnabled()).isTrue();
   }
 
   @Test public void evictAll() {

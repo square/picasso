@@ -17,6 +17,8 @@ package com.squareup.picasso3;
 
 import android.graphics.Bitmap;
 import android.net.NetworkInfo;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import java.io.IOException;
 import okhttp3.CacheControl;
 import okhttp3.Call;
@@ -38,12 +40,13 @@ final class NetworkRequestHandler extends RequestHandler {
     this.stats = stats;
   }
 
-  @Override public boolean canHandleRequest(Request data) {
+  @Override public boolean canHandleRequest(@NonNull Request data) {
     String scheme = data.uri.getScheme();
     return (SCHEME_HTTP.equals(scheme) || SCHEME_HTTPS.equals(scheme));
   }
 
-  @Override public void load(Picasso picasso, final Request request, final Callback callback) {
+  @Override public void load(@NonNull Picasso picasso, @NonNull final Request request, @NonNull
+  final Callback callback) {
     okhttp3.Request callRequest = createRequest(request);
     callFactory.newCall(callRequest).enqueue(new okhttp3.Callback() {
       @Override public void onResponse(Call call, Response response) {
@@ -87,7 +90,7 @@ final class NetworkRequestHandler extends RequestHandler {
     return 2;
   }
 
-  @Override boolean shouldRetry(boolean airplaneMode, NetworkInfo info) {
+  @Override boolean shouldRetry(boolean airplaneMode, @Nullable NetworkInfo info) {
     return info == null || info.isConnected();
   }
 
