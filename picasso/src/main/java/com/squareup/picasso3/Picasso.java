@@ -43,7 +43,7 @@ import okhttp3.OkHttpClient;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static com.squareup.picasso3.Action.RequestWeakReference;
-import static com.squareup.picasso3.Dispatcher.HUNTER_BATCH_COMPLETE;
+import static com.squareup.picasso3.Dispatcher.HUNTER_COMPLETE;
 import static com.squareup.picasso3.Dispatcher.REQUEST_BATCH_RESUME;
 import static com.squareup.picasso3.Dispatcher.REQUEST_GCED;
 import static com.squareup.picasso3.MemoryPolicy.shouldReadFromMemoryCache;
@@ -109,13 +109,9 @@ public class Picasso {
   static final Handler HANDLER = new Handler(Looper.getMainLooper()) {
     @Override public void handleMessage(Message msg) {
       switch (msg.what) {
-        case HUNTER_BATCH_COMPLETE: {
-          @SuppressWarnings("unchecked") List<BitmapHunter> batch = (List<BitmapHunter>) msg.obj;
-          //noinspection ForLoopReplaceableByForEach
-          for (int i = 0, n = batch.size(); i < n; i++) {
-            BitmapHunter hunter = batch.get(i);
-            hunter.picasso.complete(hunter);
-          }
+        case HUNTER_COMPLETE: {
+          BitmapHunter hunter = (BitmapHunter) msg.obj;
+          hunter.picasso.complete(hunter);
           break;
         }
         case REQUEST_GCED: {
