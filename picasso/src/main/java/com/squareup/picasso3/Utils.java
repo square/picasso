@@ -65,7 +65,6 @@ final class Utils {
   static final String VERB_IGNORED = "ignored";
   static final String VERB_ENQUEUED = "enqueued";
   static final String VERB_CANCELED = "canceled";
-  static final String VERB_BATCHED = "batched";
   static final String VERB_RETRYING = "retrying";
   static final String VERB_EXECUTING = "executing";
   static final String VERB_DECODED = "decoded";

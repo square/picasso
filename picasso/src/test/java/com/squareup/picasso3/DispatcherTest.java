@@ -21,6 +21,7 @@ import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import com.squareup.picasso3.NetworkRequestHandler.ContentLengthException;
 import java.util.Arrays;
@@ -29,8 +30,11 @@ import java.util.concurrent.FutureTask;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.shadows.ShadowLooper;
 
 import static android.content.Context.CONNECTIVITY_SERVICE;
 import static android.content.Intent.ACTION_AIRPLANE_MODE_CHANGED;
@@ -60,6 +64,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -70,7 +75,6 @@ public class DispatcherTest {
   @Mock ConnectivityManager connectivityManager;
   @Mock PicassoExecutorService service;
   @Mock ExecutorService serviceMock;
-  @Mock Handler mainThreadHandler;
   final PlatformLruCache cache = new PlatformLruCache(2048);
   @Mock Stats stats;
   private Dispatcher dispatcher;
@@ -231,7 +235,7 @@ public class DispatcherTest {
     assertThat(cache.size()).isEqualTo(0);
   }
 
-  @Test public void performCompleteCleansUpAndAddsToBatch() {
+  @Test public void performCompleteCleansUpAndPostsToMain() {
     Request data = new Request.Builder(URI_1).build();
     Action action = noopAction(data);
     BitmapHunter hunter =
@@ -241,10 +245,10 @@ public class DispatcherTest {
     dispatcher.performComplete(hunter);
 
     assertThat(dispatcher.hunterMap).isEmpty();
-    assertThat(dispatcher.batch).hasSize(1);
+    // TODO verify post to main thread.
   }
 
-  @Test public void performCompleteCleansUpAndDoesNotAddToBatchIfCancelled() {
+  @Test public void performCompleteCleansUpAndDoesNotPostToMainIfCancelled() {
     Request data = new Request.Builder(URI_1).build();
     Action action = noopAction(data);
     BitmapHunter hunter =
@@ -256,33 +260,24 @@ public class DispatcherTest {
     dispatcher.performComplete(hunter);
 
     assertThat(dispatcher.hunterMap).isEmpty();
-    assertThat(dispatcher.batch).isEmpty();
+    // TODO verify no main thread interactions.
   }
 
-  @Test public void performErrorCleansUpAndAddsToBatch() {
+  @Test public void performErrorCleansUpAndPostsToMain() {
     BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap1, MEMORY));
     dispatcher.hunterMap.put(hunter.getKey(), hunter);
-    dispatcher.performError(hunter, false);
+    dispatcher.performError(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
-    assertThat(dispatcher.batch).hasSize(1);
+    // TODO verify post to main thread.
   }
 
-  @Test public void performErrorCleansUpAndDoesNotAddToBatchIfCancelled() {
+  @Test public void performErrorCleansUpAndDoesNotPostToMainIfCancelled() {
     BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap1, MEMORY));
     when(hunter.isCancelled()).thenReturn(true);
     dispatcher.hunterMap.put(hunter.getKey(), hunter);
-    dispatcher.performError(hunter, false);
+    dispatcher.performError(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
-    assertThat(dispatcher.batch).isEmpty();
-  }
-
-  @Test public void performBatchCompleteFlushesHunters() {
-    BitmapHunter hunter1 = mockHunter(URI_KEY_2, new RequestHandler.Result(bitmap1, MEMORY));
-    BitmapHunter hunter2 = mockHunter(URI_KEY_2, new RequestHandler.Result(bitmap1, MEMORY));
-    dispatcher.batch.add(hunter1);
-    dispatcher.batch.add(hunter2);
-    dispatcher.performBatchComplete();
-    assertThat(dispatcher.batch).isEmpty();
+    // TODO verify no main thread interactions.
   }
 
   @Test public void performRetrySkipsIfHunterIsCancelled() {
@@ -482,7 +477,7 @@ public class DispatcherTest {
 
   @Test public void performResumeTagIsIdempotent() {
     dispatcher.performResumeTag("tag");
-    verify(mainThreadHandler, never()).sendMessage(any(Message.class));
+    // TODO verify no main thread interactions.
   }
 
   @Test public void performNetworkStateChangeFlushesFailedHunters() {
@@ -554,7 +549,7 @@ public class DispatcherTest {
     when(context.getSystemService(Context.CONNECTIVITY_SERVICE)).thenReturn(connectivityManager);
     when(context.checkCallingOrSelfPermission(anyString())).thenReturn(
         scansNetworkChanges ? PERMISSION_GRANTED : PERMISSION_DENIED);
-    return new Dispatcher(context, service, mainThreadHandler, cache, stats);
+    return new Dispatcher(context, service, new Handler(Looper.getMainLooper()), cache, stats);
   }
 
   private static final RequestHandler RETRYING_REQUEST_HANDLER = new RequestHandler() {
