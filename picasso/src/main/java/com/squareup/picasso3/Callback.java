@@ -15,17 +15,19 @@
  */
 package com.squareup.picasso3;
 
+import android.support.annotation.NonNull;
+
 public interface Callback {
   void onSuccess();
 
-  void onError(Throwable t);
+  void onError(@NonNull Throwable t);
 
   class EmptyCallback implements Callback {
 
     @Override public void onSuccess() {
     }
 
-    @Override public void onError(Throwable t) {
+    @Override public void onError(@NonNull Throwable t) {
     }
   }
 }

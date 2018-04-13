@@ -19,6 +19,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.support.annotation.NonNull;
 
 import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static com.squareup.picasso3.Picasso.LoadedFrom.DISK;
@@ -30,14 +31,15 @@ class ResourceRequestHandler extends RequestHandler {
     this.context = context;
   }
 
-  @Override public boolean canHandleRequest(Request data) {
+  @Override public boolean canHandleRequest(@NonNull Request data) {
     if (data.resourceId != 0 && !isXmlResource(context.getResources(), data.resourceId)) {
       return true;
     }
     return data.uri != null && SCHEME_ANDROID_RESOURCE.equals(data.uri.getScheme());
   }
 
-  @Override public void load(Picasso picasso, Request request, Callback callback) {
+  @Override
+  public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull Callback callback) {
     boolean signaledCallback = false;
     try {
       Resources res = Utils.getResources(context, request);

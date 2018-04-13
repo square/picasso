@@ -15,6 +15,8 @@
  */
 package com.squareup.picasso3;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -67,7 +69,7 @@ public final class StatsSnapshot {
   }
 
   /** Prints out this {@link StatsSnapshot} with the the provided {@link PrintWriter}. */
-  public void dump(PrintWriter writer) {
+  public void dump(@NonNull PrintWriter writer) {
     writer.println("===============BEGIN PICASSO STATS ===============");
     writer.println("Memory Cache Stats");
     writer.print("  Max Cache Size: ");
@@ -104,6 +106,7 @@ public final class StatsSnapshot {
     writer.flush();
   }
 
+  @Nullable
   @Override public String toString() {
     return "StatsSnapshot{"
         + "maxSize="

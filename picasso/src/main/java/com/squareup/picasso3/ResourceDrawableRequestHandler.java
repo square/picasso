@@ -17,6 +17,7 @@ package com.squareup.picasso3;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 
 import static com.squareup.picasso3.Picasso.LoadedFrom.DISK;
@@ -25,17 +26,17 @@ public final class ResourceDrawableRequestHandler extends RequestHandler {
   private final Context context;
   private final DrawableLoader loader;
 
-  ResourceDrawableRequestHandler(Context context, DrawableLoader loader) {
+  private ResourceDrawableRequestHandler(Context context, DrawableLoader loader) {
     this.context = context;
     this.loader = loader;
   }
 
-  @Override public boolean canHandleRequest(Request data) {
+  @Override public boolean canHandleRequest(@NonNull Request data) {
     return data.resourceId != 0 && isXmlResource(context.getResources(), data.resourceId);
   }
 
   @Override
-  public void load(Picasso picasso, Request request, Callback callback) {
+  public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull Callback callback) {
     Drawable drawable = loader.load(request.resourceId);
     if (drawable == null) {
       callback.onError(new IllegalArgumentException(
@@ -45,11 +46,14 @@ public final class ResourceDrawableRequestHandler extends RequestHandler {
     }
   }
 
-  public static ResourceDrawableRequestHandler create(Context context, DrawableLoader loader) {
+  @NonNull
+  public static ResourceDrawableRequestHandler create(@NonNull Context context,
+      @NonNull DrawableLoader loader) {
     return new ResourceDrawableRequestHandler(context, loader);
   }
 
-  public static ResourceDrawableRequestHandler create(final Context context) {
+  @NonNull
+  public static ResourceDrawableRequestHandler create(@NonNull final Context context) {
     return create(context, new DrawableLoader() {
       @Override public Drawable load(int resId) {
         return ContextCompat.getDrawable(context, resId);

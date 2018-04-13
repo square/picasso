@@ -52,6 +52,7 @@ public final class Request {
    * <p>
    * This is mutually exclusive with {@link #resourceId}.
    */
+  @Nullable
   public final Uri uri;
   /**
    * The image resource ID.
@@ -63,8 +64,10 @@ public final class Request {
    * Optional stable key for this request to be used instead of the URI or resource ID when
    * caching. Two requests with the same value are considered to be for the same resource.
    */
+  @Nullable
   public final String stableKey;
   /** List of custom transformations to be applied after the built-in transformations. */
+  @Nullable
   public final List<Transformation> transformations;
   /** Target image width for resizing. */
   public final int targetWidth;
@@ -96,12 +99,16 @@ public final class Request {
   /** True if image should be decoded with inPurgeable and inInputShareable. */
   public final boolean purgeable;
   /** Target image config for decoding. */
+  @Nullable
   public final Bitmap.Config config;
   /** The priority of this request. */
+  @Nullable
   public final Priority priority;
   /** The cache key for this request. */
+  @NonNull
   public final String key;
   /** User-provided value to track this request. */
+  @Nullable
   public final Object tag;
 
   Request(Builder builder) {
@@ -138,6 +145,7 @@ public final class Request {
     this.networkPolicy = builder.networkPolicy;
   }
 
+  @NonNull
   @Override public String toString() {
     final StringBuilder builder = new StringBuilder("Request{");
     if (resourceId > 0) {
@@ -215,6 +223,7 @@ public final class Request {
     return transformations != null;
   }
 
+  @NonNull
   public Builder newBuilder() {
     return new Builder(this);
   }
@@ -270,9 +279,9 @@ public final class Request {
 
   /** Builder for creating {@link Request} instances. */
   public static final class Builder {
-    Uri uri;
+    @Nullable Uri uri;
     int resourceId;
-    String stableKey;
+    @Nullable String stableKey;
     int targetWidth;
     int targetHeight;
     boolean centerCrop;
@@ -284,10 +293,10 @@ public final class Request {
     float rotationPivotY;
     boolean hasRotationPivot;
     boolean purgeable;
-    List<Transformation> transformations;
-    Bitmap.Config config;
-    Priority priority;
-    Object tag;
+    @Nullable List<Transformation> transformations;
+    @Nullable Bitmap.Config config;
+    @Nullable Priority priority;
+    @Nullable Object tag;
     int memoryPolicy;
     int networkPolicy;
 
@@ -301,7 +310,7 @@ public final class Request {
       setResourceId(resourceId);
     }
 
-    Builder(Uri uri, int resourceId, Bitmap.Config bitmapConfig) {
+    Builder(@Nullable Uri uri, int resourceId, @Nullable Bitmap.Config bitmapConfig) {
       this.uri = uri;
       this.resourceId = resourceId;
       this.config = bitmapConfig;
@@ -348,6 +357,7 @@ public final class Request {
      * <p>
      * This will clear an image resource ID if one is set.
      */
+    @NonNull
     public Builder setUri(@NonNull Uri uri) {
       if (uri == null) {
         throw new IllegalArgumentException("Image URI may not be null.");
@@ -362,6 +372,7 @@ public final class Request {
      * <p>
      * This will clear an image Uri if one is set.
      */
+    @NonNull
     public Builder setResourceId(@DrawableRes int resourceId) {
       if (resourceId == 0) {
         throw new IllegalArgumentException("Image resource ID may not be 0.");
@@ -375,6 +386,7 @@ public final class Request {
      * Set the stable key to be used instead of the URI or resource ID when caching.
      * Two requests with the same value are considered to be for the same resource.
      */
+    @NonNull
     public Builder stableKey(@Nullable String stableKey) {
       this.stableKey = stableKey;
       return this;
@@ -383,6 +395,7 @@ public final class Request {
     /**
      * Assign a tag to this request.
      */
+    @NonNull
     public Builder tag(@NonNull Object tag) {
       if (tag == null) {
         throw new IllegalArgumentException("Tag invalid.");
@@ -409,6 +422,7 @@ public final class Request {
      * Resize the image to the specified size in pixels.
      * Use 0 as desired dimension to resize keeping aspect ratio.
      */
+    @NonNull
     public Builder resize(@Px int targetWidth, @Px int targetHeight) {
       if (targetWidth < 0) {
         throw new IllegalArgumentException("Width must be positive number or 0.");
@@ -425,6 +439,7 @@ public final class Request {
     }
 
     /** Clear the resize transformation, if any. This will also clear center crop/inside if set. */
+    @NonNull
     public Builder clearResize() {
       targetWidth = 0;
       targetHeight = 0;
@@ -438,6 +453,7 @@ public final class Request {
      * distorting the aspect ratio. This cropping technique scales the image so that it fills the
      * requested bounds and then crops the extra.
      */
+    @NonNull
     public Builder centerCrop() {
       return centerCrop(Gravity.CENTER);
     }
@@ -447,6 +463,7 @@ public final class Request {
      * distorting the aspect ratio. This cropping technique scales the image so that it fills the
      * requested bounds, aligns it using provided gravity parameter and then crops the extra.
      */
+    @NonNull
     public Builder centerCrop(int alignGravity) {
       if (centerInside) {
         throw new IllegalStateException("Center crop can not be used after calling centerInside");
@@ -457,6 +474,7 @@ public final class Request {
     }
 
     /** Clear the center crop transformation flag, if set. */
+    @NonNull
     public Builder clearCenterCrop() {
       centerCrop = false;
       centerCropGravity = Gravity.CENTER;
@@ -467,6 +485,7 @@ public final class Request {
      * Centers an image inside of the bounds specified by {@link #resize(int, int)}. This scales
      * the image so that both dimensions are equal to or less than the requested bounds.
      */
+    @NonNull
     public Builder centerInside() {
       if (centerCrop) {
         throw new IllegalStateException("Center inside can not be used after calling centerCrop");
@@ -476,6 +495,7 @@ public final class Request {
     }
 
     /** Clear the center inside transformation flag, if set. */
+    @NonNull
     public Builder clearCenterInside() {
       centerInside = false;
       return this;
@@ -485,6 +505,7 @@ public final class Request {
      * Only resize an image if the original image size is bigger than the target size
      * specified by {@link #resize(int, int)}.
      */
+    @NonNull
     public Builder onlyScaleDown() {
       if (targetHeight == 0 && targetWidth == 0) {
         throw new IllegalStateException("onlyScaleDown can not be applied without resize");
@@ -494,18 +515,21 @@ public final class Request {
     }
 
     /** Clear the onlyScaleUp flag, if set. **/
+    @NonNull
     public Builder clearOnlyScaleDown() {
       onlyScaleDown = false;
       return this;
     }
 
     /** Rotate the image by the specified degrees. */
+    @NonNull
     public Builder rotate(float degrees) {
       rotationDegrees = degrees;
       return this;
     }
 
     /** Rotate the image by the specified degrees around a pivot point. */
+    @NonNull
     public Builder rotate(float degrees, float pivotX, float pivotY) {
       rotationDegrees = degrees;
       rotationPivotX = pivotX;
@@ -515,6 +539,7 @@ public final class Request {
     }
 
     /** Clear the rotation transformation, if any. */
+    @NonNull
     public Builder clearRotation() {
       rotationDegrees = 0;
       rotationPivotX = 0;
@@ -523,12 +548,14 @@ public final class Request {
       return this;
     }
 
+    @NonNull
     public Builder purgeable() {
       purgeable = true;
       return this;
     }
 
     /** Decode the image using the specified config. */
+    @NonNull
     public Builder config(@NonNull Bitmap.Config config) {
       checkNotNull(config, "config == null");
       this.config = config;
@@ -536,6 +563,7 @@ public final class Request {
     }
 
     /** Execute request using the specified priority. */
+    @NonNull
     public Builder priority(@NonNull Priority priority) {
       checkNotNull(priority, "priority == null");
       if (this.priority != null) {
@@ -550,6 +578,7 @@ public final class Request {
      * <p>
      * Custom transformations will always be run after the built-in transformations.
      */
+    @NonNull
     public Builder transform(@NonNull Transformation transformation) {
       checkNotNull(transformation, "transformation == null");
       if (transformation.key() == null) {
@@ -567,6 +596,7 @@ public final class Request {
      * <p>
      * Custom transformations will always be run after the built-in transformations.
      */
+    @NonNull
     public Builder transform(@NonNull List<? extends Transformation> transformations) {
       checkNotNull(transformations, "transformations == null");
       for (int i = 0, size = transformations.size(); i < size; i++) {
@@ -579,6 +609,7 @@ public final class Request {
      * Specifies the {@link MemoryPolicy} to use for this request. You may specify additional policy
      * options using the varargs parameter.
      */
+    @NonNull
     public Builder memoryPolicy(@NonNull MemoryPolicy policy,
         @NonNull MemoryPolicy... additional) {
       if (policy == null) {
@@ -601,6 +632,7 @@ public final class Request {
      * Specifies the {@link NetworkPolicy} to use for this request. You may specify additional
      * policy options using the varargs parameter.
      */
+    @NonNull
     public Builder networkPolicy(@NonNull NetworkPolicy policy,
         @NonNull NetworkPolicy... additional) {
       if (policy == null) {
@@ -620,6 +652,7 @@ public final class Request {
     }
 
     /** Create the immutable {@link Request} object. */
+    @NonNull
     public Request build() {
       if (centerInside && centerCrop) {
         throw new IllegalStateException("Center crop and center inside can not be used together.");

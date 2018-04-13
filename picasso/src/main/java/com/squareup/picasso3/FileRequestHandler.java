@@ -17,6 +17,7 @@ package com.squareup.picasso3;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
 import android.support.media.ExifInterface;
 import java.io.IOException;
 import okio.Source;
@@ -32,11 +33,12 @@ class FileRequestHandler extends ContentStreamRequestHandler {
     super(context);
   }
 
-  @Override public boolean canHandleRequest(Request data) {
+  @Override public boolean canHandleRequest(@NonNull Request data) {
     return SCHEME_FILE.equals(data.uri.getScheme());
   }
 
-  @Override public void load(Picasso picasso, Request request, Callback callback) {
+  @Override
+  public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull Callback callback) {
     boolean signaledCallback = false;
     try {
       Source source = getSource(request);

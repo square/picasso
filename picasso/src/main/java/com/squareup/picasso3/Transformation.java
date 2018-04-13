@@ -16,6 +16,7 @@
 package com.squareup.picasso3;
 
 import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
 
 /** Image transformation. */
 public interface Transformation {
@@ -24,11 +25,11 @@ public interface Transformation {
    * call {@link android.graphics.Bitmap#recycle()} on {@code source}. You may return the original
    * if no transformation is required.
    */
-  Bitmap transform(Bitmap source);
+  @NonNull Bitmap transform(@NonNull Bitmap source);
 
   /**
    * Returns a unique key for the transformation, used for caching purposes. If the transformation
    * has parameters (e.g. size, scale factor, etc) then these should be part of the key.
    */
-  String key();
+  @NonNull String key();
 }

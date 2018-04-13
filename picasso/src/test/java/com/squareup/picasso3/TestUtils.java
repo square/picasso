@@ -261,11 +261,12 @@ class TestUtils {
   static Picasso mockPicasso() {
     // Inject a RequestHandler that can handle any request.
     RequestHandler requestHandler = new RequestHandler() {
-      @Override public boolean canHandleRequest(Request data) {
+      @Override public boolean canHandleRequest(@NonNull Request data) {
         return true;
       }
 
-      @Override public void load(Picasso picasso, Request request, Callback callback) {
+      @Override public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull
+          Callback callback) {
         Bitmap defaultResult = makeBitmap();
         RequestHandler.Result result = new RequestHandler.Result(defaultResult, MEMORY);
         callback.onSuccess(result);
