@@ -62,15 +62,15 @@ public abstract class RequestHandler {
     private final Picasso.LoadedFrom loadedFrom;
     private final Bitmap bitmap;
     private final Drawable drawable;
-    private final int exifOrientation;
+    private final int exifRotation;
 
     public Result(@NonNull Bitmap bitmap, @NonNull Picasso.LoadedFrom loadedFrom) {
       this(checkNotNull(bitmap, "bitmap == null"), null, loadedFrom, 0);
     }
 
     public Result(@NonNull Bitmap bitmap, @NonNull Picasso.LoadedFrom loadedFrom,
-        int exifOrientation) {
-      this(checkNotNull(bitmap, "bitmap == null"), null, loadedFrom, exifOrientation);
+        int exifRotation) {
+      this(checkNotNull(bitmap, "bitmap == null"), null, loadedFrom, exifRotation);
     }
 
     public Result(@NonNull Drawable drawable, @NonNull Picasso.LoadedFrom loadedFrom) {
@@ -81,11 +81,11 @@ public abstract class RequestHandler {
         @Nullable Bitmap bitmap,
         @Nullable Drawable drawable,
         @NonNull Picasso.LoadedFrom loadedFrom,
-        int exifOrientation) {
+        int exifRotation) {
       this.bitmap = bitmap;
       this.drawable = drawable;
       this.loadedFrom = checkNotNull(loadedFrom, "loadedFrom == null");
-      this.exifOrientation = exifOrientation;
+      this.exifRotation = exifRotation;
     }
 
     /**
@@ -121,12 +121,11 @@ public abstract class RequestHandler {
     }
 
     /**
-     * Returns the resulting EXIF orientation generated from a
-     * {@link #load(Picasso, Request, Callback)} call. This is only accessible to built-in
-     * RequestHandlers.
+     * Returns the resulting EXIF rotation generated from a
+     * {@link #load(Picasso, Request, Callback)} call.
      */
-    int getExifOrientation() {
-      return exifOrientation;
+    public int getExifRotation() {
+      return exifRotation;
     }
   }
 

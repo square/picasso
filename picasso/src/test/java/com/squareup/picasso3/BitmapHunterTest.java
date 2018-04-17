@@ -1026,7 +1026,7 @@ public final class BitmapHunterTest {
 
   @Test public void crashingOnTransformationThrows() {
     Transformation badTransformation = new Transformation() {
-      @Override public Bitmap transform(Bitmap source) {
+      @Override public RequestHandler.Result transform(RequestHandler.Result source) {
         throw new NullPointerException("hello");
       }
 
@@ -1036,8 +1036,9 @@ public final class BitmapHunterTest {
     };
     List<Transformation> transformations = Collections.singletonList(badTransformation);
     Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
+    RequestHandler.Result result = new RequestHandler.Result(original, MEMORY, 0);
     try {
-      BitmapHunter.applyCustomTransformations(transformations, original);
+      BitmapHunter.applyCustomTransformations(transformations, result);
       fail("Expected exception to be thrown.");
     } catch (RuntimeException e) {
       assertThat(e).hasMessageThat().isEqualTo("Transformation " + badTransformation.key() + " crashed with exception.");
@@ -1046,7 +1047,7 @@ public final class BitmapHunterTest {
 
   @Test public void nullResultFromTransformationThrows() {
     Transformation badTransformation = new Transformation() {
-      @Override public Bitmap transform(Bitmap source) {
+      @Override public RequestHandler.Result transform(RequestHandler.Result source) {
         return null;
       }
 
@@ -1056,8 +1057,9 @@ public final class BitmapHunterTest {
     };
     List<Transformation> transformations = Collections.singletonList(badTransformation);
     Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
+    RequestHandler.Result result = new RequestHandler.Result(original, MEMORY, 0);
     try {
-      BitmapHunter.applyCustomTransformations(transformations, original);
+      BitmapHunter.applyCustomTransformations(transformations, result);
       fail("Expected exception to be thrown.");
     } catch (RuntimeException e) {
       assertThat(e).hasMessageThat().contains(
@@ -1067,9 +1069,9 @@ public final class BitmapHunterTest {
 
   @Test public void doesNotRecycleOriginalTransformationThrows() {
     Transformation badTransformation = new Transformation() {
-      @Override public Bitmap transform(Bitmap source) {
+      @Override public RequestHandler.Result transform(RequestHandler.Result source) {
         // Should recycle source.
-        return Bitmap.createBitmap(10, 10, ARGB_8888);
+        return new RequestHandler.Result(Bitmap.createBitmap(10, 10, ARGB_8888), MEMORY, 0);
       }
 
       @Override public String key() {
@@ -1078,8 +1080,9 @@ public final class BitmapHunterTest {
     };
     List<Transformation> transformations = Collections.singletonList(badTransformation);
     Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
+    RequestHandler.Result result = new RequestHandler.Result(original, MEMORY, 0);
     try {
-      BitmapHunter.applyCustomTransformations(transformations, original);
+      BitmapHunter.applyCustomTransformations(transformations, result);
       fail("Expected exception to be thrown.");
     } catch (RuntimeException e) {
       assertThat(e).hasMessageThat().isEqualTo("Transformation "
@@ -1090,8 +1093,8 @@ public final class BitmapHunterTest {
 
   @Test public void recycledOriginalTransformationThrows() {
     Transformation badTransformation = new Transformation() {
-      @Override public Bitmap transform(Bitmap source) {
-        source.recycle();
+      @Override public RequestHandler.Result transform(RequestHandler.Result source) {
+        source.getBitmap().recycle();
         return source;
       }
 
@@ -1101,8 +1104,9 @@ public final class BitmapHunterTest {
     };
     List<Transformation> transformations = Collections.singletonList(badTransformation);
     Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
+    RequestHandler.Result result = new RequestHandler.Result(original, MEMORY, 0);
     try {
-      BitmapHunter.applyCustomTransformations(transformations, original);
+      BitmapHunter.applyCustomTransformations(transformations, result);
       fail("Expected exception to be thrown.");
     } catch (RuntimeException e) {
       assertThat(e).hasMessageThat().isEqualTo("Transformation "
