@@ -21,6 +21,8 @@ import java.io.InputStream;
 import okio.Buffer;
 import okio.BufferedSource;
 
+import static com.squareup.picasso3.Utils.checkNotNull;
+
 /**
  * An {@link InputStream} that fills the buffer of an {@link BufferedSource} as reads are requested
  * and copies its bytes into the byte arrays of the caller. This allows you to read as much of the
@@ -33,6 +35,7 @@ final class SourceBufferingInputStream extends InputStream {
   private final Buffer buffer;
   private long position;
   private long mark = -1;
+  private long markLimit = -1;
 
   SourceBufferingInputStream(BufferedSource source) {
     this.source = source;
@@ -40,26 +43,41 @@ final class SourceBufferingInputStream extends InputStream {
   }
 
   private final Buffer temp = new Buffer();
+  // offset is the write offset in the dest array
   private int copyTo(byte[] sink, int offset, int byteCount) {
     // TODO replace this with https://github.com/square/okio/issues/362
-    buffer.copyTo(temp, offset, byteCount);
+    buffer.copyTo(temp, position, byteCount);
     return temp.read(sink, offset, byteCount);
   }
 
   @Override public int read() throws IOException {
-    source.require(position + 1);
+    if (!source.request(position + 1)) {
+      return -1;
+    }
     byte value = buffer.getByte(position++);
-    if (position > mark) {
+    if (position > markLimit) {
       mark = -1;
     }
     return value;
   }
 
   @Override public int read(@NonNull byte[] b, int off, int len) throws IOException {
-    source.require(position + len);
-    int copied = /*buffer.*/copyTo(b, off, len);
+    checkNotNull(b, "b is null");
+    if (off < 0 || len < 0 || len > b.length - off) {
+      throw new IndexOutOfBoundsException();
+    } else if (len == 0) {
+      return 0;
+    }
+
+    int count = len;
+    if (!source.request(position + count)) {
+      count = available();
+    }
+    if (count == 0) return -1;
+
+    int copied = /*buffer.*/copyTo(b, off, count);
     position += copied;
-    if (position > mark) {
+    if (position > markLimit) {
       mark = -1;
     }
     return copied;
@@ -68,7 +86,7 @@ final class SourceBufferingInputStream extends InputStream {
   @Override public long skip(long n) throws IOException {
     source.require(position + n);
     position += n;
-    if (position > mark) {
+    if (position > markLimit) {
       mark = -1;
     }
     return n;
@@ -79,7 +97,8 @@ final class SourceBufferingInputStream extends InputStream {
   }
 
   @Override public void mark(int readlimit) {
-    mark = position + readlimit;
+    mark = position;
+    markLimit = position + readlimit;
   }
 
   @Override public void reset() throws IOException {
@@ -88,6 +107,7 @@ final class SourceBufferingInputStream extends InputStream {
     }
     position = mark;
     mark = -1;
+    markLimit = -1;
   }
 
   @Override public int available() {
