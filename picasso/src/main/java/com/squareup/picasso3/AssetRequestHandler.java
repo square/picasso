@@ -58,8 +58,9 @@ class AssetRequestHandler extends RequestHandler {
       try {
         ImageDecoder imageDecoder = request.decoderFactory.getImageDecoderForSource(source);
         if (imageDecoder == null) {
-          callback.onError(
-              new IllegalStateException("No image decoder for source: " + getFilePath(request)));
+          callback.onError(new IllegalStateException(
+              "No image decoder for source: " + getFilePath(request))
+          );
           return;
         }
         ImageDecoder.Image image = imageDecoder.decodeImage(source, request);
