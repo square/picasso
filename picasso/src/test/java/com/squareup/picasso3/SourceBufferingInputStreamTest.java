@@ -62,7 +62,7 @@ public final class SourceBufferingInputStreamTest {
 
     len = stream.read(bytes);
     assertEquals(3, len);
-    // last two bytes are out of range so untouched from previous run
+    // Last two bytes are out of range so untouched from previous run.
     assertArrayEquals(new byte[] {'l', 'd', '!', 'o', 'r'}, bytes);
 
     len = stream.read(bytes);
@@ -87,9 +87,7 @@ public final class SourceBufferingInputStreamTest {
     try {
       stream.reset();
       fail("expected IOException on reset");
-    } catch (IOException e) {
-      // success
-    }
+    } catch (IOException expected) {}
 
     stream.mark(2);
     len = stream.read(bytes, 0, 2);
