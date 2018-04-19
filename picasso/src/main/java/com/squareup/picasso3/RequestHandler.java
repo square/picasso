@@ -68,7 +68,7 @@ public abstract class RequestHandler {
       this(null, checkNotNull(drawable, "drawable == null"), loadedFrom, 0);
     }
 
-    private Result(
+    Result(
         @Nullable Bitmap bitmap,
         @Nullable Drawable drawable,
         @NonNull Picasso.LoadedFrom loadedFrom,

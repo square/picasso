@@ -15,7 +15,6 @@
  */
 package com.squareup.picasso3;
 
-import android.graphics.Bitmap;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import androidx.annotation.NonNull;
@@ -25,6 +24,7 @@ import okhttp3.CacheControl;
 import okhttp3.Call;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okio.BufferedSource;
 
 import static com.squareup.picasso3.BitmapUtils.decodeStream;
 import static com.squareup.picasso3.Picasso.LoadedFrom.DISK;
@@ -78,8 +78,14 @@ final class NetworkRequestHandler extends RequestHandler {
           stats.dispatchDownloadFinished(body.contentLength());
         }
         try {
-          Bitmap bitmap = decodeStream(body.source(), request);
-          callback.onSuccess(new Result(bitmap, loadedFrom));
+          BufferedSource source = body.source();
+          ImageDecoder imageDecoder = request.decoderFactory.getImageDecoderForSource(source);
+          if (imageDecoder == null) {
+            callback.onError(new IllegalStateException("No image decoder for request: " + request));
+            return;
+          }
+          ImageDecoder.Image image = imageDecoder.decodeImage(source, request);
+          callback.onSuccess(new Result(image.bitmap, image.drawable, loadedFrom, 0));
         } catch (IOException e) {
           body.close();
           callback.onError(e);

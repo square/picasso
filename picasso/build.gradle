@@ -33,6 +33,7 @@ dependencies {
   implementation deps.androidxAnnotations
   implementation deps.androidxCore
   implementation deps.androidxExifInterface
+  implementation deps.androidSvg
   testImplementation deps.junit
   testImplementation deps.truth
   testImplementation deps.robolectric

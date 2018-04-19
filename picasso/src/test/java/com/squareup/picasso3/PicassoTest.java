@@ -42,6 +42,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso3.Picasso.Listener;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget;
+import static com.squareup.picasso3.TestUtils.DEFAULT_DECODERS;
 import static com.squareup.picasso3.TestUtils.NOOP_REQUEST_HANDLER;
 import static com.squareup.picasso3.TestUtils.NOOP_TRANSFORMER;
 import static com.squareup.picasso3.TestUtils.NO_HANDLERS;
@@ -88,7 +89,7 @@ public final class PicassoTest {
   @Before public void setUp() {
     initMocks(this);
     picasso = new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, listener,
-        NO_TRANSFORMERS, NO_HANDLERS, stats, ARGB_8888, false, false);
+        DEFAULT_DECODERS, NO_TRANSFORMERS, NO_HANDLERS, stats, ARGB_8888, false, false);
   }
 
   @Test public void submitWithTargetInvokesDispatcher() {
@@ -192,7 +193,7 @@ public final class PicassoTest {
   }
 
   @Test public void resumeActionTriggersSubmitOnPausedAction() {
-    Request request = new Request.Builder(URI_1, 0, ARGB_8888).build();
+    Request request = new Request.Builder(URI_1, 0, DEFAULT_DECODERS, ARGB_8888).build();
     Action action =
         new Action(mockPicasso(), request) {
           @Override void complete(RequestHandler.Result result) {
@@ -213,7 +214,7 @@ public final class PicassoTest {
 
   @Test public void resumeActionImmediatelyCompletesCachedRequest() {
     cache.set(URI_KEY_1, bitmap);
-    Request request = new Request.Builder(URI_1, 0, ARGB_8888).build();
+    Request request = new Request.Builder(URI_1, 0, DEFAULT_DECODERS, ARGB_8888).build();
     Action action =
         new Action(mockPicasso(), request) {
           @Override void complete(RequestHandler.Result result) {
@@ -371,7 +372,7 @@ public final class PicassoTest {
     okhttp3.Cache cache = new okhttp3.Cache(temporaryFolder.getRoot(), 100);
     Picasso picasso =
         new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, cache, this.cache, listener,
-            NO_TRANSFORMERS, NO_HANDLERS, stats, ARGB_8888, false, false);
+            DEFAULT_DECODERS, NO_TRANSFORMERS, NO_HANDLERS, stats, ARGB_8888, false, false);
     picasso.shutdown();
     assertThat(cache.isClosed()).isTrue();
   }
@@ -403,7 +404,8 @@ public final class PicassoTest {
       }
     };
     Picasso picasso = new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, listener,
-        Collections.singletonList(brokenTransformer), NO_HANDLERS, stats, ARGB_8888, false, false);
+        DEFAULT_DECODERS, Collections.singletonList(brokenTransformer), NO_HANDLERS, stats,
+        ARGB_8888, false, false);
     Request request = new Request.Builder(URI_1).build();
     try {
       picasso.transformRequest(request);

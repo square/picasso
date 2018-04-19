@@ -23,7 +23,8 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
 import androidx.annotation.NonNull;
-import okio.Source;
+import okio.BufferedSource;
+import okio.Okio;
 
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentUris.parseId;
@@ -34,7 +35,6 @@ import static android.provider.MediaStore.Images.Thumbnails.MINI_KIND;
 import static android.provider.MediaStore.Video;
 import static com.squareup.picasso3.BitmapUtils.calculateInSampleSize;
 import static com.squareup.picasso3.BitmapUtils.createBitmapOptions;
-import static com.squareup.picasso3.BitmapUtils.decodeStream;
 import static com.squareup.picasso3.MediaStoreRequestHandler.PicassoKind.FULL;
 import static com.squareup.picasso3.MediaStoreRequestHandler.PicassoKind.MICRO;
 import static com.squareup.picasso3.MediaStoreRequestHandler.PicassoKind.MINI;
@@ -71,10 +71,15 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
       if (request.hasSize()) {
         PicassoKind picassoKind = getPicassoKind(request.targetWidth, request.targetHeight);
         if (!isVideo && picassoKind == FULL) {
-          Source source = getSource(requestUri);
-          Bitmap bitmap = decodeStream(source, request);
+          BufferedSource source = Okio.buffer(getSource(requestUri));
+          ImageDecoder imageDecoder = request.decoderFactory.getImageDecoderForSource(source);
+          if (imageDecoder == null) {
+            callback.onError(new IllegalStateException("No image decoder for request: " + request));
+            return;
+          }
+          ImageDecoder.Image image = imageDecoder.decodeImage(source, request);
           signaledCallback = true;
-          callback.onSuccess(new Result(bitmap, DISK, exifOrientation));
+          callback.onSuccess(new Result(image.bitmap, image.drawable, DISK, exifOrientation));
           return;
         }
 
@@ -106,10 +111,15 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
         }
       }
 
-      Source source = getSource(requestUri);
-      Bitmap bitmap = decodeStream(source, request);
+      BufferedSource source = Okio.buffer(getSource(requestUri));
+      ImageDecoder imageDecoder = request.decoderFactory.getImageDecoderForSource(source);
+      if (imageDecoder == null) {
+        callback.onError(new IllegalStateException("No image decoder for request: " + request));
+        return;
+      }
+      ImageDecoder.Image image = imageDecoder.decodeImage(source, request);
       signaledCallback = true;
-      callback.onSuccess(new Result(bitmap, DISK, exifOrientation));
+      callback.onSuccess(new Result(image.bitmap, image.drawable, DISK, exifOrientation));
     } catch (Exception e) {
       if (!signaledCallback) {
         callback.onError(e);

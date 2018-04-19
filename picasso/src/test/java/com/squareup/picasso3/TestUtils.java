@@ -34,6 +34,7 @@ import com.squareup.picasso3.Utils.PicassoThreadFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import okhttp3.Call;
@@ -166,7 +167,7 @@ class TestUtils {
 
   static Action mockAction(String key, Uri uri, Object target, int resourceId, Priority priority,
                            String tag) {
-    Request.Builder builder = new Request.Builder(uri, resourceId, DEFAULT_CONFIG).stableKey(key);
+    Request.Builder builder = new Request.Builder(uri, resourceId, DEFAULT_DECODERS, DEFAULT_CONFIG).stableKey(key);
     if (priority != null) {
       builder.priority(priority);
     }
@@ -337,6 +338,8 @@ class TestUtils {
     }
   };
 
+  static final ImageDecoderFactory DEFAULT_DECODERS = new ImageDecoderFactory(
+      Arrays.asList(new BitmapImageDecoder(), new SvgImageDecoder()));
   static final List<RequestTransformer> NO_TRANSFORMERS = Collections.emptyList();
   static final List<RequestHandler> NO_HANDLERS = Collections.emptyList();
 

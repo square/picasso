@@ -15,7 +15,7 @@ final class Data {
       BASE + "Q54zMKT" + EXT, BASE + "9t6hLbm" + EXT, BASE + "F8n3Ic6" + EXT,
       BASE + "P5ZRSvT" + EXT, BASE + "jbemFzr" + EXT, BASE + "8B7haIK" + EXT,
       BASE + "aSeTYQr" + EXT, BASE + "OKvWoTh" + EXT, BASE + "zD3gT4Z" + EXT,
-      BASE + "z77CaIt" + EXT,
+      BASE + "z77CaIt" + EXT, "https://dev.w3.org/SVG/tools/svgweb/samples/svg-files/android.svg"
   };
 
   private Data() {

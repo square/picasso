@@ -66,6 +66,9 @@ public final class Request {
    */
   @Nullable
   public final String stableKey;
+  /** The image decoder factory to use to decode the image. */
+  @NonNull
+  public final ImageDecoderFactory decoderFactory;
   /** List of custom transformations to be applied after the built-in transformations. */
   final List<Transformation> transformations;
   /** Target image width for resizing. */
@@ -114,6 +117,7 @@ public final class Request {
     this.uri = builder.uri;
     this.resourceId = builder.resourceId;
     this.stableKey = builder.stableKey;
+    this.decoderFactory = builder.decoderFactory;
     if (builder.transformations == null) {
       this.transformations = Collections.emptyList();
     } else {
@@ -282,6 +286,7 @@ public final class Request {
     float rotationPivotY;
     boolean hasRotationPivot;
     boolean purgeable;
+    @Nullable ImageDecoderFactory decoderFactory;
     @Nullable List<Transformation> transformations;
     @Nullable Bitmap.Config config;
     @Nullable Priority priority;
@@ -299,9 +304,11 @@ public final class Request {
       setResourceId(resourceId);
     }
 
-    Builder(@Nullable Uri uri, int resourceId, @Nullable Bitmap.Config bitmapConfig) {
+    Builder(@Nullable Uri uri, int resourceId, @Nullable ImageDecoderFactory decoderFactory,
+        @Nullable Bitmap.Config bitmapConfig) {
       this.uri = uri;
       this.resourceId = resourceId;
+      this.decoderFactory = decoderFactory;
       this.config = bitmapConfig;
     }
 
@@ -320,6 +327,7 @@ public final class Request {
       hasRotationPivot = request.hasRotationPivot;
       purgeable = request.purgeable;
       onlyScaleDown = request.onlyScaleDown;
+      decoderFactory = request.decoderFactory;
       if (request.transformations != null) {
         transformations = new ArrayList<>(request.transformations);
       }
@@ -559,6 +567,24 @@ public final class Request {
         throw new IllegalStateException("Priority already set.");
       }
       this.priority = priority;
+      return this;
+    }
+
+    @NonNull
+    public Builder asBitmap() {
+      return imageDecoderFactory(new ImageDecoderFactory(
+          Collections.<ImageDecoder>singletonList(new BitmapImageDecoder())));
+    }
+
+    @NonNull
+    public Builder asSvg() {
+      return imageDecoderFactory(new ImageDecoderFactory(
+          Collections.<ImageDecoder>singletonList(new SvgImageDecoder())));
+    }
+
+    @NonNull
+    public Builder imageDecoderFactory(ImageDecoderFactory factory) {
+      decoderFactory = factory;
       return this;
     }
 

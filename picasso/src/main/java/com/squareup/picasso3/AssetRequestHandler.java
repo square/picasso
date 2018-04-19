@@ -17,12 +17,11 @@ package com.squareup.picasso3;
 
 import android.content.Context;
 import android.content.res.AssetManager;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import androidx.annotation.NonNull;
 import java.io.IOException;
+import okio.BufferedSource;
 import okio.Okio;
-import okio.Source;
 
 import static android.content.ContentResolver.SCHEME_FILE;
 import static com.squareup.picasso3.BitmapUtils.decodeStream;
@@ -56,11 +55,17 @@ class AssetRequestHandler extends RequestHandler {
 
     boolean signaledCallback = false;
     try {
-      Source source = Okio.source(assetManager.open(getFilePath(request)));
+      BufferedSource source = Okio.buffer(Okio.source(assetManager.open(getFilePath(request))));
       try {
-        Bitmap bitmap = decodeStream(source, request);
+        ImageDecoder imageDecoder = request.decoderFactory.getImageDecoderForSource(source);
+        if (imageDecoder == null) {
+          callback.onError(
+              new IllegalStateException("No image decoder for source: " + getFilePath(request)));
+          return;
+        }
+        ImageDecoder.Image image = imageDecoder.decodeImage(source, request);
         signaledCallback = true;
-        callback.onSuccess(new Result(bitmap, DISK));
+        callback.onSuccess(new Result(image.bitmap, image.drawable, DISK, image.exifOrientation));
       } finally {
         try {
           source.close();
