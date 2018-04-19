@@ -32,7 +32,8 @@ final class SourceBufferingInputStream extends InputStream {
   private final BufferedSource source;
   private final Buffer buffer;
   private long position;
-  private long mark = -1;
+  private long markPosition = -1;
+  private long markLimit = -1;
 
   SourceBufferingInputStream(BufferedSource source) {
     this.source = source;
@@ -42,25 +43,39 @@ final class SourceBufferingInputStream extends InputStream {
   private final Buffer temp = new Buffer();
   private int copyTo(byte[] sink, int offset, int byteCount) {
     // TODO replace this with https://github.com/square/okio/issues/362
-    buffer.copyTo(temp, offset, byteCount);
+    // `copyTo` treats offset as the read position, `read` treats offset as the write offset.
+    buffer.copyTo(temp, position, byteCount);
     return temp.read(sink, offset, byteCount);
   }
 
   @Override public int read() throws IOException {
-    source.require(position + 1);
+    if (!source.request(position + 1)) {
+      return -1;
+    }
     byte value = buffer.getByte(position++);
-    if (position > mark) {
-      mark = -1;
+    if (position > markLimit) {
+      markPosition = -1;
     }
     return value;
   }
 
   @Override public int read(@NonNull byte[] b, int off, int len) throws IOException {
-    source.require(position + len);
-    int copied = /*buffer.*/copyTo(b, off, len);
+    if (off < 0 || len < 0 || len > b.length - off) {
+      throw new IndexOutOfBoundsException();
+    } else if (len == 0) {
+      return 0;
+    }
+
+    int count = len;
+    if (!source.request(position + count)) {
+      count = available();
+    }
+    if (count == 0) return -1;
+
+    int copied = /*buffer.*/copyTo(b, off, count);
     position += copied;
-    if (position > mark) {
-      mark = -1;
+    if (position > markLimit) {
+      markPosition = -1;
     }
     return copied;
   }
@@ -68,8 +83,8 @@ final class SourceBufferingInputStream extends InputStream {
   @Override public long skip(long n) throws IOException {
     source.require(position + n);
     position += n;
-    if (position > mark) {
-      mark = -1;
+    if (position > markLimit) {
+      markPosition = -1;
     }
     return n;
   }
@@ -79,15 +94,17 @@ final class SourceBufferingInputStream extends InputStream {
   }
 
   @Override public void mark(int readlimit) {
-    mark = position + readlimit;
+    markPosition = position;
+    markLimit = position + readlimit;
   }
 
   @Override public void reset() throws IOException {
-    if (mark == -1) {
+    if (markPosition == -1) {
       throw new IOException("No mark or mark expired");
     }
-    position = mark;
-    mark = -1;
+    position = markPosition;
+    markPosition = -1;
+    markLimit = -1;
   }
 
   @Override public int available() {
