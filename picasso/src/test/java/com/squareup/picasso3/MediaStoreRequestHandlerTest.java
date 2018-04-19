@@ -20,6 +20,7 @@ import static com.squareup.picasso3.MediaStoreRequestHandler.PicassoKind.FULL;
 import static com.squareup.picasso3.MediaStoreRequestHandler.PicassoKind.MICRO;
 import static com.squareup.picasso3.MediaStoreRequestHandler.PicassoKind.MINI;
 import static com.squareup.picasso3.MediaStoreRequestHandler.getPicassoKind;
+import static com.squareup.picasso3.TestUtils.DEFAULT_DECODERS;
 import static com.squareup.picasso3.TestUtils.MEDIA_STORE_CONTENT_1_URL;
 import static com.squareup.picasso3.TestUtils.MEDIA_STORE_CONTENT_KEY_1;
 import static com.squareup.picasso3.TestUtils.makeBitmap;
@@ -44,7 +45,8 @@ public class MediaStoreRequestHandlerTest {
   @Test public void decodesVideoThumbnailWithVideoMimeType() {
     final Bitmap bitmap = makeBitmap();
     Request request =
-        new Request.Builder(MEDIA_STORE_CONTENT_1_URL, 0, ARGB_8888).resize(100, 100).build();
+        new Request.Builder(MEDIA_STORE_CONTENT_1_URL, 0, DEFAULT_DECODERS, ARGB_8888)
+            .resize(100, 100).build();
     Action action = mockAction(MEDIA_STORE_CONTENT_KEY_1, request);
     MediaStoreRequestHandler requestHandler = create("video/");
     requestHandler.load(null, action.getRequest(), new RequestHandler.Callback() {
@@ -61,7 +63,8 @@ public class MediaStoreRequestHandlerTest {
   @Test public void decodesImageThumbnailWithImageMimeType() {
     final Bitmap bitmap = makeBitmap(20, 20);
     Request request =
-        new Request.Builder(MEDIA_STORE_CONTENT_1_URL, 0, ARGB_8888).resize(100, 100).build();
+        new Request.Builder(MEDIA_STORE_CONTENT_1_URL, 0, DEFAULT_DECODERS, ARGB_8888)
+            .resize(100, 100).build();
     Action action = mockAction(MEDIA_STORE_CONTENT_KEY_1, request);
     MediaStoreRequestHandler requestHandler = create("image/png");
     requestHandler.load(null, action.getRequest(), new RequestHandler.Callback() {

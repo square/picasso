@@ -11,6 +11,7 @@ buildscript {
 
   ext.deps = [
     androidPlugin: 'com.android.tools.build:gradle:3.2.0-rc02',
+    androidSvg: 'com.caverock:androidsvg:1.2.2-beta-1@aar',
     okhttp: "com.squareup.okhttp3:okhttp:${versions.okhttp}",
     mockWebServer: "com.squareup.okhttp3:mockwebserver:${versions.okhttp}",
     pollexor: 'com.squareup:pollexor:2.0.4',

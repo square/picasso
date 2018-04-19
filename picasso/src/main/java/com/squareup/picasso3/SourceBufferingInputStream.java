@@ -41,6 +41,7 @@ final class SourceBufferingInputStream extends InputStream {
   }
 
   private final Buffer temp = new Buffer();
+  // offset is the write offset in the dest array
   private int copyTo(byte[] sink, int offset, int byteCount) {
     // TODO replace this with https://github.com/square/okio/issues/362
     // `copyTo` treats offset as the read position, `read` treats offset as the write offset.
@@ -60,6 +61,7 @@ final class SourceBufferingInputStream extends InputStream {
   }
 
   @Override public int read(@NonNull byte[] b, int off, int len) throws IOException {
+    checkNotNull(b, "b == null");
     if (off < 0 || len < 0 || len > b.length - off) {
       throw new IndexOutOfBoundsException();
     } else if (len == 0) {
