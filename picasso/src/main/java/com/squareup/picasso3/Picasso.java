@@ -19,6 +19,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -615,7 +616,8 @@ public class Picasso {
 
     @Override public void run() {
       Process.setThreadPriority(THREAD_PRIORITY_BACKGROUND);
-      while (true) {
+      boolean beforeLollipop = Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP;
+      while (beforeLollipop) {
         try {
           // Prior to Android 5.0, even when there is no local variable, the result from
           // remove() & obtainMessage() is kept as a stack local variable.
