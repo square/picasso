@@ -23,11 +23,18 @@ import android.view.ViewTreeObserver.OnPreDrawListener;
 import android.widget.ImageView;
 import java.lang.ref.WeakReference;
 
+/**
+ * Create deferred download requests
+ */
 class DeferredRequestCreator implements OnPreDrawListener, OnAttachStateChangeListener {
   private final RequestCreator creator;
   @VisibleForTesting final WeakReference<ImageView> target;
   @VisibleForTesting Callback callback;
 
+  /**
+   * Request creation.
+   * @param creator - should be a RequestCreator object flagged as "deferred = true"
+   */
   DeferredRequestCreator(RequestCreator creator, ImageView target, Callback callback) {
     this.creator = creator;
     this.target = new WeakReference<>(target);
@@ -50,7 +57,8 @@ class DeferredRequestCreator implements OnPreDrawListener, OnAttachStateChangeLi
     view.getViewTreeObserver().removeOnPreDrawListener(this);
   }
 
-  @Override public boolean onPreDraw() {
+  @Override 
+  public boolean onPreDraw() {
     ImageView target = this.target.get();
     if (target == null) {
       return true;
@@ -76,6 +84,9 @@ class DeferredRequestCreator implements OnPreDrawListener, OnAttachStateChangeLi
     return true;
   }
 
+  /**
+   * Cancels a pending request
+   */
   void cancel() {
     creator.clearTag();
     callback = null;

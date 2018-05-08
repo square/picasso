@@ -61,7 +61,7 @@ public class RequestCreator {
   private final Request.Builder data;
 
   private boolean noFade;
-  private boolean deferred;
+  private boolean deferred; //Used by DeferredRequestCreator()
   private boolean setPlaceholder = true;
   private int placeholderResId;
   private int errorResId;
@@ -168,9 +168,9 @@ public class RequestCreator {
   }
 
   /**
-   * Assign a tag to this request. Tags are an easy way to logically associate
+   * Assigns a tag to this request. Tags are an easy way to logically associate
    * related requests that can be managed together e.g. paused, resumed,
-   * or canceled.
+   * or cancelled.
    * <p>
    * You can either use simple {@link String} tags or objects that naturally
    * define the scope of your requests within your app such as a
@@ -250,7 +250,7 @@ public class RequestCreator {
   /**
    * Crops an image inside of the bounds specified by {@link #resize(int, int)} rather than
    * distorting the aspect ratio. This cropping technique scales the image so that it fills the
-   * requested bounds and then crops the extra, preferring the contents at {@code alignGravity}.
+   * requested bounds and then crops the image that exceeds these, preferring the contents at {@code alignGravity}.
    */
   @NonNull
   public RequestCreator centerCrop(int alignGravity) {
