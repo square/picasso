@@ -23,7 +23,9 @@ import android.os.Message;
 import android.support.v4.graphics.BitmapCompat;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
-
+/*
+* Relevant statistics used in the functioning and debugging of the Picasso application.
+*/
 class Stats {
   private static final int CACHE_HIT = 0;
   private static final int CACHE_MISS = 1;
@@ -88,6 +90,7 @@ class Stats {
   void performCacheMiss() {
     cacheMisses++;
   }
+
 
   void performDownloadFinished(Long size) {
     downloadCount++;

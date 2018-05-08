@@ -25,6 +25,7 @@ import static com.squareup.picasso3.Picasso.TAG;
 
 /** Represents all stats for a {@link Picasso} instance at a single point in time. */
 public final class StatsSnapshot {
+	
   public final int maxSize;
   public final int size;
   public final long cacheHits;
@@ -68,7 +69,10 @@ public final class StatsSnapshot {
     Log.i(TAG, logWriter.toString());
   }
 
-  /** Prints out this {@link StatsSnapshot} with the the provided {@link PrintWriter}. */
+  /** Prints out this {@link StatsSnapshot} with the the provided {@link PrintWriter}. 
+   * @see dump()
+   *
+   */
   public void dump(@NonNull PrintWriter writer) {
     writer.println("===============BEGIN PICASSO STATS ===============");
     writer.println("Memory Cache Stats");
