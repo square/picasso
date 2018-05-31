@@ -27,6 +27,7 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 import java.io.File;
@@ -308,7 +309,8 @@ public class Picasso {
    */
   @NonNull
   public RequestCreator load(@Nullable String path) {
-    if (path == null) {
+    // if (path == null) {
+    if (TextUtils.isEmpty(path)) {
       return new RequestCreator(this, null, 0);
     }
     if (path.trim().length() == 0) {
