@@ -423,11 +423,6 @@ public final class PicassoTest {
 
   @Test public void loadThrowsWithInvalidInput() {
     try {
-      picasso.load("");
-      fail("Empty URL should throw exception.");
-    } catch (IllegalArgumentException expected) {
-    }
-    try {
       picasso.load("      ");
       fail("Empty URL should throw exception.");
     } catch (IllegalArgumentException expected) {
