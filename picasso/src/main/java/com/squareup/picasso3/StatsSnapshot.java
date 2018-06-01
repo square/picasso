@@ -18,8 +18,9 @@ package com.squareup.picasso3;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.IOException;
+import okio.Buffer;
+import okio.BufferedSink;
 
 import static com.squareup.picasso3.Picasso.TAG;
 
@@ -63,47 +64,69 @@ public final class StatsSnapshot {
 
   /** Prints out this {@link StatsSnapshot} into log. */
   @SuppressWarnings("UnusedDeclaration") public void dump() {
-    StringWriter logWriter = new StringWriter();
-    dump(new PrintWriter(logWriter));
-    Log.i(TAG, logWriter.toString());
+    Buffer buffer = new Buffer();
+    try {
+      dump(buffer);
+    } catch (IOException e) {
+      throw new AssertionError(e);
+    }
+    Log.i(TAG, buffer.readUtf8());
   }
 
-  /** Prints out this {@link StatsSnapshot} with the the provided {@link PrintWriter}. */
-  public void dump(@NonNull PrintWriter writer) {
-    writer.println("===============BEGIN PICASSO STATS ===============");
-    writer.println("Memory Cache Stats");
-    writer.print("  Max Cache Size: ");
-    writer.println(maxSize);
-    writer.print("  Cache Size: ");
-    writer.println(size);
-    writer.print("  Cache % Full: ");
-    writer.println((int) Math.ceil((float) size / maxSize * 100));
-    writer.print("  Cache Hits: ");
-    writer.println(cacheHits);
-    writer.print("  Cache Misses: ");
-    writer.println(cacheMisses);
-    writer.println("Network Stats");
-    writer.print("  Download Count: ");
-    writer.println(downloadCount);
-    writer.print("  Total Download Size: ");
-    writer.println(totalDownloadSize);
-    writer.print("  Average Download Size: ");
-    writer.println(averageDownloadSize);
-    writer.println("Bitmap Stats");
-    writer.print("  Total Bitmaps Decoded: ");
-    writer.println(originalBitmapCount);
-    writer.print("  Total Bitmap Size: ");
-    writer.println(totalOriginalBitmapSize);
-    writer.print("  Total Transformed Bitmaps: ");
-    writer.println(transformedBitmapCount);
-    writer.print("  Total Transformed Bitmap Size: ");
-    writer.println(totalTransformedBitmapSize);
-    writer.print("  Average Bitmap Size: ");
-    writer.println(averageOriginalBitmapSize);
-    writer.print("  Average Transformed Bitmap Size: ");
-    writer.println(averageTransformedBitmapSize);
-    writer.println("===============END PICASSO STATS ===============");
-    writer.flush();
+  /** Writes this {@link StatsSnapshot} to the provided {@link BufferedSink}. */
+  public void dump(@NonNull BufferedSink sink) throws IOException {
+    sink.writeUtf8("===============BEGIN PICASSO STATS ===============");
+    sink.writeUtf8("\n");
+    sink.writeUtf8("Memory Cache Stats");
+    sink.writeUtf8("\n");
+    sink.writeUtf8("  Max Cache Size: ");
+    sink.writeUtf8(Integer.toString(maxSize));
+    sink.writeUtf8("\n");
+    sink.writeUtf8("  Cache Size: ");
+    sink.writeUtf8(Integer.toString(size));
+    sink.writeUtf8("\n");
+    sink.writeUtf8("  Cache % Full: ");
+    sink.writeUtf8(Integer.toString((int) Math.ceil((float) size / maxSize * 100)));
+    sink.writeUtf8("\n");
+    sink.writeUtf8("  Cache Hits: ");
+    sink.writeUtf8(Long.toString(cacheHits));
+    sink.writeUtf8("\n");
+    sink.writeUtf8("  Cache Misses: ");
+    sink.writeUtf8(Long.toString(cacheMisses));
+    sink.writeUtf8("\n");
+    sink.writeUtf8("Network Stats");
+    sink.writeUtf8("\n");
+    sink.writeUtf8("  Download Count: ");
+    sink.writeUtf8(Integer.toString(downloadCount));
+    sink.writeUtf8("\n");
+    sink.writeUtf8("  Total Download Size: ");
+    sink.writeUtf8(Long.toString(totalDownloadSize));
+    sink.writeUtf8("\n");
+    sink.writeUtf8("  Average Download Size: ");
+    sink.writeUtf8(Long.toString(averageDownloadSize));
+    sink.writeUtf8("\n");
+    sink.writeUtf8("Bitmap Stats");
+    sink.writeUtf8("\n");
+    sink.writeUtf8("  Total Bitmaps Decoded: ");
+    sink.writeUtf8(Integer.toString(originalBitmapCount));
+    sink.writeUtf8("\n");
+    sink.writeUtf8("  Total Bitmap Size: ");
+    sink.writeUtf8(Long.toString(totalOriginalBitmapSize));
+    sink.writeUtf8("\n");
+    sink.writeUtf8("  Total Transformed Bitmaps: ");
+    sink.writeUtf8(Integer.toString(transformedBitmapCount));
+    sink.writeUtf8("\n");
+    sink.writeUtf8("  Total Transformed Bitmap Size: ");
+    sink.writeUtf8(Long.toString(totalTransformedBitmapSize));
+    sink.writeUtf8("\n");
+    sink.writeUtf8("  Average Bitmap Size: ");
+    sink.writeUtf8(Long.toString(averageOriginalBitmapSize));
+    sink.writeUtf8("\n");
+    sink.writeUtf8("  Average Transformed Bitmap Size: ");
+    sink.writeUtf8(Long.toString(averageTransformedBitmapSize));
+    sink.writeUtf8("\n");
+    sink.writeUtf8("===============END PICASSO STATS ===============");
+    sink.writeUtf8("\n");
   }
 
   @Nullable
