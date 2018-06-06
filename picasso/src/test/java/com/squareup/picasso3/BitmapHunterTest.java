@@ -1127,16 +1127,16 @@ public final class BitmapHunterTest {
     }
 
     TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, PlatformLruCache cache, Stats stats,
-        Action action, Bitmap result, IOException exception) {
+        Action action, Bitmap result, Exception exception) {
       super(picasso, dispatcher, cache, stats, action, spy(new TestableRequestHandler(result, exception)));
     }
   }
 
   private static class TestableRequestHandler extends RequestHandler {
     private final Bitmap bitmap;
-    private final IOException exception;
+    private final Exception exception;
 
-    TestableRequestHandler(Bitmap bitmap, IOException exception) {
+    TestableRequestHandler(Bitmap bitmap, Exception exception) {
       this.bitmap = bitmap;
       this.exception = exception;
     }

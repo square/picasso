@@ -123,13 +123,13 @@ final class NetworkRequestHandler extends RequestHandler {
     return builder.build();
   }
 
-  static class ContentLengthException extends IOException {
+  static class ContentLengthException extends RuntimeException {
     ContentLengthException(String message) {
       super(message);
     }
   }
 
-  static final class ResponseException extends IOException {
+  static final class ResponseException extends RuntimeException {
     final int code;
     final int networkPolicy;
 
