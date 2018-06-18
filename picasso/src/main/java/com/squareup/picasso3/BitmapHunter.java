@@ -175,7 +175,9 @@ class BitmapHunter implements Runnable {
 
       latch.await();
     } catch (InterruptedException ie) {
-      throw new InterruptedIOException(ie.getMessage());
+      InterruptedIOException interruptedIoException = new InterruptedIOException();
+      interruptedIoException.initCause(ie);
+      throw interruptedIoException;
     }
 
     Throwable throwable = exceptionReference.get();
@@ -653,4 +655,3 @@ class BitmapHunter implements Runnable {
     return translation;
   }
 }
-
