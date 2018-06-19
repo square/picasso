@@ -24,14 +24,13 @@ import android.view.Gravity;
 import com.squareup.picasso3.RequestHandler.Result;
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import okio.Buffer;
 
 import static android.support.media.ExifInterface.ORIENTATION_FLIP_HORIZONTAL;
 import static android.support.media.ExifInterface.ORIENTATION_FLIP_VERTICAL;
@@ -129,9 +128,13 @@ class BitmapHunter implements Runnable {
       exception = e;
       dispatcher.dispatchRetry(this);
     } catch (OutOfMemoryError e) {
-      StringWriter writer = new StringWriter();
-      stats.createSnapshot().dump(new PrintWriter(writer));
-      exception = new RuntimeException(writer.toString(), e);
+      Buffer buffer = new Buffer();
+      try {
+        stats.createSnapshot().dump(buffer);
+      } catch (IOException ioe) {
+        throw new AssertionError(ioe);
+      }
+      exception = new RuntimeException(buffer.readUtf8(), e);
       dispatcher.dispatchFailed(this);
     } catch (Exception e) {
       exception = e;
