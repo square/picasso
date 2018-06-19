@@ -1,8 +1,8 @@
 buildscript {
   ext.versions = [
-    'compileSdk': 'android-P',
+    'compileSdk': 28,
     'minSdk': 14,
-    'targetSdk': 'P',
+    'targetSdk': 28,
     'sourceCompatibility': JavaVersion.VERSION_1_7,
     'targetCompatibility': JavaVersion.VERSION_1_7,
     'okhttp': '3.10.0',
