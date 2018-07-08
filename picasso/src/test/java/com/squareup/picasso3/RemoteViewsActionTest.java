@@ -22,7 +22,7 @@ import com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
@@ -39,7 +39,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-@RunWith(RobolectricGradleTestRunner.class) //
+@RunWith(RobolectricTestRunner.class) //
 public class RemoteViewsActionTest {
 
   private Picasso picasso;

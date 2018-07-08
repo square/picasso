@@ -23,13 +23,13 @@ import java.util.List;
 import java.util.Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 
 import static android.graphics.Bitmap.Config.ALPHA_8;
 import static com.google.common.truth.Truth.assertThat;
 import static junit.framework.Assert.fail;
 
-@RunWith(RobolectricGradleTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
 public class PlatformLruCacheTest {
   // The use of ALPHA_8 simplifies the size math in tests since only one byte is used per-pixel.
   private final Bitmap A = Bitmap.createBitmap(1, 1, ALPHA_8);

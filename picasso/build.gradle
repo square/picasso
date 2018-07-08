@@ -18,6 +18,12 @@ android {
     textReport true
     lintConfig file('lint.xml')
   }
+
+  testOptions {
+    unitTests {
+      includeAndroidResources = true
+    }
+  }
 }
 
 dependencies {
