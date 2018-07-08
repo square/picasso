@@ -35,7 +35,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso3.TestUtils.URI_1;
@@ -49,7 +49,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-@RunWith(RobolectricGradleTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
 public class NetworkRequestHandlerTest {
   final BlockingDeque<Response> responses = new LinkedBlockingDeque<>();
   final BlockingDeque<okhttp3.Request> requests = new LinkedBlockingDeque<>();
