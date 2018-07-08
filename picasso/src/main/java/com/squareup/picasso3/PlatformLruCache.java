@@ -38,7 +38,7 @@ final class PlatformLruCache {
 
   @Nullable public Bitmap get(@NonNull String key) {
     BitmapAndSize bitmapAndSize = cache.get(key);
-    return bitmapAndSize != null ? bitmapAndSize.bitmap : null;
+    return bitmapAndSize != null && !bitmapAndSize.bitmap.isRecycled() ? bitmapAndSize.bitmap : null;
   }
 
   void set(@NonNull String key, @NonNull Bitmap bitmap) {
