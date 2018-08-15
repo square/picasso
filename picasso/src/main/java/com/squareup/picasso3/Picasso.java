@@ -170,7 +170,7 @@ public class Picasso {
     this.requestTransformers = Collections.unmodifiableList(new ArrayList<>(requestTransformers));
     this.defaultBitmapConfig = defaultBitmapConfig;
 
-    int builtInHandlers = 7; // Adjust this as internal handlers are added or removed.
+    int builtInHandlers = 8; // Adjust this as internal handlers are added or removed.
     int extraCount = extraRequestHandlers.size();
     List<RequestHandler> allRequestHandlers = new ArrayList<>(builtInHandlers + extraCount);
 
