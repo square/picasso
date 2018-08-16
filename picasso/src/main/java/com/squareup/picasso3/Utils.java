@@ -20,6 +20,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -262,6 +263,10 @@ final class Utils {
    * for too long by sending new messages to it every second.
    */
   static void flushStackLocalLeaks(Looper looper) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+      return;
+    }
+
     Handler handler = new Handler(looper) {
       @Override public void handleMessage(Message msg) {
         sendMessageDelayed(obtainMessage(), THREAD_LEAK_CLEANING_MS);
