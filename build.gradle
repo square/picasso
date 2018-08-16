@@ -47,6 +47,20 @@ subprojects {
     jcenter()
   }
 
+  tasks.withType(JavaCompile) {
+    options.compilerArgs += [
+        '-Xep:UnnecessaryDefaultInEnumSwitch:ERROR',
+        '-Xep:TypeParameterUnusedInFormals:ERROR',
+        '-Xep:OperatorPrecedence:ERROR',
+        '-Xep:ReferenceEquality:ERROR',
+        '-Xep:FloatingPointLiteralPrecision:ERROR',
+        '-Xep:DateFormatConstant:ERROR',
+        '-Xep:PrivateConstructorForUtilityClass:ERROR',
+        '-Xep:DateFormatConstant:ERROR',
+        '-XepExcludedPaths:.*/build/.*'
+    ]
+  }
+
   tasks.withType(Test) {
     testLogging {
       events "failed"

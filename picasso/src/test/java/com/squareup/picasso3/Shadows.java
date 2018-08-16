@@ -19,6 +19,9 @@ final class Shadows {
         BitmapFactory.Options options) {
       return makeBitmap();
     }
+
+    private ShadowVideoThumbnails() {
+    }
   }
 
   @Implements(MediaStore.Images.Thumbnails.class)
@@ -29,5 +32,11 @@ final class Shadows {
         BitmapFactory.Options options) {
       return makeBitmap(20, 20);
     }
+
+    private ShadowImageThumbnails() {
+    }
+  }
+
+  private Shadows() {
   }
 }
