@@ -37,4 +37,8 @@ public final class PicassoProvider {
     }
     return instance;
   }
+
+  private PicassoProvider() {
+    throw new AssertionError("No instances.");
+  }
 }
