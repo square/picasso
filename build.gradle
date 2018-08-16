@@ -35,7 +35,7 @@ buildscript {
   dependencies {
     classpath deps.androidPlugin
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.20.0'
-    classpath 'net.ltgt.gradle:gradle-errorprone-plugin:0.0.14'
+    classpath 'net.ltgt.gradle:gradle-errorprone-plugin:0.0.16'
   }
 }
 
