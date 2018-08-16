@@ -85,13 +85,6 @@ public final class PicassoTest {
         NO_TRANSFORMERS, NO_HANDLERS, stats, ARGB_8888, false, false);
   }
 
-  @Test public void submitWithNullTargetInvokesDispatcher() {
-    Action action = mockAction(URI_KEY_1, URI_1);
-    picasso.enqueueAndSubmit(action);
-    assertThat(picasso.targetToAction).isEmpty();
-    verify(dispatcher).dispatchSubmit(action);
-  }
-
   @Test public void submitWithTargetInvokesDispatcher() {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     assertThat(picasso.targetToAction).isEmpty();
@@ -194,8 +187,8 @@ public final class PicassoTest {
 
   @Test public void resumeActionTriggersSubmitOnPausedAction() {
     Request request = new Request.Builder(URI_1, 0, ARGB_8888).build();
-    Action action =
-        new Action<Void>(mockPicasso(), null, request) {
+    Action<Object> action =
+        new Action<Object>(mockPicasso(), new Target<>(null), request) {
           @Override void complete(RequestHandler.Result result) {
             fail("Test execution should not call this method");
           }
@@ -211,8 +204,8 @@ public final class PicassoTest {
   @Test public void resumeActionImmediatelyCompletesCachedRequest() {
     cache.set(URI_KEY_1, bitmap);
     Request request = new Request.Builder(URI_1, 0, ARGB_8888).build();
-    Action action =
-        new Action<Void>(mockPicasso(), null, request) {
+    Action<Object> action =
+        new Action<Object>(mockPicasso(), new Target<>(null), request) {
           @Override void complete(RequestHandler.Result result) {
             assertThat(result.getBitmap()).isEqualTo(bitmap);
             assertThat(result.getLoadedFrom()).isEqualTo(MEMORY);

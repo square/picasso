@@ -22,7 +22,6 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.os.Process;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
@@ -31,27 +30,20 @@ import android.widget.ImageView;
 import android.widget.RemoteViews;
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.ReferenceQueue;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 
-import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
-import static com.squareup.picasso3.Action.RequestWeakReference;
 import static com.squareup.picasso3.Dispatcher.HUNTER_COMPLETE;
 import static com.squareup.picasso3.Dispatcher.REQUEST_BATCH_RESUME;
-import static com.squareup.picasso3.Dispatcher.REQUEST_GCED;
 import static com.squareup.picasso3.MemoryPolicy.shouldReadFromMemoryCache;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso3.Utils.OWNER_MAIN;
-import static com.squareup.picasso3.Utils.THREAD_LEAK_CLEANING_MS;
-import static com.squareup.picasso3.Utils.THREAD_PREFIX;
-import static com.squareup.picasso3.Utils.VERB_CANCELED;
 import static com.squareup.picasso3.Utils.VERB_COMPLETED;
 import static com.squareup.picasso3.Utils.VERB_ERRORED;
 import static com.squareup.picasso3.Utils.VERB_RESUMED;
@@ -115,14 +107,6 @@ public class Picasso {
           hunter.picasso.complete(hunter);
           break;
         }
-        case REQUEST_GCED: {
-          Action action = (Action) msg.obj;
-          if (action.getPicasso().loggingEnabled) {
-            log(OWNER_MAIN, VERB_CANCELED, action.request.logId(), "target got garbage collected");
-          }
-          action.picasso.cancelExistingRequest(action.getTarget());
-          break;
-        }
         case REQUEST_BATCH_RESUME:
           @SuppressWarnings("unchecked") List<Action> batch = (List<Action>) msg.obj;
           //noinspection ForLoopReplaceableByForEach
@@ -139,7 +123,6 @@ public class Picasso {
 
   private final Listener listener;
   private final List<RequestTransformer> requestTransformers;
-  private final CleanupThread cleanupThread;
   private final List<RequestHandler> requestHandlers;
 
   final Context context;
@@ -149,7 +132,6 @@ public class Picasso {
   final Stats stats;
   final Map<Object, Action> targetToAction;
   final Map<ImageView, DeferredRequestCreator> targetToDeferredRequestCreator;
-  final ReferenceQueue<Object> referenceQueue;
   final Bitmap.Config defaultBitmapConfig;
 
   boolean indicatorsEnabled;
@@ -189,13 +171,10 @@ public class Picasso {
     requestHandlers = Collections.unmodifiableList(allRequestHandlers);
 
     this.stats = stats;
-    this.targetToAction = new WeakHashMap<>();
-    this.targetToDeferredRequestCreator = new WeakHashMap<>();
+    this.targetToAction = new LinkedHashMap<>();
+    this.targetToDeferredRequestCreator = new LinkedHashMap<>();
     this.indicatorsEnabled = indicatorsEnabled;
     this.loggingEnabled = loggingEnabled;
-    this.referenceQueue = new ReferenceQueue<>();
-    this.cleanupThread = new CleanupThread(referenceQueue, HANDLER);
-    this.cleanupThread.start();
   }
 
   /** Cancel any existing requests for the specified target {@link ImageView}. */
@@ -439,7 +418,6 @@ public class Picasso {
       return;
     }
     cache.clear();
-    cleanupThread.shutdown();
     stats.shutdown();
     dispatcher.shutdown();
     if (closeableCache != null) {
@@ -485,7 +463,7 @@ public class Picasso {
 
   void enqueueAndSubmit(Action action) {
     Object target = action.getTarget();
-    if (target != null && targetToAction.get(target) != action) {
+    if (targetToAction.get(target) != action) {
       // This will also check we are on the main thread.
       cancelExistingRequest(target);
       targetToAction.put(target, action);
@@ -594,59 +572,6 @@ public class Picasso {
       if (deferredRequestCreator != null) {
         deferredRequestCreator.cancel();
       }
-    }
-  }
-
-  /**
-   * When the target of an action is weakly reachable but the request hasn't been canceled, it
-   * gets added to the reference queue. This thread empties the reference queue and cancels the
-   * request.
-   */
-  private static class CleanupThread extends Thread {
-    private final ReferenceQueue<Object> referenceQueue;
-    private final Handler handler;
-
-    CleanupThread(ReferenceQueue<Object> referenceQueue, Handler handler) {
-      this.referenceQueue = referenceQueue;
-      this.handler = handler;
-      setDaemon(true);
-      setName(THREAD_PREFIX + "refQueue");
-    }
-
-    @Override public void run() {
-      Process.setThreadPriority(THREAD_PRIORITY_BACKGROUND);
-      while (true) {
-        try {
-          // Prior to Android 5.0, even when there is no local variable, the result from
-          // remove() & obtainMessage() is kept as a stack local variable.
-          // We're forcing this reference to be cleared and replaced by looping every second
-          // when there is nothing to do.
-          // This behavior has been tested and reproduced with heap dumps.
-          RequestWeakReference<?> remove =
-              (RequestWeakReference<?>) referenceQueue.remove(THREAD_LEAK_CLEANING_MS);
-          Message message = handler.obtainMessage();
-          if (remove != null) {
-            message.what = REQUEST_GCED;
-            message.obj = remove.action;
-            handler.sendMessage(message);
-          } else {
-            message.recycle();
-          }
-        } catch (InterruptedException e) {
-          break;
-        } catch (final Exception e) {
-          handler.post(new Runnable() {
-            @Override public void run() {
-              throw new RuntimeException(e);
-            }
-          });
-          break;
-        }
-      }
-    }
-
-    void shutdown() {
-      interrupt();
     }
   }
 

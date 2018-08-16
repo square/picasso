@@ -36,7 +36,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 
 import static android.content.Intent.ACTION_AIRPLANE_MODE_CHANGED;
@@ -63,7 +62,6 @@ class Dispatcher {
 
   static final int REQUEST_SUBMIT = 1;
   static final int REQUEST_CANCEL = 2;
-  static final int REQUEST_GCED = 3;
   static final int HUNTER_COMPLETE = 4;
   static final int HUNTER_RETRY = 5;
   static final int HUNTER_DECODE_FAILED = 6;
@@ -99,8 +97,8 @@ class Dispatcher {
     this.context = context;
     this.service = service;
     this.hunterMap = new LinkedHashMap<>();
-    this.failedActions = new WeakHashMap<>();
-    this.pausedActions = new WeakHashMap<>();
+    this.failedActions = new LinkedHashMap<>();
+    this.pausedActions = new LinkedHashMap<>();
     this.pausedTags = new LinkedHashSet<>();
     this.handler = new DispatcherHandler(dispatcherThread.getLooper(), this);
     this.mainThreadHandler = mainThreadHandler;
@@ -400,10 +398,8 @@ class Dispatcher {
 
   private void markForReplay(Action action) {
     Object target = action.getTarget();
-    if (target != null) {
-      action.willReplay = true;
-      failedActions.put(target, action);
-    }
+    action.willReplay = true;
+    failedActions.put(target, action);
   }
 
   private void deliver(BitmapHunter hunter) {

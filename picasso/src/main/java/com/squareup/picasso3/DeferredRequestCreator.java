@@ -21,16 +21,15 @@ import android.view.View.OnAttachStateChangeListener;
 import android.view.ViewTreeObserver;
 import android.view.ViewTreeObserver.OnPreDrawListener;
 import android.widget.ImageView;
-import java.lang.ref.WeakReference;
 
 class DeferredRequestCreator implements OnPreDrawListener, OnAttachStateChangeListener {
   private final RequestCreator creator;
-  @VisibleForTesting final WeakReference<ImageView> target;
+  @VisibleForTesting final ImageView target;
   @VisibleForTesting Callback callback;
 
   DeferredRequestCreator(RequestCreator creator, ImageView target, Callback callback) {
     this.creator = creator;
-    this.target = new WeakReference<>(target);
+    this.target = target;
     this.callback = callback;
 
     target.addOnAttachStateChangeListener(this);
@@ -51,10 +50,7 @@ class DeferredRequestCreator implements OnPreDrawListener, OnAttachStateChangeLi
   }
 
   @Override public boolean onPreDraw() {
-    ImageView target = this.target.get();
-    if (target == null) {
-      return true;
-    }
+    ImageView target = this.target;
 
     ViewTreeObserver vto = target.getViewTreeObserver();
     if (!vto.isAlive()) {
@@ -70,7 +66,6 @@ class DeferredRequestCreator implements OnPreDrawListener, OnAttachStateChangeLi
 
     target.removeOnAttachStateChangeListener(this);
     vto.removeOnPreDrawListener(this);
-    this.target.clear();
 
     this.creator.unfit().resize(width, height).into(target, callback);
     return true;
@@ -79,12 +74,6 @@ class DeferredRequestCreator implements OnPreDrawListener, OnAttachStateChangeLi
   void cancel() {
     creator.clearTag();
     callback = null;
-
-    ImageView target = this.target.get();
-    if (target == null) {
-      return;
-    }
-    this.target.clear();
 
     target.removeOnAttachStateChangeListener(this);
 

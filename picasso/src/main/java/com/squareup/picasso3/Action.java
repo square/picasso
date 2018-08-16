@@ -15,24 +15,11 @@
  */
 package com.squareup.picasso3;
 
-import java.lang.ref.ReferenceQueue;
-import java.lang.ref.WeakReference;
-
 import static com.squareup.picasso3.Picasso.Priority;
 
 abstract class Action<T> {
-  static class RequestWeakReference<M> extends WeakReference<M> {
-    final Action action;
-
-    RequestWeakReference(Action action, M referent, ReferenceQueue<? super M> q) {
-      super(referent, q);
-      this.action = action;
-    }
-  }
-
   final Picasso picasso;
   final Request request;
-  final WeakReference<T> target;
   final Target<T> wrapper;
 
   boolean willReplay;
@@ -41,13 +28,6 @@ abstract class Action<T> {
   Action(Picasso picasso, Target<T> wrapper, Request request) {
     this.picasso = picasso;
     this.request = request;
-    if (wrapper == null) {
-      this.target = null;
-    } else {
-      this.target = new RequestWeakReference<>(this, wrapper.target, picasso.referenceQueue);
-      // Release the reference.
-      wrapper.target = null;
-    }
     this.wrapper = wrapper;
   }
 
@@ -64,7 +44,7 @@ abstract class Action<T> {
   }
 
   T getTarget() {
-    return target == null ? null : target.get();
+    return wrapper.target;
   }
 
   String getKey() {

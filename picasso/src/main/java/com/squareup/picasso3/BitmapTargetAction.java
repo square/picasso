@@ -30,26 +30,22 @@ final class BitmapTargetAction extends Action<BitmapTarget> {
           String.format("Attempted to complete action with no result!\n%s", this));
     }
     BitmapTarget target = getTarget();
-    if (target != null) {
-      Bitmap bitmap = result.getBitmap();
-      if (bitmap != null) {
-        target.onBitmapLoaded(bitmap, result.getLoadedFrom());
-        if (bitmap.isRecycled()) {
-          throw new IllegalStateException("Target callback must not recycle bitmap!");
-        }
+    Bitmap bitmap = result.getBitmap();
+    if (bitmap != null) {
+      target.onBitmapLoaded(bitmap, result.getLoadedFrom());
+      if (bitmap.isRecycled()) {
+        throw new IllegalStateException("Target callback must not recycle bitmap!");
       }
     }
   }
 
   @Override void error(Exception e) {
     BitmapTarget target = getTarget();
-    if (target != null) {
-      if (wrapper.errorResId != 0) {
-        target.onBitmapFailed(e,
-            ContextCompat.getDrawable(picasso.context, wrapper.errorResId));
-      } else {
-        target.onBitmapFailed(e, wrapper.errorDrawable);
-      }
+    if (wrapper.errorResId != 0) {
+      target.onBitmapFailed(e,
+          ContextCompat.getDrawable(picasso.context, wrapper.errorResId));
+    } else {
+      target.onBitmapFailed(e, wrapper.errorDrawable);
     }
   }
 }
