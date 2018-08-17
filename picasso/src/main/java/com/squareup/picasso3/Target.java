@@ -20,7 +20,7 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 
 public class Target<T> {
-  T target;
+  final T target;
   final Drawable errorDrawable;
   final int errorResId;
   final boolean noFade;

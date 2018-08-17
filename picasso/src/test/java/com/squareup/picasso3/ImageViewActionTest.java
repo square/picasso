@@ -36,7 +36,6 @@ import static com.squareup.picasso3.TestUtils.mockImageViewTarget;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(RobolectricTestRunner.class)
@@ -48,33 +47,6 @@ public class ImageViewActionTest {
     ImageViewAction action =
         new ImageViewAction(mock(Picasso.class), new Target<>(target), null, null);
     action.complete(null);
-  }
-
-  @Test
-  public void returnsIfTargetIsNullOnComplete() {
-    Bitmap bitmap = makeBitmap();
-    Picasso picasso = mock(Picasso.class);
-    ImageView target = mockImageViewTarget();
-    Callback callback = mockCallback();
-    ImageViewAction request =
-        new ImageViewAction(picasso, new Target<>(target), null, callback);
-    request.target.clear();
-    request.complete(new RequestHandler.Result(bitmap, MEMORY));
-    verifyZeroInteractions(target);
-    verifyZeroInteractions(callback);
-  }
-
-  @Test
-  public void returnsIfTargetIsNullOnError() {
-    Picasso picasso = mock(Picasso.class);
-    ImageView target = mockImageViewTarget();
-    Callback callback = mockCallback();
-    ImageViewAction request =
-        new ImageViewAction(picasso, new Target<>(target), null, callback);
-    request.target.clear();
-    request.error(new RuntimeException());
-    verifyZeroInteractions(target);
-    verifyZeroInteractions(callback);
   }
 
   @Test

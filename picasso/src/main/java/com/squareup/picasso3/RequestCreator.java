@@ -510,9 +510,8 @@ public class RequestCreator {
    * }
    * </pre></blockquote>
    * <p>
-   * <em>Note:</em> This method keeps a weak reference to the {@link BitmapTarget} instance and will
-   * be garbage collected if you do not keep a strong reference to it. To receive callbacks when an
-   * image is loaded use {@link #into(android.widget.ImageView, Callback)}.
+   * To receive callbacks when an image is loaded use
+   * {@link #into(android.widget.ImageView, Callback)}.
    */
   public void into(@NonNull BitmapTarget target) {
     long started = System.nanoTime();
@@ -660,8 +659,7 @@ public class RequestCreator {
   /**
    * Asynchronously fulfills the request into the specified {@link ImageView}.
    * <p>
-   * <em>Note:</em> This method keeps a weak reference to the {@link ImageView} instance and will
-   * automatically support object recycling.
+   * <em>Note:</em> This method will automatically support object recycling.
    */
   public void into(@NonNull ImageView target) {
     into(target, null);

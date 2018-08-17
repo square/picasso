@@ -81,15 +81,6 @@ public class DeferredRequestCreatorTest {
     verify(target).removeOnAttachStateChangeListener(request);
   }
 
-  @Test public void cancelTwiceWhileAttachedOnlyPerformsOnce() {
-    ImageView target = mockFitImageViewTarget(true);
-    ViewTreeObserver observer = target.getViewTreeObserver();
-    DeferredRequestCreator request = new DeferredRequestCreator(mock(RequestCreator.class), target, null);
-    request.cancel();
-    request.cancel();
-    verify(observer).removeOnPreDrawListener(request);
-  }
-
   @Test public void cancelClearsCallback() {
     ImageView target = mockFitImageViewTarget(true);
     Callback callback = mockCallback();
@@ -107,18 +98,6 @@ public class DeferredRequestCreatorTest {
     DeferredRequestCreator request = new DeferredRequestCreator(creator, target, null);
     request.cancel();
     verify(creator).clearTag();
-  }
-
-  @Test public void onLayoutSkipsIfTargetIsNullAfterAttach() {
-    ImageView target = mockFitImageViewTarget(true);
-    RequestCreator creator = mock(RequestCreator.class);
-    DeferredRequestCreator request = new DeferredRequestCreator(creator, target, null);
-    ViewTreeObserver viewTreeObserver = target.getViewTreeObserver();
-    request.target.clear();
-    request.onPreDraw();
-    verifyZeroInteractions(creator);
-    verify(viewTreeObserver).addOnPreDrawListener(request);
-    verifyNoMoreInteractions(viewTreeObserver);
   }
 
   @Test public void onLayoutSkipsIfViewIsAttachedAndViewTreeObserverIsDead() {
@@ -142,15 +121,6 @@ public class DeferredRequestCreatorTest {
     request.onPreDraw();
     verify(target.getViewTreeObserver(), never()).removeOnPreDrawListener(request);
     verifyZeroInteractions(creator);
-  }
-
-  @Test public void cancelSkipsWithNullTarget() {
-    ImageView target = mockFitImageViewTarget(true);
-    RequestCreator creator = mock(RequestCreator.class);
-    DeferredRequestCreator request = new DeferredRequestCreator(creator, target, null);
-    request.target.clear();
-    request.cancel();
-    verify(target.getViewTreeObserver(), never()).removeOnPreDrawListener(request);
   }
 
   @Test public void cancelSkipsIfViewTreeObserverIsDead() {
@@ -183,25 +153,5 @@ public class DeferredRequestCreatorTest {
     assertThat(value).isInstanceOf(ImageViewAction.class);
     assertThat(value.getRequest().targetWidth).isEqualTo(100);
     assertThat(value.getRequest().targetHeight).isEqualTo(100);
-  }
-
-  @Test public void multiplePreDrawsOnlyTriggersOnce() {
-    Picasso picasso = mock(Picasso.class);
-    when(picasso.transformRequest(any(Request.class))).thenAnswer(TRANSFORM_REQUEST_ANSWER);
-
-    RequestCreator creator = new RequestCreator(picasso, URI_1, 0);
-
-    ImageView target = mockFitImageViewTarget(true);
-    when(target.getWidth()).thenReturn(100);
-    when(target.getHeight()).thenReturn(100);
-
-    ViewTreeObserver observer = target.getViewTreeObserver();
-
-    DeferredRequestCreator request = new DeferredRequestCreator(creator, target, null);
-    request.onPreDraw();
-    request.onPreDraw();
-
-    verify(observer).removeOnPreDrawListener(request);
-    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
   }
 }

@@ -35,10 +35,7 @@ class ImageViewAction extends Action<ImageView> {
           String.format("Attempted to complete action with no result!\n%s", this));
     }
 
-    ImageView target = this.target.get();
-    if (target == null) {
-      return;
-    }
+    ImageView target = wrapper.target;
 
     Context context = picasso.context;
     boolean indicatorsEnabled = picasso.indicatorsEnabled;
@@ -50,10 +47,7 @@ class ImageViewAction extends Action<ImageView> {
   }
 
   @Override public void error(Exception e) {
-    ImageView target = this.target.get();
-    if (target == null) {
-      return;
-    }
+    ImageView target = wrapper.target;
     Drawable placeholder = target.getDrawable();
     if (placeholder instanceof Animatable) {
       ((Animatable) placeholder).stop();
