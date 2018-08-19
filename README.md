@@ -12,7 +12,7 @@ For more information please see [the website][1]
 Download
 --------
 
-Download [the latest AAR][2] or grab via Gradle:
+Download the latest AAR from [Maven Central][2] or grab via Gradle:
 ```groovy
 implementation 'com.squareup.picasso:picasso:2.71828'
 ```
@@ -55,5 +55,5 @@ License
 
 
  [1]: http://square.github.io/picasso/
- [2]: https://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.squareup.picasso%22%20AND%20a%3A%22picasso%22
+ [2]: https://search.maven.org/search?q=g:com.squareup.picasso%20AND%20a:picasso
  [snap]: https://oss.sonatype.org/content/repositories/snapshots/
