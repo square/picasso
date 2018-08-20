@@ -29,6 +29,7 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -43,6 +44,7 @@ import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static com.squareup.picasso3.BitmapHunter.forRequest;
 import static com.squareup.picasso3.MemoryPolicy.shouldWriteToMemoryCache;
+import static com.squareup.picasso3.Picasso.TAG;
 import static com.squareup.picasso3.Utils.OWNER_DISPATCHER;
 import static com.squareup.picasso3.Utils.VERB_CANCELED;
 import static com.squareup.picasso3.Utils.VERB_DELIVERED;
@@ -531,7 +533,19 @@ class Dispatcher {
       } else if (CONNECTIVITY_ACTION.equals(action)) {
         ConnectivityManager connectivityManager =
             ContextCompat.getSystemService(context, ConnectivityManager.class);
-        dispatcher.dispatchNetworkStateChange(connectivityManager.getActiveNetworkInfo());
+        NetworkInfo networkInfo = null;
+        try {
+          networkInfo = connectivityManager.getActiveNetworkInfo();
+        } catch (RuntimeException re) {
+          Log.w(TAG, "System UI crashed, ignoring attempt to change network state.");
+          return;
+        }
+        if (networkInfo == null) {
+          Log.w(TAG, "No default network is currently active, ignoring attempt to change "
+              + "network state.");
+          return;
+        }
+        dispatcher.dispatchNetworkStateChange(networkInfo);
       }
     }
   }
