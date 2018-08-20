@@ -42,17 +42,6 @@ public class SampleGalleryActivity extends PicassoSampleActivity {
     }
   }
 
-  @Override protected void onPause() {
-    super.onPause();
-    if (isFinishing()) {
-      // Always cancel the request here, this is safe to call even if the image has been loaded.
-      // This ensures that the anonymous callback we have does not prevent the activity from
-      // being garbage collected. It also prevents our callback from getting invoked even after the
-      // activity has finished.
-      PicassoProvider.get().cancelRequest(imageView);
-    }
-  }
-
   @Override protected void onSaveInstanceState(Bundle outState) {
     super.onSaveInstanceState(outState);
     outState.putString(KEY_IMAGE, image);

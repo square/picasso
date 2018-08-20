@@ -15,6 +15,9 @@
  */
 package com.squareup.picasso3;
 
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.LifecycleObserver;
+import android.arch.lifecycle.OnLifecycleEvent;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -59,7 +62,7 @@ import static com.squareup.picasso3.Utils.log;
  * Use {@see PicassoProvider#get()} for a global singleton instance
  * or construct your own instance with {@link Builder}.
  */
-public class Picasso {
+public class Picasso implements LifecycleObserver {
 
   /** Callbacks for Picasso events. */
   public interface Listener {
@@ -177,6 +180,26 @@ public class Picasso {
     this.loggingEnabled = loggingEnabled;
   }
 
+  @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+  void cancelAll() {
+    checkMain();
+
+    List<Action> actions = new ArrayList<>(targetToAction.values());
+    //noinspection ForLoopReplaceableByForEach
+    for (int i = 0, n = actions.size(); i < n; i++) {
+      Action action = actions.get(i);
+      cancelExistingRequest(action.getTarget());
+    }
+
+    List<DeferredRequestCreator> deferredRequestCreators =
+        new ArrayList<>(targetToDeferredRequestCreator.values());
+    //noinspection ForLoopReplaceableByForEach
+    for (int i = 0, n = deferredRequestCreators.size(); i < n; i++) {
+      DeferredRequestCreator deferredRequestCreator = deferredRequestCreators.get(i);
+      deferredRequestCreator.cancel();
+    }
+  }
+
   /** Cancel any existing requests for the specified target {@link ImageView}. */
   public void cancelRequest(@NonNull ImageView view) {
     // checkMain() is called from cancelExistingRequest()
@@ -231,6 +254,26 @@ public class Picasso {
     }
   }
 
+  @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+  void pauseAll() {
+    checkMain();
+
+    List<Action> actions = new ArrayList<>(targetToAction.values());
+    //noinspection ForLoopReplaceableByForEach
+    for (int i = 0, n = actions.size(); i < n; i++) {
+      Action action = actions.get(i);
+      dispatcher.dispatchPauseTag(action.getTag());
+    }
+
+    List<DeferredRequestCreator> deferredRequestCreators =
+        new ArrayList<>(targetToDeferredRequestCreator.values());
+    //noinspection ForLoopReplaceableByForEach
+    for (int i = 0, n = deferredRequestCreators.size(); i < n; i++) {
+      DeferredRequestCreator deferredRequestCreator = deferredRequestCreators.get(i);
+      dispatcher.dispatchPauseTag(deferredRequestCreator.getTag());
+    }
+  }
+
   /**
    * Pause existing requests with the given tag. Use {@link #resumeTag(Object)}
    * to resume requests with the given tag.
@@ -241,6 +284,26 @@ public class Picasso {
   public void pauseTag(@NonNull Object tag) {
     checkNotNull(tag, "tag == null");
     dispatcher.dispatchPauseTag(tag);
+  }
+
+  @OnLifecycleEvent(Lifecycle.Event.ON_START)
+  void resumeAll() {
+    checkMain();
+
+    List<Action> actions = new ArrayList<>(targetToAction.values());
+    //noinspection ForLoopReplaceableByForEach
+    for (int i = 0, n = actions.size(); i < n; i++) {
+      Action action = actions.get(i);
+      dispatcher.dispatchResumeTag(action.getTag());
+    }
+
+    List<DeferredRequestCreator> deferredRequestCreators =
+        new ArrayList<>(targetToDeferredRequestCreator.values());
+    //noinspection ForLoopReplaceableByForEach
+    for (int i = 0, n = deferredRequestCreators.size(); i < n; i++) {
+      DeferredRequestCreator deferredRequestCreator = deferredRequestCreators.get(i);
+      dispatcher.dispatchResumeTag(deferredRequestCreator.getTag());
+    }
   }
 
   /**

@@ -31,6 +31,7 @@ dependencies {
   implementation deps.supportAnnotations
   implementation deps.supportCompat
   implementation deps.supportExifInterface
+  api deps.archLifecycle
   testImplementation deps.junit
   testImplementation deps.truth
   testImplementation deps.robolectric

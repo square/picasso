@@ -39,12 +39,8 @@ abstract class PicassoSampleActivity extends FragmentActivity {
         activityList.setVisibility(checked ? VISIBLE : GONE);
       }
     });
-  }
 
-  @Override
-  protected void onDestroy() {
-    super.onDestroy();
-    PicassoProvider.get().cancelTag(this);
+    getLifecycle().addObserver(PicassoProvider.get());
   }
 
   @Override public void onBackPressed() {
