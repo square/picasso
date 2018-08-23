@@ -15,18 +15,23 @@
  */
 package com.squareup.picasso3;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.ImageDecoder;
 import android.graphics.drawable.Drawable;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.util.TypedValue;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import okio.BufferedSource;
 import okio.Okio;
 import okio.Source;
@@ -191,6 +196,12 @@ public abstract class RequestHandler {
 
   static void calculateInSampleSize(int reqWidth, int reqHeight, int width, int height,
       BitmapFactory.Options options, Request request) {
+    options.inSampleSize = getSampleSize(reqWidth, reqHeight, width, height, request);
+    options.inJustDecodeBounds = false;
+  }
+
+  private static int getSampleSize(int reqWidth, int reqHeight, int width, int height,
+      Request request) {
     int sampleSize = 1;
     if (height > reqHeight || width > reqWidth) {
       final int heightRatio;
@@ -207,8 +218,7 @@ public abstract class RequestHandler {
             : Math.min(heightRatio, widthRatio);
       }
     }
-    options.inSampleSize = sampleSize;
-    options.inJustDecodeBounds = false;
+    return sampleSize;
   }
 
   /**
@@ -219,6 +229,24 @@ public abstract class RequestHandler {
   static Bitmap decodeStream(Source source, Request request) throws IOException {
     BufferedSource bufferedSource = Okio.buffer(source);
 
+    if (Build.VERSION.SDK_INT >= 28) {
+      return decodeStreamP(request, bufferedSource);
+    }
+
+    return decodeStreamPreP(request, bufferedSource);
+  }
+
+  @RequiresApi(28)
+  @SuppressLint("Override")
+  private static Bitmap decodeStreamP(Request request, BufferedSource bufferedSource)
+      throws IOException {
+    ImageDecoder.Source imageSource =
+        ImageDecoder.createSource(ByteBuffer.wrap(bufferedSource.readByteArray()));
+    return decodeImageSource(imageSource, request);
+  }
+
+  private static Bitmap decodeStreamPreP(Request request, BufferedSource bufferedSource)
+      throws IOException {
     boolean isWebPFile = Utils.isWebPFile(bufferedSource);
     boolean isPurgeable = request.purgeable && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP;
     BitmapFactory.Options options = RequestHandler.createBitmapOptions(request);
@@ -250,6 +278,47 @@ public abstract class RequestHandler {
       throw new IOException("Failed to decode bitmap.");
     }
     return bitmap;
+  }
+
+  static Bitmap decodeResource(Context context, Request request)
+      throws IOException {
+    if (Build.VERSION.SDK_INT >= 28) {
+      return decodeResourceP(context, request);
+    }
+
+    Resources resources = Utils.getResources(context, request);
+    int id = Utils.getResourceId(resources, request);
+    return decodeResourcePreP(resources, id, request);
+  }
+
+  @RequiresApi(28)
+  private static Bitmap decodeResourceP(Context context, final Request request) throws IOException {
+    ImageDecoder.Source imageSource =
+        ImageDecoder.createSource(context.getResources(), request.resourceId);
+    return decodeImageSource(imageSource, request);
+  }
+
+  private static Bitmap decodeResourcePreP(Resources resources, int id, Request request) {
+    final BitmapFactory.Options options = createBitmapOptions(request);
+    if (requiresInSampleSize(options)) {
+      BitmapFactory.decodeResource(resources, id, options);
+      calculateInSampleSize(request.targetWidth, request.targetHeight, options, request);
+    }
+    return BitmapFactory.decodeResource(resources, id, options);
+  }
+
+  @RequiresApi(28)
+  private static Bitmap decodeImageSource(ImageDecoder.Source imageSource, final Request request)
+      throws IOException {
+    return ImageDecoder.decodeBitmap(imageSource, new ImageDecoder.OnHeaderDecodedListener() {
+      @Override
+      public void onHeaderDecoded(@NonNull ImageDecoder imageDecoder,
+          @NonNull ImageDecoder.ImageInfo imageInfo, @NonNull ImageDecoder.Source source) {
+        if (request.hasSize()) {
+          imageDecoder.setTargetSize(request.targetWidth, request.targetHeight);
+        }
+      }
+    });
   }
 
   static boolean isXmlResource(Resources resources, @DrawableRes int drawableId) {
