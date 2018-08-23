@@ -211,10 +211,6 @@ public final class Request {
     return targetWidth != 0 || targetHeight != 0;
   }
 
-  boolean needsTransformation() {
-    return needsMatrixTransform() || hasCustomTransformations();
-  }
-
   boolean needsMatrixTransform() {
     return hasSize() || rotationDegrees != 0;
   }
