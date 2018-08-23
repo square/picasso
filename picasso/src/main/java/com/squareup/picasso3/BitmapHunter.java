@@ -197,14 +197,11 @@ class BitmapHunter implements Runnable {
       Bitmap bitmap = result.getBitmap();
       stats.dispatchBitmapDecoded(bitmap);
 
-      List<Transformation> transformations = new ArrayList<>();
-
+      List<Transformation> transformations = new ArrayList<>(data.transformations.size() + 1);
       if (data.needsMatrixTransform() || result.getExifRotation() != 0) {
         transformations.add(new MatrixTransformation(data));
       }
-      if (data.hasCustomTransformations()) {
-        transformations.addAll(data.transformations);
-      }
+      transformations.addAll(data.transformations);
 
       result = applyTransformations(picasso, data, transformations, result);
       if (result.hasBitmap()) {
