@@ -18,6 +18,7 @@ package com.squareup.picasso3;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.support.annotation.NonNull;
+import android.support.annotation.VisibleForTesting;
 import android.view.Gravity;
 
 import static android.support.media.ExifInterface.ORIENTATION_FLIP_HORIZONTAL;
@@ -49,6 +50,7 @@ final class MatrixTransformation implements Transformation {
     return "matrixTransformation()";
   }
 
+  @VisibleForTesting
   static Bitmap transformResult(Request data, Bitmap result, int exifOrientation) {
     int inWidth = result.getWidth();
     int inHeight = result.getHeight();
