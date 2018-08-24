@@ -67,8 +67,7 @@ public final class Request {
   @Nullable
   public final String stableKey;
   /** List of custom transformations to be applied after the built-in transformations. */
-  @Nullable
-  public final List<Transformation> transformations;
+  final List<Transformation> transformations;
   /** Target image width for resizing. */
   public final int targetWidth;
   /** Target image height for resizing. */
@@ -116,7 +115,7 @@ public final class Request {
     this.resourceId = builder.resourceId;
     this.stableKey = builder.stableKey;
     if (builder.transformations == null) {
-      this.transformations = null;
+      this.transformations = Collections.emptyList();
     } else {
       this.transformations = Collections.unmodifiableList(new ArrayList<>(builder.transformations));
     }
@@ -153,7 +152,7 @@ public final class Request {
     } else {
       builder.append(uri);
     }
-    if (transformations != null && !transformations.isEmpty()) {
+    if (!transformations.isEmpty()) {
       for (Transformation transformation : transformations) {
         builder.append(' ').append(transformation.key());
       }
@@ -211,16 +210,8 @@ public final class Request {
     return targetWidth != 0 || targetHeight != 0;
   }
 
-  boolean needsTransformation() {
-    return needsMatrixTransform() || hasCustomTransformations();
-  }
-
   boolean needsMatrixTransform() {
     return hasSize() || rotationDegrees != 0;
-  }
-
-  boolean hasCustomTransformations() {
-    return transformations != null;
   }
 
   @NonNull
@@ -266,12 +257,10 @@ public final class Request {
       builder.append("centerInside").append(KEY_SEPARATOR);
     }
 
-    if (data.transformations != null) {
-      //noinspection ForLoopReplaceableByForEach
-      for (int i = 0, count = data.transformations.size(); i < count; i++) {
-        builder.append(data.transformations.get(i).key());
-        builder.append(KEY_SEPARATOR);
-      }
+    //noinspection ForLoopReplaceableByForEach
+    for (int i = 0, count = data.transformations.size(); i < count; i++) {
+      builder.append(data.transformations.get(i).key());
+      builder.append(KEY_SEPARATOR);
     }
 
     return builder.toString();

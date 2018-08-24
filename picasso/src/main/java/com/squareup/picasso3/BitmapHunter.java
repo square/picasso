@@ -16,11 +16,9 @@
 package com.squareup.picasso3;
 
 import android.graphics.Bitmap;
-import android.graphics.Matrix;
 import android.net.NetworkInfo;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.view.Gravity;
 import com.squareup.picasso3.RequestHandler.Result;
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -32,13 +30,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import okio.Buffer;
 
-import static android.support.media.ExifInterface.ORIENTATION_FLIP_HORIZONTAL;
-import static android.support.media.ExifInterface.ORIENTATION_FLIP_VERTICAL;
-import static android.support.media.ExifInterface.ORIENTATION_ROTATE_180;
-import static android.support.media.ExifInterface.ORIENTATION_ROTATE_270;
-import static android.support.media.ExifInterface.ORIENTATION_ROTATE_90;
-import static android.support.media.ExifInterface.ORIENTATION_TRANSPOSE;
-import static android.support.media.ExifInterface.ORIENTATION_TRANSVERSE;
 import static com.squareup.picasso3.MemoryPolicy.shouldReadFromMemoryCache;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso3.Picasso.Priority;
@@ -206,24 +197,13 @@ class BitmapHunter implements Runnable {
       Bitmap bitmap = result.getBitmap();
       stats.dispatchBitmapDecoded(bitmap);
 
-      int exifOrientation = result.getExifRotation();
-      if (data.needsTransformation() || exifOrientation != 0) {
-        if (data.needsMatrixTransform() || exifOrientation != 0) {
-          bitmap = transformResult(data, bitmap, exifOrientation);
-          if (picasso.loggingEnabled) {
-            log(OWNER_HUNTER, VERB_TRANSFORMED, data.logId());
-          }
-        }
-
-        result = new Result(bitmap, result.getLoadedFrom(), exifOrientation);
-        if (data.hasCustomTransformations()) {
-          result = applyCustomTransformations(data.transformations, result);
-          if (picasso.loggingEnabled) {
-            log(OWNER_HUNTER, VERB_TRANSFORMED, data.logId(),
-                "from custom transformations");
-          }
-        }
+      List<Transformation> transformations = new ArrayList<>(data.transformations.size() + 1);
+      if (data.needsMatrixTransform() || result.getExifRotation() != 0) {
+        transformations.add(new MatrixTransformation(data));
       }
+      transformations.addAll(data.transformations);
+
+      result = applyTransformations(picasso, data, transformations, result);
       if (result.hasBitmap()) {
         stats.dispatchBitmapTransformed(result.getBitmap());
       }
@@ -395,16 +375,16 @@ class BitmapHunter implements Runnable {
     return new BitmapHunter(picasso, dispatcher, cache, stats, action, ERRORING_HANDLER);
   }
 
-  static Result applyCustomTransformations(List<Transformation> transformations, Result result) {
-    if (!result.hasBitmap()) {
-      return result;
-    }
-
+  static Result applyTransformations(Picasso picasso, Request data,
+      List<Transformation> transformations, Result result) {
     for (int i = 0, count = transformations.size(); i < count; i++) {
       final Transformation transformation = transformations.get(i);
       Result newResult;
       try {
         newResult = transformation.transform(result);
+        if (picasso.loggingEnabled) {
+          log(OWNER_HUNTER, VERB_TRANSFORMED, data.logId(), "from transformations");
+        }
       } catch (final RuntimeException e) {
         Picasso.HANDLER.post(new Runnable() {
           @Override public void run() {
@@ -462,199 +442,5 @@ class BitmapHunter implements Runnable {
     }
 
     return result;
-  }
-
-  static Bitmap transformResult(Request data, Bitmap result, int exifOrientation) {
-    int inWidth = result.getWidth();
-    int inHeight = result.getHeight();
-    boolean onlyScaleDown = data.onlyScaleDown;
-
-    int drawX = 0;
-    int drawY = 0;
-    int drawWidth = inWidth;
-    int drawHeight = inHeight;
-
-    Matrix matrix = new Matrix();
-
-    if (data.needsMatrixTransform() || exifOrientation != 0) {
-      int targetWidth = data.targetWidth;
-      int targetHeight = data.targetHeight;
-
-      float targetRotation = data.rotationDegrees;
-      if (targetRotation != 0) {
-        double cosR = Math.cos(Math.toRadians(targetRotation));
-        double sinR = Math.sin(Math.toRadians(targetRotation));
-        if (data.hasRotationPivot) {
-          matrix.setRotate(targetRotation, data.rotationPivotX, data.rotationPivotY);
-          // Recalculate dimensions after rotation around pivot point
-          double x1T = data.rotationPivotX * (1.0 - cosR) + (data.rotationPivotY * sinR);
-          double y1T = data.rotationPivotY * (1.0 - cosR) - (data.rotationPivotX * sinR);
-          double x2T = x1T + (data.targetWidth * cosR);
-          double y2T = y1T + (data.targetWidth * sinR);
-          double x3T = x1T + (data.targetWidth * cosR) - (data.targetHeight * sinR);
-          double y3T = y1T + (data.targetWidth * sinR) + (data.targetHeight * cosR);
-          double x4T = x1T - (data.targetHeight * sinR);
-          double y4T = y1T + (data.targetHeight * cosR);
-
-          double maxX = Math.max(x4T, Math.max(x3T, Math.max(x1T, x2T)));
-          double minX = Math.min(x4T, Math.min(x3T, Math.min(x1T, x2T)));
-          double maxY = Math.max(y4T, Math.max(y3T, Math.max(y1T, y2T)));
-          double minY = Math.min(y4T, Math.min(y3T, Math.min(y1T, y2T)));
-          targetWidth = (int) Math.floor(maxX - minX);
-          targetHeight  = (int) Math.floor(maxY - minY);
-        } else {
-          matrix.setRotate(targetRotation);
-          // Recalculate dimensions after rotation (around origin)
-          double x1T = 0.0;
-          double y1T = 0.0;
-          double x2T = (data.targetWidth * cosR);
-          double y2T = (data.targetWidth * sinR);
-          double x3T = (data.targetWidth * cosR) - (data.targetHeight * sinR);
-          double y3T = (data.targetWidth * sinR) + (data.targetHeight * cosR);
-          double x4T = -(data.targetHeight * sinR);
-          double y4T = (data.targetHeight * cosR);
-
-          double maxX = Math.max(x4T, Math.max(x3T, Math.max(x1T, x2T)));
-          double minX = Math.min(x4T, Math.min(x3T, Math.min(x1T, x2T)));
-          double maxY = Math.max(y4T, Math.max(y3T, Math.max(y1T, y2T)));
-          double minY = Math.min(y4T, Math.min(y3T, Math.min(y1T, y2T)));
-          targetWidth = (int) Math.floor(maxX - minX);
-          targetHeight  = (int) Math.floor(maxY - minY);
-        }
-      }
-
-      // EXIf interpretation should be done before cropping in case the dimensions need to
-      // be recalculated
-      if (exifOrientation != 0) {
-        int exifRotation = getExifRotation(exifOrientation);
-        int exifTranslation = getExifTranslation(exifOrientation);
-        if (exifRotation != 0) {
-          matrix.preRotate(exifRotation);
-          if (exifRotation == 90 || exifRotation == 270) {
-             // Recalculate dimensions after exif rotation
-             int tmpHeight = targetHeight;
-             targetHeight = targetWidth;
-             targetWidth = tmpHeight;
-          }
-        }
-        if (exifTranslation != 1) {
-          matrix.postScale(exifTranslation, 1);
-        }
-      }
-
-      if (data.centerCrop) {
-        // Keep aspect ratio if one dimension is set to 0
-        float widthRatio =
-            targetWidth != 0 ? targetWidth / (float) inWidth : targetHeight / (float) inHeight;
-        float heightRatio =
-            targetHeight != 0 ? targetHeight / (float) inHeight : targetWidth / (float) inWidth;
-        float scaleX, scaleY;
-        if (widthRatio > heightRatio) {
-          int newSize = (int) Math.ceil(inHeight * (heightRatio / widthRatio));
-          if ((data.centerCropGravity & Gravity.TOP) == Gravity.TOP) {
-            drawY = 0;
-          } else if ((data.centerCropGravity & Gravity.BOTTOM) == Gravity.BOTTOM) {
-            drawY = inHeight - newSize;
-          } else {
-            drawY = (inHeight - newSize) / 2;
-          }
-          drawHeight = newSize;
-          scaleX = widthRatio;
-          scaleY = targetHeight / (float) drawHeight;
-        } else if (widthRatio < heightRatio) {
-          int newSize = (int) Math.ceil(inWidth * (widthRatio / heightRatio));
-          if ((data.centerCropGravity & Gravity.LEFT) == Gravity.LEFT) {
-            drawX = 0;
-          } else if ((data.centerCropGravity & Gravity.RIGHT) == Gravity.RIGHT) {
-            drawX = inWidth - newSize;
-          } else {
-            drawX = (inWidth - newSize) / 2;
-          }
-          drawWidth = newSize;
-          scaleX = targetWidth / (float) drawWidth;
-          scaleY = heightRatio;
-        } else {
-          drawX = 0;
-          drawWidth = inWidth;
-          scaleX = scaleY = heightRatio;
-        }
-        if (shouldResize(onlyScaleDown, inWidth, inHeight, targetWidth, targetHeight)) {
-          matrix.preScale(scaleX, scaleY);
-        }
-      } else if (data.centerInside) {
-        // Keep aspect ratio if one dimension is set to 0
-        float widthRatio =
-            targetWidth != 0 ? targetWidth / (float) inWidth : targetHeight / (float) inHeight;
-        float heightRatio =
-            targetHeight != 0 ? targetHeight / (float) inHeight : targetWidth / (float) inWidth;
-        float scale = widthRatio < heightRatio ? widthRatio : heightRatio;
-        if (shouldResize(onlyScaleDown, inWidth, inHeight, targetWidth, targetHeight)) {
-          matrix.preScale(scale, scale);
-        }
-      } else if ((targetWidth != 0 || targetHeight != 0) //
-          && (targetWidth != inWidth || targetHeight != inHeight)) {
-        // If an explicit target size has been specified and they do not match the results bounds,
-        // pre-scale the existing matrix appropriately.
-        // Keep aspect ratio if one dimension is set to 0.
-        float sx =
-            targetWidth != 0 ? targetWidth / (float) inWidth : targetHeight / (float) inHeight;
-        float sy =
-            targetHeight != 0 ? targetHeight / (float) inHeight : targetWidth / (float) inWidth;
-        if (shouldResize(onlyScaleDown, inWidth, inHeight, targetWidth, targetHeight)) {
-          matrix.preScale(sx, sy);
-        }
-      }
-    }
-
-    Bitmap newResult =
-        Bitmap.createBitmap(result, drawX, drawY, drawWidth, drawHeight, matrix, true);
-    if (newResult != result) {
-      result.recycle();
-      result = newResult;
-    }
-
-    return result;
-  }
-
-  private static boolean shouldResize(boolean onlyScaleDown, int inWidth, int inHeight,
-      int targetWidth, int targetHeight) {
-    return !onlyScaleDown || (targetWidth != 0 && inWidth > targetWidth)
-            || (targetHeight != 0 && inHeight > targetHeight);
-  }
-
-  static int getExifRotation(int orientation) {
-    int rotation;
-    switch (orientation) {
-      case ORIENTATION_ROTATE_90:
-      case ORIENTATION_TRANSPOSE:
-        rotation = 90;
-        break;
-      case ORIENTATION_ROTATE_180:
-      case ORIENTATION_FLIP_VERTICAL:
-        rotation = 180;
-        break;
-      case ORIENTATION_ROTATE_270:
-      case ORIENTATION_TRANSVERSE:
-        rotation = 270;
-        break;
-      default:
-        rotation = 0;
-    }
-    return rotation;
-  }
-
- static int getExifTranslation(int orientation)  {
-    int translation;
-    switch (orientation) {
-      case ORIENTATION_FLIP_HORIZONTAL:
-      case ORIENTATION_FLIP_VERTICAL:
-      case ORIENTATION_TRANSPOSE:
-      case ORIENTATION_TRANSVERSE:
-        translation = -1;
-        break;
-      default:
-        translation = 1;
-    }
-    return translation;
   }
 }

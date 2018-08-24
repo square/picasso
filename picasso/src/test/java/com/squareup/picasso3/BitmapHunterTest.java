@@ -43,7 +43,7 @@ import static android.support.media.ExifInterface.ORIENTATION_TRANSPOSE;
 import static android.support.media.ExifInterface.ORIENTATION_TRANSVERSE;
 import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso3.BitmapHunter.forRequest;
-import static com.squareup.picasso3.BitmapHunter.transformResult;
+import static com.squareup.picasso3.MatrixTransformation.transformResult;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso3.Picasso.Priority.HIGH;
 import static com.squareup.picasso3.Picasso.Priority.LOW;
@@ -992,8 +992,9 @@ public final class BitmapHunterTest {
     List<Transformation> transformations = Collections.singletonList(badTransformation);
     Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
     RequestHandler.Result result = new RequestHandler.Result(original, MEMORY, 0);
+    Request data = new Request.Builder(URI_1).build();
     try {
-      BitmapHunter.applyCustomTransformations(transformations, result);
+      BitmapHunter.applyTransformations(picasso, data, transformations, result);
       fail("Expected exception to be thrown.");
     } catch (RuntimeException e) {
       assertThat(e).hasMessageThat().isEqualTo("Transformation " + badTransformation.key() + " crashed with exception.");
@@ -1013,8 +1014,9 @@ public final class BitmapHunterTest {
     List<Transformation> transformations = Collections.singletonList(badTransformation);
     Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
     RequestHandler.Result result = new RequestHandler.Result(original, MEMORY, 0);
+    Request data = new Request.Builder(URI_1).build();
     try {
-      BitmapHunter.applyCustomTransformations(transformations, result);
+      BitmapHunter.applyTransformations(picasso, data, transformations, result);
       fail("Expected exception to be thrown.");
     } catch (RuntimeException e) {
       assertThat(e).hasMessageThat().contains(
@@ -1036,8 +1038,9 @@ public final class BitmapHunterTest {
     List<Transformation> transformations = Collections.singletonList(badTransformation);
     Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
     RequestHandler.Result result = new RequestHandler.Result(original, MEMORY, 0);
+    Request data = new Request.Builder(URI_1).build();
     try {
-      BitmapHunter.applyCustomTransformations(transformations, result);
+      BitmapHunter.applyTransformations(picasso, data, transformations, result);
       fail("Expected exception to be thrown.");
     } catch (RuntimeException e) {
       assertThat(e).hasMessageThat().isEqualTo("Transformation "
@@ -1060,8 +1063,9 @@ public final class BitmapHunterTest {
     List<Transformation> transformations = Collections.singletonList(badTransformation);
     Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
     RequestHandler.Result result = new RequestHandler.Result(original, MEMORY, 0);
+    Request data = new Request.Builder(URI_1).build();
     try {
-      BitmapHunter.applyCustomTransformations(transformations, result);
+      BitmapHunter.applyTransformations(picasso, data, transformations, result);
       fail("Expected exception to be thrown.");
     } catch (RuntimeException e) {
       assertThat(e).hasMessageThat().isEqualTo("Transformation "
