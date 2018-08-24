@@ -46,14 +46,18 @@ final class PicassoDrawable extends BitmapDrawable {
     if (placeholder instanceof Animatable) {
       ((Animatable) placeholder).stop();
     }
-    if (result.hasBitmap()) {
+
+    Bitmap bitmap = result.getBitmap();
+    if (bitmap != null) {
       Picasso.LoadedFrom loadedFrom = result.getLoadedFrom();
-      Bitmap bitmap = result.getBitmap();
       PicassoDrawable drawable =
           new PicassoDrawable(context, bitmap, placeholder, loadedFrom, noFade, debugging);
       target.setImageDrawable(drawable);
-    } else if (result.hasDrawable()) {
-      Drawable drawable = result.getDrawable();
+      return;
+    }
+
+    Drawable drawable = result.getDrawable();
+    if (drawable != null) {
       target.setImageDrawable(drawable);
       if (drawable instanceof Animatable) {
         ((Animatable) drawable).start();

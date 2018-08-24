@@ -37,11 +37,12 @@ final class MatrixTransformation implements Transformation {
   }
 
   @NonNull @Override public RequestHandler.Result transform(@NonNull RequestHandler.Result source) {
-    if (!source.hasBitmap()) {
+    Bitmap bitmap = source.getBitmap();
+    if (bitmap == null) {
       return source;
     }
 
-    Bitmap bitmap = transformResult(data, source.getBitmap(), source.getExifRotation());
+    bitmap = transformResult(data, bitmap, source.getExifRotation());
 
     return new RequestHandler.Result(bitmap, source.getLoadedFrom(), source.getExifRotation());
   }
