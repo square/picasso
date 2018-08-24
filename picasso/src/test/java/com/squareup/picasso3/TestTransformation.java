@@ -31,11 +31,12 @@ class TestTransformation implements Transformation {
   }
 
   @Override public RequestHandler.Result transform(RequestHandler.Result source) {
-    if (!source.hasBitmap()) {
+    Bitmap bitmap = source.getBitmap();
+    if (bitmap == null) {
       return source;
     }
 
-    source.getBitmap().recycle();
+    bitmap.recycle();
     return new RequestHandler.Result(result, source.getLoadedFrom(), source.getExifRotation());
   }
 

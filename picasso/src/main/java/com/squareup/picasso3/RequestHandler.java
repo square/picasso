@@ -65,8 +65,8 @@ public abstract class RequestHandler {
    */
   public static final class Result {
     private final Picasso.LoadedFrom loadedFrom;
-    private final Bitmap bitmap;
-    private final Drawable drawable;
+    @Nullable private final Bitmap bitmap;
+    @Nullable private final Drawable drawable;
     private final int exifRotation;
 
     public Result(@NonNull Bitmap bitmap, @NonNull Picasso.LoadedFrom loadedFrom) {
@@ -101,20 +101,12 @@ public abstract class RequestHandler {
       return bitmap;
     }
 
-    public boolean hasBitmap() {
-      return bitmap != null;
-    }
-
     /**
      * The loaded {@link Drawable}.
      * Mutually exclusive with {@link #getBitmap()}.
      */
     @Nullable public Drawable getDrawable() {
       return drawable;
-    }
-
-    public boolean hasDrawable() {
-      return drawable != null;
     }
 
     /**

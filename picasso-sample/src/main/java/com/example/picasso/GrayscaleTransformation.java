@@ -41,11 +41,11 @@ public class GrayscaleTransformation implements Transformation {
   }
 
   @Override public RequestHandler.Result transform(RequestHandler.Result source) {
-    if (!source.hasBitmap()) {
+    Bitmap bitmap = source.getBitmap();
+    if (bitmap == null) {
       return source;
     }
 
-    Bitmap bitmap = source.getBitmap();
     Bitmap result = createBitmap(bitmap.getWidth(), bitmap.getHeight(), bitmap.getConfig());
     Bitmap noise;
     try {

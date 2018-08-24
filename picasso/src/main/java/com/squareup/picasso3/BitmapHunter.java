@@ -105,7 +105,7 @@ class BitmapHunter implements Runnable {
 
       result = hunt();
 
-      if (!result.hasBitmap()) {
+      if (result.getBitmap() == null) {
         dispatcher.dispatchFailed(this);
       } else {
         dispatcher.dispatchComplete(this);
@@ -190,11 +190,11 @@ class BitmapHunter implements Runnable {
 
     Result result = resultReference.get();
 
-    if (result.hasBitmap()) {
+    Bitmap bitmap = result.getBitmap();
+    if (bitmap != null) {
       if (picasso.loggingEnabled) {
         log(OWNER_HUNTER, VERB_DECODED, data.logId());
       }
-      Bitmap bitmap = result.getBitmap();
       stats.dispatchBitmapDecoded(bitmap);
 
       List<Transformation> transformations = new ArrayList<>(data.transformations.size() + 1);
@@ -204,8 +204,9 @@ class BitmapHunter implements Runnable {
       transformations.addAll(data.transformations);
 
       result = applyTransformations(picasso, data, transformations, result);
-      if (result.hasBitmap()) {
-        stats.dispatchBitmapTransformed(result.getBitmap());
+      bitmap = result.getBitmap();
+      if (bitmap != null) {
+        stats.dispatchBitmapTransformed(bitmap);
       }
     }
 
