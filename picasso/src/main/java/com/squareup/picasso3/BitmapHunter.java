@@ -428,7 +428,9 @@ class BitmapHunter implements Runnable {
       }
 
       // If the transformation returned a new bitmap ensure they recycled the original.
-      if (newResult != result && !bitmap.isRecycled()) {
+      if (newResult != result
+          && newResult.getBitmap() != result.getBitmap()
+          && !bitmap.isRecycled()) {
         Picasso.HANDLER.post(new Runnable() {
           @Override public void run() {
             throw new IllegalStateException("Transformation "
