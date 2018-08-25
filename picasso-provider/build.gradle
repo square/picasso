@@ -22,6 +22,8 @@ android {
 dependencies {
   api project(':picasso')
   compileOnly deps.supportAnnotations
+
+  annotationProcessor deps.nullaway
 }
 
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')

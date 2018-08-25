@@ -18,16 +18,16 @@ package com.squareup.picasso3;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.appwidget.AppWidgetManager;
+import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.widget.RemoteViews;
 
 abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTarget> {
   Target<RemoteViewsTarget> remoteWrapper;
-  Callback callback;
-
+  @Nullable Callback callback;
 
   RemoteViewsAction(Picasso picasso, Request data, Target<RemoteViewsTarget> wrapper,
-      Callback callback) {
+      @Nullable Callback callback) {
     super(picasso, null, data);
     this.remoteWrapper = wrapper;
     this.callback = callback;
@@ -96,7 +96,7 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
     private final int[] appWidgetIds;
 
     AppWidgetAction(Picasso picasso, Request data, Target<RemoteViewsTarget> wrapper,
-        int[] appWidgetIds, Callback callback) {
+        int[] appWidgetIds, @Nullable Callback callback) {
       super(picasso, data, wrapper, callback);
       this.appWidgetIds = appWidgetIds;
     }
@@ -109,11 +109,12 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
 
   static class NotificationAction extends RemoteViewsAction {
     private final int notificationId;
-    private final String notificationTag;
+    @Nullable private final String notificationTag;
     private final Notification notification;
 
     NotificationAction(Picasso picasso, Request data, Target<RemoteViewsTarget> wrapper,
-        int notificationId, Notification notification, String notificationTag, Callback callback) {
+        int notificationId, Notification notification, @Nullable String notificationTag,
+        @Nullable Callback callback) {
       super(picasso, data, wrapper, callback);
       this.notificationId = notificationId;
       this.notificationTag = notificationTag;
@@ -123,7 +124,9 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
     @Override void update() {
       NotificationManager manager =
           ContextCompat.getSystemService(picasso.context, NotificationManager.class);
-      manager.notify(notificationTag, notificationId, notification);
+      if (manager != null) {
+        manager.notify(notificationTag, notificationId, notification);
+      }
     }
   }
 }

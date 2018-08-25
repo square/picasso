@@ -72,11 +72,11 @@ class BitmapHunter implements Runnable {
   Request data;
   final RequestHandler requestHandler;
 
-  Action action;
-  List<Action> actions;
-  Result result;
-  Future<?> future;
-  Exception exception;
+  @Nullable Action action;
+  @Nullable List<Action> actions;
+  @Nullable Result result;
+  @Nullable Future<?> future;
+  @Nullable Exception exception;
   int retryCount;
   Priority priority;
 
@@ -105,7 +105,7 @@ class BitmapHunter implements Runnable {
 
       result = hunt();
 
-      if (result.getBitmap() == null) {
+      if (result.getBitmap() == null && result.getDrawable() == null) {
         dispatcher.dispatchFailed(this);
       } else {
         dispatcher.dispatchComplete(this);
@@ -189,6 +189,9 @@ class BitmapHunter implements Runnable {
     }
 
     Result result = resultReference.get();
+    if (result == null) {
+      throw new AssertionError("Request handler neither returned a result nor an exception.");
+    }
 
     Bitmap bitmap = result.getBitmap();
     if (bitmap != null) {
@@ -268,8 +271,8 @@ class BitmapHunter implements Runnable {
   private Priority computeNewPriority() {
     Priority newPriority = LOW;
 
-    boolean hasMultiple = actions != null && !actions.isEmpty();
-    boolean hasAny = action != null || hasMultiple;
+    final boolean hasMultiple = actions != null && !actions.isEmpty();
+    final boolean hasAny = action != null || hasMultiple;
 
     // Hunter has no requests, low priority.
     if (!hasAny) {
@@ -280,7 +283,7 @@ class BitmapHunter implements Runnable {
       newPriority = action.getPriority();
     }
 
-    if (hasMultiple) {
+    if (actions != null) {
       //noinspection ForLoopReplaceableByForEach
       for (int i = 0, n = actions.size(); i < n; i++) {
         Priority actionPriority = actions.get(i).getPriority();
@@ -304,7 +307,7 @@ class BitmapHunter implements Runnable {
     return future != null && future.isCancelled();
   }
 
-  boolean shouldRetry(boolean airplaneMode, NetworkInfo info) {
+  boolean shouldRetry(boolean airplaneMode, @Nullable NetworkInfo info) {
     boolean hasRetries = retryCount > 0;
     if (!hasRetries) {
       return false;
@@ -317,7 +320,7 @@ class BitmapHunter implements Runnable {
     return requestHandler.supportsReplay();
   }
 
-  Result getResult() {
+  @Nullable Result getResult() {
     return result;
   }
 
@@ -329,7 +332,7 @@ class BitmapHunter implements Runnable {
     return data;
   }
 
-  Action getAction() {
+  @Nullable Action getAction() {
     return action;
   }
 
@@ -337,11 +340,11 @@ class BitmapHunter implements Runnable {
     return picasso;
   }
 
-  List<Action> getActions() {
+  @Nullable List<Action> getActions() {
     return actions;
   }
 
-  Exception getException() {
+  @Nullable Exception getException() {
     return exception;
   }
 
@@ -376,6 +379,7 @@ class BitmapHunter implements Runnable {
     return new BitmapHunter(picasso, dispatcher, cache, stats, action, ERRORING_HANDLER);
   }
 
+  @SuppressWarnings("NullAway")
   static Result applyTransformations(Picasso picasso, Request data,
       List<Transformation> transformations, Result result) {
     for (int i = 0, count = transformations.size(); i < count; i++) {
@@ -415,6 +419,7 @@ class BitmapHunter implements Runnable {
       }
 
       Bitmap bitmap = result.getBitmap();
+      if (bitmap == null) return result;
 
       if (newResult == result && bitmap.isRecycled()) {
         Picasso.HANDLER.post(new Runnable() {

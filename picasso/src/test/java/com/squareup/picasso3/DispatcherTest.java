@@ -213,7 +213,7 @@ public class DispatcherTest {
     Request data = new Request.Builder(URI_1).build();
     Action action = noopAction(data);
     BitmapHunter hunter =
-        new BitmapHunter(mockPicasso(), null, null, null, action, EMPTY_REQUEST_HANDLER);
+        new BitmapHunter(mockPicasso(), dispatcher, cache, stats, action, EMPTY_REQUEST_HANDLER);
     hunter.result = new RequestHandler.Result(bitmap1, MEMORY);
 
     dispatcher.performComplete(hunter);
@@ -225,7 +225,7 @@ public class DispatcherTest {
     Request data = new Request.Builder(URI_1).memoryPolicy(MemoryPolicy.NO_STORE).build();
     Action action = noopAction(data);
     BitmapHunter hunter =
-        new BitmapHunter(mockPicasso(), null, null, null, action, EMPTY_REQUEST_HANDLER);
+        new BitmapHunter(mockPicasso(), dispatcher, cache, stats, action, EMPTY_REQUEST_HANDLER);
     hunter.result = new RequestHandler.Result(bitmap1, MEMORY);
 
     dispatcher.performComplete(hunter);
@@ -238,7 +238,7 @@ public class DispatcherTest {
     Request data = new Request.Builder(URI_1).build();
     Action action = noopAction(data);
     BitmapHunter hunter =
-        new BitmapHunter(mockPicasso(), null, null, null, action, EMPTY_REQUEST_HANDLER);
+        new BitmapHunter(mockPicasso(), dispatcher, cache, stats, action, EMPTY_REQUEST_HANDLER);
     hunter.result = new RequestHandler.Result(bitmap1, MEMORY);
 
     dispatcher.performComplete(hunter);
@@ -251,7 +251,7 @@ public class DispatcherTest {
     Request data = new Request.Builder(URI_1).build();
     Action action = noopAction(data);
     BitmapHunter hunter =
-        new BitmapHunter(mockPicasso(), null, null, null, action, EMPTY_REQUEST_HANDLER);
+        new BitmapHunter(mockPicasso(), dispatcher, cache, stats, action, EMPTY_REQUEST_HANDLER);
     hunter.result = new RequestHandler.Result(bitmap1, MEMORY);
     hunter.future = new FutureTask<>(mock(Runnable.class), null);
     hunter.future.cancel(false);
@@ -291,7 +291,7 @@ public class DispatcherTest {
   @Test public void performRetryForContentLengthResetsNetworkPolicy() {
     NetworkInfo networkInfo = mockNetworkInfo(true);
     when(connectivityManager.getActiveNetworkInfo()).thenReturn(networkInfo);
-    BitmapHunter hunter = new BitmapHunter(mockPicasso(), dispatcher, null, null,
+    BitmapHunter hunter = new BitmapHunter(mockPicasso(), dispatcher, cache, stats,
         mockAction(URI_KEY_2, URI_2), RETRYING_REQUEST_HANDLER);
     hunter.exception = new ContentLengthException("304 error");
     dispatcher.performRetry(hunter);

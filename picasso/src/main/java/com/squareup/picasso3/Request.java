@@ -101,7 +101,7 @@ public final class Request {
   @Nullable
   public final Bitmap.Config config;
   /** The priority of this request. */
-  @Nullable
+  @NonNull
   public final Priority priority;
   /** The cache key for this request. */
   @NonNull
@@ -131,7 +131,7 @@ public final class Request {
     this.hasRotationPivot = builder.hasRotationPivot;
     this.purgeable = builder.purgeable;
     this.config = builder.config;
-    this.priority = builder.priority;
+    this.priority = checkNotNull(builder.priority, "priority == null");
 
     if (Looper.myLooper() == Looper.getMainLooper()) {
       this.key = createKey();
@@ -403,7 +403,7 @@ public final class Request {
     }
 
     /** Internal use only. Used by {@link DeferredRequestCreator}. */
-    Object getTag() {
+    @Nullable Object getTag() {
       return tag;
     }
 

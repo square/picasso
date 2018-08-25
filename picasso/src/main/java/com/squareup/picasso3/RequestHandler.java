@@ -160,28 +160,27 @@ public abstract class RequestHandler {
    * Lazily create {@link BitmapFactory.Options} based in given
    * {@link Request}, only instantiating them if needed.
    */
-  static BitmapFactory.Options createBitmapOptions(Request data) {
+  @Nullable static BitmapFactory.Options createBitmapOptions(Request data) {
     final boolean justBounds = data.hasSize();
-    final boolean hasConfig = data.config != null;
     BitmapFactory.Options options = null;
-    if (justBounds || hasConfig || data.purgeable) {
+    if (justBounds || data.config != null || data.purgeable) {
       options = new BitmapFactory.Options();
       options.inJustDecodeBounds = justBounds;
       options.inInputShareable = data.purgeable;
       options.inPurgeable = data.purgeable;
-      if (hasConfig) {
+      if (data.config != null) {
         options.inPreferredConfig = data.config;
       }
     }
     return options;
   }
 
-  static boolean requiresInSampleSize(BitmapFactory.Options options) {
+  static boolean requiresInSampleSize(@Nullable BitmapFactory.Options options) {
     return options != null && options.inJustDecodeBounds;
   }
 
-  static void calculateInSampleSize(int reqWidth, int reqHeight, BitmapFactory.Options options,
-      Request request) {
+  static void calculateInSampleSize(int reqWidth, int reqHeight,
+      @NonNull BitmapFactory.Options options, Request request) {
     calculateInSampleSize(reqWidth, reqHeight, options.outWidth, options.outHeight, options,
         request);
   }
@@ -252,16 +251,16 @@ public abstract class RequestHandler {
       byte[] bytes = bufferedSource.readByteArray();
       if (calculateSize) {
         BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
-        RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight, options,
-            request);
+        RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight,
+            checkNotNull(options, "options == null"), request);
       }
       bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
     } else {
       if (calculateSize) {
         InputStream stream = new SourceBufferingInputStream(bufferedSource);
         BitmapFactory.decodeStream(stream, null, options);
-        RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight, options,
-            request);
+        RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight,
+            checkNotNull(options, "options == null"), request);
       }
       bitmap = BitmapFactory.decodeStream(bufferedSource.inputStream(), null, options);
     }
@@ -294,7 +293,8 @@ public abstract class RequestHandler {
     final BitmapFactory.Options options = createBitmapOptions(request);
     if (requiresInSampleSize(options)) {
       BitmapFactory.decodeResource(resources, id, options);
-      calculateInSampleSize(request.targetWidth, request.targetHeight, options, request);
+      calculateInSampleSize(request.targetWidth, request.targetHeight,
+          checkNotNull(options, "options == null"), request);
     }
     return BitmapFactory.decodeResource(resources, id, options);
   }

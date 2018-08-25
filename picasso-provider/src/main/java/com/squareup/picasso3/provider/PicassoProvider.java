@@ -1,6 +1,8 @@
 package com.squareup.picasso3.provider;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
+import com.squareup.picasso3.Initializer;
 import com.squareup.picasso3.Picasso;
 
 /**
@@ -24,14 +26,16 @@ public final class PicassoProvider {
   @SuppressLint("StaticFieldLeak")
   private static volatile Picasso instance;
 
+  @Initializer
   public static Picasso get() {
     if (instance == null) {
       synchronized (PicassoProvider.class) {
         if (instance == null) {
-          if (PicassoContentProvider.context == null) {
-            throw new IllegalStateException("context == null");
+          Context autoContext = PicassoContentProvider.context;
+          if (autoContext == null) {
+            throw new NullPointerException("context == null");
           }
-          instance = new Picasso.Builder(PicassoContentProvider.context).build();
+          instance = new Picasso.Builder(autoContext).build();
         }
       }
     }

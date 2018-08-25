@@ -27,6 +27,8 @@ dependencies {
   testImplementation deps.robolectric
   testImplementation deps.truth
   testImplementation deps.pollexor
+
+  annotationProcessor deps.nullaway
 }
 
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
