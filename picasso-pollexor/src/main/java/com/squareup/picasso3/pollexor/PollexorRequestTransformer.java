@@ -2,6 +2,7 @@ package com.squareup.picasso3.pollexor;
 
 import android.net.Uri;
 import android.os.Build;
+import android.support.annotation.NonNull;
 import com.squareup.picasso3.Request;
 import com.squareup.pollexor.Thumbor;
 import com.squareup.pollexor.ThumborUrlBuilder;
@@ -33,11 +34,14 @@ public class PollexorRequestTransformer implements RequestTransformer {
     this.alwaysTransform = alwaysTransform;
   }
 
-  @Override public Request transformRequest(Request request) {
+  @NonNull @Override public Request transformRequest(@NonNull Request request) {
     if (request.resourceId != 0) {
       return request; // Don't transform resource requests.
     }
     Uri uri = request.uri;
+    if (uri == null) {
+      throw new IllegalArgumentException("Null uri passed to " + getClass().getCanonicalName());
+    }
     String scheme = uri.getScheme();
     if (!"https".equals(scheme) && !"http".equals(scheme)) {
       return request; // Thumbor only supports remote images.

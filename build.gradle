@@ -23,7 +23,8 @@ buildscript {
     junit: 'junit:junit:4.12',
     truth: 'com.google.truth:truth:0.42',
     robolectric: 'org.robolectric:robolectric:4.0-alpha-3',
-    mockito: 'org.mockito:mockito-core:2.21.0'
+    mockito: 'org.mockito:mockito-core:2.21.0',
+    nullaway: 'com.uber.nullaway:nullaway:0.5.3'
   ]
 
   ext.isCi = "true" == System.getenv('CI')
@@ -60,6 +61,15 @@ subprojects {
         '-Xep:DateFormatConstant:ERROR',
         '-XepExcludedPaths:.*/build/.*'
     ]
+
+    if (!name.toLowerCase().contains("test")) {
+      // NullAway args
+      options.compilerArgs += [
+          '-Xep:NullAway:ERROR',
+          '-XepOpt:NullAway:AnnotatedPackages=com.squareup.picasso3'
+      ]
+    }
+
   }
 
   tasks.withType(Test) {

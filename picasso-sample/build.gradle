@@ -30,4 +30,6 @@ dependencies {
   implementation deps.supportFragment
   implementation project(':picasso')
   implementation project(':picasso-provider')
+
+  annotationProcessor deps.nullaway
 }

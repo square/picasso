@@ -26,6 +26,7 @@ import okio.Source;
 
 import static android.content.ContentResolver.SCHEME_FILE;
 import static com.squareup.picasso3.Picasso.LoadedFrom.DISK;
+import static com.squareup.picasso3.Utils.checkNotNull;
 
 class AssetRequestHandler extends RequestHandler {
   private static final String ANDROID_ASSET = "android_asset";
@@ -42,19 +43,16 @@ class AssetRequestHandler extends RequestHandler {
 
   @Override public boolean canHandleRequest(@NonNull Request data) {
     Uri uri = data.uri;
-    return (SCHEME_FILE.equals(uri.getScheme())
-        && !uri.getPathSegments().isEmpty() && ANDROID_ASSET.equals(uri.getPathSegments().get(0)));
+    return uri != null
+        && SCHEME_FILE.equals(uri.getScheme())
+        && !uri.getPathSegments().isEmpty()
+        && ANDROID_ASSET.equals(uri.getPathSegments().get(0));
   }
 
   @Override
   public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull Callback callback) {
-    if (assetManager == null) {
-      synchronized (lock) {
-        if (assetManager == null) {
-          assetManager = context.getAssets();
-        }
-      }
-    }
+    initializeIfFirstTime();
+
     boolean signaledCallback = false;
     try {
       Source source = Okio.source(assetManager.open(getFilePath(request)));
@@ -75,7 +73,19 @@ class AssetRequestHandler extends RequestHandler {
     }
   }
 
+  @Initializer
+  private void initializeIfFirstTime() {
+    if (assetManager == null) {
+      synchronized (lock) {
+        if (assetManager == null) {
+          assetManager = context.getAssets();
+        }
+      }
+    }
+  }
+
   static String getFilePath(Request request) {
-    return request.uri.toString().substring(ASSET_PREFIX_LENGTH);
+    Uri uri = checkNotNull(request.uri, "request.uri == null");
+    return uri.toString().substring(ASSET_PREFIX_LENGTH);
   }
 }

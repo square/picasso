@@ -37,6 +37,8 @@ dependencies {
   testImplementation deps.robolectric
   testImplementation deps.mockito
   testImplementation deps.mockWebServer
+
+  annotationProcessor deps.nullaway
 }
 
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')

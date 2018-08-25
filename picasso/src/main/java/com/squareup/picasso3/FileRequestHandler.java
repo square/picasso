@@ -17,8 +17,10 @@ package com.squareup.picasso3;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.media.ExifInterface;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import okio.Source;
 
@@ -26,6 +28,7 @@ import static android.content.ContentResolver.SCHEME_FILE;
 import static android.support.media.ExifInterface.ORIENTATION_NORMAL;
 import static android.support.media.ExifInterface.TAG_ORIENTATION;
 import static com.squareup.picasso3.Picasso.LoadedFrom.DISK;
+import static com.squareup.picasso3.Utils.checkNotNull;
 
 class FileRequestHandler extends ContentStreamRequestHandler {
 
@@ -34,16 +37,18 @@ class FileRequestHandler extends ContentStreamRequestHandler {
   }
 
   @Override public boolean canHandleRequest(@NonNull Request data) {
-    return SCHEME_FILE.equals(data.uri.getScheme());
+    Uri uri = data.uri;
+    return uri != null && SCHEME_FILE.equals(uri.getScheme());
   }
 
   @Override
   public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull Callback callback) {
     boolean signaledCallback = false;
     try {
-      Source source = getSource(request);
+      Uri requestUri = checkNotNull(request.uri, "request.uri == null");
+      Source source = getSource(requestUri);
       Bitmap bitmap = decodeStream(source, request);
-      int exifRotation = getExifOrientation(request);
+      int exifRotation = getExifOrientation(requestUri);
       signaledCallback = true;
       callback.onSuccess(new Result(bitmap, DISK, exifRotation));
     } catch (Exception e) {
@@ -53,8 +58,12 @@ class FileRequestHandler extends ContentStreamRequestHandler {
     }
   }
 
-  @Override protected int getExifOrientation(Request request) throws IOException {
-    ExifInterface exifInterface = new ExifInterface(request.uri.getPath());
+  @Override protected int getExifOrientation(Uri uri) throws IOException {
+    String path = uri.getPath();
+    if (path == null) {
+      throw new FileNotFoundException("path == null, uri: " + uri);
+    }
+    ExifInterface exifInterface = new ExifInterface(path);
     return exifInterface.getAttributeInt(TAG_ORIENTATION, ORIENTATION_NORMAL);
   }
 }

@@ -18,13 +18,17 @@ package com.squareup.picasso3;
 import android.content.Context;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.Nullable;
 import android.widget.ImageView;
+
+import static com.squareup.picasso3.Utils.checkNotNull;
 
 class ImageViewAction extends Action<ImageView> {
 
-  Callback callback;
+  @Nullable Callback callback;
 
-  ImageViewAction(Picasso picasso, Target<ImageView> target, Request data, Callback callback) {
+  ImageViewAction(Picasso picasso, Target<ImageView> target, Request data,
+      @Nullable Callback callback) {
     super(picasso, target, data);
     this.callback = callback;
   }
@@ -35,6 +39,7 @@ class ImageViewAction extends Action<ImageView> {
           String.format("Attempted to complete action with no result!\n%s", this));
     }
 
+    Target<ImageView> wrapper = checkNotNull(this.wrapper, "wrapper == null");
     ImageView target = wrapper.target;
 
     Context context = picasso.context;
@@ -47,7 +52,9 @@ class ImageViewAction extends Action<ImageView> {
   }
 
   @Override public void error(Exception e) {
+    Target<ImageView> wrapper = checkNotNull(this.wrapper, "wrapper == null");
     ImageView target = wrapper.target;
+
     Drawable placeholder = target.getDrawable();
     if (placeholder instanceof Animatable) {
       ((Animatable) placeholder).stop();
