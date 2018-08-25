@@ -20,6 +20,8 @@ import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 
 import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
+import static com.squareup.picasso3.BitmapUtils.decodeResource;
+import static com.squareup.picasso3.BitmapUtils.isXmlResource;
 import static com.squareup.picasso3.Picasso.LoadedFrom.DISK;
 
 class ResourceRequestHandler extends RequestHandler {

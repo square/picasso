@@ -23,13 +23,13 @@ import org.robolectric.RobolectricTestRunner;
 
 import static android.graphics.Bitmap.Config.RGB_565;
 import static com.google.common.truth.Truth.assertThat;
-import static com.squareup.picasso3.RequestHandler.calculateInSampleSize;
-import static com.squareup.picasso3.RequestHandler.createBitmapOptions;
-import static com.squareup.picasso3.RequestHandler.requiresInSampleSize;
+import static com.squareup.picasso3.BitmapUtils.calculateInSampleSize;
+import static com.squareup.picasso3.BitmapUtils.createBitmapOptions;
+import static com.squareup.picasso3.BitmapUtils.requiresInSampleSize;
 import static com.squareup.picasso3.TestUtils.URI_1;
 
 @RunWith(RobolectricTestRunner.class)
-public class RequestHandlerTest {
+public class BitmapUtilsTest {
 
   @Test public void bitmapConfig() {
     for (Bitmap.Config config : Bitmap.Config.values()) {
