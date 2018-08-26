@@ -438,19 +438,6 @@ public final class PicassoTest {
     }
   }
 
-  @Test public void builderInvalidListener() {
-    try {
-      new Picasso.Builder(context).listener(null);
-      fail("Null listener should throw exception.");
-    } catch (NullPointerException expected) {
-    }
-    try {
-      new Picasso.Builder(context).listener(listener).listener(listener);
-      fail("Setting Listener twice should throw exception.");
-    } catch (IllegalStateException expected) {
-    }
-  }
-
   @Test public void builderInvalidClient() {
     try {
       new Picasso.Builder(context).client(null);
@@ -463,20 +450,6 @@ public final class PicassoTest {
       fail();
     } catch (NullPointerException expected) {
       assertThat(expected).hasMessageThat().isEqualTo("factory == null");
-    }
-  }
-
-  @Test public void builderInvalidExecutor() {
-    try {
-      new Picasso.Builder(context).executor(null);
-      fail("Null Executor should throw exception.");
-    } catch (NullPointerException expected) {
-    }
-    try {
-      ExecutorService executor = mock(ExecutorService.class);
-      new Picasso.Builder(context).executor(executor).executor(executor);
-      fail("Setting Executor twice should throw exception.");
-    } catch (IllegalStateException expected) {
     }
   }
 
@@ -497,34 +470,11 @@ public final class PicassoTest {
     }
   }
 
-  @Test public void builderDuplicateRequestTransformer() {
-    RequestTransformer identity = new RequestTransformer() {
-      @Override public Request transformRequest(Request request) {
-        return request;
-      }
-    };
-    try {
-      new Picasso.Builder(context).addRequestTransformer(identity)
-          .addRequestTransformer(identity);
-      fail("Setting request transformer twice should throw exception.");
-    } catch (IllegalStateException expected) {
-    }
-  }
-
   @Test public void builderNullRequestHandler() {
     try {
       new Picasso.Builder(context).addRequestHandler(null);
       fail("Null request handler should throw exception.");
     } catch (NullPointerException expected) {
-    }
-  }
-
-  @Test public void buildDuplicateRequestHandler() {
-    try {
-      new Picasso.Builder(context).addRequestHandler(requestHandler)
-          .addRequestHandler(requestHandler);
-      fail("Registering same request handler twice should throw exception.");
-    } catch (IllegalStateException expected) {
     }
   }
 
@@ -611,6 +561,13 @@ public final class PicassoTest {
     assertThat(child.cache).isEqualTo(parent.cache);
     assertThat(child.listener).isEqualTo(parent.listener);
     assertThat(child.requestTransformers).isEqualTo(parent.requestTransformers);
+
+    assertThat(child.requestHandlers).hasSize(parent.requestHandlers.size());
+    for (int i = 0, n = child.requestHandlers.size(); i < n; i++) {
+      assertThat(child.requestHandlers.get(i)).isInstanceOf(
+          parent.requestHandlers.get(i).getClass());
+    }
+
     assertThat(child.defaultBitmapConfig).isEqualTo(parent.defaultBitmapConfig);
     assertThat(child.indicatorsEnabled).isEqualTo(parent.indicatorsEnabled);
     assertThat(child.loggingEnabled).isEqualTo(parent.loggingEnabled);
