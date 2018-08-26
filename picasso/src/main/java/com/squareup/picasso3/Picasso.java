@@ -687,6 +687,7 @@ public class Picasso implements LifecycleObserver {
       service = picasso.dispatcher.service;
       cache = picasso.cache;
       listener = picasso.listener;
+      imageDecoders.addAll(picasso.imageDecoderFactory.decoders);
       requestTransformers.addAll(picasso.requestTransformers);
       requestHandlers.addAll(picasso.extraRequestHandlers);
       defaultBitmapConfig = picasso.defaultBitmapConfig;
@@ -767,9 +768,6 @@ public class Picasso implements LifecycleObserver {
     @NonNull
     public Builder addImageDecoder(@NonNull ImageDecoder imageDecoder) {
       checkNotNull(imageDecoder, "imageDecoder == null");
-      if (imageDecoders.contains(imageDecoder)) {
-        throw new IllegalStateException("ImageDecoder already set.");
-      }
       imageDecoders.add(imageDecoder);
       return this;
     }

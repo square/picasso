@@ -346,7 +346,7 @@ public class RequestCreator {
   }
 
   @NonNull
-  public RequestCreator imageDecoderFactory(ImageDecoderFactory imageDecoderFactory) {
+  public RequestCreator imageDecoderFactory(@NonNull ImageDecoderFactory imageDecoderFactory) {
     this.data.imageDecoderFactory(imageDecoderFactory);
     return this;
   }

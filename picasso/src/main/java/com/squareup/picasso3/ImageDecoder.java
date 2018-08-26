@@ -29,6 +29,8 @@ public interface ImageDecoder {
     }
   }
 
-  boolean canHandleSource(BufferedSource source);
-  Image decodeImage(BufferedSource source, Request request) throws IOException;
+  boolean canHandleSource(@NonNull BufferedSource source);
+
+  @NonNull Image decodeImage(@NonNull BufferedSource source, @NonNull Request request)
+      throws IOException;
 }

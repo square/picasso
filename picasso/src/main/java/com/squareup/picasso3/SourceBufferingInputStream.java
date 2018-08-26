@@ -21,6 +21,8 @@ import java.io.InputStream;
 import okio.Buffer;
 import okio.BufferedSource;
 
+import static com.squareup.picasso3.Utils.checkNotNull;
+
 /**
  * An {@link InputStream} that fills the buffer of an {@link BufferedSource} as reads are requested
  * and copies its bytes into the byte arrays of the caller. This allows you to read as much of the
@@ -41,7 +43,6 @@ final class SourceBufferingInputStream extends InputStream {
   }
 
   private final Buffer temp = new Buffer();
-  // offset is the write offset in the dest array
   private int copyTo(byte[] sink, int offset, int byteCount) {
     // TODO replace this with https://github.com/square/okio/issues/362
     // `copyTo` treats offset as the read position, `read` treats offset as the write offset.

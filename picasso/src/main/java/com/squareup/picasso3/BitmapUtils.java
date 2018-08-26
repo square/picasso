@@ -15,7 +15,6 @@
  */
 package com.squareup.picasso3;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -31,8 +30,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import okio.BufferedSource;
-import okio.Okio;
-import okio.Source;
 
 import static com.squareup.picasso3.Utils.checkNotNull;
 
@@ -93,26 +90,23 @@ final class BitmapUtils {
    * about the supplied request in order to do the decoding efficiently (such as through leveraging
    * {@code inSampleSize}).
    */
-  static Bitmap decodeStream(Source source, Request request) throws IOException {
-    BufferedSource bufferedSource = Okio.buffer(source);
-
+  static Bitmap decodeStream(BufferedSource source, Request request) throws IOException {
     if (Build.VERSION.SDK_INT >= 28) {
-      return decodeStreamP(request, bufferedSource);
+      return decodeStreamP(source, request);
     }
 
-    return decodeStreamPreP(request, bufferedSource);
+    return decodeStreamPreP(source, request);
   }
 
   @RequiresApi(28)
-  @SuppressLint("Override")
-  private static Bitmap decodeStreamP(Request request, BufferedSource bufferedSource)
-      throws IOException {
-    ImageDecoder.Source imageSource =
-        ImageDecoder.createSource(ByteBuffer.wrap(bufferedSource.readByteArray()));
+  private static Bitmap decodeStreamP(BufferedSource source, Request request) throws IOException {
+    android.graphics.ImageDecoder.Source imageSource =
+        android.graphics.ImageDecoder.createSource(ByteBuffer.wrap(source.readByteArray()));
     return decodeImageSource(imageSource, request);
   }
 
-  private static Bitmap decodeStreamPreP(Request request, BufferedSource bufferedSource)
+  @NonNull
+  private static Bitmap decodeStreamPreP(BufferedSource bufferedSource, Request request)
       throws IOException {
     boolean isWebPFile = Utils.isWebPFile(bufferedSource);
     boolean isPurgeable = request.purgeable && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP;

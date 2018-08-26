@@ -117,7 +117,7 @@ public final class Request {
     this.uri = builder.uri;
     this.resourceId = builder.resourceId;
     this.stableKey = builder.stableKey;
-    this.decoderFactory = builder.decoderFactory;
+    this.decoderFactory = checkNotNull(builder.decoderFactory, "decoderFactory == null");
     if (builder.transformations == null) {
       this.transformations = Collections.emptyList();
     } else {
@@ -583,7 +583,7 @@ public final class Request {
     }
 
     @NonNull
-    public Builder imageDecoderFactory(ImageDecoderFactory factory) {
+    public Builder imageDecoderFactory(@NonNull ImageDecoderFactory factory) {
       decoderFactory = factory;
       return this;
     }
@@ -682,6 +682,10 @@ public final class Request {
       }
       if (priority == null) {
         priority = Priority.NORMAL;
+      }
+      if (decoderFactory == null) {
+        decoderFactory = new ImageDecoderFactory(
+            Collections.<ImageDecoder>singletonList(new BitmapImageDecoder()));
       }
 
       return new Request(this);
