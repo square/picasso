@@ -124,12 +124,13 @@ public class Picasso implements LifecycleObserver {
     }
   };
 
-  @Nullable private final Listener listener;
-  private final List<RequestTransformer> requestTransformers;
-  private final List<RequestHandler> requestHandlers;
+  @Nullable final Listener listener;
+  final List<RequestTransformer> requestTransformers;
+  final List<RequestHandler> requestHandlers;
 
   final Context context;
   final Dispatcher dispatcher;
+  final Call.Factory callFactory;
   private final @Nullable okhttp3.Cache closeableCache;
   final PlatformLruCache cache;
   final Stats stats;
@@ -149,6 +150,7 @@ public class Picasso implements LifecycleObserver {
       boolean loggingEnabled) {
     this.context = context;
     this.dispatcher = dispatcher;
+    this.callFactory = callFactory;
     this.closeableCache = closeableCache;
     this.cache = cache;
     this.listener = listener;
@@ -646,6 +648,11 @@ public class Picasso implements LifecycleObserver {
     }
   }
 
+  @NonNull
+  public Builder newBuilder() {
+    return new Builder(this);
+  }
+
   /** Fluent API for creating {@link Picasso} instances. */
   @SuppressWarnings("UnusedDeclaration") // Public API.
   public static class Builder {
@@ -660,11 +667,30 @@ public class Picasso implements LifecycleObserver {
 
     private boolean indicatorsEnabled;
     private boolean loggingEnabled;
+    private boolean isChild;
 
     /** Start building a new {@link Picasso} instance. */
     public Builder(@NonNull Context context) {
       checkNotNull(context, "context == null");
       this.context = context.getApplicationContext();
+
+      isChild = false;
+    }
+
+    Builder(Picasso picasso) {
+      context = picasso.context;
+      callFactory = picasso.callFactory;
+      service = picasso.dispatcher.service;
+      cache = picasso.cache;
+      listener = picasso.listener;
+      requestTransformers.addAll(picasso.requestTransformers);
+      requestHandlers.addAll(picasso.requestHandlers);
+      defaultBitmapConfig = picasso.defaultBitmapConfig;
+
+      indicatorsEnabled = picasso.indicatorsEnabled;
+      loggingEnabled = picasso.loggingEnabled;
+
+      isChild = true;
     }
 
     /**
@@ -710,7 +736,7 @@ public class Picasso implements LifecycleObserver {
     @NonNull
     public Builder executor(@NonNull ExecutorService executorService) {
       checkNotNull(executorService, "executorService == null");
-      if (this.service != null) {
+      if (!isChild && this.service != null) {
         throw new IllegalStateException("Executor service already set.");
       }
       this.service = executorService;
@@ -734,7 +760,7 @@ public class Picasso implements LifecycleObserver {
     @NonNull
     public Builder listener(@NonNull Listener listener) {
       checkNotNull(listener, "listener == null");
-      if (this.listener != null) {
+      if (!isChild && this.listener != null) {
         throw new IllegalStateException("Listener already set.");
       }
       this.listener = listener;
@@ -745,7 +771,7 @@ public class Picasso implements LifecycleObserver {
     @NonNull
     public Builder addRequestTransformer(@NonNull RequestTransformer transformer) {
       checkNotNull(transformer, "transformer == null");
-      if (requestTransformers.contains(transformer)) {
+      if (!isChild && requestTransformers.contains(transformer)) {
         throw new IllegalStateException("Transformer already set.");
       }
       requestTransformers.add(transformer);
@@ -756,7 +782,7 @@ public class Picasso implements LifecycleObserver {
     @NonNull
     public Builder addRequestHandler(@NonNull RequestHandler requestHandler) {
       checkNotNull(requestHandler, "requestHandler == null");
-      if (requestHandlers.contains(requestHandler)) {
+      if (!isChild && requestHandlers.contains(requestHandler)) {
         throw new IllegalStateException("RequestHandler already registered.");
       }
       requestHandlers.add(requestHandler);

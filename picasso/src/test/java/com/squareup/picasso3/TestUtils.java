@@ -42,7 +42,6 @@ import org.mockito.stubbing.Answer;
 
 import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static android.graphics.Bitmap.Config.ALPHA_8;
-import static android.graphics.Bitmap.Config.ARGB_8888;
 import static android.provider.ContactsContract.Contacts.CONTENT_URI;
 import static android.provider.ContactsContract.Contacts.Photo.CONTENT_DIRECTORY;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
@@ -104,6 +103,8 @@ class TestUtils {
   static final String CUSTOM_URI_KEY = new Request.Builder(CUSTOM_URI).build().key;
   static final String BITMAP_RESOURCE_VALUE = "foo.png";
   static final String XML_RESOURCE_VALUE = "foo.xml";
+  static final Bitmap.Config DEFAULT_CONFIG = Bitmap.Config.ARGB_8888;
+  static final int DEFAULT_CACHE_SIZE = 123;
 
   static Context mockPackageResourceContext() {
     Context context = mock(Context.class);
@@ -159,7 +160,7 @@ class TestUtils {
 
   static Action mockAction(String key, Uri uri, Object target, int resourceId, Priority priority,
                            String tag) {
-    Request request = new Request.Builder(uri, resourceId, ARGB_8888).build();
+    Request request = new Request.Builder(uri, resourceId, DEFAULT_CONFIG).build();
     return mockAction(key, request, target, priority, tag);
   }
 
@@ -304,8 +305,51 @@ class TestUtils {
     }
   };
 
+  static final RequestHandler NOOP_REQUEST_HANDLER = new RequestHandler() {
+    @Override public boolean canHandleRequest(@NonNull Request data) {
+      return false;
+    }
+
+    @Override public void load(@NonNull Picasso picasso, @NonNull Request request,
+        @NonNull Callback callback) {
+    }
+  };
+
+  static final RequestTransformer NOOP_TRANSFORMER = new RequestTransformer() {
+    @NonNull @Override public Request transformRequest(@NonNull Request request) {
+      return new Request.Builder(0).build();
+    }
+  };
+
+  static final Picasso.Listener NOOP_LISTENER = new Picasso.Listener() {
+    @Override public void onImageLoadFailed(@NonNull Picasso picasso, @NonNull Uri uri,
+        @NonNull Exception exception) {
+    }
+  };
+
   static final List<RequestTransformer> NO_TRANSFORMERS = Collections.emptyList();
   static final List<RequestHandler> NO_HANDLERS = Collections.emptyList();
+
+  static Picasso defaultPicasso(Context context, boolean hasRequestHandlers,
+      boolean hasTransformers) {
+    Picasso.Builder builder = new Picasso.Builder(context);
+
+    if (hasRequestHandlers) {
+      builder.addRequestHandler(NOOP_REQUEST_HANDLER);
+    }
+    if (hasTransformers) {
+      builder.addRequestTransformer(NOOP_TRANSFORMER);
+    }
+    return builder
+        .callFactory(UNUSED_CALL_FACTORY)
+        .defaultBitmapConfig(DEFAULT_CONFIG)
+        .executor(new PicassoExecutorService())
+        .indicatorsEnabled(true)
+        .listener(NOOP_LISTENER)
+        .loggingEnabled(true)
+        .withCacheSize(DEFAULT_CACHE_SIZE)
+        .build();
+  }
 
   static final class PremadeCall implements Call {
     private final okhttp3.Request request;
