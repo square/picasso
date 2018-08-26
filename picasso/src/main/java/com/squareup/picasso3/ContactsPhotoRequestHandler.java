@@ -30,6 +30,7 @@ import okio.Source;
 
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.provider.ContactsContract.Contacts.openContactPhotoInputStream;
+import static com.squareup.picasso3.BitmapUtils.decodeStream;
 import static com.squareup.picasso3.Picasso.LoadedFrom.DISK;
 import static com.squareup.picasso3.Utils.checkNotNull;
 
