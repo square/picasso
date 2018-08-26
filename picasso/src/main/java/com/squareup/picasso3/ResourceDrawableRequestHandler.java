@@ -61,5 +61,4 @@ public final class ResourceDrawableRequestHandler extends RequestHandler {
       }
     });
   }
-
 }

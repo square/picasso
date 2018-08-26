@@ -30,7 +30,6 @@ import okio.Source;
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static androidx.exifinterface.media.ExifInterface.ORIENTATION_NORMAL;
 import static androidx.exifinterface.media.ExifInterface.TAG_ORIENTATION;
-import static com.squareup.picasso3.BitmapUtils.decodeStream;
 import static com.squareup.picasso3.Picasso.LoadedFrom.DISK;
 import static com.squareup.picasso3.Utils.checkNotNull;
 

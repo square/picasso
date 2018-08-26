@@ -6,7 +6,7 @@ import okio.BufferedSource;
 
 final class ImageDecoderFactory {
 
-  private final List<ImageDecoder> decoders;
+  final List<ImageDecoder> decoders;
 
   ImageDecoderFactory(List<ImageDecoder> decoders) {
     this.decoders = decoders;
