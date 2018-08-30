@@ -16,14 +16,22 @@
 package com.squareup.picasso3;
 
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.DrawableRes;
+import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 
-import static com.squareup.picasso3.Utils.checkNotNull;
+final class BitmapTargetAction extends Action {
+  final @Nullable Drawable errorDrawable;
+  final @DrawableRes int errorResId;
+  final BitmapTarget target;
 
-final class BitmapTargetAction extends Action<BitmapTarget> {
-
-  BitmapTargetAction(Picasso picasso, Target<BitmapTarget> wrapper, Request data) {
-    super(picasso, wrapper, data);
+  BitmapTargetAction(Picasso picasso, BitmapTarget target, Request data,
+      @Nullable Drawable errorDrawable, @DrawableRes int errorResId) {
+    super(picasso, data);
+    this.target = target;
+    this.errorDrawable = errorDrawable;
+    this.errorResId = errorResId;
   }
 
   @Override void complete(RequestHandler.Result result) {
@@ -31,7 +39,6 @@ final class BitmapTargetAction extends Action<BitmapTarget> {
       throw new AssertionError(
           String.format("Attempted to complete action with no result!\n%s", this));
     }
-    BitmapTarget target = getTarget();
     Bitmap bitmap = result.getBitmap();
     if (bitmap != null) {
       target.onBitmapLoaded(bitmap, result.getLoadedFrom());
@@ -42,13 +49,15 @@ final class BitmapTargetAction extends Action<BitmapTarget> {
   }
 
   @Override void error(Exception e) {
-    BitmapTarget target = getTarget();
-    Target<BitmapTarget> wrapper = checkNotNull(this.wrapper, "wrapper == null");
-    if (wrapper.errorResId != 0) {
+    if (errorResId != 0) {
       target.onBitmapFailed(e,
-          ContextCompat.getDrawable(picasso.context, wrapper.errorResId));
+          ContextCompat.getDrawable(picasso.context, errorResId));
     } else {
-      target.onBitmapFailed(e, wrapper.errorDrawable);
+      target.onBitmapFailed(e, errorDrawable);
     }
+  }
+
+  @Override Object getTarget() {
+    return target;
   }
 }

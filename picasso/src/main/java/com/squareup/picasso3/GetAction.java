@@ -15,14 +15,18 @@
  */
 package com.squareup.picasso3;
 
-class GetAction extends Action<Void> {
+class GetAction extends Action {
   GetAction(Picasso picasso, Request data) {
-    super(picasso, null, data);
+    super(picasso, data);
   }
 
   @Override void complete(RequestHandler.Result result) {
   }
 
   @Override public void error(Exception e) {
+  }
+
+  @Override Object getTarget() {
+    throw new AssertionError();
   }
 }

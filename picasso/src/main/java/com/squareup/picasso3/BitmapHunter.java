@@ -88,9 +88,9 @@ class BitmapHunter implements Runnable {
     this.cache = cache;
     this.stats = stats;
     this.action = action;
-    this.key = action.getKey();
-    this.data = action.getRequest();
-    this.priority = action.getPriority();
+    this.key = action.request.key;
+    this.data = action.request;
+    this.priority = action.request.priority;
     this.requestHandler = requestHandler;
     this.retryCount = requestHandler.getRetryCount();
   }
@@ -242,7 +242,7 @@ class BitmapHunter implements Runnable {
       log(OWNER_HUNTER, VERB_JOINED, request.logId(), getLogIdsForHunter(this, "to "));
     }
 
-    Priority actionPriority = action.getPriority();
+    Priority actionPriority = action.request.priority;
     if (actionPriority.ordinal() > priority.ordinal()) {
       priority = actionPriority;
     }
@@ -259,7 +259,7 @@ class BitmapHunter implements Runnable {
 
     // The action being detached had the highest priority. Update this
     // hunter's priority with the remaining actions.
-    if (detached && action.getPriority() == priority) {
+    if (detached && action.request.priority == priority) {
       priority = computeNewPriority();
     }
 
@@ -280,13 +280,13 @@ class BitmapHunter implements Runnable {
     }
 
     if (action != null) {
-      newPriority = action.getPriority();
+      newPriority = action.request.priority;
     }
 
     if (actions != null) {
       //noinspection ForLoopReplaceableByForEach
       for (int i = 0, n = actions.size(); i < n; i++) {
-        Priority actionPriority = actions.get(i).getPriority();
+        Priority actionPriority = actions.get(i).request.priority;
         if (actionPriority.ordinal() > newPriority.ordinal()) {
           newPriority = actionPriority;
         }
@@ -364,7 +364,7 @@ class BitmapHunter implements Runnable {
 
   static BitmapHunter forRequest(Picasso picasso, Dispatcher dispatcher,
       PlatformLruCache cache, Stats stats, Action action) {
-    Request request = action.getRequest();
+    Request request = action.request;
     List<RequestHandler> requestHandlers = picasso.getRequestHandlers();
 
     // Index-based loop to avoid allocating an iterator.

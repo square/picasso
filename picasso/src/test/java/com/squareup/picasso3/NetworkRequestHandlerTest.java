@@ -79,7 +79,7 @@ public class NetworkRequestHandlerTest {
     responses.add(responseOf(ResponseBody.create(null, new byte[10])));
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     final CountDownLatch latch = new CountDownLatch(1);
-    networkHandler.load(picasso, action.getRequest(), new RequestHandler.Callback() {
+    networkHandler.load(picasso, action.request, new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
         try {
           assertThat(requests.takeFirst().cacheControl().toString()).isEmpty();
@@ -140,7 +140,7 @@ public class NetworkRequestHandlerTest {
     responses.add(responseOf(ResponseBody.create(null, new byte[10])));
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     final CountDownLatch latch = new CountDownLatch(1);
-    networkHandler.load(picasso, action.getRequest(), new RequestHandler.Callback() {
+    networkHandler.load(picasso, action.request, new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
         verify(stats).dispatchDownloadFinished(10);
         latch.countDown();
@@ -170,7 +170,7 @@ public class NetworkRequestHandlerTest {
         .build());
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     final CountDownLatch latch = new CountDownLatch(1);
-    networkHandler.load(picasso, action.getRequest(), new RequestHandler.Callback() {
+    networkHandler.load(picasso, action.request, new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
         throw new AssertionError();
       }
@@ -191,7 +191,7 @@ public class NetworkRequestHandlerTest {
         .build());
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     final CountDownLatch latch = new CountDownLatch(1);
-    networkHandler.load(picasso, action.getRequest(), new RequestHandler.Callback() {
+    networkHandler.load(picasso, action.request, new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
         verifyZeroInteractions(stats);
         latch.countDown();
