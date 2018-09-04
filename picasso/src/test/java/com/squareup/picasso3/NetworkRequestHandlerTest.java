@@ -16,6 +16,7 @@
 package com.squareup.picasso3;
 
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import com.squareup.picasso3.RequestHandler.Result;
 import com.squareup.picasso3.TestUtils.PremadeCall;
@@ -202,6 +203,26 @@ public class NetworkRequestHandlerTest {
     });
     assertThat(latch.await(10, SECONDS)).isTrue();
   }
+
+  @Test public void shouldHandleSchemeInsensitiveCase() {
+    String[] schemes = {
+            "http",
+            "https",
+            "HTTP",
+            "HTTPS",
+            "HTtP",
+    };
+
+    for (String scheme : schemes) {
+      final Uri uri = URI_1.buildUpon().scheme(scheme).build();
+      final Boolean shouldHandle = networkHandler.canHandleRequest(
+              TestUtils.mockRequest(uri)
+      );
+
+      assertThat(shouldHandle).isTrue();
+    }
+  }
+
 
   private static Response responseOf(ResponseBody body) {
     return new Response.Builder()
