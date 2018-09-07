@@ -214,12 +214,8 @@ public class NetworkRequestHandlerTest {
     };
 
     for (String scheme : schemes) {
-      final Uri uri = URI_1.buildUpon().scheme(scheme).build();
-      final Boolean shouldHandle = networkHandler.canHandleRequest(
-              TestUtils.mockRequest(uri)
-      );
-
-      assertThat(shouldHandle).isTrue();
+      Uri uri = URI_1.buildUpon().scheme(scheme).build();
+      assertThat(networkHandler.canHandleRequest(TestUtils.mockRequest(uri))).isTrue();
     }
   }
 
