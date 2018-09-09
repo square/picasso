@@ -48,7 +48,7 @@ final class NetworkRequestHandler extends RequestHandler {
     if (uri == null) return false;
 
     String scheme = uri.getScheme();
-    return (SCHEME_HTTP.equals(scheme) || SCHEME_HTTPS.equals(scheme));
+    return (SCHEME_HTTP.equalsIgnoreCase(scheme) || SCHEME_HTTPS.equalsIgnoreCase(scheme));
   }
 
   @Override public void load(@NonNull Picasso picasso, @NonNull final Request request, @NonNull

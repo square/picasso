@@ -133,6 +133,10 @@ class TestUtils {
     return resources;
   }
 
+  static Request mockRequest(Uri uri) {
+    return new Request.Builder(uri).build();
+  }
+
   static Action mockAction(String key, Uri uri) {
     return mockAction(key, uri, null, 0, null, null);
   }
