@@ -221,7 +221,10 @@ public class RequestCreator {
     return data.getTag();
   }
 
-  /** Resize the image to the specified dimension size. */
+  /**
+   * Resize the image to the specified dimension size.
+   * Use 0 as desired dimension to resize keeping aspect ratio.
+   */
   @NonNull
   public RequestCreator resizeDimen(int targetWidthResId, int targetHeightResId) {
     Resources resources = picasso.context.getResources();
@@ -230,7 +233,10 @@ public class RequestCreator {
     return resize(targetWidth, targetHeight);
   }
 
-  /** Resize the image to the specified size in pixels. */
+  /**
+   * Resize the image to the specified size in pixels.
+   * Use 0 as desired dimension to resize keeping aspect ratio.
+   */
   @NonNull
   public RequestCreator resize(int targetWidth, int targetHeight) {
     data.resize(targetWidth, targetHeight);
