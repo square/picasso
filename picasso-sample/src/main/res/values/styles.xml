@@ -50,8 +50,4 @@
   <style name="Widget.PicassoSample.DescriptionUrl" parent="android:Widget.TextView">
     <item name="android:textSize">15sp</item>
   </style>
-
-  <style name="Widget.PicassoSample.DescriptionText" parent="android:Widget.TextView">
-    <item name="android:textSize">12sp</item>
-  </style>
 </resources>
