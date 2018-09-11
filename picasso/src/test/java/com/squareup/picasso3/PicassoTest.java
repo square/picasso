@@ -42,11 +42,14 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso3.Picasso.Listener;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget;
+import static com.squareup.picasso3.TestUtils.NOOP_REQUEST_HANDLER;
+import static com.squareup.picasso3.TestUtils.NOOP_TRANSFORMER;
 import static com.squareup.picasso3.TestUtils.NO_HANDLERS;
 import static com.squareup.picasso3.TestUtils.NO_TRANSFORMERS;
 import static com.squareup.picasso3.TestUtils.UNUSED_CALL_FACTORY;
 import static com.squareup.picasso3.TestUtils.URI_1;
 import static com.squareup.picasso3.TestUtils.URI_KEY_1;
+import static com.squareup.picasso3.TestUtils.defaultPicasso;
 import static com.squareup.picasso3.TestUtils.makeBitmap;
 import static com.squareup.picasso3.TestUtils.mockAction;
 import static com.squareup.picasso3.TestUtils.mockCanceledAction;
@@ -68,6 +71,9 @@ import static org.mockito.MockitoAnnotations.initMocks;
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 23) // Works around https://github.com/robolectric/robolectric/issues/2566.
 public final class PicassoTest {
+  private static final int NUM_BUILTIN_HANDLERS = 8;
+  private static final int NUM_BUILTIN_TRANSFORMERS = 0;
+
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   @Mock Context context;
   @Mock Dispatcher dispatcher;
@@ -432,19 +438,6 @@ public final class PicassoTest {
     }
   }
 
-  @Test public void builderInvalidListener() {
-    try {
-      new Picasso.Builder(context).listener(null);
-      fail("Null listener should throw exception.");
-    } catch (NullPointerException expected) {
-    }
-    try {
-      new Picasso.Builder(context).listener(listener).listener(listener);
-      fail("Setting Listener twice should throw exception.");
-    } catch (IllegalStateException expected) {
-    }
-  }
-
   @Test public void builderInvalidClient() {
     try {
       new Picasso.Builder(context).client(null);
@@ -457,20 +450,6 @@ public final class PicassoTest {
       fail();
     } catch (NullPointerException expected) {
       assertThat(expected).hasMessageThat().isEqualTo("factory == null");
-    }
-  }
-
-  @Test public void builderInvalidExecutor() {
-    try {
-      new Picasso.Builder(context).executor(null);
-      fail("Null Executor should throw exception.");
-    } catch (NullPointerException expected) {
-    }
-    try {
-      ExecutorService executor = mock(ExecutorService.class);
-      new Picasso.Builder(context).executor(executor).executor(executor);
-      fail("Setting Executor twice should throw exception.");
-    } catch (IllegalStateException expected) {
     }
   }
 
@@ -491,34 +470,11 @@ public final class PicassoTest {
     }
   }
 
-  @Test public void builderDuplicateRequestTransformer() {
-    RequestTransformer identity = new RequestTransformer() {
-      @Override public Request transformRequest(Request request) {
-        return request;
-      }
-    };
-    try {
-      new Picasso.Builder(context).addRequestTransformer(identity)
-          .addRequestTransformer(identity);
-      fail("Setting request transformer twice should throw exception.");
-    } catch (IllegalStateException expected) {
-    }
-  }
-
   @Test public void builderNullRequestHandler() {
     try {
       new Picasso.Builder(context).addRequestHandler(null);
       fail("Null request handler should throw exception.");
     } catch (NullPointerException expected) {
-    }
-  }
-
-  @Test public void buildDuplicateRequestHandler() {
-    try {
-      new Picasso.Builder(context).addRequestHandler(requestHandler)
-          .addRequestHandler(requestHandler);
-      fail("Registering same request handler twice should throw exception.");
-    } catch (IllegalStateException expected) {
     }
   }
 
@@ -538,7 +494,7 @@ public final class PicassoTest {
 
   @Test public void builderInvalidContext() {
     try {
-      new Picasso.Builder(null);
+      new Picasso.Builder((Context) null);
       fail("Null context should throw exception.");
     } catch (NullPointerException expected) {
     }
@@ -579,6 +535,46 @@ public final class PicassoTest {
     assertThat(cache.size()).isEqualTo(1);
     picasso.invalidate(URI_1);
     assertThat(cache.size()).isEqualTo(0);
+  }
+
+  @Test public void clonedRequestHandlersAreIndependent() {
+    Picasso original = defaultPicasso(RuntimeEnvironment.application, false, false);
+
+    original.newBuilder()
+        .addRequestTransformer(NOOP_TRANSFORMER)
+        .addRequestHandler(NOOP_REQUEST_HANDLER)
+        .build();
+
+    assertThat(original.requestTransformers).hasSize(NUM_BUILTIN_TRANSFORMERS);
+    assertThat(original.requestHandlers).hasSize(NUM_BUILTIN_HANDLERS);
+  }
+
+  @Test public void cloneSharesStatefulInstances() {
+    Picasso parent = defaultPicasso(RuntimeEnvironment.application, true, true);
+
+    Picasso child = parent.newBuilder()
+        .build();
+
+    assertThat(child.context).isEqualTo(parent.context);
+    assertThat(child.callFactory).isEqualTo(parent.callFactory);
+    assertThat(child.dispatcher.service).isEqualTo(parent.dispatcher.service);
+    assertThat(child.cache).isEqualTo(parent.cache);
+    assertThat(child.listener).isEqualTo(parent.listener);
+    assertThat(child.requestTransformers).isEqualTo(parent.requestTransformers);
+
+    assertThat(child.requestHandlers).hasSize(parent.requestHandlers.size());
+    for (int i = 0, n = child.requestHandlers.size(); i < n; i++) {
+      assertThat(child.requestHandlers.get(i)).isInstanceOf(
+          parent.requestHandlers.get(i).getClass());
+    }
+
+    assertThat(child.defaultBitmapConfig).isEqualTo(parent.defaultBitmapConfig);
+    assertThat(child.indicatorsEnabled).isEqualTo(parent.indicatorsEnabled);
+    assertThat(child.loggingEnabled).isEqualTo(parent.loggingEnabled);
+
+    assertThat(child.targetToAction).isEqualTo(parent.targetToAction);
+    assertThat(child.targetToDeferredRequestCreator).isEqualTo(
+        parent.targetToDeferredRequestCreator);
   }
 
   private void verifyActionComplete(Action action) {

@@ -124,12 +124,13 @@ public class Picasso implements LifecycleObserver {
     }
   };
 
-  @Nullable private final Listener listener;
-  private final List<RequestTransformer> requestTransformers;
-  private final List<RequestHandler> requestHandlers;
+  @Nullable final Listener listener;
+  final List<RequestTransformer> requestTransformers;
+  final List<RequestHandler> requestHandlers;
 
   final Context context;
   final Dispatcher dispatcher;
+  final Call.Factory callFactory;
   private final @Nullable okhttp3.Cache closeableCache;
   final PlatformLruCache cache;
   final Stats stats;
@@ -149,13 +150,15 @@ public class Picasso implements LifecycleObserver {
       boolean loggingEnabled) {
     this.context = context;
     this.dispatcher = dispatcher;
+    this.callFactory = callFactory;
     this.closeableCache = closeableCache;
     this.cache = cache;
     this.listener = listener;
     this.requestTransformers = Collections.unmodifiableList(new ArrayList<>(requestTransformers));
     this.defaultBitmapConfig = defaultBitmapConfig;
 
-    int builtInHandlers = 8; // Adjust this as internal handlers are added or removed.
+    // Adjust this and Builder(Picasso) as internal handlers are added or removed.
+    int builtInHandlers = 8;
     int extraCount = extraRequestHandlers.size();
     List<RequestHandler> allRequestHandlers = new ArrayList<>(builtInHandlers + extraCount);
 
@@ -646,6 +649,11 @@ public class Picasso implements LifecycleObserver {
     }
   }
 
+  @NonNull
+  public Builder newBuilder() {
+    return new Builder(this);
+  }
+
   /** Fluent API for creating {@link Picasso} instances. */
   @SuppressWarnings("UnusedDeclaration") // Public API.
   public static class Builder {
@@ -665,6 +673,22 @@ public class Picasso implements LifecycleObserver {
     public Builder(@NonNull Context context) {
       checkNotNull(context, "context == null");
       this.context = context.getApplicationContext();
+    }
+
+    Builder(Picasso picasso) {
+      context = picasso.context;
+      callFactory = picasso.callFactory;
+      service = picasso.dispatcher.service;
+      cache = picasso.cache;
+      listener = picasso.listener;
+      requestTransformers.addAll(picasso.requestTransformers);
+      // See Picasso(). Removes internal request handlers added before and after custom handlers.
+      int numRequestHandlers = picasso.requestHandlers.size();
+      requestHandlers.addAll(picasso.requestHandlers.subList(2, numRequestHandlers - 6));
+
+      defaultBitmapConfig = picasso.defaultBitmapConfig;
+      indicatorsEnabled = picasso.indicatorsEnabled;
+      loggingEnabled = picasso.loggingEnabled;
     }
 
     /**
@@ -710,9 +734,6 @@ public class Picasso implements LifecycleObserver {
     @NonNull
     public Builder executor(@NonNull ExecutorService executorService) {
       checkNotNull(executorService, "executorService == null");
-      if (this.service != null) {
-        throw new IllegalStateException("Executor service already set.");
-      }
       this.service = executorService;
       return this;
     }
@@ -734,9 +755,6 @@ public class Picasso implements LifecycleObserver {
     @NonNull
     public Builder listener(@NonNull Listener listener) {
       checkNotNull(listener, "listener == null");
-      if (this.listener != null) {
-        throw new IllegalStateException("Listener already set.");
-      }
       this.listener = listener;
       return this;
     }
@@ -745,9 +763,6 @@ public class Picasso implements LifecycleObserver {
     @NonNull
     public Builder addRequestTransformer(@NonNull RequestTransformer transformer) {
       checkNotNull(transformer, "transformer == null");
-      if (requestTransformers.contains(transformer)) {
-        throw new IllegalStateException("Transformer already set.");
-      }
       requestTransformers.add(transformer);
       return this;
     }
@@ -756,9 +771,6 @@ public class Picasso implements LifecycleObserver {
     @NonNull
     public Builder addRequestHandler(@NonNull RequestHandler requestHandler) {
       checkNotNull(requestHandler, "requestHandler == null");
-      if (requestHandlers.contains(requestHandler)) {
-        throw new IllegalStateException("RequestHandler already registered.");
-      }
       requestHandlers.add(requestHandler);
       return this;
     }
