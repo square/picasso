@@ -28,6 +28,7 @@ android {
 
 dependencies {
   api deps.okhttp
+  api deps.okio
   implementation deps.supportAnnotations
   implementation deps.supportCompat
   implementation deps.supportExifInterface
