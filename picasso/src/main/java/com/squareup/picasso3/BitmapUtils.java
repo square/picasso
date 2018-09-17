@@ -30,10 +30,13 @@ import android.util.TypedValue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import okio.Buffer;
 import okio.BufferedSource;
+import okio.ForwardingSource;
 import okio.Okio;
 import okio.Source;
 
+import static android.os.Build.VERSION.SDK_INT;
 import static com.squareup.picasso3.Utils.checkNotNull;
 
 final class BitmapUtils {
@@ -94,13 +97,13 @@ final class BitmapUtils {
    * {@code inSampleSize}).
    */
   static Bitmap decodeStream(Source source, Request request) throws IOException {
-    BufferedSource bufferedSource = Okio.buffer(source);
-
-    if (Build.VERSION.SDK_INT >= 28) {
-      return decodeStreamP(request, bufferedSource);
-    }
-
-    return decodeStreamPreP(request, bufferedSource);
+    ExceptionCatchingSource exceptionCatchingSource = new ExceptionCatchingSource(source);
+    BufferedSource bufferedSource = Okio.buffer(exceptionCatchingSource);
+    Bitmap bitmap = SDK_INT >= 28
+        ? decodeStreamP(request, bufferedSource)
+        : decodeStreamPreP(request, bufferedSource);
+    exceptionCatchingSource.throwIfCaught();
+    return bitmap;
   }
 
   @RequiresApi(28)
@@ -115,7 +118,7 @@ final class BitmapUtils {
   private static Bitmap decodeStreamPreP(Request request, BufferedSource bufferedSource)
       throws IOException {
     boolean isWebPFile = Utils.isWebPFile(bufferedSource);
-    boolean isPurgeable = request.purgeable && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP;
+    boolean isPurgeable = request.purgeable && SDK_INT < Build.VERSION_CODES.LOLLIPOP;
     BitmapFactory.Options options = createBitmapOptions(request);
     boolean calculateSize = requiresInSampleSize(options);
 
@@ -149,7 +152,7 @@ final class BitmapUtils {
 
   static Bitmap decodeResource(Context context, Request request)
       throws IOException {
-    if (Build.VERSION.SDK_INT >= 28) {
+    if (SDK_INT >= 28) {
       return decodeResourceP(context, request);
     }
 
@@ -194,6 +197,31 @@ final class BitmapUtils {
     resources.getValue(drawableId, typedValue, true);
     CharSequence file = typedValue.string;
     return file != null && file.toString().endsWith(".xml");
+  }
+
+  static final class ExceptionCatchingSource extends ForwardingSource {
+    @Nullable IOException thrownException;
+
+    ExceptionCatchingSource(Source delegate) {
+      super(delegate);
+    }
+
+    @Override public long read(Buffer sink, long byteCount) throws IOException {
+      try {
+        return super.read(sink, byteCount);
+      } catch (IOException e) {
+        thrownException = e;
+        throw e;
+      }
+    }
+
+    void throwIfCaught() throws IOException {
+      if (thrownException != null) {
+        // TODO: Log when Android returns a non-null Bitmap after swallowing an IOException.
+        // TODO: https://github.com/square/picasso/issues/2003/
+        throw thrownException;
+      }
+    }
   }
 
   private BitmapUtils() {
