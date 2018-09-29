@@ -15,21 +15,26 @@
  */
 package com.squareup.picasso3;
 
-import android.content.Context;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.widget.ImageView;
 
-import static com.squareup.picasso3.Utils.checkNotNull;
-
-class ImageViewAction extends Action<ImageView> {
-
+class ImageViewAction extends Action {
   @Nullable Callback callback;
+  final ImageView target;
+  @Nullable final Drawable errorDrawable;
+  final @DrawableRes int errorResId;
+  final boolean noFade;
 
-  ImageViewAction(Picasso picasso, Target<ImageView> target, Request data,
-      @Nullable Callback callback) {
-    super(picasso, target, data);
+  ImageViewAction(Picasso picasso, ImageView target, Request data, @Nullable Drawable errorDrawable,
+      @DrawableRes int errorResId, boolean noFade, @Nullable Callback callback) {
+    super(picasso, data);
+    this.target = target;
+    this.errorDrawable = errorDrawable;
+    this.errorResId = errorResId;
+    this.noFade = noFade;
     this.callback = callback;
   }
 
@@ -39,12 +44,8 @@ class ImageViewAction extends Action<ImageView> {
           String.format("Attempted to complete action with no result!\n%s", this));
     }
 
-    Target<ImageView> wrapper = checkNotNull(this.wrapper, "wrapper == null");
-    ImageView target = wrapper.target;
-
-    Context context = picasso.context;
     boolean indicatorsEnabled = picasso.indicatorsEnabled;
-    PicassoDrawable.setResult(target, context, result, wrapper.noFade, indicatorsEnabled);
+    PicassoDrawable.setResult(target, picasso.context, result, noFade, indicatorsEnabled);
 
     if (callback != null) {
       callback.onSuccess();
@@ -52,22 +53,23 @@ class ImageViewAction extends Action<ImageView> {
   }
 
   @Override public void error(Exception e) {
-    Target<ImageView> wrapper = checkNotNull(this.wrapper, "wrapper == null");
-    ImageView target = wrapper.target;
-
     Drawable placeholder = target.getDrawable();
     if (placeholder instanceof Animatable) {
       ((Animatable) placeholder).stop();
     }
-    if (wrapper.errorResId != 0) {
-      target.setImageResource(wrapper.errorResId);
-    } else if (wrapper.errorDrawable != null) {
-      target.setImageDrawable(wrapper.errorDrawable);
+    if (errorResId != 0) {
+      target.setImageResource(errorResId);
+    } else if (errorDrawable != null) {
+      target.setImageDrawable(errorDrawable);
     }
 
     if (callback != null) {
       callback.onError(e);
     }
+  }
+
+  @Override Object getTarget() {
+    return target;
   }
 
   @Override void cancel() {

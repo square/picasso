@@ -44,10 +44,11 @@ public class MediaStoreRequestHandlerTest {
   @Test public void decodesVideoThumbnailWithVideoMimeType() {
     final Bitmap bitmap = makeBitmap();
     Request request =
-        new Request.Builder(MEDIA_STORE_CONTENT_1_URL, 0, ARGB_8888).resize(100, 100).build();
-    Action action = mockAction(MEDIA_STORE_CONTENT_KEY_1, request);
+        new Request.Builder(MEDIA_STORE_CONTENT_1_URL, 0, ARGB_8888)
+            .stableKey(MEDIA_STORE_CONTENT_KEY_1).resize(100, 100).build();
+    Action action = mockAction(request);
     MediaStoreRequestHandler requestHandler = create("video/");
-    requestHandler.load(null, action.getRequest(), new RequestHandler.Callback() {
+    requestHandler.load(null, action.request, new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
         assertBitmapsEqual(result.getBitmap(), bitmap);
       }
@@ -61,10 +62,11 @@ public class MediaStoreRequestHandlerTest {
   @Test public void decodesImageThumbnailWithImageMimeType() {
     final Bitmap bitmap = makeBitmap(20, 20);
     Request request =
-        new Request.Builder(MEDIA_STORE_CONTENT_1_URL, 0, ARGB_8888).resize(100, 100).build();
-    Action action = mockAction(MEDIA_STORE_CONTENT_KEY_1, request);
+        new Request.Builder(MEDIA_STORE_CONTENT_1_URL, 0, ARGB_8888)
+            .stableKey(MEDIA_STORE_CONTENT_KEY_1).resize(100, 100).build();
+    Action action = mockAction(request);
     MediaStoreRequestHandler requestHandler = create("image/png");
-    requestHandler.load(null, action.getRequest(), new RequestHandler.Callback() {
+    requestHandler.load(null, action.request, new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
         assertBitmapsEqual(result.getBitmap(), bitmap);
       }

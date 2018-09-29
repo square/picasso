@@ -44,6 +44,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso3.Dispatcher.NetworkBroadcastReceiver;
 import static com.squareup.picasso3.Dispatcher.NetworkBroadcastReceiver.EXTRA_AIRPLANE_STATE;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
+import static com.squareup.picasso3.Request.KEY_SEPARATOR;
 import static com.squareup.picasso3.TestUtils.URI_1;
 import static com.squareup.picasso3.TestUtils.URI_2;
 import static com.squareup.picasso3.TestUtils.URI_KEY_1;
@@ -130,8 +131,9 @@ public class DispatcherTest {
   }
 
   @Test public void performSubmitWithShutdownAttachesRequest() {
-    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap1, MEMORY));
-    dispatcher.hunterMap.put(URI_KEY_1, hunter);
+    BitmapHunter hunter = mockHunter(URI_KEY_1 + KEY_SEPARATOR,
+        new RequestHandler.Result(bitmap1, MEMORY));
+    dispatcher.hunterMap.put(URI_KEY_1 + KEY_SEPARATOR, hunter);
     when(service.isShutdown()).thenReturn(true);
     Action action = mockAction(URI_KEY_1, URI_1);
     dispatcher.performSubmit(action);
@@ -171,10 +173,10 @@ public class DispatcherTest {
   @Test public void performCancelDetachesRequestAndCleansUp() {
     BitmapTarget target = mockTarget();
     Action action = mockAction(URI_KEY_1, URI_1, target);
-    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap1, MEMORY));
+    BitmapHunter hunter = mockHunter(URI_KEY_1 + KEY_SEPARATOR, new RequestHandler.Result(bitmap1, MEMORY));
     hunter.attach(action);
     when(hunter.cancel()).thenReturn(true);
-    dispatcher.hunterMap.put(URI_KEY_1, hunter);
+    dispatcher.hunterMap.put(URI_KEY_1 + KEY_SEPARATOR, hunter);
     dispatcher.failedActions.put(target, action);
     dispatcher.performCancel(action);
     verify(hunter).detach(action);
@@ -186,10 +188,10 @@ public class DispatcherTest {
   @Test public void performCancelMultipleRequestsDetachesOnly() {
     Action action1 = mockAction(URI_KEY_1, URI_1);
     Action action2 = mockAction(URI_KEY_1, URI_1);
-    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap1, MEMORY));
+    BitmapHunter hunter = mockHunter(URI_KEY_1 + KEY_SEPARATOR, new RequestHandler.Result(bitmap1, MEMORY));
     hunter.attach(action1);
     hunter.attach(action2);
-    dispatcher.hunterMap.put(URI_KEY_1, hunter);
+    dispatcher.hunterMap.put(URI_KEY_1 + KEY_SEPARATOR, hunter);
     dispatcher.performCancel(action1);
     verify(hunter).detach(action1);
     verify(hunter).cancel();
@@ -199,8 +201,8 @@ public class DispatcherTest {
   @Test public void performCancelUnqueuesAndDetachesPausedRequest() {
     Action action = mockAction(URI_KEY_1, URI_1, mockTarget(), "tag");
     BitmapHunter hunter =
-        mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap1, MEMORY), action);
-    dispatcher.hunterMap.put(URI_KEY_1, hunter);
+        mockHunter(URI_KEY_1 + KEY_SEPARATOR, new RequestHandler.Result(bitmap1, MEMORY), action);
+    dispatcher.hunterMap.put(URI_KEY_1 + KEY_SEPARATOR, hunter);
     dispatcher.pausedTags.add("tag");
     dispatcher.pausedActions.put(action.getTarget(), action);
     dispatcher.performCancel(action);
@@ -263,7 +265,7 @@ public class DispatcherTest {
   }
 
   @Test public void performErrorCleansUpAndPostsToMain() {
-    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap1, MEMORY));
+    BitmapHunter hunter = mockHunter(URI_KEY_1 + KEY_SEPARATOR, new RequestHandler.Result(bitmap1, MEMORY));
     dispatcher.hunterMap.put(hunter.getKey(), hunter);
     dispatcher.performError(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
@@ -577,12 +579,16 @@ public class DispatcherTest {
     }
   };
 
-  private static Action<Void> noopAction(Request data) {
-    return new Action<Void>(null, null, data) {
+  private static Action noopAction(Request data) {
+    return new Action(mockPicasso(), data) {
       @Override void complete(RequestHandler.Result result) {
       }
 
       @Override void error(Exception e) {
+      }
+
+      @NonNull @Override Object getTarget() {
+        throw new AssertionError();
       }
     };
   }

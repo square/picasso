@@ -18,6 +18,7 @@ package com.squareup.picasso3;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 import com.squareup.picasso3.Picasso.RequestTransformer;
@@ -160,7 +161,7 @@ public final class PicassoTest {
 
   @Test public void completeWithReplayDoesNotRemove() {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
-    when(action.willReplay()).thenReturn(true);
+    action.willReplay = true;
     BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap, MEMORY));
     when(hunter.getAction()).thenReturn(action);
     picasso.enqueueAndSubmit(action);
@@ -193,14 +194,18 @@ public final class PicassoTest {
 
   @Test public void resumeActionTriggersSubmitOnPausedAction() {
     Request request = new Request.Builder(URI_1, 0, ARGB_8888).build();
-    Action<Object> action =
-        new Action<Object>(mockPicasso(), new Target<>(null), request) {
+    Action action =
+        new Action(mockPicasso(), request) {
           @Override void complete(RequestHandler.Result result) {
             fail("Test execution should not call this method");
           }
 
           @Override void error(Exception e) {
             fail("Test execution should not call this method");
+          }
+
+          @NonNull @Override Object getTarget() {
+            return this;
           }
         };
     picasso.resumeAction(action);
@@ -210,8 +215,8 @@ public final class PicassoTest {
   @Test public void resumeActionImmediatelyCompletesCachedRequest() {
     cache.set(URI_KEY_1, bitmap);
     Request request = new Request.Builder(URI_1, 0, ARGB_8888).build();
-    Action<Object> action =
-        new Action<Object>(mockPicasso(), new Target<>(null), request) {
+    Action action =
+        new Action(mockPicasso(), request) {
           @Override void complete(RequestHandler.Result result) {
             assertThat(result.getBitmap()).isEqualTo(bitmap);
             assertThat(result.getLoadedFrom()).isEqualTo(MEMORY);
@@ -219,6 +224,10 @@ public final class PicassoTest {
 
           @Override void error(Exception e) {
             fail("Reading from memory cache should not throw an exception");
+          }
+
+          @NonNull @Override Object getTarget() {
+            return this;
           }
         };
 

@@ -52,6 +52,7 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 class TestUtils {
@@ -164,33 +165,37 @@ class TestUtils {
 
   static Action mockAction(String key, Uri uri, Object target, int resourceId, Priority priority,
                            String tag) {
-    Request request = new Request.Builder(uri, resourceId, DEFAULT_CONFIG).build();
-    return mockAction(key, request, target, priority, tag);
+    Request.Builder builder = new Request.Builder(uri, resourceId, DEFAULT_CONFIG).stableKey(key);
+    if (priority != null) {
+      builder.priority(priority);
+    }
+    Request request = builder.build();
+    return mockAction(request, target, tag);
   }
 
-  static Action mockAction(String key, Request request) {
-    return mockAction(key, request, null, null, null);
+  static Action mockAction(Request request) {
+    return mockAction(request, null, null);
   }
 
-  static Action mockAction(String key, Request request, Object target, Priority priority,
-                           String tag) {
-    Action action = mock(Action.class);
-    when(action.getKey()).thenReturn(key);
-    when(action.getRequest()).thenReturn(request);
-    when(action.getTarget()).thenReturn(target);
-    when(action.getPriority()).thenReturn(priority != null ? priority : Priority.NORMAL);
+  static Action mockAction(Request request, final Object target, String tag) {
+    Action action = spy(new Action(mockPicasso(), request) {
+      @Override void complete(RequestHandler.Result result) {
+      }
+
+      @Override void error(Exception e) {
+      }
+
+      @Override Object getTarget() {
+        return target;
+      }
+    });
     when(action.getTag()).thenReturn(tag != null ? tag : action);
-
-    Picasso picasso = mockPicasso();
-    when(action.getPicasso()).thenReturn(picasso);
-
     return action;
   }
 
   static Action mockCanceledAction() {
     Action action = mock(Action.class);
     action.cancelled = true;
-    when(action.isCancelled()).thenReturn(true);
     return action;
   }
 

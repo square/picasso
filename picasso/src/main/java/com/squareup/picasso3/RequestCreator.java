@@ -64,9 +64,9 @@ public class RequestCreator {
   private boolean deferred;
   private boolean setPlaceholder = true;
   private int placeholderResId;
-  private int errorResId;
-  @Nullable private Drawable placeholderDrawable;
-  @Nullable private Drawable errorDrawable;
+  @DrawableRes private int errorResId;
+  private @Nullable Drawable placeholderDrawable;
+  private @Nullable Drawable errorDrawable;
 
   RequestCreator(Picasso picasso, @Nullable Uri uri, int resourceId) {
     if (picasso.shutdown) {
@@ -551,8 +551,7 @@ public class RequestCreator {
 
     target.onPrepareLoad(setPlaceholder ? getPlaceholderDrawable() : null);
 
-    Target<BitmapTarget> wrapper = new Target<>(target, errorResId, errorDrawable, noFade);
-    Action action = new BitmapTargetAction(picasso, wrapper, request);
+    Action action = new BitmapTargetAction(picasso, target, request, errorDrawable, errorResId);
     picasso.enqueueAndSubmit(action);
   }
 
@@ -598,10 +597,9 @@ public class RequestCreator {
     }
 
     Request request = createRequest(started);
-    Target<RemoteViewsTarget> remoteTarget =
-        new Target<>(new RemoteViewsTarget(remoteViews, viewId), errorResId);
     RemoteViewsAction action =
-        new NotificationAction(picasso, request, remoteTarget, notificationId, notification,
+        new NotificationAction(picasso, request, errorResId,
+            new RemoteViewsTarget(remoteViews, viewId), notificationId, notification,
             notificationTag, callback);
 
     performRemoteViewInto(request, action);
@@ -656,10 +654,9 @@ public class RequestCreator {
     }
 
     Request request = createRequest(started);
-    Target<RemoteViewsTarget> remoteTarget =
-        new Target<>(new RemoteViewsTarget(remoteViews, viewId), errorResId);
     RemoteViewsAction action =
-        new AppWidgetAction(picasso, request, remoteTarget, appWidgetIds, callback);
+        new AppWidgetAction(picasso, request, errorResId,
+            new RemoteViewsTarget(remoteViews, viewId), appWidgetIds, callback);
 
     performRemoteViewInto(request, action);
   }
@@ -736,8 +733,8 @@ public class RequestCreator {
       setPlaceholder(target, getPlaceholderDrawable());
     }
 
-    Target<ImageView> wrapper = new Target<>(target, errorResId, errorDrawable, noFade);
-    Action action = new ImageViewAction(picasso, wrapper, request, callback);
+    Action action = new ImageViewAction(picasso, target, request, errorDrawable, errorResId, noFade,
+        callback);
     picasso.enqueueAndSubmit(action);
   }
 
@@ -776,7 +773,7 @@ public class RequestCreator {
 
   private void performRemoteViewInto(Request request, RemoteViewsAction action) {
     if (shouldReadFromMemoryCache(request.memoryPolicy)) {
-      Bitmap bitmap = picasso.quickMemoryCacheCheck(action.getKey());
+      Bitmap bitmap = picasso.quickMemoryCacheCheck(action.request.key);
       if (bitmap != null) {
         action.complete(new RequestHandler.Result(bitmap, MEMORY));
         return;

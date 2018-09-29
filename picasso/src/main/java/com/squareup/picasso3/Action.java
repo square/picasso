@@ -15,59 +15,26 @@
  */
 package com.squareup.picasso3;
 
-import android.support.annotation.Nullable;
-
-import static com.squareup.picasso3.Picasso.Priority;
-import static com.squareup.picasso3.Utils.checkNotNull;
-
-abstract class Action<T> {
+abstract class Action {
   final Picasso picasso;
   final Request request;
-  @Nullable final Target<T> wrapper;
 
   boolean willReplay;
   boolean cancelled;
 
-  Action(Picasso picasso, @Nullable Target<T> wrapper, Request request) {
+  Action(Picasso picasso, Request request) {
     this.picasso = picasso;
     this.request = request;
-    this.wrapper = wrapper;
   }
 
   abstract void complete(RequestHandler.Result result);
 
   abstract void error(Exception e);
 
+  abstract Object getTarget();
+
   void cancel() {
     cancelled = true;
-  }
-
-  Request getRequest() {
-    return request;
-  }
-
-  T getTarget() {
-    return checkNotNull(wrapper, "wrapper == null").target;
-  }
-
-  String getKey() {
-    return request.key;
-  }
-
-  boolean isCancelled() {
-    return cancelled;
-  }
-
-  boolean willReplay() {
-    return willReplay;
-  }
-
-  Picasso getPicasso() {
-    return picasso;
-  }
-
-  Priority getPriority() {
-    return request.priority;
   }
 
   Object getTag() {

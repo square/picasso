@@ -151,7 +151,7 @@ public class DeferredRequestCreatorTest {
 
     Action value = actionCaptor.getValue();
     assertThat(value).isInstanceOf(ImageViewAction.class);
-    assertThat(value.getRequest().targetWidth).isEqualTo(100);
-    assertThat(value.getRequest().targetHeight).isEqualTo(100);
+    assertThat(value.request.targetWidth).isEqualTo(100);
+    assertThat(value.request.targetHeight).isEqualTo(100);
   }
 }

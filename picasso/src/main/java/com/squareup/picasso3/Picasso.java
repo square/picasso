@@ -592,7 +592,7 @@ public class Picasso implements LifecycleObserver {
   void resumeAction(Action action) {
     Bitmap bitmap = null;
     if (shouldReadFromMemoryCache(action.request.memoryPolicy)) {
-      bitmap = quickMemoryCacheCheck(action.getKey());
+      bitmap = quickMemoryCacheCheck(action.request.key);
     }
 
     if (bitmap != null) {
@@ -612,10 +612,10 @@ public class Picasso implements LifecycleObserver {
 
   private void deliverAction(@Nullable RequestHandler.Result result, Action action,
       @Nullable Exception e) {
-    if (action.isCancelled()) {
+    if (action.cancelled) {
       return;
     }
-    if (!action.willReplay()) {
+    if (!action.willReplay) {
       targetToAction.remove(action.getTarget());
     }
     if (result != null) {

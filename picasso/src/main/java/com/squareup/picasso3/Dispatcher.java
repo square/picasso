@@ -170,62 +170,62 @@ class Dispatcher {
   void performSubmit(Action action, boolean dismissFailed) {
     if (pausedTags.contains(action.getTag())) {
       pausedActions.put(action.getTarget(), action);
-      if (action.getPicasso().loggingEnabled) {
+      if (action.picasso.loggingEnabled) {
         log(OWNER_DISPATCHER, VERB_PAUSED, action.request.logId(),
             "because tag '" + action.getTag() + "' is paused");
       }
       return;
     }
 
-    BitmapHunter hunter = hunterMap.get(action.getKey());
+    BitmapHunter hunter = hunterMap.get(action.request.key);
     if (hunter != null) {
       hunter.attach(action);
       return;
     }
 
     if (service.isShutdown()) {
-      if (action.getPicasso().loggingEnabled) {
+      if (action.picasso.loggingEnabled) {
         log(OWNER_DISPATCHER, VERB_IGNORED, action.request.logId(), "because shut down");
       }
       return;
     }
 
-    hunter = forRequest(action.getPicasso(), this, cache, stats, action);
+    hunter = forRequest(action.picasso, this, cache, stats, action);
     hunter.future = service.submit(hunter);
-    hunterMap.put(action.getKey(), hunter);
+    hunterMap.put(action.request.key, hunter);
     if (dismissFailed) {
       failedActions.remove(action.getTarget());
     }
 
-    if (action.getPicasso().loggingEnabled) {
+    if (action.picasso.loggingEnabled) {
       log(OWNER_DISPATCHER, VERB_ENQUEUED, action.request.logId());
     }
   }
 
   void performCancel(Action action) {
-    String key = action.getKey();
+    String key = action.request.key;
     BitmapHunter hunter = hunterMap.get(key);
     if (hunter != null) {
       hunter.detach(action);
       if (hunter.cancel()) {
         hunterMap.remove(key);
-        if (action.getPicasso().loggingEnabled) {
-          log(OWNER_DISPATCHER, VERB_CANCELED, action.getRequest().logId());
+        if (action.picasso.loggingEnabled) {
+          log(OWNER_DISPATCHER, VERB_CANCELED, action.request.logId());
         }
       }
     }
 
     if (pausedTags.contains(action.getTag())) {
       pausedActions.remove(action.getTarget());
-      if (action.getPicasso().loggingEnabled) {
-        log(OWNER_DISPATCHER, VERB_CANCELED, action.getRequest().logId(),
+      if (action.picasso.loggingEnabled) {
+        log(OWNER_DISPATCHER, VERB_CANCELED, action.request.logId(),
             "because paused request got canceled");
       }
     }
 
     Action remove = failedActions.remove(action.getTarget());
-    if (remove != null && remove.getPicasso().loggingEnabled) {
-      log(OWNER_DISPATCHER, VERB_CANCELED, remove.getRequest().logId(), "from replaying");
+    if (remove != null && remove.picasso.loggingEnabled) {
+      log(OWNER_DISPATCHER, VERB_CANCELED, remove.request.logId(), "from replaying");
     }
   }
 
@@ -380,8 +380,8 @@ class Dispatcher {
       while (iterator.hasNext()) {
         Action action = iterator.next();
         iterator.remove();
-        if (action.getPicasso().loggingEnabled) {
-          log(OWNER_DISPATCHER, VERB_REPLAYING, action.getRequest().logId());
+        if (action.picasso.loggingEnabled) {
+          log(OWNER_DISPATCHER, VERB_REPLAYING, action.request.logId());
         }
         performSubmit(action, false);
       }

@@ -48,6 +48,7 @@ import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso3.Picasso.Priority.HIGH;
 import static com.squareup.picasso3.Picasso.Priority.LOW;
 import static com.squareup.picasso3.Picasso.Priority.NORMAL;
+import static com.squareup.picasso3.Request.KEY_SEPARATOR;
 import static com.squareup.picasso3.TestUtils.ASSET_KEY_1;
 import static com.squareup.picasso3.TestUtils.ASSET_URI_1;
 import static com.squareup.picasso3.TestUtils.BITMAP_RESOURCE_VALUE;
@@ -161,21 +162,21 @@ public final class BitmapHunterTest {
 
     RequestHandler.Result result = hunter.hunt();
     assertThat(cache.missCount()).isEqualTo(1);
-    Request request = action.getRequest();
+    Request request = action.request;
     verify(hunter.requestHandler)
         .load(eq(picasso), eq(request), any(RequestHandler.Callback.class));
     assertThat(result.getBitmap()).isEqualTo(bitmap);
   }
 
   @Test public void huntReturnsWhenResultInCache() throws Exception {
-    cache.set(URI_KEY_1, bitmap);
+    cache.set(URI_KEY_1 + KEY_SEPARATOR, bitmap);
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     TestableBitmapHunter hunter =
         new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, bitmap);
 
     RequestHandler.Result result = hunter.hunt();
     assertThat(cache.hitCount()).isEqualTo(1);
-    Request request = action.getRequest();
+    Request request = action.request;
     verify(hunter.requestHandler, never())
         .load(eq(picasso), eq(request), any(RequestHandler.Callback.class));
     assertThat(result.getBitmap()).isEqualTo(bitmap);

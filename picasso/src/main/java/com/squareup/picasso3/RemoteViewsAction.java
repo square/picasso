@@ -18,23 +18,26 @@ package com.squareup.picasso3;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.appwidget.AppWidgetManager;
+import android.support.annotation.DrawableRes;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.widget.RemoteViews;
 
-abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTarget> {
-  Target<RemoteViewsTarget> remoteWrapper;
+abstract class RemoteViewsAction extends Action {
   @Nullable Callback callback;
+  final @DrawableRes int errorResId;
+  final RemoteViewsTarget target;
 
-  RemoteViewsAction(Picasso picasso, Request data, Target<RemoteViewsTarget> wrapper,
-      @Nullable Callback callback) {
-    super(picasso, null, data);
-    this.remoteWrapper = wrapper;
+  RemoteViewsAction(Picasso picasso, Request data, @DrawableRes int errorResId,
+      @NonNull RemoteViewsTarget target, @Nullable Callback callback) {
+    super(picasso, data);
+    this.errorResId = errorResId;
+    this.target = target;
     this.callback = callback;
   }
 
   @Override void complete(RequestHandler.Result result) {
-    RemoteViewsTarget target = remoteWrapper.target;
     target.remoteViews.setImageViewBitmap(target.viewId, result.getBitmap());
     update();
     if (callback != null) {
@@ -50,20 +53,15 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
   }
 
   @Override public void error(Exception e) {
-    if (remoteWrapper.errorResId != 0) {
-      setImageResource(remoteWrapper.errorResId);
+    if (errorResId != 0) {
+      setImageResource(errorResId);
     }
     if (callback != null) {
       callback.onError(e);
     }
   }
 
-  @Override RemoteViewsTarget getTarget() {
-    return remoteWrapper.target;
-  }
-
   void setImageResource(int resId) {
-    RemoteViewsTarget target = remoteWrapper.target;
     target.remoteViews.setImageViewResource(target.viewId, resId);
     update();
   }
@@ -95,15 +93,19 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
   static class AppWidgetAction extends RemoteViewsAction {
     private final int[] appWidgetIds;
 
-    AppWidgetAction(Picasso picasso, Request data, Target<RemoteViewsTarget> wrapper,
-        int[] appWidgetIds, @Nullable Callback callback) {
-      super(picasso, data, wrapper, callback);
+    AppWidgetAction(Picasso picasso, Request data, @DrawableRes int errorResId,
+        RemoteViewsTarget target, int[] appWidgetIds, @Nullable Callback callback) {
+      super(picasso, data, errorResId, target, callback);
       this.appWidgetIds = appWidgetIds;
     }
 
     @Override void update() {
       AppWidgetManager manager = AppWidgetManager.getInstance(picasso.context);
-      manager.updateAppWidget(appWidgetIds, remoteWrapper.target.remoteViews);
+      manager.updateAppWidget(appWidgetIds, target.remoteViews);
+    }
+
+    @Override Object getTarget() {
+      return target;
     }
   }
 
@@ -112,10 +114,10 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
     @Nullable private final String notificationTag;
     private final Notification notification;
 
-    NotificationAction(Picasso picasso, Request data, Target<RemoteViewsTarget> wrapper,
-        int notificationId, Notification notification, @Nullable String notificationTag,
-        @Nullable Callback callback) {
-      super(picasso, data, wrapper, callback);
+    NotificationAction(Picasso picasso, Request data, @DrawableRes int errorResId,
+        RemoteViewsTarget target, int notificationId, Notification notification,
+        @Nullable String notificationTag, @Nullable Callback callback) {
+      super(picasso, data, errorResId, target, callback);
       this.notificationId = notificationId;
       this.notificationTag = notificationTag;
       this.notification = notification;
@@ -127,6 +129,10 @@ abstract class RemoteViewsAction extends Action<RemoteViewsAction.RemoteViewsTar
       if (manager != null) {
         manager.notify(notificationTag, notificationId, notification);
       }
+    }
+
+    @Override Object getTarget() {
+      return target;
     }
   }
 }

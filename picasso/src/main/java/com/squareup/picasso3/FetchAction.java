@@ -17,14 +17,11 @@ package com.squareup.picasso3;
 
 import android.support.annotation.Nullable;
 
-class FetchAction extends Action<Object> {
-
-  private final Object fetchTarget;
+class FetchAction extends Action {
   @Nullable private Callback callback;
 
   FetchAction(Picasso picasso, Request data, @Nullable Callback callback) {
-    super(picasso, null, data);
-    this.fetchTarget = new Object();
+    super(picasso, data);
     this.callback = callback;
   }
 
@@ -40,12 +37,12 @@ class FetchAction extends Action<Object> {
     }
   }
 
+  @Override Object getTarget() {
+    return this;
+  }
+
   @Override void cancel() {
     super.cancel();
     callback = null;
-  }
-
-  @Override Object getTarget() {
-    return fetchTarget;
   }
 }
