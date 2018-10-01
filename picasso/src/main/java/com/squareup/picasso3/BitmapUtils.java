@@ -28,7 +28,6 @@ import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.util.TypedValue;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import okio.Buffer;
 import okio.BufferedSource;
@@ -136,8 +135,7 @@ final class BitmapUtils {
       bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
     } else {
       if (calculateSize) {
-        InputStream stream = new SourceBufferingInputStream(bufferedSource);
-        BitmapFactory.decodeStream(stream, null, options);
+        BitmapFactory.decodeStream(bufferedSource.peek().inputStream(), null, options);
         calculateInSampleSize(request.targetWidth, request.targetHeight,
             checkNotNull(options, "options == null"), request);
       }
