@@ -27,6 +27,11 @@ or Maven:
 
 Snapshots of the development version are available in [Sonatype's `snapshots` repository][snap].
 
+**Usage**
+---------
+```
+Picasso.get().load("http://i.imgur.com/DvpvklR.png").into(imageView);
+```
 
 
 ProGuard
