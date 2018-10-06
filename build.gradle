@@ -11,7 +11,7 @@ buildscript {
   ]
 
   ext.deps = [
-    androidPlugin: 'com.android.tools.build:gradle:3.2.0-rc02',
+    androidPlugin: 'com.android.tools.build:gradle:3.2.0',
     okhttp: "com.squareup.okhttp3:okhttp:${versions.okhttp}",
     okio: "com.squareup.okio:okio:${versions.okio}",
     mockWebServer: "com.squareup.okhttp3:mockwebserver:${versions.okhttp}",
