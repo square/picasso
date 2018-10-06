@@ -7,11 +7,11 @@ buildscript {
     'targetCompatibility': JavaVersion.VERSION_1_7,
     'okhttp': '3.11.0',
     'okio': '2.1.0',
-    'supportLibrary': '28.0.0-rc01'
+    'supportLibrary': '28.0.0'
   ]
 
   ext.deps = [
-    androidPlugin: 'com.android.tools.build:gradle:3.2.0-rc02',
+    androidPlugin: 'com.android.tools.build:gradle:3.2.0',
     okhttp: "com.squareup.okhttp3:okhttp:${versions.okhttp}",
     okio: "com.squareup.okio:okio:${versions.okio}",
     mockWebServer: "com.squareup.okhttp3:mockwebserver:${versions.okhttp}",
