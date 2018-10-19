@@ -26,6 +26,7 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.util.Size;
 import android.util.TypedValue;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -66,6 +67,12 @@ final class BitmapUtils {
       @NonNull BitmapFactory.Options options, Request request) {
     calculateInSampleSize(reqWidth, reqHeight, options.outWidth, options.outHeight, options,
         request);
+  }
+
+  static boolean shouldResize(boolean onlyScaleDown, int inWidth, int inHeight,
+      int targetWidth, int targetHeight) {
+    return !onlyScaleDown || (targetWidth != 0 && inWidth > targetWidth)
+        || (targetHeight != 0 && inHeight > targetHeight);
   }
 
   static void calculateInSampleSize(int reqWidth, int reqHeight, int width, int height,
@@ -184,7 +191,11 @@ final class BitmapUtils {
       public void onHeaderDecoded(@NonNull ImageDecoder imageDecoder,
           @NonNull ImageDecoder.ImageInfo imageInfo, @NonNull ImageDecoder.Source source) {
         if (request.hasSize()) {
-          imageDecoder.setTargetSize(request.targetWidth, request.targetHeight);
+          Size size = imageInfo.getSize();
+          if (shouldResize(request.onlyScaleDown, size.getWidth(), size.getHeight(),
+              request.targetWidth, request.targetHeight)) {
+            imageDecoder.setTargetSize(request.targetWidth, request.targetHeight);
+          }
         }
       }
     });

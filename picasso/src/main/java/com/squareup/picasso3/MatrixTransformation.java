@@ -28,6 +28,7 @@ import static android.support.media.ExifInterface.ORIENTATION_ROTATE_270;
 import static android.support.media.ExifInterface.ORIENTATION_ROTATE_90;
 import static android.support.media.ExifInterface.ORIENTATION_TRANSPOSE;
 import static android.support.media.ExifInterface.ORIENTATION_TRANSVERSE;
+import static com.squareup.picasso3.BitmapUtils.shouldResize;
 
 final class MatrixTransformation implements Transformation {
   private final Request data;
@@ -202,12 +203,6 @@ final class MatrixTransformation implements Transformation {
     }
 
     return result;
-  }
-
-  private static boolean shouldResize(boolean onlyScaleDown, int inWidth, int inHeight,
-      int targetWidth, int targetHeight) {
-    return !onlyScaleDown || (targetWidth != 0 && inWidth > targetWidth)
-        || (targetHeight != 0 && inHeight > targetHeight);
   }
 
   private static int getExifRotation(int orientation) {
