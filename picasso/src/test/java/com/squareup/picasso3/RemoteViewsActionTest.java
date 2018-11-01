@@ -16,10 +16,10 @@
 package com.squareup.picasso3;
 
 import android.graphics.Bitmap;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.NonNull;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
 import com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget;
 import org.junit.Before;
 import org.junit.Test;

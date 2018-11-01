@@ -19,12 +19,12 @@ package com.example.picasso;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.QuickContactBadge;
 import android.widget.TextView;
+import androidx.cursoradapter.widget.CursorAdapter;
 import com.squareup.picasso3.provider.PicassoProvider;
 
 import static android.provider.ContactsContract.Contacts;

@@ -16,8 +16,8 @@
 package com.squareup.picasso3;
 
 import android.graphics.drawable.Drawable;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.Nullable;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.Nullable;
 
 public interface DrawableLoader {
   @Nullable Drawable load(@DrawableRes int resId);

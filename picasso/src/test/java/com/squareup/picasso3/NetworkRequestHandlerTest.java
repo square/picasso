@@ -17,7 +17,7 @@ package com.squareup.picasso3;
 
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import com.squareup.picasso3.RequestHandler.Result;
 import com.squareup.picasso3.TestUtils.PremadeCall;
 import java.util.concurrent.BlockingDeque;

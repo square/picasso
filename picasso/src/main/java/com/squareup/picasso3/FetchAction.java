@@ -15,7 +15,7 @@
  */
 package com.squareup.picasso3;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 class FetchAction extends Action {
   @Nullable private Callback callback;

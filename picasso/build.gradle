@@ -29,10 +29,10 @@ android {
 dependencies {
   api deps.okhttp
   api deps.okio
-  implementation deps.supportAnnotations
-  implementation deps.supportCompat
-  implementation deps.supportExifInterface
-  api deps.archLifecycle
+  api deps.androidxLifecycle
+  implementation deps.androidxAnnotations
+  implementation deps.androidxCore
+  implementation deps.androidxExifInterface
   testImplementation deps.junit
   testImplementation deps.truth
   testImplementation deps.robolectric

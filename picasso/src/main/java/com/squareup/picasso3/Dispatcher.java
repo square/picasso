@@ -28,8 +28,8 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import androidx.core.content.ContextCompat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -540,7 +540,7 @@ class Dispatcher {
       } else if (CONNECTIVITY_ACTION.equals(action)) {
         ConnectivityManager connectivityManager =
             ContextCompat.getSystemService(context, ConnectivityManager.class);
-        NetworkInfo networkInfo = null;
+        NetworkInfo networkInfo;
         try {
           networkInfo = connectivityManager.getActiveNetworkInfo();
         } catch (RuntimeException re) {

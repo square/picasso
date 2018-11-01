@@ -17,8 +17,8 @@ package com.squareup.picasso3;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 
 import static com.squareup.picasso3.BitmapUtils.isXmlResource;
 import static com.squareup.picasso3.Picasso.LoadedFrom.DISK;
