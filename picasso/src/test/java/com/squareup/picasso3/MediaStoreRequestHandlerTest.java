@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import com.squareup.picasso3.RequestHandler.Result;
+import java.util.Objects;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -107,16 +108,16 @@ public class MediaStoreRequestHandlerTest {
   }
 
   static void assertBitmapsEqual(Bitmap a, Bitmap b) {
+    if (a.getHeight() != b.getHeight()) {
+      fail();
+    }
+    if (a.getWidth() != b.getWidth()) {
+      fail();
+    }
+
     ShadowBitmap shadowA = shadowOf(a);
     ShadowBitmap shadowB = shadowOf(b);
-
-    if (shadowA.getHeight() != shadowB.getHeight()) {
-      fail();
-    }
-    if (shadowA.getWidth() != shadowB.getWidth()) {
-      fail();
-    }
-    if (shadowA.getDescription() != null ? !shadowA.getDescription().equals(shadowB.getDescription()) : shadowB.getDescription() != null) {
+    if (!Objects.equals(shadowA.getDescription(), shadowB.getDescription())) {
       fail();
     }
   }
