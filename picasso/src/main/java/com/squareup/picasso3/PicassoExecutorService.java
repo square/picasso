@@ -18,6 +18,7 @@ package com.squareup.picasso3;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -30,9 +31,9 @@ import java.util.concurrent.TimeUnit;
 class PicassoExecutorService extends ThreadPoolExecutor {
   private static final int DEFAULT_THREAD_COUNT = 3;
 
-  PicassoExecutorService() {
+  PicassoExecutorService(ThreadFactory threadFactory) {
     super(DEFAULT_THREAD_COUNT, DEFAULT_THREAD_COUNT, 0, TimeUnit.MILLISECONDS,
-        new PriorityBlockingQueue<Runnable>(), new Utils.PicassoThreadFactory());
+        new PriorityBlockingQueue<Runnable>(), threadFactory);
   }
 
   @Override
