@@ -587,10 +587,8 @@ public final class BitmapHunterTest {
 
     Bitmap result = transformResult(request, source, 0);
 
-    int transformedWidth = Math.round(result.getWidth());
-    int transformedHeight = Math.round(result.getHeight());
-    assertThat(transformedWidth).isEqualTo(1080);
-    assertThat(transformedHeight).isEqualTo(642);
+    assertThat(result.getWidth()).isEqualTo(1080);
+    assertThat(result.getHeight()).isEqualTo(642);
   }
 
   @Test public void centerCropResultMatchesTargetSizeWhileDesiredWidthIs0() {
@@ -599,10 +597,8 @@ public final class BitmapHunterTest {
 
     Bitmap result = transformResult(request, source, 0);
 
-    int transformedWidth = Math.round(result.getWidth());
-    int transformedHeight = Math.round(result.getHeight());
-    assertThat(transformedWidth).isEqualTo(642);
-    assertThat(transformedHeight).isEqualTo(642);
+    assertThat(result.getWidth()).isEqualTo(642);
+    assertThat(result.getHeight()).isEqualTo(642);
   }
 
   @Test public void centerCropResultMatchesTargetSizeWhileDesiredHeightIs0() {
@@ -611,10 +607,8 @@ public final class BitmapHunterTest {
 
     Bitmap result = transformResult(request, source, 0);
 
-    int transformedWidth = Math.round(result.getWidth());
-    int transformedHeight = Math.round(result.getHeight());
-    assertThat(transformedWidth).isEqualTo(1080);
-    assertThat(transformedHeight).isEqualTo(1080);
+    assertThat(result.getWidth()).isEqualTo(1080);
+    assertThat(result.getHeight()).isEqualTo(1080);
   }
 
   @Test public void centerInsideResultMatchesTargetSizeWhileDesiredWidthIs0() {
@@ -623,10 +617,8 @@ public final class BitmapHunterTest {
 
     Bitmap result = transformResult(request, source, 0);
 
-    int transformedWidth = Math.round(result.getWidth());
-    int transformedHeight = Math.round(result.getHeight());
-    assertThat(transformedWidth).isEqualTo(642);
-    assertThat(transformedHeight).isEqualTo(642);
+    assertThat(result.getWidth()).isEqualTo(642);
+    assertThat(result.getHeight()).isEqualTo(642);
   }
 
   @Test public void centerInsideResultMatchesTargetSizeWhileDesiredHeightIs0() {
@@ -635,10 +627,8 @@ public final class BitmapHunterTest {
 
     Bitmap result = transformResult(request, source, 0);
 
-    int transformedWidth = Math.round(result.getWidth());
-    int transformedHeight = Math.round(result.getHeight());
-    assertThat(transformedWidth).isEqualTo(1080);
-    assertThat(transformedHeight).isEqualTo(1080);
+    assertThat(result.getWidth()).isEqualTo(1080);
+    assertThat(result.getHeight()).isEqualTo(1080);
   }
 
   @Test public void exifRotationWithManualRotation() {
