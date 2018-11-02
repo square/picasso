@@ -20,7 +20,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
-import android.support.v4.graphics.BitmapCompat;
+import androidx.core.graphics.BitmapCompat;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 

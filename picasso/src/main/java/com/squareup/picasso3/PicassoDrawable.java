@@ -26,8 +26,8 @@ import android.graphics.drawable.Animatable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
-import android.support.annotation.Nullable;
 import android.widget.ImageView;
+import androidx.annotation.Nullable;
 
 import static android.graphics.Color.WHITE;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;

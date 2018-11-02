@@ -17,9 +17,9 @@ package com.squareup.picasso3;
 
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.Nullable;
 import android.widget.ImageView;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.Nullable;
 
 class ImageViewAction extends Action {
   @Nullable Callback callback;

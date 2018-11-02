@@ -17,17 +17,17 @@ package com.squareup.picasso3;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
-import android.support.annotation.NonNull;
-import android.support.annotation.VisibleForTesting;
 import android.view.Gravity;
+import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 
-import static android.support.media.ExifInterface.ORIENTATION_FLIP_HORIZONTAL;
-import static android.support.media.ExifInterface.ORIENTATION_FLIP_VERTICAL;
-import static android.support.media.ExifInterface.ORIENTATION_ROTATE_180;
-import static android.support.media.ExifInterface.ORIENTATION_ROTATE_270;
-import static android.support.media.ExifInterface.ORIENTATION_ROTATE_90;
-import static android.support.media.ExifInterface.ORIENTATION_TRANSPOSE;
-import static android.support.media.ExifInterface.ORIENTATION_TRANSVERSE;
+import static androidx.exifinterface.media.ExifInterface.ORIENTATION_FLIP_HORIZONTAL;
+import static androidx.exifinterface.media.ExifInterface.ORIENTATION_FLIP_VERTICAL;
+import static androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_180;
+import static androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_270;
+import static androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_90;
+import static androidx.exifinterface.media.ExifInterface.ORIENTATION_TRANSPOSE;
+import static androidx.exifinterface.media.ExifInterface.ORIENTATION_TRANSVERSE;
 import static com.squareup.picasso3.BitmapUtils.shouldResize;
 
 final class MatrixTransformation implements Transformation {
