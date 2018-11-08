@@ -6,7 +6,7 @@ buildscript {
     'sourceCompatibility': JavaVersion.VERSION_1_7,
     'targetCompatibility': JavaVersion.VERSION_1_7,
     'okhttp': '3.11.0',
-    'okio': '2.1.0',
+    'okio': '1.16.0',
   ]
 
   ext.deps = [
