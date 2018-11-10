@@ -35,7 +35,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import okhttp3.Call;
 import okhttp3.Response;
 import org.mockito.invocation.InvocationOnMock;
@@ -107,6 +110,8 @@ class TestUtils {
   static final String XML_RESOURCE_VALUE = "foo.xml";
   static final Bitmap.Config DEFAULT_CONFIG = Bitmap.Config.ARGB_8888;
   static final int DEFAULT_CACHE_SIZE = 123;
+  static final String CUSTOM_HEADER_KEY = "Cache-Control";
+  static final String CUSTOM_HEADER_VALUE = "no-cache";
 
   static Context mockPackageResourceContext() {
     Context context = mock(Context.class);
@@ -307,6 +312,12 @@ class TestUtils {
         return drawable;
       }
     };
+  }
+
+  static Map<String, String> makeCustomHearders() {
+    Map<String, String> customHeaders = new HashMap<>();
+    customHeaders.put(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE);
+    return customHeaders;
   }
 
   static final Call.Factory UNUSED_CALL_FACTORY = new Call.Factory() {

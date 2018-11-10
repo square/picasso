@@ -865,4 +865,18 @@ public class RequestCreatorTest {
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().request.purgeable).isTrue();
   }
+
+  @Test public void imageViewActionWithCustomHeaders() {
+    new RequestCreator(picasso, URI_1, 0).addHeaders(TestUtils.makeCustomHearders())
+            .into(mockImageViewTarget());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().request.headers.get(TestUtils.CUSTOM_HEADER_KEY))
+            .isEqualTo(TestUtils.CUSTOM_HEADER_VALUE);
+  }
+
+  @Test public void imageViewActionWithCustomHeadersNull() {
+    new RequestCreator(picasso, URI_1, 0).addHeaders(null).into(mockImageViewTarget());
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
+    assertThat(actionCaptor.getValue().request.headers).isNull();
+  }
 }
