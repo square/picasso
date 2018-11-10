@@ -21,6 +21,8 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import java.io.IOException;
+import java.util.Map;
+
 import okhttp3.CacheControl;
 import okhttp3.Call;
 import okhttp3.Response;
@@ -126,6 +128,12 @@ final class NetworkRequestHandler extends RequestHandler {
     okhttp3.Request.Builder builder = new okhttp3.Request.Builder().url(uri.toString());
     if (cacheControl != null) {
       builder.cacheControl(cacheControl);
+    }
+    if (request.headers != null) {
+      Map<String, String> headers = request.headers;
+      for (Map.Entry<String, String> entry : headers.entrySet()) {
+        builder.header(entry.getKey(), entry.getValue());
+      }
     }
     return builder.build();
   }

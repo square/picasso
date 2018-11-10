@@ -27,6 +27,7 @@ import com.squareup.picasso3.Picasso.Priority;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.squareup.picasso3.Utils.MAIN_THREAD_KEY_BUILDER;
@@ -109,6 +110,9 @@ public final class Request {
   /** User-provided value to track this request. */
   @Nullable
   public final Object tag;
+  /** HTTP headers for the request */
+  @Nullable
+  public Map<String, String> headers;
 
   Request(Builder builder) {
     this.uri = builder.uri;
@@ -142,6 +146,7 @@ public final class Request {
     this.tag = builder.tag;
     this.memoryPolicy = builder.memoryPolicy;
     this.networkPolicy = builder.networkPolicy;
+    this.headers = builder.headers;
   }
 
   @NonNull
@@ -288,6 +293,7 @@ public final class Request {
     @Nullable Object tag;
     int memoryPolicy;
     int networkPolicy;
+    @Nullable Map<String,String> headers;
 
     /** Start building a request using the specified {@link Uri}. */
     public Builder(@NonNull Uri uri) {
@@ -327,6 +333,7 @@ public final class Request {
       priority = request.priority;
       memoryPolicy = request.memoryPolicy;
       networkPolicy = request.networkPolicy;
+      headers = request.headers;
     }
 
     boolean hasImage() {
@@ -637,6 +644,12 @@ public final class Request {
         }
         this.networkPolicy |= networkPolicy.index;
       }
+      return this;
+    }
+
+    @NonNull
+    public Builder addHeaders(@Nullable Map<String, String> headers) {
+      this.headers = headers;
       return this;
     }
 

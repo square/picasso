@@ -33,6 +33,7 @@ import androidx.core.content.ContextCompat;
 import com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.squareup.picasso3.BitmapHunter.forRequest;
@@ -396,6 +397,13 @@ public class RequestCreator {
   @NonNull
   public RequestCreator noFade() {
     noFade = true;
+    return this;
+  }
+
+  /** Add custom HTTP headers to the image network request if required */
+  @NonNull
+  public RequestCreator addHeaders(Map<String, String> headers) {
+    data.addHeaders(headers);
     return this;
   }
 
