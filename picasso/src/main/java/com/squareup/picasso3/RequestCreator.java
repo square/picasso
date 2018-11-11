@@ -402,7 +402,7 @@ public class RequestCreator {
 
   /** Add custom HTTP headers to the image network request if required */
   @NonNull
-  public RequestCreator addHeaders(Map<String, String> headers) {
+  public RequestCreator addHeaders(@Nullable Map<String, String> headers) {
     data.addHeaders(headers);
     return this;
   }
