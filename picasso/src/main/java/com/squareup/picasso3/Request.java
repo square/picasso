@@ -293,7 +293,7 @@ public final class Request {
     @Nullable Object tag;
     int memoryPolicy;
     int networkPolicy;
-    @Nullable Map<String,String> headers;
+    @Nullable Map<String, String> headers;
 
     /** Start building a request using the specified {@link Uri}. */
     public Builder(@NonNull Uri uri) {
