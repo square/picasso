@@ -24,17 +24,20 @@ import android.net.Uri;
 import android.view.Gravity;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
+
+import com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import androidx.annotation.DrawableRes;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.content.ContextCompat;
-import com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import okhttp3.Headers;
 
 import static com.squareup.picasso3.BitmapHunter.forRequest;
 import static com.squareup.picasso3.MemoryPolicy.shouldReadFromMemoryCache;
@@ -400,9 +403,11 @@ public class RequestCreator {
     return this;
   }
 
-  /** Add custom HTTP headers to the image network request if required */
+  /**
+   * Add custom HTTP headers to the image network request if required
+   */
   @NonNull
-  public RequestCreator addHeaders(@Nullable Map<String, String> headers) {
+  public RequestCreator addHeaders(@Nullable Headers headers) {
     data.addHeaders(headers);
     return this;
   }

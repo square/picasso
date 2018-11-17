@@ -18,13 +18,14 @@ package com.squareup.picasso3;
 import android.graphics.Bitmap;
 import android.net.NetworkInfo;
 import android.net.Uri;
+
+import java.io.IOException;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import java.io.IOException;
-import java.util.Map;
-
 import okhttp3.CacheControl;
 import okhttp3.Call;
+import okhttp3.Headers;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
@@ -129,11 +130,9 @@ final class NetworkRequestHandler extends RequestHandler {
     if (cacheControl != null) {
       builder.cacheControl(cacheControl);
     }
-    if (request.headers != null) {
-      Map<String, String> headers = request.headers;
-      for (Map.Entry<String, String> entry : headers.entrySet()) {
-        builder.header(entry.getKey(), entry.getValue());
-      }
+    Headers requestHeaders = request.headers;
+    if (requestHeaders != null) {
+      builder.headers(requestHeaders);
     }
     return builder.build();
   }

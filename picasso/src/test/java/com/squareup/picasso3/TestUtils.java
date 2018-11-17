@@ -28,21 +28,23 @@ import android.util.TypedValue;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
-import androidx.annotation.NonNull;
+
 import com.squareup.picasso3.Picasso.RequestTransformer;
 import com.squareup.picasso3.Utils.PicassoThreadFactory;
+
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import androidx.annotation.NonNull;
 import okhttp3.Call;
+import okhttp3.Headers;
 import okhttp3.Response;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static android.graphics.Bitmap.Config.ALPHA_8;
@@ -314,10 +316,10 @@ class TestUtils {
     };
   }
 
-  static Map<String, String> makeCustomHearders() {
-    Map<String, String> customHeaders = new HashMap<>();
-    customHeaders.put(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE);
-    return customHeaders;
+  static Headers makeCustomHearders() {
+    Headers.Builder builder = new Headers.Builder();
+    builder.add(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE);
+    return builder.build();
   }
 
   static final Call.Factory UNUSED_CALL_FACTORY = new Call.Factory() {
