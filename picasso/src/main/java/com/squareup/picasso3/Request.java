@@ -24,7 +24,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import okhttp3.Headers;
-
 import com.squareup.picasso3.Picasso.Priority;
 import java.util.ArrayList;
 import java.util.Collections;

@@ -31,7 +31,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.content.ContextCompat;
 import okhttp3.Headers;
-
 import com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget;
 import java.io.IOException;
 import java.util.List;
