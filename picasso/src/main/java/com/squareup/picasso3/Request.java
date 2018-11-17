@@ -19,19 +19,17 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Looper;
 import android.view.Gravity;
-
-import com.squareup.picasso3.Picasso.Priority;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import okhttp3.Headers;
+
+import com.squareup.picasso3.Picasso.Priority;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static com.squareup.picasso3.Utils.MAIN_THREAD_KEY_BUILDER;
 import static com.squareup.picasso3.Utils.checkNotNull;

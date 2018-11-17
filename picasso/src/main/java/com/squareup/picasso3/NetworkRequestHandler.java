@@ -18,11 +18,9 @@ package com.squareup.picasso3;
 import android.graphics.Bitmap;
 import android.net.NetworkInfo;
 import android.net.Uri;
-
-import java.io.IOException;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import java.io.IOException;
 import okhttp3.CacheControl;
 import okhttp3.Call;
 import okhttp3.Headers;

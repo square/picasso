@@ -28,23 +28,19 @@ import android.util.TypedValue;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
-
+import androidx.annotation.NonNull;
 import com.squareup.picasso3.Picasso.RequestTransformer;
 import com.squareup.picasso3.Utils.PicassoThreadFactory;
-
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
-
-import androidx.annotation.NonNull;
 import okhttp3.Call;
 import okhttp3.Headers;
 import okhttp3.Response;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static android.graphics.Bitmap.Config.ALPHA_8;
