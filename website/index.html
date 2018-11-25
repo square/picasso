@@ -112,7 +112,7 @@ Picasso.get().load(new File(...)).into(imageView3);</pre>
             <p class="screenshot"><img src="static/debug.png" alt="Debug ribbon indicators"></p>
 
             <h3 id="download">Download</h3>
-            <p><a href="https://search.maven.org/remote_content?g=com.squareup.picasso3&a=picasso&v=LATEST" class="dl version-href">&darr; <span class="version-tag">Latest</span> JAR</a></p>
+            <p><a href="https://search.maven.org/remote_content?g=com.squareup.picasso3&a=picasso&v=LATEST" class="dl version-href">&darr; <span class="version-tag">Latest</span> AAR</a></p>
             <p>The source code to the Picasso, its samples, and this website is <a href="http://github.com/square/picasso">available on GitHub</a>.</p>
 
             <h4>Maven</h4>
@@ -196,12 +196,16 @@ limitations under the License.</pre>
         });
 
         // Look up the latest version of the library.
-        $.fn.artifactVersion('com.squareup.picasso3', 'picasso', function(version, url) {
-          $('.version').text(version);
-          $('.version-tag').text('v' + version);
-          $('.version-href').attr('href', url);
+        $.fn.artifactVersion({
+          'groupId': 'com.squareup.picasso',
+          'artifactId': 'picasso',
+          'packaging': 'aar'
+        }, function (version, url) {
+            $('.version').text(version);
+            $('.version-tag').text('v' + version);
+            $('.version-href').attr('href', url);
+          });
         });
-      });
     </script>
   </body>
 </html>
