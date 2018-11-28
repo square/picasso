@@ -57,7 +57,7 @@ public class ImageViewActionTest {
     Picasso picasso =
         new Picasso(RuntimeEnvironment.application, dispatcher, UNUSED_CALL_FACTORY, null, cache,
             null, NO_TRANSFORMERS, NO_HANDLERS, mock(Stats.class), Bitmap.Config.ARGB_8888, false,
-            false);
+            false, false);
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
     ImageViewAction request =

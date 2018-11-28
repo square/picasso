@@ -45,7 +45,9 @@ class ImageViewAction extends Action {
     }
 
     boolean indicatorsEnabled = picasso.indicatorsEnabled;
-    PicassoDrawable.setResult(target, picasso.context, result, noFade, indicatorsEnabled);
+    PicassoDrawable.setResult(
+        target, picasso.context, result, noFade, indicatorsEnabled, picasso.indicatorsCentered
+    );
 
     if (callback != null) {
       callback.onSuccess();

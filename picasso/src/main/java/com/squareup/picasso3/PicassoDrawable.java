@@ -36,13 +36,14 @@ final class PicassoDrawable extends BitmapDrawable {
   // Only accessed from main thread.
   private static final Paint DEBUG_PAINT = new Paint();
   private static final float FADE_DURATION = 200f; //ms
+  private static final int INDICATORS_WIDTH = 16;
 
   /**
    * Create or update the drawable on the target {@link ImageView} to display the supplied bitmap
    * image.
    */
   static void setResult(ImageView target, Context context, RequestHandler.Result result,
-      boolean noFade, boolean debugging) {
+      boolean noFade, boolean debugging, boolean indicatorsCentered) {
     Drawable placeholder = target.getDrawable();
     if (placeholder instanceof Animatable) {
       ((Animatable) placeholder).stop();
@@ -52,7 +53,8 @@ final class PicassoDrawable extends BitmapDrawable {
     if (bitmap != null) {
       Picasso.LoadedFrom loadedFrom = result.getLoadedFrom();
       PicassoDrawable drawable =
-          new PicassoDrawable(context, bitmap, placeholder, loadedFrom, noFade, debugging);
+          new PicassoDrawable(context, bitmap, placeholder, loadedFrom, noFade, debugging,
+              indicatorsCentered);
       target.setImageDrawable(drawable);
       return;
     }
@@ -78,6 +80,7 @@ final class PicassoDrawable extends BitmapDrawable {
   }
 
   private final boolean debugging;
+  private final boolean indicatorsCentered;
   private final float density;
   private final Picasso.LoadedFrom loadedFrom;
 
@@ -88,10 +91,12 @@ final class PicassoDrawable extends BitmapDrawable {
   int alpha = 0xFF;
 
   PicassoDrawable(Context context, Bitmap bitmap, @Nullable Drawable placeholder,
-      Picasso.LoadedFrom loadedFrom, boolean noFade, boolean debugging) {
+      Picasso.LoadedFrom loadedFrom, boolean noFade, boolean debugging,
+      boolean indicatorsCentered) {
     super(context.getResources(), bitmap);
 
     this.debugging = debugging;
+    this.indicatorsCentered = indicatorsCentered;
     this.density = context.getResources().getDisplayMetrics().density;
 
     this.loadedFrom = loadedFrom;
@@ -127,7 +132,11 @@ final class PicassoDrawable extends BitmapDrawable {
     }
 
     if (debugging) {
-      drawDebugIndicator(canvas);
+      if (indicatorsCentered) {
+        drawCenteredDebugIndicator(canvas);
+      } else {
+        drawDebugIndicator(canvas);
+      }
     }
   }
 
@@ -155,11 +164,11 @@ final class PicassoDrawable extends BitmapDrawable {
 
   private void drawDebugIndicator(Canvas canvas) {
     DEBUG_PAINT.setColor(WHITE);
-    Path path = getTrianglePath(0, 0, (int) (16 * density));
+    Path path = getTrianglePath(0, 0, (int) (INDICATORS_WIDTH * density));
     canvas.drawPath(path, DEBUG_PAINT);
 
     DEBUG_PAINT.setColor(loadedFrom.debugColor);
-    path = getTrianglePath(0, 0, (int) (15 * density));
+    path = getTrianglePath(0, 0, (int) ((INDICATORS_WIDTH - 1) * density));
     canvas.drawPath(path, DEBUG_PAINT);
   }
 
@@ -168,6 +177,25 @@ final class PicassoDrawable extends BitmapDrawable {
     path.moveTo(x1, y1);
     path.lineTo(x1 + width, y1);
     path.lineTo(x1, y1 + width);
+
+    return path;
+  }
+
+  private void drawCenteredDebugIndicator(Canvas canvas) {
+    DEBUG_PAINT.setColor(WHITE);
+    Path path = getCirclePath(canvas.getWidth() / 2f, canvas.getHeight() / 2f,
+        (int) (INDICATORS_WIDTH * density));
+    canvas.drawPath(path, DEBUG_PAINT);
+
+    DEBUG_PAINT.setColor(loadedFrom.debugColor);
+    path = getCirclePath(canvas.getWidth() / 2f, canvas.getHeight() / 2f,
+        (int) ((INDICATORS_WIDTH - 1) * density));
+    canvas.drawPath(path, DEBUG_PAINT);
+  }
+
+  private static Path getCirclePath(float x, float y, float radius) {
+    final Path path = new Path();
+    path.addCircle(x, y, radius, Path.Direction.CW);
 
     return path;
   }

@@ -372,7 +372,7 @@ public final class BitmapHunterTest {
     // Must use non-mock constructor because that is where Picasso's list of handlers is created.
     Picasso picasso =
         new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, null, NO_TRANSFORMERS,
-            handlers, stats, ARGB_8888, false, false);
+            handlers, stats, ARGB_8888, false, false, false);
     BitmapHunter hunter = forRequest(picasso, dispatcher, cache, stats, action);
     assertThat(hunter.requestHandler).isEqualTo(handler);
   }

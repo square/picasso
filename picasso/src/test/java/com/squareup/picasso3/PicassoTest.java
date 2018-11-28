@@ -88,7 +88,7 @@ public final class PicassoTest {
   @Before public void setUp() {
     initMocks(this);
     picasso = new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, listener,
-        NO_TRANSFORMERS, NO_HANDLERS, stats, ARGB_8888, false, false);
+        NO_TRANSFORMERS, NO_HANDLERS, stats, ARGB_8888, false, false, false);
   }
 
   @Test public void submitWithTargetInvokesDispatcher() {
@@ -371,7 +371,7 @@ public final class PicassoTest {
     okhttp3.Cache cache = new okhttp3.Cache(temporaryFolder.getRoot(), 100);
     Picasso picasso =
         new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, cache, this.cache, listener,
-            NO_TRANSFORMERS, NO_HANDLERS, stats, ARGB_8888, false, false);
+            NO_TRANSFORMERS, NO_HANDLERS, stats, ARGB_8888, false, false, false);
     picasso.shutdown();
     assertThat(cache.isClosed()).isTrue();
   }
@@ -403,7 +403,8 @@ public final class PicassoTest {
       }
     };
     Picasso picasso = new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, listener,
-        Collections.singletonList(brokenTransformer), NO_HANDLERS, stats, ARGB_8888, false, false);
+        Collections.singletonList(brokenTransformer), NO_HANDLERS, stats, ARGB_8888, false, false,
+        false);
     Request request = new Request.Builder(URI_1).build();
     try {
       picasso.transformRequest(request);
@@ -426,6 +427,12 @@ public final class PicassoTest {
     assertThat(picasso.getIndicatorsEnabled()).isFalse();
     picasso.setIndicatorsEnabled(true);
     assertThat(picasso.getIndicatorsEnabled()).isTrue();
+  }
+
+  @Test public void centerIndicators() {
+    assertThat(picasso.getIndicatorsCentered()).isFalse();
+    picasso.setIndicatorsCentered(true);
+    assertThat(picasso.getIndicatorsCentered()).isTrue();
   }
 
   @Test public void loadThrowsWithInvalidInput() {
@@ -509,12 +516,14 @@ public final class PicassoTest {
   }
 
   @Test public void builderWithDebugIndicators() {
-    Picasso picasso = new Picasso.Builder(RuntimeEnvironment.application).indicatorsEnabled(true).build();
+    Picasso picasso =
+        new Picasso.Builder(RuntimeEnvironment.application).indicatorsEnabled(true).build();
     assertThat(picasso.getIndicatorsEnabled()).isTrue();
   }
 
   @Test public void evictAll() {
-    Picasso picasso = new Picasso.Builder(RuntimeEnvironment.application).indicatorsEnabled(true).build();
+    Picasso picasso =
+        new Picasso.Builder(RuntimeEnvironment.application).indicatorsEnabled(true).build();
     picasso.cache.set("key", Bitmap.createBitmap(1, 1, ALPHA_8));
     assertThat(picasso.cache.size()).isEqualTo(1);
     picasso.evictAll();

@@ -103,7 +103,7 @@ public class RemoteViewsActionTest {
     Dispatcher dispatcher = mock(Dispatcher.class);
     PlatformLruCache cache = new PlatformLruCache(0);
     return new Picasso(RuntimeEnvironment.application, dispatcher, UNUSED_CALL_FACTORY, null, cache,
-        null, NO_TRANSFORMERS, NO_HANDLERS, mock(Stats.class), ARGB_8888, false, false);
+        null, NO_TRANSFORMERS, NO_HANDLERS, mock(Stats.class), ARGB_8888, false, false, false);
   }
 
   static class TestableRemoteViewsAction extends RemoteViewsAction {
