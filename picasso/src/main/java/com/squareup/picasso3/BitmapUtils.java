@@ -116,8 +116,22 @@ final class BitmapUtils {
   @SuppressLint("Override")
   private static Bitmap decodeStreamP(Request request, BufferedSource bufferedSource)
       throws IOException {
-    ImageDecoder.Source imageSource =
-        ImageDecoder.createSource(ByteBuffer.wrap(bufferedSource.readByteArray()));
+    bufferedSource.request(Long.MAX_VALUE);
+    Buffer buffer = bufferedSource.getBuffer();
+    long remaining = buffer.size();
+    ByteBuffer byteBuffer = ByteBuffer.allocate((int) remaining);
+    Buffer.UnsafeCursor cursor = new Buffer.UnsafeCursor();
+    while (remaining > 0) {
+      try (Buffer.UnsafeCursor ignored = buffer.readUnsafe(cursor)) {
+        cursor.seek(0);
+        int length = (int) Math.min(cursor.end - cursor.start, remaining);
+        byteBuffer.put(cursor.data, cursor.start, length);
+        remaining -= length;
+        buffer.skip(length);
+      }
+    }
+    byteBuffer.flip();
+    ImageDecoder.Source imageSource = ImageDecoder.createSource(byteBuffer);
     return decodeImageSource(imageSource, request);
   }
 
