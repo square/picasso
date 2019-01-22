@@ -1,6 +1,6 @@
 package com.squareup.picasso3;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import java.util.List;
 import okio.BufferedSource;
 

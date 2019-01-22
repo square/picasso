@@ -1,9 +1,8 @@
 package com.squareup.picasso3;
 
 import android.graphics.BitmapFactory;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import java.io.IOException;
-import java.io.InputStream;
 import okio.BufferedSource;
 
 import static com.squareup.picasso3.BitmapUtils.decodeStream;
@@ -16,10 +15,9 @@ public final class BitmapImageDecoder implements ImageDecoder {
         return true;
       }
 
-      InputStream stream = new SourceBufferingInputStream(source);
       BitmapFactory.Options options = new BitmapFactory.Options();
       options.inJustDecodeBounds = true;
-      BitmapFactory.decodeStream(stream, null, options);
+      BitmapFactory.decodeStream(source.peek().inputStream(), null, options);
       // we successfully decoded the bounds
       return options.outWidth > 0 && options.outHeight > 0;
     } catch (IOException e) {

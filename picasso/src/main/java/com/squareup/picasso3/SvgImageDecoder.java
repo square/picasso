@@ -11,9 +11,8 @@ import okio.BufferedSource;
 class SvgImageDecoder implements ImageDecoder {
 
   @Override public boolean canHandleSource(BufferedSource source) {
-    SourceBufferingInputStream wrapped = new SourceBufferingInputStream(source);
     try {
-      SVG svg = SVG.getFromInputStream(wrapped);
+      SVG svg = SVG.getFromInputStream(source.peek().inputStream());
       return true;
     } catch (SVGParseException e) {
       Log.e("Test", "Failed to parse SVG: " + e.getMessage(), e);
@@ -22,9 +21,8 @@ class SvgImageDecoder implements ImageDecoder {
   }
 
   @Override public Image decodeImage(BufferedSource source, Request request) throws IOException {
-    SourceBufferingInputStream wrapped = new SourceBufferingInputStream(source);
     try {
-      SVG svg = SVG.getFromInputStream(wrapped);
+      SVG svg = SVG.getFromInputStream(source.peek().inputStream());
       if (request.hasSize()) {
         if (request.targetWidth != 0) {
           svg.setDocumentWidth(request.targetWidth);

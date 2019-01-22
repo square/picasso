@@ -105,8 +105,8 @@ final class BitmapUtils {
     ExceptionCatchingSource exceptionCatchingSource = new ExceptionCatchingSource(source);
     BufferedSource bufferedSource = Okio.buffer(exceptionCatchingSource);
     Bitmap bitmap = SDK_INT >= 28
-        ? decodeStreamP(request, bufferedSource)
-        : decodeStreamPreP(request, bufferedSource);
+        ? decodeStreamP(bufferedSource, request)
+        : decodeStreamPreP(bufferedSource, request);
     exceptionCatchingSource.throwIfCaught();
     return bitmap;
   }

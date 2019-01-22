@@ -690,21 +690,6 @@ public class Picasso implements LifecycleObserver {
       service = picasso.dispatcher.service;
       cache = picasso.cache;
       listener = picasso.listener;
-      imageDecoders.addAll(picasso.imageDecoderFactory.decoders);
-      requestTransformers.addAll(picasso.requestTransformers);
-      requestHandlers.addAll(picasso.extraRequestHandlers);
-      defaultBitmapConfig = picasso.defaultBitmapConfig;
-
-      indicatorsEnabled = picasso.indicatorsEnabled;
-      loggingEnabled = picasso.loggingEnabled;
-    }
-
-    Builder(Picasso picasso) {
-      context = picasso.context;
-      callFactory = picasso.callFactory;
-      service = picasso.dispatcher.service;
-      cache = picasso.cache;
-      listener = picasso.listener;
       requestTransformers.addAll(picasso.requestTransformers);
       // See Picasso(). Removes internal request handlers added before and after custom handlers.
       int numRequestHandlers = picasso.requestHandlers.size();
