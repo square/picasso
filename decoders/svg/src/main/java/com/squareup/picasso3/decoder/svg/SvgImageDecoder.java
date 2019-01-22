@@ -2,7 +2,6 @@ package com.squareup.picasso3.decoder.svg;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.util.Log;
 import com.caverock.androidsvg.SVG;
 import com.caverock.androidsvg.SVGParseException;
 import com.squareup.picasso3.ImageDecoder;
