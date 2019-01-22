@@ -5,7 +5,6 @@ android {
 
   defaultConfig {
     minSdkVersion versions.minSdk
-    consumerProguardFiles 'consumer-proguard-rules.txt'
   }
 
   compileOptions {
@@ -18,26 +17,16 @@ android {
     textReport true
     lintConfig file('lint.xml')
   }
-
-  testOptions {
-    unitTests {
-      includeAndroidResources = true
-    }
-  }
 }
 
 dependencies {
-  api deps.okhttp
-  api deps.okio
-  api deps.androidxLifecycle
-  implementation deps.androidxAnnotations
-  implementation deps.androidxCore
-  implementation deps.androidxExifInterface
+  api project(':picasso')
+  implementation deps.androidSvg
+  compileOnly deps.androidxAnnotations
   testImplementation deps.junit
-  testImplementation deps.truth
   testImplementation deps.robolectric
+  testImplementation deps.truth
   testImplementation deps.mockito
-  testImplementation deps.mockWebServer
 
   annotationProcessor deps.nullaway
 }

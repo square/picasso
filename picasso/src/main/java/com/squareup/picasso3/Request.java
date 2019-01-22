@@ -577,12 +577,6 @@ public final class Request {
     }
 
     @NonNull
-    public Builder asSvg() {
-      return imageDecoderFactory(new ImageDecoderFactory(
-          Collections.<ImageDecoder>singletonList(new SvgImageDecoder())));
-    }
-
-    @NonNull
     public Builder imageDecoderFactory(@NonNull ImageDecoderFactory factory) {
       decoderFactory = factory;
       return this;

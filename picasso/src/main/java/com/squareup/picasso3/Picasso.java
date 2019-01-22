@@ -847,7 +847,6 @@ public class Picasso implements LifecycleObserver {
 
       ArrayList<ImageDecoder> decoders = new ArrayList<>(imageDecoders);
       decoders.add(new BitmapImageDecoder());
-      decoders.add(new SvgImageDecoder());
       ImageDecoderFactory decoderFactory = new ImageDecoderFactory(decoders);
 
       Stats stats = new Stats(cache);

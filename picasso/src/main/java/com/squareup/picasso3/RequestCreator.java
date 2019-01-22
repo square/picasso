@@ -346,12 +346,6 @@ public class RequestCreator {
   }
 
   @NonNull
-  public RequestCreator asSvg() {
-    return imageDecoderFactory(new ImageDecoderFactory(
-        Collections.<ImageDecoder>singletonList(new SvgImageDecoder())));
-  }
-
-  @NonNull
   public RequestCreator imageDecoderFactory(@NonNull ImageDecoderFactory imageDecoderFactory) {
     this.data.imageDecoderFactory(imageDecoderFactory);
     return this;

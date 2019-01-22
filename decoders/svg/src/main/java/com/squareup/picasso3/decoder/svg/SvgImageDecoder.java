@@ -1,10 +1,12 @@
-package com.squareup.picasso3;
+package com.squareup.picasso3.decoder.svg;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.util.Log;
 import com.caverock.androidsvg.SVG;
 import com.caverock.androidsvg.SVGParseException;
+import com.squareup.picasso3.ImageDecoder;
+import com.squareup.picasso3.Request;
 import java.io.IOException;
 import okio.BufferedSource;
 
@@ -12,10 +14,9 @@ class SvgImageDecoder implements ImageDecoder {
 
   @Override public boolean canHandleSource(BufferedSource source) {
     try {
-      SVG svg = SVG.getFromInputStream(source.peek().inputStream());
+      SVG.getFromInputStream(source.peek().inputStream());
       return true;
     } catch (SVGParseException e) {
-      Log.e("Test", "Failed to parse SVG: " + e.getMessage(), e);
       return false;
     }
   }
@@ -32,8 +33,14 @@ class SvgImageDecoder implements ImageDecoder {
         }
       }
 
-      final int width = (int) svg.getDocumentWidth();
-      final int height = (int) svg.getDocumentHeight();
+      int width = (int) svg.getDocumentWidth();
+      if (width == -1) {
+        width = (int) svg.getDocumentViewBox().width();
+      }
+      int height = (int) svg.getDocumentHeight();
+      if (height == -1) {
+        height = (int) svg.getDocumentViewBox().height();
+      }
       Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
       Canvas canvas = new Canvas(bitmap);
       svg.renderToCanvas(canvas);

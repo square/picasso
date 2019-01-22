@@ -339,7 +339,7 @@ class TestUtils {
   };
 
   static final ImageDecoderFactory DEFAULT_DECODERS = new ImageDecoderFactory(
-      Arrays.asList(new BitmapImageDecoder(), new SvgImageDecoder()));
+      Collections.<ImageDecoder>singletonList(new BitmapImageDecoder()));
   static final List<RequestTransformer> NO_TRANSFORMERS = Collections.emptyList();
   static final List<RequestHandler> NO_HANDLERS = Collections.emptyList();
 
