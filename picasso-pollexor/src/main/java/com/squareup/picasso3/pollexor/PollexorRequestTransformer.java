@@ -21,7 +21,7 @@ public class PollexorRequestTransformer implements RequestTransformer {
   private final boolean alwaysTransform;
 
   /** Create a transformer for the specified {@link Thumbor}. */
-  public PollexorRequestTransformer(Thumbor thumbor) {
+  public PollexorRequestTransformer(@NonNull Thumbor thumbor) {
     this(thumbor, false);
   }
 
@@ -29,7 +29,7 @@ public class PollexorRequestTransformer implements RequestTransformer {
    * Create a transformer for the specified {@link Thumbor} which always transforms images using
    * Thumbor even when resize is not set.
    */
-  public PollexorRequestTransformer(Thumbor thumbor, boolean alwaysTransform) {
+  public PollexorRequestTransformer(@NonNull Thumbor thumbor, boolean alwaysTransform) {
     this.thumbor = thumbor;
     this.alwaysTransform = alwaysTransform;
   }
