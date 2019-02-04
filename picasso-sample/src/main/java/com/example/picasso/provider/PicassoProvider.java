@@ -1,4 +1,4 @@
-package com.squareup.picasso3.provider;
+package com.example.picasso.provider;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
