@@ -22,7 +22,7 @@ class SvgImageDecoder implements ImageDecoder {
 
   @Override public Image decodeImage(BufferedSource source, Request request) throws IOException {
     try {
-      SVG svg = SVG.getFromInputStream(source.peek().inputStream());
+      SVG svg = SVG.getFromInputStream(source.inputStream());
       if (request.hasSize()) {
         if (request.targetWidth != 0) {
           svg.setDocumentWidth(request.targetWidth);
