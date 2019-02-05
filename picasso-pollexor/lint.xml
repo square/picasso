@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <lint>
-  <issue id="InvalidPackage" severity="error">
-    <ignore regexp="okio-.*jar"/>
-  </issue>
+  <issue id="KotlinPropertyAccess" severity="error"/>
+  <issue id="LambdaLast" severity="error"/>
+  <issue id="NoHardKeywords" severity="error"/>
+  <issue id="UnknownNullness" severity="error"/>
+  <issue id="SyntheticAccessor" severity="error"/>
 </lint>
