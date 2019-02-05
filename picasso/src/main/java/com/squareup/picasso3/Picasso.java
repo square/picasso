@@ -692,6 +692,9 @@ public class Picasso implements LifecycleObserver {
       int numRequestHandlers = picasso.requestHandlers.size();
       requestHandlers.addAll(picasso.requestHandlers.subList(2, numRequestHandlers - 6));
 
+      int numImageDecoders = picasso.imageDecoderFactory.decoders.size();
+      imageDecoders.addAll(picasso.imageDecoderFactory.decoders.subList(0, numImageDecoders - 1));
+
       defaultBitmapConfig = picasso.defaultBitmapConfig;
       indicatorsEnabled = picasso.indicatorsEnabled;
       loggingEnabled = picasso.loggingEnabled;

@@ -23,8 +23,10 @@ import android.widget.RemoteViews;
 import androidx.annotation.NonNull;
 import com.squareup.picasso3.Picasso.RequestTransformer;
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import okio.BufferedSource;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -559,6 +561,31 @@ public final class PicassoTest {
     assertThat(original.requestHandlers).hasSize(NUM_BUILTIN_HANDLERS);
   }
 
+  @Test public void clonedImageDecodersAreRetained() {
+    Picasso parent = defaultPicasso(RuntimeEnvironment.application, false, false);
+
+    ImageDecoder newDecoder = new ImageDecoder() {
+      @Override public boolean canHandleSource(@NonNull BufferedSource source) {
+        return false;
+      }
+
+      @NonNull @Override
+      public Image decodeImage(@NonNull BufferedSource source, @NonNull Request request)
+          throws IOException {
+        return null;
+      }
+    };
+
+    Picasso child = parent.newBuilder()
+        .addImageDecoder(newDecoder)
+        .build();
+
+    assertThat(child.imageDecoderFactory.decoders).hasSize(3);
+    ImageDecoder parentCustomDecoder = parent.imageDecoderFactory.decoders.get(0);
+    assertThat(child.imageDecoderFactory.decoders).contains(parentCustomDecoder);
+    assertThat(child.imageDecoderFactory.decoders).contains(newDecoder);
+  }
+
   @Test public void cloneSharesStatefulInstances() {
     Picasso parent = defaultPicasso(RuntimeEnvironment.application, true, true);
 
@@ -577,6 +604,9 @@ public final class PicassoTest {
       assertThat(child.requestHandlers.get(i)).isInstanceOf(
           parent.requestHandlers.get(i).getClass());
     }
+
+    assertThat(child.imageDecoderFactory.decoders).hasSize(
+        parent.imageDecoderFactory.decoders.size());
 
     assertThat(child.defaultBitmapConfig).isEqualTo(parent.defaultBitmapConfig);
     assertThat(child.indicatorsEnabled).isEqualTo(parent.indicatorsEnabled);

@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.List;
 import okhttp3.Call;
 import okhttp3.Response;
+import okio.BufferedSource;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -338,6 +339,18 @@ class TestUtils {
     }
   };
 
+  static final ImageDecoder NOOP_IMAGE_DECODER = new ImageDecoder() {
+    @Override public boolean canHandleSource(@NonNull BufferedSource source) {
+      return false;
+    }
+
+    @NonNull @Override
+    public Image decodeImage(@NonNull BufferedSource source, @NonNull Request request)
+        throws IOException {
+      return null;
+    }
+  };
+
   static final ImageDecoderFactory DEFAULT_DECODERS = new ImageDecoderFactory(
       Collections.<ImageDecoder>singletonList(new BitmapImageDecoder()));
   static final List<RequestTransformer> NO_TRANSFORMERS = Collections.emptyList();
@@ -356,6 +369,7 @@ class TestUtils {
     return builder
         .callFactory(UNUSED_CALL_FACTORY)
         .defaultBitmapConfig(DEFAULT_CONFIG)
+        .addImageDecoder(NOOP_IMAGE_DECODER)
         .executor(new PicassoExecutorService(new PicassoThreadFactory()))
         .indicatorsEnabled(true)
         .listener(NOOP_LISTENER)
