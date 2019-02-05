@@ -18,7 +18,8 @@ final class ImageDecoderFactory {
    * @return The first ImageDecoder that can decode the source, or null.
    */
   @Nullable ImageDecoder getImageDecoderForSource(BufferedSource source) {
-    for (ImageDecoder decoder : decoders) {
+    for (int i = 0, n = decoders.size(); i < n; i++) {
+      ImageDecoder decoder = decoders.get(i);
       if (decoder.canHandleSource(source)) {
         return decoder;
       }
