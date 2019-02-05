@@ -19,8 +19,8 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.widget.RemoteViews;
+import com.example.picasso.provider.PicassoProvider;
 import com.squareup.picasso3.Picasso;
-import com.squareup.picasso3.provider.PicassoProvider;
 import java.util.Random;
 
 public class SampleWidgetProvider extends AppWidgetProvider {

@@ -15,7 +15,7 @@ import android.widget.BaseAdapter;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 import androidx.core.app.NotificationCompat;
-import com.squareup.picasso3.provider.PicassoProvider;
+import com.example.picasso.provider.PicassoProvider;
 import java.util.Random;
 
 final class PicassoSampleAdapter extends BaseAdapter {

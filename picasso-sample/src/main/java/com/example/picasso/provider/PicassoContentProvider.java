@@ -1,4 +1,4 @@
-package com.squareup.picasso3.provider;
+package com.example.picasso.provider;
 
 import android.annotation.SuppressLint;
 import android.content.ContentProvider;
@@ -8,11 +8,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RestrictTo;
 
-import static androidx.annotation.RestrictTo.Scope.LIBRARY;
-
-@RestrictTo(LIBRARY)
 public final class PicassoContentProvider extends ContentProvider {
   @SuppressLint("StaticFieldLeak")
   @Nullable static Context context;

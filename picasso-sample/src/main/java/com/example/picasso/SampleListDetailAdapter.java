@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import com.squareup.picasso3.provider.PicassoProvider;
+import com.example.picasso.provider.PicassoProvider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

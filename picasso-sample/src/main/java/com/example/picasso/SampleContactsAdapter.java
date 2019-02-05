@@ -25,7 +25,7 @@ import android.view.ViewGroup;
 import android.widget.QuickContactBadge;
 import android.widget.TextView;
 import androidx.cursoradapter.widget.CursorAdapter;
-import com.squareup.picasso3.provider.PicassoProvider;
+import com.example.picasso.provider.PicassoProvider;
 
 import static android.provider.ContactsContract.Contacts;
 import static com.example.picasso.SampleContactsActivity.ContactsQuery;

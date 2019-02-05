@@ -2,5 +2,4 @@ rootProject.name = 'picasso-root'
 
 include 'picasso'
 include 'picasso-pollexor'
-include 'picasso-provider'
 include 'picasso-sample'

@@ -46,5 +46,10 @@
           android:resource="@xml/sample_widget_info"/>
     </receiver>
 
+    <provider
+        android:name=".provider.PicassoContentProvider"
+        android:authorities="${applicationId}.provider"
+        android:exported="false"/>
+
   </application>
 </manifest>

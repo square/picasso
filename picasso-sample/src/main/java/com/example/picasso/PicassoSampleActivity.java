@@ -9,7 +9,7 @@ import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.ToggleButton;
 import androidx.fragment.app.FragmentActivity;
-import com.squareup.picasso3.provider.PicassoProvider;
+import com.example.picasso.provider.PicassoProvider;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;

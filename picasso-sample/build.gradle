@@ -29,7 +29,6 @@ dependencies {
   implementation deps.androidxCore
   implementation deps.androidxFragment
   implementation project(':picasso')
-  implementation project(':picasso-provider')
 
   annotationProcessor deps.nullaway
 }
