@@ -139,7 +139,6 @@ public class Picasso implements LifecycleObserver {
   final ImageDecoderFactory imageDecoderFactory;
   final Map<Object, Action> targetToAction;
   final Map<ImageView, DeferredRequestCreator> targetToDeferredRequestCreator;
-  final List<RequestHandler> extraRequestHandlers;
   @Nullable final Bitmap.Config defaultBitmapConfig;
 
   boolean indicatorsEnabled;
@@ -161,7 +160,6 @@ public class Picasso implements LifecycleObserver {
     this.listener = listener;
     this.imageDecoderFactory = imageDecoderFactory;
     this.requestTransformers = Collections.unmodifiableList(new ArrayList<>(requestTransformers));
-    this.extraRequestHandlers = Collections.unmodifiableList(new ArrayList<>(extraRequestHandlers));
     this.defaultBitmapConfig = defaultBitmapConfig;
 
     // Adjust this and Builder(Picasso) as internal handlers are added or removed.
@@ -676,7 +674,6 @@ public class Picasso implements LifecycleObserver {
 
     private boolean indicatorsEnabled;
     private boolean loggingEnabled;
-    private boolean isChild;
 
     /** Start building a new {@link Picasso} instance. */
     public Builder(@NonNull Context context) {
