@@ -100,6 +100,10 @@ public class Picasso implements LifecycleObserver {
   public enum Priority {
     LOW,
     NORMAL,
+    /**
+     * High priority requests will post to the front of main thread's message queue when
+     * they complete loading and their images need to be rendered.
+     */
     HIGH
   }
 
