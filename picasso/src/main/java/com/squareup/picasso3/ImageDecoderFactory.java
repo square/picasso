@@ -20,7 +20,7 @@ final class ImageDecoderFactory {
   @Nullable ImageDecoder getImageDecoderForSource(BufferedSource source) {
     for (int i = 0, n = decoders.size(); i < n; i++) {
       ImageDecoder decoder = decoders.get(i);
-      if (decoder.canHandleSource(source)) {
+      if (decoder.canHandleSource(source.peek())) {
         return decoder;
       }
     }

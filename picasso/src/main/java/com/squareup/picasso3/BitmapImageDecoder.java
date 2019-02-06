@@ -17,7 +17,7 @@ public final class BitmapImageDecoder implements ImageDecoder {
 
       BitmapFactory.Options options = new BitmapFactory.Options();
       options.inJustDecodeBounds = true;
-      BitmapFactory.decodeStream(source.peek().inputStream(), null, options);
+      BitmapFactory.decodeStream(source.inputStream(), null, options);
       // we successfully decoded the bounds
       return options.outWidth > 0 && options.outHeight > 0;
     } catch (IOException e) {

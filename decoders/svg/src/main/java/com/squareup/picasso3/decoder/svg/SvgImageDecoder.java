@@ -13,7 +13,7 @@ class SvgImageDecoder implements ImageDecoder {
 
   @Override public boolean canHandleSource(BufferedSource source) {
     try {
-      SVG.getFromInputStream(source.peek().inputStream());
+      SVG.getFromInputStream(source.inputStream());
       return true;
     } catch (SVGParseException e) {
       return false;
