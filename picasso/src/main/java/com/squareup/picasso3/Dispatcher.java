@@ -421,7 +421,12 @@ class Dispatcher {
       }
     }
 
-    mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(HUNTER_COMPLETE, hunter));
+    Message message = mainThreadHandler.obtainMessage(HUNTER_COMPLETE, hunter);
+    if (hunter.priority == Picasso.Priority.HIGH) {
+      mainThreadHandler.sendMessageAtFrontOfQueue(message);
+    } else {
+      mainThreadHandler.sendMessage(message);
+    }
     logDelivery(hunter);
   }
 
