@@ -19,6 +19,8 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.view.Gravity;
 import androidx.annotation.NonNull;
@@ -27,6 +29,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -81,6 +84,7 @@ import static com.squareup.picasso3.TestUtils.mockAction;
 import static com.squareup.picasso3.TestUtils.mockImageViewTarget;
 import static com.squareup.picasso3.TestUtils.mockPicasso;
 import static com.squareup.picasso3.TestUtils.mockResources;
+import static java.util.Arrays.asList;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -292,7 +296,7 @@ public final class BitmapHunterTest {
   @Test public void forContactsThumbnailPhotoRequest() {
     Action action = mockAction(CONTACT_PHOTO_KEY_1, CONTACT_PHOTO_URI_1);
     BitmapHunter hunter = forRequest(mockPicasso(new ContactsPhotoRequestHandler(context)),
-      dispatcher, cache, stats, action);
+        dispatcher, cache, stats, action);
     assertThat(hunter.requestHandler).isInstanceOf(ContactsPhotoRequestHandler.class);
   }
 
@@ -443,7 +447,7 @@ public final class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).containsExactly("rotate 90.0");
   }
 
- @Test public void exifRotationSizing() {
+  @Test public void exifRotationSizing() {
     Request data = new Request.Builder(URI_1).resize(5, 10).build();
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, ORIENTATION_ROTATE_90);
@@ -455,7 +459,7 @@ public final class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).contains("scale 1.0 0.5");
   }
 
- @Test public void exifRotationNoSizing() {
+  @Test public void exifRotationNoSizing() {
     Request data = new Request.Builder(URI_1).build();
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, ORIENTATION_ROTATE_90);
@@ -467,7 +471,7 @@ public final class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).contains("rotate 90.0");
   }
 
- @Test public void rotation90Sizing() {
+  @Test public void rotation90Sizing() {
     Request data = new Request.Builder(URI_1).rotate(90).resize(5, 10).build();
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, 0);
@@ -479,7 +483,7 @@ public final class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).contains("scale 1.0 0.5");
   }
 
- @Test public void rotation180Sizing() {
+  @Test public void rotation180Sizing() {
     Request data = new Request.Builder(URI_1).rotate(180).resize(5, 10).build();
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, 0);
@@ -491,7 +495,7 @@ public final class BitmapHunterTest {
     assertThat(shadowMatrix.getPreOperations()).contains("scale 0.5 1.0");
   }
 
- @Test public void rotation90WithPivotSizing() {
+  @Test public void rotation90WithPivotSizing() {
     Request data = new Request.Builder(URI_1).rotate(90,0,10).resize(5, 10).build();
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, 0);
@@ -1015,32 +1019,7 @@ public final class BitmapHunterTest {
     }
   }
 
-  @Test public void doesNotRecycleOriginalTransformationThrows() {
-    Transformation badTransformation = new Transformation() {
-      @Override public RequestHandler.Result transform(RequestHandler.Result source) {
-        // Should recycle source.
-        return new RequestHandler.Result(Bitmap.createBitmap(10, 10, ARGB_8888), MEMORY, 0);
-      }
-
-      @Override public String key() {
-        return "test";
-      }
-    };
-    List<Transformation> transformations = Collections.singletonList(badTransformation);
-    Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
-    RequestHandler.Result result = new RequestHandler.Result(original, MEMORY, 0);
-    Request data = new Request.Builder(URI_1).build();
-    try {
-      BitmapHunter.applyTransformations(picasso, data, transformations, result);
-      fail("Expected exception to be thrown.");
-    } catch (RuntimeException e) {
-      assertThat(e).hasMessageThat().isEqualTo("Transformation "
-          + badTransformation.key()
-          + " mutated input Bitmap but failed to recycle the original.");
-    }
-  }
-
-  @Test public void recycledOriginalTransformationThrows() {
+  @Test public void recycledTransformationBitmapThrows() {
     Transformation badTransformation = new Transformation() {
       @Override public RequestHandler.Result transform(RequestHandler.Result source) {
         source.getBitmap().recycle();
@@ -1061,8 +1040,28 @@ public final class BitmapHunterTest {
     } catch (RuntimeException e) {
       assertThat(e).hasMessageThat().isEqualTo("Transformation "
           + badTransformation.key()
-          + " returned input Bitmap but recycled it.");
+          + " returned a recycled Bitmap.");
     }
+  }
+
+  @Test public void transformDrawables() {
+    final AtomicInteger transformationCount = new AtomicInteger();
+    Transformation identity = new Transformation() {
+      @Override public RequestHandler.Result transform(RequestHandler.Result source) {
+        transformationCount.incrementAndGet();
+        return source;
+      }
+
+      @Override public String key() {
+        return "test";
+      }
+    };
+    List<Transformation> transformations = asList(identity, identity, identity);
+    Drawable original = new BitmapDrawable(Bitmap.createBitmap(10, 10, ARGB_8888));
+    RequestHandler.Result result = new RequestHandler.Result(original, MEMORY);
+    Request data = new Request.Builder(URI_1).build();
+    BitmapHunter.applyTransformations(picasso, data, transformations, result);
+    assertThat(transformationCount.get()).isEqualTo(3);
   }
 
   private static class TestableBitmapHunter extends BitmapHunter {
@@ -1127,7 +1126,7 @@ public final class BitmapHunterTest {
 
   private class CustomRequestHandler extends RequestHandler {
     @Override public boolean canHandleRequest(@NonNull Request data) {
-        return CUSTOM_URI.getScheme().equals(data.uri.getScheme());
+      return CUSTOM_URI.getScheme().equals(data.uri.getScheme());
     }
 
     @Override public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull Callback callback) {
