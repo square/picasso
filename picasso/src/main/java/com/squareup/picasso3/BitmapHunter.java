@@ -110,11 +110,6 @@ class BitmapHunter implements Runnable {
       } else {
         dispatcher.dispatchComplete(this);
       }
-    } catch (NetworkRequestHandler.ResponseException e) {
-      if (!NetworkPolicy.isOfflineOnly(e.networkPolicy) || e.code != 504) {
-        exception = e;
-      }
-      dispatcher.dispatchFailed(this);
     } catch (IOException e) {
       exception = e;
       dispatcher.dispatchRetry(this);
