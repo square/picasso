@@ -15,6 +15,8 @@
  */
 package com.squareup.picasso3;
 
+import android.os.Process;
+import androidx.annotation.NonNull;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -22,25 +24,56 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
+
 /**
  * The default {@link java.util.concurrent.ExecutorService} used for new {@link Picasso} instances.
- * <p>
- * Exists as a custom type so that we can differentiate the use of defaults versus a user-supplied
- * instance.
  */
-class PicassoExecutorService extends ThreadPoolExecutor {
+public class PicassoExecutorService extends ThreadPoolExecutor {
   private static final int DEFAULT_THREAD_COUNT = 3;
 
-  PicassoExecutorService(ThreadFactory threadFactory) {
+  public PicassoExecutorService() {
+    super(DEFAULT_THREAD_COUNT, DEFAULT_THREAD_COUNT, 0, TimeUnit.MILLISECONDS,
+        new PriorityBlockingQueue<Runnable>(), new PicassoThreadFactory());
+  }
+
+  public PicassoExecutorService(int threadCount) {
+    super(threadCount, threadCount, 0, TimeUnit.MILLISECONDS,
+        new PriorityBlockingQueue<Runnable>(), new PicassoThreadFactory());
+  }
+
+  public PicassoExecutorService(@NonNull ThreadFactory threadFactory) {
     super(DEFAULT_THREAD_COUNT, DEFAULT_THREAD_COUNT, 0, TimeUnit.MILLISECONDS,
         new PriorityBlockingQueue<Runnable>(), threadFactory);
   }
 
+  public PicassoExecutorService(int threadCount, @NonNull ThreadFactory threadFactory) {
+    super(threadCount, threadCount, 0, TimeUnit.MILLISECONDS,
+        new PriorityBlockingQueue<Runnable>(), threadFactory);
+  }
+
   @Override
-  public Future<?> submit(Runnable task) {
+  public @NonNull Future<?> submit(@NonNull Runnable task) {
     PicassoFutureTask ftask = new PicassoFutureTask((BitmapHunter) task);
     execute(ftask);
     return ftask;
+  }
+
+  static final class PicassoThreadFactory implements ThreadFactory {
+    @Override public @NonNull Thread newThread(@NonNull Runnable r) {
+      return new PicassoThread(r);
+    }
+
+    static final class PicassoThread extends Thread {
+      PicassoThread(Runnable r) {
+        super(r);
+      }
+
+      @Override public void run() {
+        Process.setThreadPriority(THREAD_PRIORITY_BACKGROUND);
+        super.run();
+      }
+    }
   }
 
   private static final class PicassoFutureTask extends FutureTask<BitmapHunter>

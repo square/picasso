@@ -30,7 +30,6 @@ import android.widget.ImageView;
 import android.widget.RemoteViews;
 import androidx.annotation.NonNull;
 import com.squareup.picasso3.Picasso.RequestTransformer;
-import com.squareup.picasso3.Utils.PicassoThreadFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -353,7 +352,7 @@ class TestUtils {
     return builder
         .callFactory(UNUSED_CALL_FACTORY)
         .defaultBitmapConfig(DEFAULT_CONFIG)
-        .executor(new PicassoExecutorService(new PicassoThreadFactory()))
+        .executor(new PicassoExecutorService())
         .indicatorsEnabled(true)
         .listener(NOOP_LISTENER)
         .loggingEnabled(true)
