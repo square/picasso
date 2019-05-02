@@ -32,7 +32,7 @@ Snapshots of the development version are available in [Sonatype's `snapshots` re
 ProGuard
 --------
 
-If you are using ProGuard you might need to add OkHttp's rules: https://github.com/square/okhttp/#proguard
+If you are using ProGuard you might need to add OkHttp's rules: https://github.com/square/okhttp/#r8--proguard
 
 
 
