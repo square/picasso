@@ -1,7 +1,7 @@
 language: android
 
 jdk:
-  - oraclejdk8
+  - openjdk8
 
 script:
   - ./gradlew clean check
