@@ -34,10 +34,12 @@ import com.squareup.picasso3.Utils.PicassoThreadFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import okhttp3.Call;
 import okhttp3.Response;
+import okio.BufferedSource;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -166,7 +168,7 @@ class TestUtils {
 
   static Action mockAction(String key, Uri uri, Object target, int resourceId, Priority priority,
                            String tag) {
-    Request.Builder builder = new Request.Builder(uri, resourceId, DEFAULT_CONFIG).stableKey(key);
+    Request.Builder builder = new Request.Builder(uri, resourceId, DEFAULT_DECODERS, DEFAULT_CONFIG).stableKey(key);
     if (priority != null) {
       builder.priority(priority);
     }
@@ -337,6 +339,20 @@ class TestUtils {
     }
   };
 
+  static final ImageDecoder NOOP_IMAGE_DECODER = new ImageDecoder() {
+    @Override public boolean canHandleSource(@NonNull BufferedSource source) {
+      return false;
+    }
+
+    @NonNull @Override
+    public Image decodeImage(@NonNull BufferedSource source, @NonNull Request request)
+        throws IOException {
+      return null;
+    }
+  };
+
+  static final ImageDecoderFactory DEFAULT_DECODERS = new ImageDecoderFactory(
+      Collections.<ImageDecoder>singletonList(new BitmapImageDecoder()));
   static final List<RequestTransformer> NO_TRANSFORMERS = Collections.emptyList();
   static final List<RequestHandler> NO_HANDLERS = Collections.emptyList();
 
@@ -353,6 +369,7 @@ class TestUtils {
     return builder
         .callFactory(UNUSED_CALL_FACTORY)
         .defaultBitmapConfig(DEFAULT_CONFIG)
+        .addImageDecoder(NOOP_IMAGE_DECODER)
         .executor(new PicassoExecutorService(new PicassoThreadFactory()))
         .indicatorsEnabled(true)
         .listener(NOOP_LISTENER)

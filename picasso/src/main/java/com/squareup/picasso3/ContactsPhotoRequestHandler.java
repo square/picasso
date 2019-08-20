@@ -18,19 +18,18 @@ package com.squareup.picasso3;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.UriMatcher;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import androidx.annotation.NonNull;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import okio.BufferedSource;
 import okio.Okio;
 import okio.Source;
 
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.provider.ContactsContract.Contacts.openContactPhotoInputStream;
-import static com.squareup.picasso3.BitmapUtils.decodeStream;
 import static com.squareup.picasso3.Picasso.LoadedFrom.DISK;
 import static com.squareup.picasso3.Utils.checkNotNull;
 
@@ -78,9 +77,16 @@ class ContactsPhotoRequestHandler extends RequestHandler {
     try {
       Uri requestUri = checkNotNull(request.uri, "request.uri == null");
       Source source = getSource(requestUri);
-      Bitmap bitmap = decodeStream(source, request);
+
+      BufferedSource bufferedSource = Okio.buffer(source);
+      ImageDecoder imageDecoder = request.decoderFactory.getImageDecoderForSource(bufferedSource);
+      if (imageDecoder == null) {
+        callback.onError(new IllegalStateException("No image decoder for source: " + request));
+        return;
+      }
+      ImageDecoder.Image image = imageDecoder.decodeImage(bufferedSource, request);
       signaledCallback = true;
-      callback.onSuccess(new Result(bitmap, DISK));
+      callback.onSuccess(new Result(image.bitmap, image.drawable, DISK, image.exifOrientation));
     } catch (Exception e) {
       if (!signaledCallback) {
         callback.onError(e);

@@ -32,6 +32,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.core.content.ContextCompat;
 import com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -74,13 +75,14 @@ public class RequestCreator {
           "Picasso instance already shut down. Cannot submit new requests.");
     }
     this.picasso = picasso;
-    this.data = new Request.Builder(uri, resourceId, picasso.defaultBitmapConfig);
+    this.data = new Request.Builder(uri, resourceId, picasso.imageDecoderFactory,
+        picasso.defaultBitmapConfig);
   }
 
   @SuppressWarnings("NullAway")
   @VisibleForTesting RequestCreator() {
     this.picasso = null;
-    this.data = new Request.Builder(null, 0, null);
+    this.data = new Request.Builder(null, 0, null, null);
   }
 
   /**
@@ -331,6 +333,21 @@ public class RequestCreator {
   @NonNull
   public RequestCreator priority(@NonNull Priority priority) {
     data.priority(priority);
+    return this;
+  }
+
+  /**
+   * Specify that the image should be decoded as a bitmap.
+   */
+  @NonNull
+  public RequestCreator asBitmap() {
+    return imageDecoderFactory(new ImageDecoderFactory(
+        Collections.<ImageDecoder>singletonList(new BitmapImageDecoder())));
+  }
+
+  @NonNull
+  public RequestCreator imageDecoderFactory(@NonNull ImageDecoderFactory imageDecoderFactory) {
+    this.data.imageDecoderFactory(imageDecoderFactory);
     return this;
   }
 

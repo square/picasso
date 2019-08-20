@@ -140,6 +140,7 @@ public class Picasso implements LifecycleObserver {
   private final @Nullable okhttp3.Cache closeableCache;
   final PlatformLruCache cache;
   final Stats stats;
+  final ImageDecoderFactory imageDecoderFactory;
   final Map<Object, Action> targetToAction;
   final Map<ImageView, DeferredRequestCreator> targetToDeferredRequestCreator;
   @Nullable final Bitmap.Config defaultBitmapConfig;
@@ -151,7 +152,8 @@ public class Picasso implements LifecycleObserver {
 
   Picasso(Context context, Dispatcher dispatcher, Call.Factory callFactory,
       @Nullable okhttp3.Cache closeableCache, PlatformLruCache cache, @Nullable Listener listener,
-      List<RequestTransformer> requestTransformers, List<RequestHandler> extraRequestHandlers,
+      ImageDecoderFactory imageDecoderFactory, List<RequestTransformer> requestTransformers,
+      List<RequestHandler> extraRequestHandlers,
       Stats stats, @Nullable Bitmap.Config defaultBitmapConfig, boolean indicatorsEnabled,
       boolean loggingEnabled) {
     this.context = context;
@@ -160,6 +162,7 @@ public class Picasso implements LifecycleObserver {
     this.closeableCache = closeableCache;
     this.cache = cache;
     this.listener = listener;
+    this.imageDecoderFactory = imageDecoderFactory;
     this.requestTransformers = Collections.unmodifiableList(new ArrayList<>(requestTransformers));
     this.defaultBitmapConfig = defaultBitmapConfig;
 
@@ -668,6 +671,7 @@ public class Picasso implements LifecycleObserver {
     @Nullable private ExecutorService service;
     @Nullable private PlatformLruCache cache;
     @Nullable private Listener listener;
+    private final List<ImageDecoder> imageDecoders = new ArrayList<>();
     private final List<RequestTransformer> requestTransformers = new ArrayList<>();
     private final List<RequestHandler> requestHandlers = new ArrayList<>();
     @Nullable private Bitmap.Config defaultBitmapConfig;
@@ -691,6 +695,9 @@ public class Picasso implements LifecycleObserver {
       // See Picasso(). Removes internal request handlers added before and after custom handlers.
       int numRequestHandlers = picasso.requestHandlers.size();
       requestHandlers.addAll(picasso.requestHandlers.subList(2, numRequestHandlers - 6));
+
+      int numImageDecoders = picasso.imageDecoderFactory.decoders.size();
+      imageDecoders.addAll(picasso.imageDecoderFactory.decoders.subList(0, numImageDecoders - 1));
 
       defaultBitmapConfig = picasso.defaultBitmapConfig;
       indicatorsEnabled = picasso.indicatorsEnabled;
@@ -778,6 +785,14 @@ public class Picasso implements LifecycleObserver {
       return this;
     }
 
+    /** Add an decoder that can decode custom image formats. */
+    @NonNull
+    public Builder addImageDecoder(@NonNull ImageDecoder imageDecoder) {
+      checkNotNull(imageDecoder, "imageDecoder == null");
+      imageDecoders.add(imageDecoder);
+      return this;
+    }
+
     /** Add a transformer that observes and potentially modify all incoming requests. */
     @NonNull
     public Builder addRequestTransformer(@NonNull RequestTransformer transformer) {
@@ -834,13 +849,17 @@ public class Picasso implements LifecycleObserver {
         service = new PicassoExecutorService(new PicassoThreadFactory());
       }
 
+      ArrayList<ImageDecoder> decoders = new ArrayList<>(imageDecoders);
+      decoders.add(new BitmapImageDecoder());
+      ImageDecoderFactory decoderFactory = new ImageDecoderFactory(decoders);
+
       Stats stats = new Stats(cache);
 
       Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, cache, stats);
 
       return new Picasso(context, dispatcher, callFactory, unsharedCache, cache, listener,
-          requestTransformers, requestHandlers, stats, defaultBitmapConfig, indicatorsEnabled,
-          loggingEnabled);
+          decoderFactory, requestTransformers, requestHandlers, stats, defaultBitmapConfig,
+          indicatorsEnabled, loggingEnabled);
     }
   }
 

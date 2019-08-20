@@ -16,18 +16,17 @@
 package com.squareup.picasso3;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.exifinterface.media.ExifInterface;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import okio.Source;
+import okio.BufferedSource;
+import okio.Okio;
 
 import static android.content.ContentResolver.SCHEME_FILE;
 import static androidx.exifinterface.media.ExifInterface.ORIENTATION_NORMAL;
 import static androidx.exifinterface.media.ExifInterface.TAG_ORIENTATION;
-import static com.squareup.picasso3.BitmapUtils.decodeStream;
 import static com.squareup.picasso3.Picasso.LoadedFrom.DISK;
 import static com.squareup.picasso3.Utils.checkNotNull;
 
@@ -47,11 +46,16 @@ class FileRequestHandler extends ContentStreamRequestHandler {
     boolean signaledCallback = false;
     try {
       Uri requestUri = checkNotNull(request.uri, "request.uri == null");
-      Source source = getSource(requestUri);
-      Bitmap bitmap = decodeStream(source, request);
+      BufferedSource source = Okio.buffer(getSource(requestUri));
+      ImageDecoder imageDecoder = request.decoderFactory.getImageDecoderForSource(source);
+      if (imageDecoder == null) {
+        callback.onError(new IllegalStateException("No image decoder for request: " + request));
+        return;
+      }
+      ImageDecoder.Image image = imageDecoder.decodeImage(source, request);
       int exifRotation = getExifOrientation(requestUri);
       signaledCallback = true;
-      callback.onSuccess(new Result(bitmap, DISK, exifRotation));
+      callback.onSuccess(new Result(image.bitmap, image.drawable, DISK, exifRotation));
     } catch (Exception e) {
       if (!signaledCallback) {
         callback.onError(e);
