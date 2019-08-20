@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.List;
 import okhttp3.Call;
 import okhttp3.Response;
+import okio.Timeout;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -399,6 +400,10 @@ class TestUtils {
     }
 
     @Override public Call clone() {
+      throw new AssertionError();
+    }
+
+    @Override public Timeout timeout() {
       throw new AssertionError();
     }
   }
