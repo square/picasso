@@ -576,20 +576,6 @@ public class Picasso implements LifecycleObserver {
       return;
     }
 
-    Request request = hunter.getData();
-    Uri uri = request.uri;
-    if (uri == null) {
-      //this must be resource
-      Resources resources = context.getResources();
-      int resourceId = request.resourceId;
-      uri = new Uri.Builder()
-          .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
-          .authority(resources.getResourcePackageName(resourceId))
-          .appendPath(resources.getResourceTypeName(resourceId))
-          .appendPath(resources.getResourceEntryName(resourceId))
-          .build();
-    }
-
     Exception exception = hunter.getException();
     RequestHandler.Result result = hunter.getResult();
 
@@ -606,6 +592,20 @@ public class Picasso implements LifecycleObserver {
     }
 
     if (listener != null && exception != null) {
+      Request request = hunter.getData();
+      Uri uri = request.uri;
+      if (uri == null) {
+        //this must be resource
+        Resources resources = context.getResources();
+        int resourceId = request.resourceId;
+        uri = new Uri.Builder()
+            .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
+            .authority(resources.getResourcePackageName(resourceId))
+            .appendPath(resources.getResourceTypeName(resourceId))
+            .appendPath(resources.getResourceEntryName(resourceId))
+            .build();
+      }
+
       listener.onImageLoadFailed(this, uri, exception);
     }
   }
