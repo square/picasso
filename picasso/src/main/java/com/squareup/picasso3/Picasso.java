@@ -15,7 +15,9 @@
  */
 package com.squareup.picasso3;
 
+import android.content.ContentResolver;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
@@ -574,7 +576,20 @@ public class Picasso implements LifecycleObserver {
       return;
     }
 
-    Uri uri = checkNotNull(hunter.getData().uri, "uri == null");
+    Request request = hunter.getData();
+    Uri uri = request.uri;
+    if (uri == null) {
+      //this must be resource
+      Resources resources = context.getResources();
+      int resourceId = request.resourceId;
+      uri = new Uri.Builder()
+          .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
+          .authority(resources.getResourcePackageName(resourceId))
+          .appendPath(resources.getResourceTypeName(resourceId))
+          .appendPath(resources.getResourceEntryName(resourceId))
+          .build();
+    }
+
     Exception exception = hunter.getException();
     RequestHandler.Result result = hunter.getResult();
 
