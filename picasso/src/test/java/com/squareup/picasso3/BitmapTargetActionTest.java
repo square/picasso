@@ -78,7 +78,7 @@ public class BitmapTargetActionTest {
     PlatformLruCache cache = new PlatformLruCache(0);
     Picasso picasso =
         new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, null, NO_TRANSFORMERS,
-            NO_HANDLERS, mock(Stats.class), ARGB_8888, false, false);
+            NO_HANDLERS, mock(Stats.class), ARGB_8888, false, false, false);
     Resources res = mock(Resources.class);
     BitmapTargetAction request = new BitmapTargetAction(picasso, target, null, null, RESOURCE_ID_1);
 

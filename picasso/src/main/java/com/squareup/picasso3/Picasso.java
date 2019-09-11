@@ -145,6 +145,7 @@ public class Picasso implements LifecycleObserver {
   @Nullable final Bitmap.Config defaultBitmapConfig;
 
   boolean indicatorsEnabled;
+  boolean indicatorsCentered;
   volatile boolean loggingEnabled;
 
   boolean shutdown;
@@ -153,7 +154,7 @@ public class Picasso implements LifecycleObserver {
       @Nullable okhttp3.Cache closeableCache, PlatformLruCache cache, @Nullable Listener listener,
       List<RequestTransformer> requestTransformers, List<RequestHandler> extraRequestHandlers,
       Stats stats, @Nullable Bitmap.Config defaultBitmapConfig, boolean indicatorsEnabled,
-      boolean loggingEnabled) {
+      boolean loggingEnabled, boolean indicatorsCentered) {
     this.context = context;
     this.dispatcher = dispatcher;
     this.callFactory = callFactory;
@@ -186,6 +187,7 @@ public class Picasso implements LifecycleObserver {
     this.targetToAction = new LinkedHashMap<>();
     this.targetToDeferredRequestCreator = new LinkedHashMap<>();
     this.indicatorsEnabled = indicatorsEnabled;
+    this.indicatorsCentered = indicatorsCentered;
     this.loggingEnabled = loggingEnabled;
   }
 
@@ -458,9 +460,19 @@ public class Picasso implements LifecycleObserver {
     indicatorsEnabled = enabled;
   }
 
-  /** {@code true} if debug indicators should are displayed on images. */
+  /** {@code true} if debug indicators are displayed on images. */
   @SuppressWarnings("UnusedDeclaration") public boolean getIndicatorsEnabled() {
     return indicatorsEnabled;
+  }
+
+  /** Toggle whether debug indicators are centered on images. */
+  @SuppressWarnings("UnusedDeclaration") public void setIndicatorsCentered(boolean centered) {
+    indicatorsCentered = centered;
+  }
+
+  /** {@code true} if debug indicators are centered on images. */
+  @SuppressWarnings("UnusedDeclaration") public boolean getIndicatorsCentered() {
+    return indicatorsCentered;
   }
 
   /**
@@ -673,6 +685,7 @@ public class Picasso implements LifecycleObserver {
     @Nullable private Bitmap.Config defaultBitmapConfig;
 
     private boolean indicatorsEnabled;
+    private boolean indicatorsCentered;
     private boolean loggingEnabled;
 
     /** Start building a new {@link Picasso} instance. */
@@ -801,6 +814,13 @@ public class Picasso implements LifecycleObserver {
       return this;
     }
 
+    /** Toggle whether indicators are centered on images. */
+    @NonNull
+    public Builder indicatorsCentered(boolean centered) {
+      this.indicatorsCentered = centered;
+      return this;
+    }
+
     /**
      * Toggle whether debug logging is enabled.
      * <p>
@@ -840,7 +860,7 @@ public class Picasso implements LifecycleObserver {
 
       return new Picasso(context, dispatcher, callFactory, unsharedCache, cache, listener,
           requestTransformers, requestHandlers, stats, defaultBitmapConfig, indicatorsEnabled,
-          loggingEnabled);
+          loggingEnabled, indicatorsCentered);
     }
   }
 

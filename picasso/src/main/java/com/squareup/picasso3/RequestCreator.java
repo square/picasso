@@ -718,7 +718,8 @@ public class RequestCreator {
       if (bitmap != null) {
         picasso.cancelRequest(target);
         RequestHandler.Result result = new RequestHandler.Result(bitmap, MEMORY);
-        setResult(target, picasso.context, result, noFade, picasso.indicatorsEnabled);
+        setResult(target, picasso.context, result, noFade, picasso.indicatorsEnabled,
+            picasso.indicatorsCentered);
         if (picasso.loggingEnabled) {
           log(OWNER_MAIN, VERB_COMPLETED, request.plainId(), "from " + MEMORY);
         }
