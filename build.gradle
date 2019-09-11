@@ -10,7 +10,7 @@ buildscript {
   ]
 
   ext.deps = [
-    androidPlugin: 'com.android.tools.build:gradle:3.2.1',
+    androidPlugin: 'com.android.tools.build:gradle:3.5.0',
     okhttp: "com.squareup.okhttp3:okhttp:${versions.okhttp}",
     okio: "com.squareup.okio:okio:${versions.okio}",
     mockWebServer: "com.squareup.okhttp3:mockwebserver:${versions.okhttp}",
@@ -107,4 +107,8 @@ subprojects {
   dependencies {
     errorprone deps.errorProne
   }
+}
+
+tasks.wrapper {
+  distributionType = Wrapper.DistributionType.ALL
 }
