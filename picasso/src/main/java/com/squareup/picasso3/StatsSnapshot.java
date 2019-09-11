@@ -17,7 +17,6 @@ package com.squareup.picasso3;
 
 import android.util.Log;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import java.io.IOException;
 import okio.Buffer;
 import okio.BufferedSink;
@@ -129,7 +128,6 @@ public final class StatsSnapshot {
     sink.writeUtf8("\n");
   }
 
-  @Nullable
   @Override public String toString() {
     return "StatsSnapshot{"
         + "maxSize="
