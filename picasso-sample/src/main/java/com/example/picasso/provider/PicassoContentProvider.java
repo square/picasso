@@ -1,44 +1,49 @@
-package com.example.picasso.provider;
+package com.example.picasso.provider
 
-import android.annotation.SuppressLint;
-import android.content.ContentProvider;
-import android.content.ContentValues;
-import android.content.Context;
-import android.database.Cursor;
-import android.net.Uri;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.SuppressLint
+import android.content.ContentProvider
+import android.content.ContentValues
+import android.content.Context
+import android.net.Uri
 
-public final class PicassoContentProvider extends ContentProvider {
-  @SuppressLint("StaticFieldLeak")
-  @Nullable static Context context;
+class PicassoContentProvider : ContentProvider() {
 
-  @Override public boolean onCreate() {
-    context = getContext();
-    return true;
+  override fun onCreate(): Boolean {
+    autoContext = context
+    return true
   }
 
-  @Nullable @Override
-  public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection,
-      @Nullable String[] selectionArgs, @Nullable String sortOrder) {
-    return null;
-  }
+  override fun query(
+    uri: Uri,
+    projection: Array<String>?,
+    selection: String?,
+    selectionArgs: Array<String>?,
+    sortOrder: String?
+  ) = null
 
-  @Nullable @Override public String getType(@NonNull Uri uri) {
-    return null;
-  }
+  override fun getType(uri: Uri) = null
 
-  @Nullable @Override public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
-    return null;
-  }
+  override fun insert(
+    uri: Uri,
+    values: ContentValues?
+  ) = null
 
-  @Override public int delete(@NonNull Uri uri, @Nullable String selection,
-      @Nullable String[] selectionArgs) {
-    return 0;
-  }
+  override fun delete(
+    uri: Uri,
+    selection: String?,
+    selectionArgs: Array<String>?
+  ) = 0
 
-  @Override public int update(@NonNull Uri uri, @Nullable ContentValues values,
-      @Nullable String selection, @Nullable String[] selectionArgs) {
-    return 0;
+  override fun update(
+    uri: Uri,
+    values: ContentValues?,
+    selection: String?,
+    selectionArgs: Array<String>?
+  ) = 0
+
+  companion object {
+    @SuppressLint("StaticFieldLeak")
+    @JvmField
+    var autoContext: Context? = null
   }
 }

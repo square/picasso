@@ -13,28 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.picasso;
+package com.example.picasso
 
-import android.appwidget.AppWidgetManager;
-import android.appwidget.AppWidgetProvider;
-import android.content.Context;
-import android.widget.RemoteViews;
-import com.example.picasso.provider.PicassoProvider;
-import com.squareup.picasso3.Picasso;
-import java.util.Random;
+import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProvider
+import android.content.Context
+import android.widget.RemoteViews
+import com.example.picasso.provider.PicassoProvider
+import java.util.Random
 
-public class SampleWidgetProvider extends AppWidgetProvider {
+class SampleWidgetProvider : AppWidgetProvider() {
 
-  @Override
-  public void onUpdate(final Context context, AppWidgetManager appWidgetManager,
-      int[] appWidgetIds) {
-    RemoteViews updateViews = new RemoteViews(context.getPackageName(), R.layout.sample_widget);
+  override fun onUpdate(
+    context: Context,
+    appWidgetManager: AppWidgetManager,
+    appWidgetIds: IntArray
+  ) {
+    val updateViews = RemoteViews(context.packageName, R.layout.sample_widget)
     // Load image for all appWidgetIds.
-    Picasso picasso = PicassoProvider.get();
-    picasso.load(Data.URLS[new Random().nextInt(Data.URLS.length)]) //
+    val picasso = PicassoProvider.get()
+    picasso.load(Data.URLS[Random().nextInt(Data.URLS.size)]) //
         .placeholder(R.drawable.placeholder) //
         .error(R.drawable.error) //
-        .transform(new GrayscaleTransformation(picasso)) //
-        .into(updateViews, R.id.image, appWidgetIds);
+        .transform(GrayscaleTransformation(picasso)) //
+        .into(updateViews, R.id.image, appWidgetIds)
   }
 }
