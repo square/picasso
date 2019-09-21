@@ -404,8 +404,8 @@ public class RequestCreator {
    * Add custom HTTP headers to the image network request if required
    */
   @NonNull
-  public RequestCreator addHeaders(@Nullable Headers headers) {
-    data.addHeaders(headers);
+  public RequestCreator addHeaders(@NonNull String key, @NonNull String value) {
+    data.addHeaders(key, value);
     return this;
   }
 

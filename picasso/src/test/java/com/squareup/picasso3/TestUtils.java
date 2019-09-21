@@ -108,7 +108,7 @@ class TestUtils {
   static final String XML_RESOURCE_VALUE = "foo.xml";
   static final Bitmap.Config DEFAULT_CONFIG = Bitmap.Config.ARGB_8888;
   static final int DEFAULT_CACHE_SIZE = 123;
-  static final String CUSTOM_HEADER_KEY = "Cache-Control";
+  static final String CUSTOM_HEADER_NAME = "Cache-Control";
   static final String CUSTOM_HEADER_VALUE = "no-cache";
 
   static Context mockPackageResourceContext() {
@@ -311,13 +311,6 @@ class TestUtils {
       }
     };
   }
-
-  static Headers makeCustomHearders() {
-    Headers.Builder builder = new Headers.Builder();
-    builder.add(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE);
-    return builder.build();
-  }
-
   static final Call.Factory UNUSED_CALL_FACTORY = new Call.Factory() {
     @Override public Call newCall(okhttp3.Request request) {
       throw new AssertionError();

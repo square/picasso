@@ -648,9 +648,11 @@ public final class Request {
     }
 
     @NonNull
-    public Builder addHeaders(@Nullable Headers headers) {
-      this.headers = headers;
-      return this;
+    public Headers.Builder addHeaders(@NonNull String name, @NonNull String value) {
+      Headers.Builder headers = new Headers.Builder();
+      headers.add(name, value);
+      this.headers = headers.build();
+      return headers;
     }
 
     /** Create the immutable {@link Request} object. */
