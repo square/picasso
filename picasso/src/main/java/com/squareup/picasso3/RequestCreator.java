@@ -30,6 +30,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.content.ContextCompat;
+import okhttp3.Headers;
 import com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget;
 import java.io.IOException;
 import java.util.List;
@@ -396,6 +397,15 @@ public class RequestCreator {
   @NonNull
   public RequestCreator noFade() {
     noFade = true;
+    return this;
+  }
+
+  /**
+   * Add custom HTTP headers to the image network request if required
+   */
+  @NonNull
+  public RequestCreator addHeaders(@NonNull String key, @NonNull String value) {
+    data.addHeaders(key, value);
     return this;
   }
 

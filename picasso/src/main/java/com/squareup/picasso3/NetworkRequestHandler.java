@@ -23,6 +23,7 @@ import androidx.annotation.Nullable;
 import java.io.IOException;
 import okhttp3.CacheControl;
 import okhttp3.Call;
+import okhttp3.Headers;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
@@ -126,6 +127,10 @@ final class NetworkRequestHandler extends RequestHandler {
     okhttp3.Request.Builder builder = new okhttp3.Request.Builder().url(uri.toString());
     if (cacheControl != null) {
       builder.cacheControl(cacheControl);
+    }
+    Headers requestHeaders = request.headers;
+    if (requestHeaders != null) {
+      builder.headers(requestHeaders);
     }
     return builder.build();
   }

@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import okhttp3.Call;
+import okhttp3.Headers;
 import okhttp3.Response;
 import okio.Timeout;
 import org.mockito.invocation.InvocationOnMock;
@@ -108,6 +109,8 @@ class TestUtils {
   static final String XML_RESOURCE_VALUE = "foo.xml";
   static final Bitmap.Config DEFAULT_CONFIG = Bitmap.Config.ARGB_8888;
   static final int DEFAULT_CACHE_SIZE = 123;
+  static final String CUSTOM_HEADER_NAME = "Cache-Control";
+  static final String CUSTOM_HEADER_VALUE = "no-cache";
 
   static Context mockPackageResourceContext() {
     Context context = mock(Context.class);
@@ -309,7 +312,6 @@ class TestUtils {
       }
     };
   }
-
   static final Call.Factory UNUSED_CALL_FACTORY = new Call.Factory() {
     @Override public Call newCall(okhttp3.Request request) {
       throw new AssertionError();
