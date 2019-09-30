@@ -1,9 +1,11 @@
-package com.example.picasso;
+package com.example.picasso
 
-final class Data {
-  static final String BASE = "https://i.imgur.com/";
-  static final String EXT = ".jpg";
-  static final String[] URLS = {
+internal object Data {
+  private const val BASE = "https://i.imgur.com/"
+  private const val EXT = ".jpg"
+
+  @JvmField
+  val URLS = arrayOf(
       BASE + "CqmBjo5" + EXT, BASE + "zkaAooq" + EXT, BASE + "0gqnEaY" + EXT,
       BASE + "9gbQ7YR" + EXT, BASE + "aFhEEby" + EXT, BASE + "0E2tgV7" + EXT,
       BASE + "P5JLfjk" + EXT, BASE + "nz67a4F" + EXT, BASE + "dFH34N5" + EXT,
@@ -15,10 +17,6 @@ final class Data {
       BASE + "Q54zMKT" + EXT, BASE + "9t6hLbm" + EXT, BASE + "F8n3Ic6" + EXT,
       BASE + "P5ZRSvT" + EXT, BASE + "jbemFzr" + EXT, BASE + "8B7haIK" + EXT,
       BASE + "aSeTYQr" + EXT, BASE + "OKvWoTh" + EXT, BASE + "zD3gT4Z" + EXT,
-      BASE + "z77CaIt" + EXT,
-  };
-
-  private Data() {
-    // No instances.
-  }
+      BASE + "z77CaIt" + EXT
+  )
 }

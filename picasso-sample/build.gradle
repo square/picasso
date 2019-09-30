@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
   compileSdkVersion versions.compileSdk
@@ -28,6 +29,7 @@ dependencies {
   compileOnly deps.androidxAnnotations
   implementation deps.androidxCore
   implementation deps.androidxFragment
+  implementation deps.kotlinStdlibJdk8
   implementation project(':picasso')
 
   annotationProcessor deps.nullaway
