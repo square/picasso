@@ -48,12 +48,15 @@ buildscript {
 
 apply plugin: 'com.github.ben-manes.versions'
 
-subprojects {
+allprojects {
   repositories {
+    mavenCentral()
     google()
     jcenter()
   }
+}
 
+subprojects {
   tasks.withType(JavaCompile) {
     options.compilerArgs += [
         '-Xep:UnnecessaryDefaultInEnumSwitch:ERROR',
@@ -115,4 +118,18 @@ subprojects {
 
 tasks.wrapper {
   distributionType = Wrapper.DistributionType.ALL
+}
+
+configurations {
+  osstrich
+}
+
+dependencies {
+  osstrich 'com.squareup.osstrich:osstrich:1.4.0'
+}
+
+tasks.register('deployJavadoc', JavaExec) {
+  classpath = configurations.osstrich
+  main = 'com.squareup.osstrich.JavadocPublisher'
+  args "$buildDir/osstrich", 'git@github.com:square/picasso.git', 'com.squareup.picasso'
 }
