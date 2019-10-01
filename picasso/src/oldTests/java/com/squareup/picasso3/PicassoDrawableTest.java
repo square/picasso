@@ -35,7 +35,7 @@ public class PicassoDrawableTest {
   private final Context context = RuntimeEnvironment.application;
   private final Drawable placeholder = new ColorDrawable(RED);
   private final Bitmap bitmap = makeBitmap();
-  
+
   @Test public void createWithNoPlaceholderAnimation() {
     PicassoDrawable pd = new PicassoDrawable(context, bitmap, null, DISK, false, false);
     assertThat(pd.getBitmap()).isSameAs(bitmap);
