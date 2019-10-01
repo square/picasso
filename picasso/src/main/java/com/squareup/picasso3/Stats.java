@@ -53,8 +53,9 @@ class Stats {
     this.cache = cache;
     this.statsThread = new HandlerThread(STATS_THREAD_NAME, THREAD_PRIORITY_BACKGROUND);
     this.statsThread.start();
-    Utils.flushStackLocalLeaks(statsThread.getLooper());
-    this.handler = new StatsHandler(statsThread.getLooper(), this);
+    Looper statsThreadLooper = statsThread.getLooper();
+    Utils.flushStackLocalLeaks(statsThreadLooper);
+    this.handler = new StatsHandler(statsThreadLooper, this);
   }
 
   void dispatchBitmapDecoded(Bitmap bitmap) {
