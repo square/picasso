@@ -95,14 +95,15 @@ class Dispatcher {
       PlatformLruCache cache, Stats stats) {
     this.dispatcherThread = new DispatcherThread();
     this.dispatcherThread.start();
-    Utils.flushStackLocalLeaks(dispatcherThread.getLooper());
+    Looper dispatcherThreadLooper = dispatcherThread.getLooper();
+    Utils.flushStackLocalLeaks(dispatcherThreadLooper);
     this.context = context;
     this.service = service;
     this.hunterMap = new LinkedHashMap<>();
     this.failedActions = new LinkedHashMap<>();
     this.pausedActions = new LinkedHashMap<>();
     this.pausedTags = new LinkedHashSet<>();
-    this.handler = new DispatcherHandler(dispatcherThread.getLooper(), this);
+    this.handler = new DispatcherHandler(dispatcherThreadLooper, this);
     this.mainThreadHandler = mainThreadHandler;
     this.cache = cache;
     this.stats = stats;
