@@ -35,9 +35,6 @@ dependencies {
   implementation deps.androidxExifInterface
   testImplementation deps.junit
   testImplementation deps.truth
-  testImplementation deps.robolectric
-  testImplementation deps.mockito
-  testImplementation deps.mockWebServer
 
   annotationProcessor deps.nullaway
 }
