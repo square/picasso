@@ -17,7 +17,7 @@ package com.squareup.picasso3
 
 import com.squareup.picasso3.RequestHandler.Result
 
-abstract class Action(
+internal abstract class Action(
   @JvmField val picasso: Picasso,
   @JvmField val request: Request
 ) {

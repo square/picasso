@@ -36,11 +36,13 @@ internal class BitmapTargetAction(
   }
 
   override fun error(e: Exception) {
-    if (errorResId != 0) {
-      target.onBitmapFailed(e, ContextCompat.getDrawable(picasso.context, errorResId))
+    val drawable = if (errorResId != 0) {
+      ContextCompat.getDrawable(picasso.context, errorResId)
     } else {
-      target.onBitmapFailed(e, errorDrawable)
+      errorDrawable
     }
+
+    target.onBitmapFailed(e, drawable)
   }
 
   override fun getTarget(): Any {
