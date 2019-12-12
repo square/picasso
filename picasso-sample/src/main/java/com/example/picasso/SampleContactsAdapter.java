@@ -14,63 +14,63 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.picasso;
+package com.example.picasso
 
-import android.content.Context;
-import android.database.Cursor;
-import android.net.Uri;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.QuickContactBadge;
-import android.widget.TextView;
-import androidx.cursoradapter.widget.CursorAdapter;
-import com.example.picasso.provider.PicassoProvider;
+import android.content.Context
+import android.database.Cursor
+import android.provider.ContactsContract.Contacts
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.QuickContactBadge
+import android.widget.TextView
+import androidx.cursoradapter.widget.CursorAdapter
+import com.example.picasso.SampleContactsActivity.ContactsQuery
+import com.example.picasso.provider.PicassoProvider
 
-import static android.provider.ContactsContract.Contacts;
-import static com.example.picasso.SampleContactsActivity.ContactsQuery;
+internal class SampleContactsAdapter(context: Context) : CursorAdapter(context, null, 0) {
+  private val inflater = LayoutInflater.from(context)
 
-class SampleContactsAdapter extends CursorAdapter {
-  private final LayoutInflater inflater;
-
-  SampleContactsAdapter(Context context) {
-    super(context, null, 0);
-    inflater = LayoutInflater.from(context);
+  override fun newView(
+    context: Context,
+    cursor: Cursor,
+    viewGroup: ViewGroup
+  ): View {
+    val itemLayout = inflater.inflate(R.layout.sample_contacts_activity_item, viewGroup, false)
+    itemLayout.tag = ViewHolder(
+        text1 = itemLayout.findViewById(android.R.id.text1),
+        icon = itemLayout.findViewById(android.R.id.icon)
+    )
+    return itemLayout
   }
 
-  @Override public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
-    View itemLayout = inflater.inflate(R.layout.sample_contacts_activity_item, viewGroup, false);
-
-    ViewHolder holder = new ViewHolder();
-    holder.text1 = itemLayout.findViewById(android.R.id.text1);
-    holder.icon = itemLayout.findViewById(android.R.id.icon);
-
-    itemLayout.setTag(holder);
-
-    return itemLayout;
-  }
-
-  @Override public void bindView(View view, Context context, Cursor cursor) {
-    Uri contactUri = Contacts.getLookupUri(cursor.getLong(ContactsQuery.ID),
-        cursor.getString(ContactsQuery.LOOKUP_KEY));
-
-    ViewHolder holder = (ViewHolder) view.getTag();
-    holder.text1.setText(cursor.getString(ContactsQuery.DISPLAY_NAME));
-    holder.icon.assignContactUri(contactUri);
+  override fun bindView(
+    view: View,
+    context: Context,
+    cursor: Cursor
+  ) {
+    val contactUri = Contacts.getLookupUri(
+        cursor.getLong(ContactsQuery.ID),
+        cursor.getString(ContactsQuery.LOOKUP_KEY)
+    )
+    val holder = (view.tag as ViewHolder).apply {
+      text1.text = cursor.getString(ContactsQuery.DISPLAY_NAME)
+      icon.assignContactUri(contactUri)
+    }
 
     PicassoProvider.get()
         .load(contactUri)
         .placeholder(R.drawable.contact_picture_placeholder)
         .tag(context)
-        .into(holder.icon);
+        .into(holder.icon)
   }
 
-  @Override public int getCount() {
-    return getCursor() == null ? 0 : super.getCount();
+  override fun getCount(): Int {
+    return if (cursor == null) 0 else super.getCount()
   }
 
-  private static class ViewHolder {
-    TextView text1;
-    QuickContactBadge icon;
-  }
+  private class ViewHolder(
+    val text1: TextView,
+    val icon: QuickContactBadge
+  )
 }

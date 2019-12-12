@@ -1,42 +1,40 @@
-package com.example.picasso;
+package com.example.picasso
 
-import android.content.Context;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.ImageView;
-import android.widget.TextView;
-import com.example.picasso.provider.PicassoProvider;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import android.content.Context
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.BaseAdapter
+import android.widget.ImageView
+import android.widget.TextView
+import com.example.picasso.provider.PicassoProvider
 
-final class SampleListDetailAdapter extends BaseAdapter {
-  private final Context context;
-  private final List<String> urls = new ArrayList<>();
+internal class SampleListDetailAdapter(private val context: Context) : BaseAdapter() {
+  private val layoutInflater = LayoutInflater.from(context)
+  private val urls = Data.URLS.toList()
 
-  SampleListDetailAdapter(Context context) {
-    this.context = context;
-    Collections.addAll(urls, Data.URLS);
-  }
-
-  @Override public View getView(int position, View view, ViewGroup parent) {
-    ViewHolder holder;
+  override fun getView(
+    position: Int,
+    view: View?,
+    parent: ViewGroup
+  ): View {
+    val newView: View
+    val holder: ViewHolder
     if (view == null) {
-      view = LayoutInflater.from(context).inflate(R.layout.sample_list_detail_item, parent, false);
-      holder = new ViewHolder();
-      holder.image = view.findViewById(R.id.photo);
-      holder.text = view.findViewById(R.id.url);
-      view.setTag(holder);
+      newView = layoutInflater.inflate(R.layout.sample_list_detail_item, parent, false)
+      holder = ViewHolder(
+        image = newView.findViewById(R.id.photo),
+        text = newView.findViewById(R.id.url)
+      )
+      newView.tag = holder
     } else {
-      holder = (ViewHolder) view.getTag();
+      newView = view
+      holder = newView.tag as ViewHolder
     }
 
     // Get the image URL for the current position.
-    String url = getItem(position);
-
-    holder.text.setText(url);
+    val url = getItem(position)
+    holder.text.text = url
 
     // Trigger the download of the URL asynchronously into the image view.
     PicassoProvider.get()
@@ -46,25 +44,19 @@ final class SampleListDetailAdapter extends BaseAdapter {
         .resizeDimen(R.dimen.list_detail_image_size, R.dimen.list_detail_image_size)
         .centerInside()
         .tag(context)
-        .into(holder.image);
+        .into(holder.image)
 
-    return view;
+    return newView
   }
 
-  @Override public int getCount() {
-    return urls.size();
-  }
+  override fun getCount(): Int = urls.size
 
-  @Override public String getItem(int position) {
-    return urls.get(position);
-  }
+  override fun getItem(position: Int): String = urls[position]
 
-  @Override public long getItemId(int position) {
-    return position;
-  }
+  override fun getItemId(position: Int): Long = position.toLong()
 
-  static class ViewHolder {
-    ImageView image;
-    TextView text;
-  }
+  internal class ViewHolder(
+    val image: ImageView,
+    val text: TextView
+  )
 }
