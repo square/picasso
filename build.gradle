@@ -11,7 +11,7 @@ buildscript {
   ]
 
   ext.deps = [
-    androidPlugin: 'com.android.tools.build:gradle:3.5.2',
+    androidPlugin: 'com.android.tools.build:gradle:3.5.3',
     kotlinPlugin: "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}",
     kotlinStdlibJdk8: "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}",
     okhttp: "com.squareup.okhttp3:okhttp:${versions.okhttp}",
