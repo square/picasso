@@ -14,110 +14,119 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.picasso;
+package com.example.picasso
 
-import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.Bundle;
-import android.widget.ListView;
-import android.widget.Toast;
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.loader.app.LoaderManager;
-import androidx.loader.content.CursorLoader;
-import androidx.loader.content.Loader;
+import android.Manifest.permission.READ_CONTACTS
+import android.content.pm.PackageManager.PERMISSION_GRANTED
+import android.database.Cursor
+import android.net.Uri
+import android.os.Bundle
+import android.provider.ContactsContract.Contacts
+import android.widget.ListView
+import android.widget.Toast
+import androidx.core.app.ActivityCompat.checkSelfPermission
+import androidx.core.app.ActivityCompat.requestPermissions
+import androidx.loader.app.LoaderManager.LoaderCallbacks
+import androidx.loader.content.CursorLoader
+import androidx.loader.content.Loader
 
-import static android.Manifest.permission.READ_CONTACTS;
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static android.provider.ContactsContract.Contacts;
+class SampleContactsActivity : PicassoSampleActivity(), LoaderCallbacks<Cursor> {
+  private lateinit var adapter: SampleContactsAdapter
 
-public class SampleContactsActivity extends PicassoSampleActivity
-    implements LoaderManager.LoaderCallbacks<Cursor> {
-  private static final int REQUEST_READ_CONTACTS = 123;
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setContentView(R.layout.sample_contacts_activity)
 
-  private SampleContactsAdapter adapter;
+    adapter = SampleContactsAdapter(this)
 
-  @Override protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    setContentView(R.layout.sample_contacts_activity);
+    findViewById<ListView>(android.R.id.list).apply {
+      adapter = adapter
+      setOnScrollListener(SampleScrollListener(this@SampleContactsActivity))
+    }
 
-    adapter = new SampleContactsAdapter(this);
-
-    ListView lv = findViewById(android.R.id.list);
-    lv.setAdapter(adapter);
-    lv.setOnScrollListener(new SampleScrollListener(this));
-
-    if (ActivityCompat.checkSelfPermission(this, READ_CONTACTS) == PERMISSION_GRANTED) {
-      loadContacts();
+    if (checkSelfPermission(this, READ_CONTACTS) == PERMISSION_GRANTED) {
+      loadContacts()
     } else {
-      ActivityCompat.requestPermissions(this, new String[] { READ_CONTACTS },
-          REQUEST_READ_CONTACTS);
+      requestPermissions(this, arrayOf(READ_CONTACTS), REQUEST_READ_CONTACTS)
     }
   }
 
-  private void loadContacts() {
-    getSupportLoaderManager().initLoader(ContactsQuery.QUERY_ID, null, this);
+  private fun loadContacts() {
+    supportLoaderManager.initLoader(ContactsQuery.QUERY_ID, null, this)
   }
 
-  @Override public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-      @NonNull int[] grantResults) {
+  override fun onRequestPermissionsResult(
+    requestCode: Int,
+    permissions: Array<String>,
+    grantResults: IntArray
+  ) {
     if (requestCode == REQUEST_READ_CONTACTS) {
-      if (grantResults.length > 0
-          && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-        loadContacts();
+      if (grantResults.isNotEmpty() && grantResults[0] == PERMISSION_GRANTED) {
+        loadContacts()
       } else {
-        Toast.makeText(this, "Read contacts permission denied", Toast.LENGTH_LONG).show();
-        finish();
+        Toast
+            .makeText(this, "Read contacts permission denied", Toast.LENGTH_LONG)
+            .show()
+        finish()
       }
     } else {
-      super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+      super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
   }
 
-  @Override public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-    if (id == ContactsQuery.QUERY_ID) {
-      return new CursorLoader(this, //
-          ContactsQuery.CONTENT_URI, //
-          ContactsQuery.PROJECTION, //
-          ContactsQuery.SELECTION, //
-          null, //
-          ContactsQuery.SORT_ORDER);
+  override fun onCreateLoader(
+    id: Int,
+    args: Bundle?
+  ): Loader<Cursor> {
+    return if (id == ContactsQuery.QUERY_ID) {
+      CursorLoader(
+          this,
+          ContactsQuery.CONTENT_URI,
+          ContactsQuery.PROJECTION,
+          ContactsQuery.SELECTION,
+          null,
+          ContactsQuery.SORT_ORDER
+      )
+    } else throw RuntimeException("this shouldn't happen")
+  }
+
+  override fun onLoadFinished(
+    loader: Loader<Cursor>,
+    data: Cursor
+  ) {
+    adapter.swapCursor(data)
+  }
+
+  override fun onLoaderReset(loader: Loader<Cursor>) {
+    adapter.swapCursor(null)
+  }
+
+  internal interface ContactsQuery {
+    companion object {
+      const val QUERY_ID = 1
+
+      val CONTENT_URI: Uri = Contacts.CONTENT_URI
+
+      const val SELECTION =
+        "${Contacts.DISPLAY_NAME_PRIMARY}<>'' AND ${Contacts.IN_VISIBLE_GROUP}=1"
+
+      const val SORT_ORDER = Contacts.SORT_KEY_PRIMARY
+
+      val PROJECTION = arrayOf(
+          Contacts._ID,
+          Contacts.LOOKUP_KEY,
+          Contacts.DISPLAY_NAME_PRIMARY,
+          Contacts.PHOTO_THUMBNAIL_URI,
+          SORT_ORDER
+      )
+
+      const val ID = 0
+      const val LOOKUP_KEY = 1
+      const val DISPLAY_NAME = 2
     }
-    return null;
   }
 
-  @Override public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-    adapter.swapCursor(data);
-  }
-
-  @Override public void onLoaderReset(Loader<Cursor> loader) {
-    adapter.swapCursor(null);
-  }
-
-  interface ContactsQuery {
-    int QUERY_ID = 1;
-
-    Uri CONTENT_URI = Contacts.CONTENT_URI;
-
-    String SELECTION = Contacts.DISPLAY_NAME_PRIMARY
-        + "<>''"
-        + " AND "
-        + Contacts.IN_VISIBLE_GROUP
-        + "=1";
-
-    String SORT_ORDER = Contacts.SORT_KEY_PRIMARY;
-
-    String[] PROJECTION = {
-        Contacts._ID, //
-        Contacts.LOOKUP_KEY, //
-        Contacts.DISPLAY_NAME_PRIMARY, //
-        Contacts.PHOTO_THUMBNAIL_URI, //
-        SORT_ORDER
-    };
-
-    int ID = 0;
-    int LOOKUP_KEY = 1;
-    int DISPLAY_NAME = 2;
+  companion object {
+    private const val REQUEST_READ_CONTACTS = 123
   }
 }

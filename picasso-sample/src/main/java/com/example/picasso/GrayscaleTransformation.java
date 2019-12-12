@@ -13,72 +13,54 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.picasso;
+package com.example.picasso
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapShader;
-import android.graphics.Canvas;
-import android.graphics.ColorMatrix;
-import android.graphics.ColorMatrixColorFilter;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import com.squareup.picasso3.Picasso;
-import com.squareup.picasso3.RequestHandler;
-import com.squareup.picasso3.Transformation;
-import java.io.IOException;
+import android.graphics.Bitmap.createBitmap
+import android.graphics.BitmapShader
+import android.graphics.Canvas
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
+import android.graphics.Paint
+import android.graphics.Paint.ANTI_ALIAS_FLAG
+import android.graphics.PorterDuff.Mode.MULTIPLY
+import android.graphics.PorterDuffXfermode
+import android.graphics.Shader.TileMode.REPEAT
+import com.squareup.picasso3.Picasso
+import com.squareup.picasso3.RequestHandler.Result
+import com.squareup.picasso3.Transformation
+import java.io.IOException
 
-import static android.graphics.Bitmap.createBitmap;
-import static android.graphics.Paint.ANTI_ALIAS_FLAG;
-import static android.graphics.Shader.TileMode.REPEAT;
+class GrayscaleTransformation(private val picasso: Picasso) : Transformation {
+  override fun transform(source: Result): Result {
+    val bitmap = source.bitmap ?: return source
 
-public class GrayscaleTransformation implements Transformation {
-
-  private final Picasso picasso;
-
-  public GrayscaleTransformation(Picasso picasso) {
-    this.picasso = picasso;
-  }
-
-  @Override public RequestHandler.Result transform(RequestHandler.Result source) {
-    Bitmap bitmap = source.getBitmap();
-    if (bitmap == null) {
-      return source;
+    val result = createBitmap(bitmap.width, bitmap.height, bitmap.config)
+    val noise = try {
+      picasso.load(R.drawable.noise).get()!!
+    } catch (e: IOException) {
+      throw RuntimeException("Failed to apply transformation! Missing resource.")
     }
 
-    Bitmap result = createBitmap(bitmap.getWidth(), bitmap.getHeight(), bitmap.getConfig());
-    Bitmap noise;
-    try {
-      noise = picasso.load(R.drawable.noise).get();
-    } catch (IOException e) {
-      throw new RuntimeException("Failed to apply transformation! Missing resource.");
+    val colorMatrix = ColorMatrix().apply { setSaturation(0f) }
+
+    val paint = Paint(ANTI_ALIAS_FLAG).apply { colorFilter = ColorMatrixColorFilter(colorMatrix) }
+
+    val canvas = Canvas(result)
+    canvas.drawBitmap(bitmap, 0f, 0f, paint)
+
+    paint.apply {
+      colorFilter = null
+      shader = BitmapShader(noise, REPEAT, REPEAT)
+      xfermode = PorterDuffXfermode(MULTIPLY)
     }
 
-    BitmapShader shader = new BitmapShader(noise, REPEAT, REPEAT);
+    canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), paint)
 
-    ColorMatrix colorMatrix = new ColorMatrix();
-    colorMatrix.setSaturation(0);
-    ColorMatrixColorFilter filter = new ColorMatrixColorFilter(colorMatrix);
+    bitmap.recycle()
+    noise.recycle()
 
-    Paint paint = new Paint(ANTI_ALIAS_FLAG);
-    paint.setColorFilter(filter);
-
-    Canvas canvas = new Canvas(result);
-    canvas.drawBitmap(bitmap, 0, 0, paint);
-
-    paint.setColorFilter(null);
-    paint.setShader(shader);
-    paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.MULTIPLY));
-
-    canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), paint);
-
-    bitmap.recycle();
-    noise.recycle();
-
-    return new RequestHandler.Result(result, source.getLoadedFrom(), source.getExifRotation());
+    return Result(result, source.loadedFrom, source.exifRotation)
   }
 
-  @Override public String key() {
-    return "grayscaleTransformation()";
-  }
+  override fun key() = "grayscaleTransformation()"
 }
