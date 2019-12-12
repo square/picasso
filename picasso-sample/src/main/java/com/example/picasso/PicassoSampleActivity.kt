@@ -26,7 +26,7 @@ internal abstract class PicassoSampleActivity : FragmentActivity() {
     activityList.onItemClickListener = OnItemClickListener { _, _, position, _ ->
       adapter.getItem(position).launch(this@PicassoSampleActivity)
     }
-
+    
     showHide = findViewById(R.id.faux_action_bar_control)
     showHide.setOnCheckedChangeListener { _, checked ->
       activityList.visibility = if (checked) View.VISIBLE else View.GONE
