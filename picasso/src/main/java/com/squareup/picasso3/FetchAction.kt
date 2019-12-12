@@ -13,31 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.picasso3;
+package com.squareup.picasso3
 
-abstract class Action {
-  final Picasso picasso;
-  final Request request;
+import com.squareup.picasso3.RequestHandler.Result
 
-  boolean willReplay;
-  boolean cancelled;
-
-  Action(Picasso picasso, Request request) {
-    this.picasso = picasso;
-    this.request = request;
+internal class FetchAction(
+  picasso: Picasso,
+  data: Request,
+  private var callback: Callback?
+) : Action(picasso, data) {
+  override fun complete(result: Result) {
+    callback?.onSuccess()
   }
 
-  abstract void complete(RequestHandler.Result result);
-
-  abstract void error(Exception e);
-
-  abstract Object getTarget();
-
-  void cancel() {
-    cancelled = true;
+  override fun error(e: Exception) {
+    callback?.onError(e)
   }
 
-  Object getTag() {
-    return request.tag != null ? request.tag : this;
+  override fun getTarget() = this
+
+  override fun cancel() {
+    super.cancel()
+    callback = null
   }
 }
