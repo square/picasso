@@ -31,6 +31,7 @@ dependencies {
   implementation deps.androidxFragment
   implementation deps.kotlinStdlibJdk8
   implementation project(':picasso')
+  implementation project(':picasso-stats')
 
   annotationProcessor deps.nullaway
 }

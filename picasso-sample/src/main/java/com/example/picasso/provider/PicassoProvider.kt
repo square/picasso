@@ -1,6 +1,7 @@
 package com.example.picasso.provider
 
 import com.squareup.picasso3.Picasso
+import com.squareup.picasso3.StatsEventListener
 
 /**
  * This instance is automatically initialized with defaults that are suitable to most
@@ -22,6 +23,7 @@ object PicassoProvider {
   private val instance: Picasso by lazy {
     Picasso
         .Builder(PicassoContentProvider.autoContext!!)
+        .addEventListener(StatsEventListener())
         .build()
   }
 

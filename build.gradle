@@ -28,7 +28,7 @@ buildscript {
     truth: 'com.google.truth:truth:0.42',
     robolectric: 'org.robolectric:robolectric:4.0.1',
     mockito: 'org.mockito:mockito-core:2.23.0',
-    nullaway: 'com.uber.nullaway:nullaway:0.6.0'
+    nullaway: 'com.uber.nullaway:nullaway:0.6.0',
   ]
 
   ext.isCi = "true" == System.getenv('CI')

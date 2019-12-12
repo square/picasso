@@ -45,8 +45,9 @@ import static com.squareup.picasso3.TestUtils.mockNetworkInfo;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static okhttp3.Protocol.HTTP_1_1;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -56,7 +57,6 @@ public class NetworkRequestHandlerTest {
   final BlockingDeque<okhttp3.Request> requests = new LinkedBlockingDeque<>();
 
   @Mock Picasso picasso;
-  @Mock Stats stats;
   @Mock Dispatcher dispatcher;
 
   private NetworkRequestHandler networkHandler;
@@ -72,7 +72,7 @@ public class NetworkRequestHandlerTest {
           throw new AssertionError(e);
         }
       }
-    }, stats);
+    });
   }
 
   @Test public void doesNotForceLocalCacheOnlyWithAirplaneModeOffAndRetryCount() throws Exception {
@@ -101,7 +101,7 @@ public class NetworkRequestHandlerTest {
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     PlatformLruCache cache = new PlatformLruCache(0);
     BitmapHunter hunter =
-        new BitmapHunter(picasso, dispatcher, cache, stats, action, networkHandler);
+        new BitmapHunter(picasso, dispatcher, cache, action, networkHandler);
     hunter.retryCount = 0;
     hunter.hunt();
     assertThat(requests.takeFirst().cacheControl().toString()).isEqualTo(CacheControl.FORCE_CACHE.toString());
@@ -111,7 +111,7 @@ public class NetworkRequestHandlerTest {
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     PlatformLruCache cache = new PlatformLruCache(0);
     BitmapHunter hunter =
-        new BitmapHunter(picasso, dispatcher, cache, stats, action, networkHandler);
+        new BitmapHunter(picasso, dispatcher, cache, action, networkHandler);
     assertThat(hunter.shouldRetry(false, null)).isTrue();
     assertThat(hunter.shouldRetry(false, null)).isTrue();
     assertThat(hunter.shouldRetry(false, null)).isFalse();
@@ -142,7 +142,7 @@ public class NetworkRequestHandlerTest {
     final CountDownLatch latch = new CountDownLatch(1);
     networkHandler.load(picasso, action.request, new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
-        verify(stats).dispatchDownloadFinished(10);
+        verify(picasso).downloadFinished(10);
         latch.countDown();
       }
 
@@ -176,7 +176,7 @@ public class NetworkRequestHandlerTest {
       }
 
       @Override public void onError(@NonNull Throwable t) {
-        verifyZeroInteractions(stats);
+        verify(picasso, never()).downloadFinished(anyInt());
         assertTrue(closed.get());
         latch.countDown();
       }
@@ -193,7 +193,7 @@ public class NetworkRequestHandlerTest {
     final CountDownLatch latch = new CountDownLatch(1);
     networkHandler.load(picasso, action.request, new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
-        verifyZeroInteractions(stats);
+        verify(picasso, never()).downloadFinished(anyInt());
         latch.countDown();
       }
 

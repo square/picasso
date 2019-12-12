@@ -85,14 +85,13 @@ class Dispatcher {
   final Handler handler;
   final Handler mainThreadHandler;
   final PlatformLruCache cache;
-  final Stats stats;
   final NetworkBroadcastReceiver receiver;
   final boolean scansNetworkChanges;
 
   boolean airplaneMode;
 
   Dispatcher(Context context, ExecutorService service, Handler mainThreadHandler,
-      PlatformLruCache cache, Stats stats) {
+      PlatformLruCache cache) {
     this.dispatcherThread = new DispatcherThread();
     this.dispatcherThread.start();
     Looper dispatcherThreadLooper = dispatcherThread.getLooper();
@@ -106,7 +105,6 @@ class Dispatcher {
     this.handler = new DispatcherHandler(dispatcherThreadLooper, this);
     this.mainThreadHandler = mainThreadHandler;
     this.cache = cache;
-    this.stats = stats;
     this.airplaneMode = Utils.isAirplaneModeOn(this.context);
     this.scansNetworkChanges = hasPermission(context, Manifest.permission.ACCESS_NETWORK_STATE);
     this.receiver = new NetworkBroadcastReceiver(this);
@@ -191,7 +189,7 @@ class Dispatcher {
       return;
     }
 
-    hunter = forRequest(action.picasso, this, cache, stats, action);
+    hunter = forRequest(action.picasso, this, cache, action);
     hunter.future = service.submit(hunter);
     hunterMap.put(action.request.key, hunter);
     if (dismissFailed) {
