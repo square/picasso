@@ -10,7 +10,7 @@ import android.widget.ToggleButton
 import androidx.fragment.app.FragmentActivity
 import com.example.picasso.provider.PicassoProvider
 
-internal abstract class PicassoSampleActivity : FragmentActivity() {
+abstract class PicassoSampleActivity : FragmentActivity() {
   private lateinit var sampleContent: FrameLayout
   private lateinit var showHide: ToggleButton
 
