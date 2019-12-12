@@ -15,42 +15,22 @@
  */
 package com.squareup.picasso3
 
-import android.graphics.drawable.Animatable
-import android.graphics.drawable.Drawable
-import android.widget.ImageView
-import androidx.annotation.DrawableRes
 import com.squareup.picasso3.RequestHandler.Result
 
-internal class ImageViewAction(
+internal class FetchAction(
   picasso: Picasso,
-  val target: ImageView,
   data: Request,
-  val errorDrawable: Drawable?,
-  @DrawableRes val errorResId: Int,
-  val noFade: Boolean,
-  var callback: Callback?
+  private var callback: Callback?
 ) : Action(picasso, data) {
   override fun complete(result: Result) {
-    PicassoDrawable.setResult(target, picasso.context, result, noFade, picasso.indicatorsEnabled)
     callback?.onSuccess()
   }
 
   override fun error(e: Exception) {
-    val placeholder = target.drawable
-    if (placeholder is Animatable) {
-      (placeholder as Animatable).stop()
-    }
-    if (errorResId != 0) {
-      target.setImageResource(errorResId)
-    } else if (errorDrawable != null) {
-      target.setImageDrawable(errorDrawable)
-    }
     callback?.onError(e)
   }
 
-  override fun getTarget(): Any {
-    return target
-  }
+  override fun getTarget() = this
 
   override fun cancel() {
     super.cancel()

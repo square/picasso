@@ -17,11 +17,22 @@ package com.squareup.picasso3
 
 import com.squareup.picasso3.RequestHandler.Result
 
-internal class GetAction(
-  picasso: Picasso,
-  data: Request
-) : Action(picasso, data) {
-  override fun complete(result: Result) = Unit
-  override fun error(e: Exception) = Unit
-  override fun getTarget() = throw AssertionError()
+abstract class Action(
+  @JvmField val picasso: Picasso,
+  @JvmField val request: Request
+) {
+  @JvmField var willReplay = false
+  @JvmField var cancelled = false
+
+  abstract fun complete(result: Result)
+  abstract fun error(e: Exception)
+
+  abstract fun getTarget(): Any
+
+  open fun cancel() {
+    cancelled = true
+  }
+
+  val tag: Any
+    get() = request.tag ?: this
 }
