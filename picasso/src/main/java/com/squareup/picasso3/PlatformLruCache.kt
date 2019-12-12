@@ -19,21 +19,19 @@ import android.graphics.Bitmap
 import android.util.LruCache
 import androidx.core.graphics.BitmapCompat
 
-typealias Size = Int
-
 /** A memory cache which uses a least-recently used eviction policy.  */
 internal class PlatformLruCache(maxByteCount: Int) {
 
   /** Create a cache with a given maximum size in bytes.  */
   val cache =
-    object : LruCache<String, Pair<Bitmap, Size>>(if (maxByteCount != 0) maxByteCount else 1) {
+    object : LruCache<String, BitmapAndSize>(if (maxByteCount != 0) maxByteCount else 1) {
       override fun sizeOf(
         key: String,
-        value: Pair<Bitmap, Size>
-      ): Size = value.second
+        value: BitmapAndSize
+      ): Int = value.byteCount
     }
 
-  operator fun get(key: String): Bitmap? = cache[key]?.first
+  operator fun get(key: String): Bitmap? = cache[key]?.bitmap
 
   operator fun set(
     key: String,
@@ -48,7 +46,7 @@ internal class PlatformLruCache(maxByteCount: Int) {
       return
     }
 
-    cache.put(key, bitmap to byteCount)
+    cache.put(key, BitmapAndSize(bitmap, byteCount))
   }
 
   fun size(): Int = cache.size()
@@ -80,4 +78,9 @@ internal class PlatformLruCache(maxByteCount: Int) {
 
   /** Returns the number of values that have been evicted.  */
   fun evictionCount(): Int = cache.evictionCount()
+
+  internal class BitmapAndSize(
+    val bitmap: Bitmap,
+    val byteCount: Int
+  )
 }
