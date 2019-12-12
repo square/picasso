@@ -13,31 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.picasso3;
+package com.squareup.picasso3
 
-abstract class Action {
-  final Picasso picasso;
-  final Request request;
+import com.squareup.picasso3.RequestHandler.Result
 
-  boolean willReplay;
-  boolean cancelled;
+abstract class Action(
+  @JvmField val picasso: Picasso,
+  @JvmField val request: Request
+) {
+  @JvmField var willReplay = false
+  @JvmField var cancelled = false
 
-  Action(Picasso picasso, Request request) {
-    this.picasso = picasso;
-    this.request = request;
+  abstract fun complete(result: Result)
+  abstract fun error(e: Exception)
+
+  abstract fun getTarget(): Any
+
+  open fun cancel() {
+    cancelled = true
   }
 
-  abstract void complete(RequestHandler.Result result);
-
-  abstract void error(Exception e);
-
-  abstract Object getTarget();
-
-  void cancel() {
-    cancelled = true;
-  }
-
-  Object getTag() {
-    return request.tag != null ? request.tag : this;
-  }
+  val tag: Any
+    get() = request.tag ?: this
 }

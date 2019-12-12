@@ -13,20 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.picasso3;
+package com.squareup.picasso3
 
-class GetAction extends Action {
-  GetAction(Picasso picasso, Request data) {
-    super(picasso, data);
-  }
+import com.squareup.picasso3.RequestHandler.Result
 
-  @Override void complete(RequestHandler.Result result) {
-  }
-
-  @Override public void error(Exception e) {
-  }
-
-  @Override Object getTarget() {
-    throw new AssertionError();
-  }
+internal class GetAction(
+  picasso: Picasso,
+  data: Request
+) : Action(picasso, data) {
+  override fun complete(result: Result) = Unit
+  override fun error(e: Exception) = Unit
+  override fun getTarget() = throw AssertionError()
 }

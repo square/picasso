@@ -13,126 +13,104 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.picasso3;
+package com.squareup.picasso3
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.appwidget.AppWidgetManager;
-import android.widget.RemoteViews;
-import androidx.annotation.DrawableRes;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
+import android.app.Notification
+import android.app.NotificationManager
+import android.appwidget.AppWidgetManager
+import android.widget.RemoteViews
+import androidx.annotation.DrawableRes
+import androidx.core.content.ContextCompat
+import com.squareup.picasso3.RequestHandler.Result
 
-abstract class RemoteViewsAction extends Action {
-  @Nullable Callback callback;
-  final @DrawableRes int errorResId;
-  final RemoteViewsTarget target;
-
-  RemoteViewsAction(Picasso picasso, Request data, @DrawableRes int errorResId,
-      @NonNull RemoteViewsTarget target, @Nullable Callback callback) {
-    super(picasso, data);
-    this.errorResId = errorResId;
-    this.target = target;
-    this.callback = callback;
+internal abstract class RemoteViewsAction(
+  picasso: Picasso,
+  data: Request,
+  @DrawableRes val errorResId: Int,
+  val target: RemoteViewsTarget,
+  var callback: Callback?
+) : Action(picasso, data) {
+  override fun complete(result: Result) {
+    target.remoteViews.setImageViewBitmap(target.viewId, result.bitmap)
+    update()
+    callback?.onSuccess()
   }
 
-  @Override void complete(RequestHandler.Result result) {
-    target.remoteViews.setImageViewBitmap(target.viewId, result.getBitmap());
-    update();
-    if (callback != null) {
-      callback.onSuccess();
-    }
+  override fun cancel() {
+    super.cancel()
+    callback = null
   }
 
-  @Override void cancel() {
-    super.cancel();
-    if (callback != null) {
-      callback = null;
-    }
-  }
-
-  @Override public void error(Exception e) {
+  override fun error(e: Exception) {
     if (errorResId != 0) {
-      setImageResource(errorResId);
+      setImageResource(errorResId)
     }
-    if (callback != null) {
-      callback.onError(e);
-    }
+    callback?.onError(e)
   }
 
-  void setImageResource(int resId) {
-    target.remoteViews.setImageViewResource(target.viewId, resId);
-    update();
+  fun setImageResource(resId: Int) {
+    target.remoteViews.setImageViewResource(target.viewId, resId)
+    update()
   }
 
-  abstract void update();
+  abstract fun update()
 
-  static class RemoteViewsTarget {
-    final RemoteViews remoteViews;
-    final int viewId;
-
-    RemoteViewsTarget(RemoteViews remoteViews, int viewId) {
-      this.remoteViews = remoteViews;
-      this.viewId = viewId;
+  internal class RemoteViewsTarget(
+    val remoteViews: RemoteViews,
+    val viewId: Int
+  ) {
+    override fun equals(other: Any?): Boolean {
+      if (this === other) return true
+      if (other == null || javaClass != other.javaClass) return false
+      val remoteViewsTarget = other as RemoteViewsTarget
+      return viewId == remoteViewsTarget.viewId && remoteViews ==
+          remoteViewsTarget.remoteViews
     }
 
-    @Override public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-      RemoteViewsTarget remoteViewsTarget = (RemoteViewsTarget) o;
-      return viewId == remoteViewsTarget.viewId && remoteViews.equals(
-          remoteViewsTarget.remoteViews);
+    override fun hashCode(): Int {
+      return 31 * remoteViews.hashCode() + viewId
     }
 
-    @Override public int hashCode() {
-      return 31 * remoteViews.hashCode() + viewId;
-    }
   }
 
-  static class AppWidgetAction extends RemoteViewsAction {
-    private final int[] appWidgetIds;
-
-    AppWidgetAction(Picasso picasso, Request data, @DrawableRes int errorResId,
-        RemoteViewsTarget target, int[] appWidgetIds, @Nullable Callback callback) {
-      super(picasso, data, errorResId, target, callback);
-      this.appWidgetIds = appWidgetIds;
+  internal class AppWidgetAction(
+    picasso: Picasso,
+    data: Request,
+    @DrawableRes errorResId: Int,
+    target: RemoteViewsTarget,
+    private val appWidgetIds: IntArray,
+    callback: Callback?
+  ) : RemoteViewsAction(picasso, data, errorResId, target, callback) {
+    override fun update() {
+      val manager = AppWidgetManager.getInstance(picasso.context)
+      manager.updateAppWidget(appWidgetIds, target.remoteViews)
     }
 
-    @Override void update() {
-      AppWidgetManager manager = AppWidgetManager.getInstance(picasso.context);
-      manager.updateAppWidget(appWidgetIds, target.remoteViews);
+    override fun getTarget(): Any {
+      return target
     }
 
-    @Override Object getTarget() {
-      return target;
-    }
   }
 
-  static class NotificationAction extends RemoteViewsAction {
-    private final int notificationId;
-    @Nullable private final String notificationTag;
-    private final Notification notification;
-
-    NotificationAction(Picasso picasso, Request data, @DrawableRes int errorResId,
-        RemoteViewsTarget target, int notificationId, Notification notification,
-        @Nullable String notificationTag, @Nullable Callback callback) {
-      super(picasso, data, errorResId, target, callback);
-      this.notificationId = notificationId;
-      this.notificationTag = notificationTag;
-      this.notification = notification;
+  internal class NotificationAction(
+    picasso: Picasso,
+    data: Request,
+    @DrawableRes errorResId: Int,
+    target: RemoteViewsTarget,
+    private val notificationId: Int,
+    private val notification: Notification,
+    private val notificationTag: String?,
+    callback: Callback?
+  ) : RemoteViewsAction(picasso, data, errorResId, target, callback) {
+    override fun update() {
+      val manager = ContextCompat.getSystemService(
+          picasso.context, NotificationManager::class.java
+      )
+      manager?.notify(notificationTag, notificationId, notification)
     }
 
-    @Override void update() {
-      NotificationManager manager =
-          ContextCompat.getSystemService(picasso.context, NotificationManager.class);
-      if (manager != null) {
-        manager.notify(notificationTag, notificationId, notification);
-      }
-    }
-
-    @Override Object getTarget() {
-      return target;
+    override fun getTarget(): Any {
+      return target
     }
   }
 }

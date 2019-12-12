@@ -13,36 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.picasso3;
+package com.squareup.picasso3
 
-import androidx.annotation.Nullable;
+import com.squareup.picasso3.RequestHandler.Result
 
-class FetchAction extends Action {
-  @Nullable private Callback callback;
-
-  FetchAction(Picasso picasso, Request data, @Nullable Callback callback) {
-    super(picasso, data);
-    this.callback = callback;
+internal class FetchAction(
+  picasso: Picasso,
+  data: Request,
+  private var callback: Callback?
+) : Action(picasso, data) {
+  override fun complete(result: Result) {
+    callback?.onSuccess()
   }
 
-  @Override void complete(RequestHandler.Result result) {
-    if (callback != null) {
-      callback.onSuccess();
-    }
+  override fun error(e: Exception) {
+    callback?.onError(e)
   }
 
-  @Override void error(Exception e) {
-    if (callback != null) {
-      callback.onError(e);
-    }
-  }
+  override fun getTarget() = this
 
-  @Override Object getTarget() {
-    return this;
-  }
-
-  @Override void cancel() {
-    super.cancel();
-    callback = null;
+  override fun cancel() {
+    super.cancel()
+    callback = null
   }
 }

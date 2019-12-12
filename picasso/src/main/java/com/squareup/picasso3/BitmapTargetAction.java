@@ -13,51 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.picasso3;
+package com.squareup.picasso3
 
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
-import androidx.annotation.DrawableRes;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
+import android.graphics.drawable.Drawable
+import androidx.annotation.DrawableRes
+import androidx.core.content.ContextCompat
+import com.squareup.picasso3.RequestHandler.Result
 
-final class BitmapTargetAction extends Action {
-  final @Nullable Drawable errorDrawable;
-  final @DrawableRes int errorResId;
-  final BitmapTarget target;
-
-  BitmapTargetAction(Picasso picasso, BitmapTarget target, Request data,
-      @Nullable Drawable errorDrawable, @DrawableRes int errorResId) {
-    super(picasso, data);
-    this.target = target;
-    this.errorDrawable = errorDrawable;
-    this.errorResId = errorResId;
-  }
-
-  @Override void complete(RequestHandler.Result result) {
-    if (result == null) {
-      throw new AssertionError(
-          String.format("Attempted to complete action with no result!\n%s", this));
-    }
-    Bitmap bitmap = result.getBitmap();
+internal class BitmapTargetAction(
+  picasso: Picasso,
+  val target: BitmapTarget,
+  data: Request,
+  val errorDrawable: Drawable?,
+  @DrawableRes val errorResId: Int
+) : Action(picasso, data) {
+  override fun complete(result: Result) {
+    val bitmap = result.bitmap
     if (bitmap != null) {
-      target.onBitmapLoaded(bitmap, result.getLoadedFrom());
-      if (bitmap.isRecycled()) {
-        throw new IllegalStateException("Target callback must not recycle bitmap!");
-      }
+      target.onBitmapLoaded(bitmap, result.loadedFrom)
+      check(!bitmap.isRecycled) { "Target callback must not recycle bitmap!" }
     }
   }
 
-  @Override void error(Exception e) {
+  override fun error(e: Exception) {
     if (errorResId != 0) {
-      target.onBitmapFailed(e,
-          ContextCompat.getDrawable(picasso.context, errorResId));
+      target.onBitmapFailed(e, ContextCompat.getDrawable(picasso.context, errorResId))
     } else {
-      target.onBitmapFailed(e, errorDrawable);
+      target.onBitmapFailed(e, errorDrawable)
     }
   }
 
-  @Override Object getTarget() {
-    return target;
+  override fun getTarget(): Any {
+    return target
   }
 }
