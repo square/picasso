@@ -418,7 +418,7 @@ public class RequestCreator {
 
     Action action = new GetAction(picasso, request);
     RequestHandler.Result result =
-        forRequest(picasso, picasso.dispatcher, picasso.cache, picasso.stats, action).hunt();
+        forRequest(picasso, picasso.dispatcher, picasso.cache, action).hunt();
     Bitmap bitmap = result.getBitmap();
     if (bitmap != null && shouldWriteToMemoryCache(request.memoryPolicy)) {
       picasso.cache.set(request.key, bitmap);

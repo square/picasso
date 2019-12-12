@@ -6,7 +6,6 @@ android {
 
   defaultConfig {
     minSdkVersion versions.minSdk
-    consumerProguardFiles 'consumer-proguard-rules.txt'
   }
 
   compileOptions {
@@ -19,27 +18,14 @@ android {
     textReport true
     lintConfig rootProject.file('lint.xml')
   }
-
-  testOptions {
-    unitTests {
-      includeAndroidResources = true
-    }
-  }
 }
 
 dependencies {
-  api deps.okhttp
-  api deps.okio
-  api deps.androidxLifecycle
-  implementation deps.androidxAnnotations
-  implementation deps.androidxCore
-  implementation deps.androidxExifInterface
   implementation deps.kotlinStdlibJdk8
+  implementation deps.androidxCore
+  api deps.okio
 
-  testImplementation deps.junit
-  testImplementation deps.truth
-
-  annotationProcessor deps.nullaway
+  api project(':picasso')
 }
 
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')

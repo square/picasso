@@ -340,6 +340,7 @@ class TestUtils {
 
   static final List<RequestTransformer> NO_TRANSFORMERS = Collections.emptyList();
   static final List<RequestHandler> NO_HANDLERS = Collections.emptyList();
+  static final List<EventListener> NO_EVENT_LISTENERS = Collections.emptyList();
 
   static Picasso defaultPicasso(Context context, boolean hasRequestHandlers,
       boolean hasTransformers) {
@@ -360,6 +361,49 @@ class TestUtils {
         .loggingEnabled(true)
         .withCacheSize(DEFAULT_CACHE_SIZE)
         .build();
+  }
+
+  static final class EventRecorder implements EventListener {
+    int maxCacheSize = 0;
+    int cacheSize = 0;
+    int cacheHits = 0;
+    int cacheMisses = 0;
+    long downloadSize = 0;
+    Bitmap decodedBitmap = null;
+    Bitmap transformedBitmap = null;
+    boolean closed = false;
+
+    @Override public void cacheMaxSize(int maxSize) {
+      maxCacheSize = maxSize;
+    }
+
+    @Override public void cacheSize(int size) {
+      cacheSize = size;
+    }
+
+    @Override public void cacheHit() {
+      cacheHits++;
+    }
+
+    @Override public void cacheMiss() {
+      cacheMisses++;
+    }
+
+    @Override public void downloadFinished(long size) {
+      downloadSize = size;
+    }
+
+    @Override public void bitmapDecoded(@NonNull Bitmap bitmap) {
+      decodedBitmap = bitmap;
+    }
+
+    @Override public void bitmapTransformed(@NonNull Bitmap bitmap) {
+      transformedBitmap = bitmap;
+    }
+
+    @Override public void close() {
+      closed = true;
+    }
   }
 
   static final class PremadeCall implements Call {

@@ -22,6 +22,7 @@ import android.widget.ImageView;
 import android.widget.RemoteViews;
 import androidx.annotation.NonNull;
 import com.squareup.picasso3.Picasso.RequestTransformer;
+import com.squareup.picasso3.TestUtils.EventRecorder;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
@@ -44,6 +45,7 @@ import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
 import static com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget;
 import static com.squareup.picasso3.TestUtils.NOOP_REQUEST_HANDLER;
 import static com.squareup.picasso3.TestUtils.NOOP_TRANSFORMER;
+import static com.squareup.picasso3.TestUtils.NO_EVENT_LISTENERS;
 import static com.squareup.picasso3.TestUtils.NO_HANDLERS;
 import static com.squareup.picasso3.TestUtils.NO_TRANSFORMERS;
 import static com.squareup.picasso3.TestUtils.UNUSED_CALL_FACTORY;
@@ -80,15 +82,16 @@ public final class PicassoTest {
   @Mock RequestHandler requestHandler;
   final PlatformLruCache cache = new PlatformLruCache(2048);
   @Mock Listener listener;
-  @Mock Stats stats;
 
   private Picasso picasso;
+  private EventRecorder eventRecorder = new EventRecorder();
   final Bitmap bitmap = makeBitmap();
 
   @Before public void setUp() {
     initMocks(this);
     picasso = new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, listener,
-        NO_TRANSFORMERS, NO_HANDLERS, stats, ARGB_8888, false, false);
+        NO_TRANSFORMERS, NO_HANDLERS, Collections.singletonList(eventRecorder), ARGB_8888, false,
+        false);
   }
 
   @Test public void submitWithTargetInvokesDispatcher() {
@@ -114,13 +117,13 @@ public final class PicassoTest {
     cache.set(URI_KEY_1, bitmap);
     Bitmap cached = picasso.quickMemoryCacheCheck(URI_KEY_1);
     assertThat(cached).isEqualTo(bitmap);
-    verify(stats).dispatchCacheHit();
+    assertThat(eventRecorder.cacheHits).isGreaterThan(0);
   }
 
   @Test public void quickMemoryCheckReturnsNullIfNotInCache() {
     Bitmap cached = picasso.quickMemoryCacheCheck(URI_KEY_1);
     assertThat(cached).isNull();
-    verify(stats).dispatchCacheMiss();
+    assertThat(eventRecorder.cacheMisses).isGreaterThan(0);
   }
 
   @Test public void completeInvokesSuccessOnAllSuccessfulRequests() {
@@ -362,7 +365,7 @@ public final class PicassoTest {
     assertThat(cache.size()).isEqualTo(1);
     picasso.shutdown();
     assertThat(cache.size()).isEqualTo(0);
-    verify(stats).shutdown();
+    assertThat(eventRecorder.closed).isTrue();
     verify(dispatcher).shutdown();
     assertThat(picasso.shutdown).isTrue();
   }
@@ -371,7 +374,8 @@ public final class PicassoTest {
     okhttp3.Cache cache = new okhttp3.Cache(temporaryFolder.getRoot(), 100);
     Picasso picasso =
         new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, cache, this.cache, listener,
-            NO_TRANSFORMERS, NO_HANDLERS, stats, ARGB_8888, false, false);
+            NO_TRANSFORMERS, NO_HANDLERS, Collections.singletonList(eventRecorder), ARGB_8888,
+            false, false);
     picasso.shutdown();
     assertThat(cache.isClosed()).isTrue();
   }
@@ -382,7 +386,7 @@ public final class PicassoTest {
     picasso.shutdown();
     picasso.shutdown();
     assertThat(cache.size()).isEqualTo(0);
-    verify(stats).shutdown();
+    assertThat(eventRecorder.closed).isTrue();
     verify(dispatcher).shutdown();
     assertThat(picasso.shutdown).isTrue();
   }
@@ -403,7 +407,8 @@ public final class PicassoTest {
       }
     };
     Picasso picasso = new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, listener,
-        Collections.singletonList(brokenTransformer), NO_HANDLERS, stats, ARGB_8888, false, false);
+        Collections.singletonList(brokenTransformer), NO_HANDLERS, NO_EVENT_LISTENERS, ARGB_8888,
+        false, false);
     Request request = new Request.Builder(URI_1).build();
     try {
       picasso.transformRequest(request);
@@ -415,11 +420,6 @@ public final class PicassoTest {
               + " returned null for "
               + request);
     }
-  }
-
-  @Test public void getSnapshotInvokesStats() {
-    picasso.getSnapshot();
-    verify(stats).createSnapshot();
   }
 
   @Test public void enableIndicators() {

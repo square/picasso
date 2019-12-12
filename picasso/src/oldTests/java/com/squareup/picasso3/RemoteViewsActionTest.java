@@ -30,6 +30,7 @@ import org.robolectric.RuntimeEnvironment;
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso3.Picasso.LoadedFrom.NETWORK;
+import static com.squareup.picasso3.TestUtils.NO_EVENT_LISTENERS;
 import static com.squareup.picasso3.TestUtils.NO_HANDLERS;
 import static com.squareup.picasso3.TestUtils.NO_TRANSFORMERS;
 import static com.squareup.picasso3.TestUtils.UNUSED_CALL_FACTORY;
@@ -103,7 +104,7 @@ public class RemoteViewsActionTest {
     Dispatcher dispatcher = mock(Dispatcher.class);
     PlatformLruCache cache = new PlatformLruCache(0);
     return new Picasso(RuntimeEnvironment.application, dispatcher, UNUSED_CALL_FACTORY, null, cache,
-        null, NO_TRANSFORMERS, NO_HANDLERS, mock(Stats.class), ARGB_8888, false, false);
+        null, NO_TRANSFORMERS, NO_HANDLERS, NO_EVENT_LISTENERS, ARGB_8888, false, false);
   }
 
   static class TestableRemoteViewsAction extends RemoteViewsAction {

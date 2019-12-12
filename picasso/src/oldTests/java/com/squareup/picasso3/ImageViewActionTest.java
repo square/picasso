@@ -26,6 +26,7 @@ import org.robolectric.RuntimeEnvironment;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
+import static com.squareup.picasso3.TestUtils.NO_EVENT_LISTENERS;
 import static com.squareup.picasso3.TestUtils.NO_HANDLERS;
 import static com.squareup.picasso3.TestUtils.NO_TRANSFORMERS;
 import static com.squareup.picasso3.TestUtils.RESOURCE_ID_1;
@@ -56,7 +57,7 @@ public class ImageViewActionTest {
     PlatformLruCache cache = new PlatformLruCache(0);
     Picasso picasso =
         new Picasso(RuntimeEnvironment.application, dispatcher, UNUSED_CALL_FACTORY, null, cache,
-            null, NO_TRANSFORMERS, NO_HANDLERS, mock(Stats.class), Bitmap.Config.ARGB_8888, false,
+            null, NO_TRANSFORMERS, NO_HANDLERS, NO_EVENT_LISTENERS, Bitmap.Config.ARGB_8888, false,
             false);
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();

@@ -36,11 +36,9 @@ final class NetworkRequestHandler extends RequestHandler {
   private static final String SCHEME_HTTPS = "https";
 
   private final Call.Factory callFactory;
-  final Stats stats;
 
-  NetworkRequestHandler(Call.Factory callFactory, Stats stats) {
+  NetworkRequestHandler(Call.Factory callFactory) {
     this.callFactory = callFactory;
-    this.stats = stats;
   }
 
   @Override public boolean canHandleRequest(@NonNull Request data) {
@@ -51,8 +49,8 @@ final class NetworkRequestHandler extends RequestHandler {
     return (SCHEME_HTTP.equalsIgnoreCase(scheme) || SCHEME_HTTPS.equalsIgnoreCase(scheme));
   }
 
-  @Override public void load(@NonNull Picasso picasso, @NonNull final Request request, @NonNull
-  final Callback callback) {
+  @Override public void load(@NonNull final Picasso picasso, @NonNull final Request request,
+      @NonNull final Callback callback) {
     okhttp3.Request callRequest = createRequest(request);
     callFactory.newCall(callRequest).enqueue(new okhttp3.Callback() {
       @Override public void onResponse(Call call, Response response) {
@@ -75,7 +73,7 @@ final class NetworkRequestHandler extends RequestHandler {
           return;
         }
         if (loadedFrom == NETWORK && body.contentLength() > 0) {
-          stats.dispatchDownloadFinished(body.contentLength());
+          picasso.downloadFinished(body.contentLength());
         }
         try {
           Bitmap bitmap = decodeStream(body.source(), request);

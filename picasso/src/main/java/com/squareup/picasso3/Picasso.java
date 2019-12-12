@@ -107,7 +107,7 @@ public class Picasso implements LifecycleObserver {
     HIGH
   }
 
-  static final String TAG = "Picasso";
+  public static final String TAG = "Picasso";
   static final Handler HANDLER = new Handler(Looper.getMainLooper()) {
     @Override public void handleMessage(Message msg) {
       switch (msg.what) {
@@ -133,13 +133,13 @@ public class Picasso implements LifecycleObserver {
   @Nullable final Listener listener;
   final List<RequestTransformer> requestTransformers;
   final List<RequestHandler> requestHandlers;
+  final List<EventListener> eventListeners;
 
   final Context context;
   final Dispatcher dispatcher;
   final Call.Factory callFactory;
   private final @Nullable okhttp3.Cache closeableCache;
   final PlatformLruCache cache;
-  final Stats stats;
   final Map<Object, Action> targetToAction;
   final Map<ImageView, DeferredRequestCreator> targetToDeferredRequestCreator;
   @Nullable final Bitmap.Config defaultBitmapConfig;
@@ -152,8 +152,8 @@ public class Picasso implements LifecycleObserver {
   Picasso(Context context, Dispatcher dispatcher, Call.Factory callFactory,
       @Nullable okhttp3.Cache closeableCache, PlatformLruCache cache, @Nullable Listener listener,
       List<RequestTransformer> requestTransformers, List<RequestHandler> extraRequestHandlers,
-      Stats stats, @Nullable Bitmap.Config defaultBitmapConfig, boolean indicatorsEnabled,
-      boolean loggingEnabled) {
+      List<? extends EventListener> eventListeners, @Nullable Bitmap.Config defaultBitmapConfig,
+      boolean indicatorsEnabled, boolean loggingEnabled) {
     this.context = context;
     this.dispatcher = dispatcher;
     this.callFactory = callFactory;
@@ -179,10 +179,11 @@ public class Picasso implements LifecycleObserver {
     allRequestHandlers.add(new ContentStreamRequestHandler(context));
     allRequestHandlers.add(new AssetRequestHandler(context));
     allRequestHandlers.add(new FileRequestHandler(context));
-    allRequestHandlers.add(new NetworkRequestHandler(callFactory, stats));
+    allRequestHandlers.add(new NetworkRequestHandler(callFactory));
     requestHandlers = Collections.unmodifiableList(allRequestHandlers);
 
-    this.stats = stats;
+    this.eventListeners = Collections.unmodifiableList(eventListeners);
+
     this.targetToAction = new LinkedHashMap<>();
     this.targetToDeferredRequestCreator = new LinkedHashMap<>();
     this.indicatorsEnabled = indicatorsEnabled;
@@ -479,24 +480,15 @@ public class Picasso implements LifecycleObserver {
     return loggingEnabled;
   }
 
-  /**
-   * Creates a {@link StatsSnapshot} of the current stats for this instance.
-   * <p>
-   * <b>NOTE:</b> The snapshot may not always be completely up-to-date if requests are still in
-   * progress.
-   */
-  @NonNull
-  @SuppressWarnings("UnusedDeclaration") public StatsSnapshot getSnapshot() {
-    return stats.createSnapshot();
-  }
-
   /** Stops this instance from accepting further requests. */
   public void shutdown() {
     if (shutdown) {
       return;
     }
     cache.clear();
-    stats.shutdown();
+
+    close();
+
     dispatcher.shutdown();
     if (closeableCache != null) {
       try {
@@ -556,9 +548,9 @@ public class Picasso implements LifecycleObserver {
   @Nullable Bitmap quickMemoryCacheCheck(String key) {
     Bitmap cached = cache.get(key);
     if (cached != null) {
-      stats.dispatchCacheHit();
+      cacheHit();
     } else {
-      stats.dispatchCacheMiss();
+      cacheMiss();
     }
     return cached;
   }
@@ -670,6 +662,7 @@ public class Picasso implements LifecycleObserver {
     @Nullable private Listener listener;
     private final List<RequestTransformer> requestTransformers = new ArrayList<>();
     private final List<RequestHandler> requestHandlers = new ArrayList<>();
+    private final List<EventListener> eventListeners = new ArrayList<>();
     @Nullable private Bitmap.Config defaultBitmapConfig;
 
     private boolean indicatorsEnabled;
@@ -691,6 +684,7 @@ public class Picasso implements LifecycleObserver {
       // See Picasso(). Removes internal request handlers added before and after custom handlers.
       int numRequestHandlers = picasso.requestHandlers.size();
       requestHandlers.addAll(picasso.requestHandlers.subList(2, numRequestHandlers - 6));
+      eventListeners.addAll(picasso.eventListeners);
 
       defaultBitmapConfig = picasso.defaultBitmapConfig;
       indicatorsEnabled = picasso.indicatorsEnabled;
@@ -794,6 +788,14 @@ public class Picasso implements LifecycleObserver {
       return this;
     }
 
+    /** Register a {@link EventListener}. */
+    @NonNull
+    public Builder addEventListener(@NonNull EventListener eventListener) {
+      checkNotNull(eventListener, "eventListener == null");
+      eventListeners.add(eventListener);
+      return this;
+    }
+
     /** Toggle whether to display debug indicators on images. */
     @NonNull
     public Builder indicatorsEnabled(boolean enabled) {
@@ -834,13 +836,11 @@ public class Picasso implements LifecycleObserver {
         service = new PicassoExecutorService(new PicassoThreadFactory());
       }
 
-      Stats stats = new Stats(cache);
-
-      Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, cache, stats);
+      Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, cache);
 
       return new Picasso(context, dispatcher, callFactory, unsharedCache, cache, listener,
-          requestTransformers, requestHandlers, stats, defaultBitmapConfig, indicatorsEnabled,
-          loggingEnabled);
+          requestTransformers, requestHandlers, eventListeners, defaultBitmapConfig,
+          indicatorsEnabled, loggingEnabled);
     }
   }
 
@@ -854,6 +854,70 @@ public class Picasso implements LifecycleObserver {
 
     LoadedFrom(int debugColor) {
       this.debugColor = debugColor;
+    }
+  }
+
+  void cacheMaxSize(int maxSize) {
+    int numListeners = eventListeners.size();
+    for (int i = 0; i < numListeners; i++) {
+      EventListener listener = eventListeners.get(i);
+      listener.cacheMaxSize(maxSize);
+    }
+  }
+
+  void cacheSize(int size) {
+    int numListeners = eventListeners.size();
+    for (int i = 0; i < numListeners; i++) {
+      EventListener listener = eventListeners.get(i);
+      listener.cacheSize(size);
+    }
+  }
+
+  void cacheHit() {
+    int numListeners = eventListeners.size();
+    for (int i = 0; i < numListeners; i++) {
+      EventListener listener = eventListeners.get(i);
+      listener.cacheHit();
+    }
+  }
+
+  void cacheMiss() {
+    int numListeners = eventListeners.size();
+    for (int i = 0; i < numListeners; i++) {
+      EventListener listener = eventListeners.get(i);
+      listener.cacheMiss();
+    }
+  }
+
+  void downloadFinished(long size) {
+    int numListeners = eventListeners.size();
+    for (int i = 0; i < numListeners; i++) {
+      EventListener listener = eventListeners.get(i);
+      listener.downloadFinished(size);
+    }
+  }
+
+  void bitmapDecoded(@NonNull Bitmap bitmap) {
+    int numListeners = eventListeners.size();
+    for (int i = 0; i < numListeners; i++) {
+      EventListener listener = eventListeners.get(i);
+      listener.bitmapDecoded(bitmap);
+    }
+  }
+
+  void bitmapTransformed(@NonNull Bitmap bitmap) {
+    int numListeners = eventListeners.size();
+    for (int i = 0; i < numListeners; i++) {
+      EventListener listener = eventListeners.get(i);
+      listener.bitmapTransformed(bitmap);
+    }
+  }
+
+  void close() {
+    int numListeners = eventListeners.size();
+    for (int i = 0; i < numListeners; i++) {
+      EventListener listener = eventListeners.get(i);
+      listener.close();
     }
   }
 }

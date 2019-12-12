@@ -25,6 +25,7 @@ import org.robolectric.RobolectricTestRunner;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
+import static com.squareup.picasso3.TestUtils.NO_EVENT_LISTENERS;
 import static com.squareup.picasso3.TestUtils.NO_HANDLERS;
 import static com.squareup.picasso3.TestUtils.NO_TRANSFORMERS;
 import static com.squareup.picasso3.TestUtils.RESOURCE_ID_1;
@@ -78,7 +79,7 @@ public class BitmapTargetActionTest {
     PlatformLruCache cache = new PlatformLruCache(0);
     Picasso picasso =
         new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, null, NO_TRANSFORMERS,
-            NO_HANDLERS, mock(Stats.class), ARGB_8888, false, false);
+            NO_HANDLERS, NO_EVENT_LISTENERS, ARGB_8888, false, false);
     Resources res = mock(Resources.class);
     BitmapTargetAction request = new BitmapTargetAction(picasso, target, null, null, RESOURCE_ID_1);
 

@@ -28,7 +28,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import okio.Buffer;
 
 import static com.squareup.picasso3.MemoryPolicy.shouldReadFromMemoryCache;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
@@ -67,7 +66,6 @@ class BitmapHunter implements Runnable {
   final Picasso picasso;
   final Dispatcher dispatcher;
   final PlatformLruCache cache;
-  final Stats stats;
   final String key;
   Request data;
   final RequestHandler requestHandler;
@@ -80,13 +78,12 @@ class BitmapHunter implements Runnable {
   int retryCount;
   Priority priority;
 
-  BitmapHunter(Picasso picasso, Dispatcher dispatcher, PlatformLruCache cache,
-      Stats stats, Action action, RequestHandler requestHandler) {
+  BitmapHunter(Picasso picasso, Dispatcher dispatcher, PlatformLruCache cache, Action action,
+      RequestHandler requestHandler) {
     this.sequence = SEQUENCE_GENERATOR.incrementAndGet();
     this.picasso = picasso;
     this.dispatcher = dispatcher;
     this.cache = cache;
-    this.stats = stats;
     this.action = action;
     this.key = action.request.key;
     this.data = action.request;
@@ -113,15 +110,6 @@ class BitmapHunter implements Runnable {
     } catch (IOException e) {
       exception = e;
       dispatcher.dispatchRetry(this);
-    } catch (OutOfMemoryError e) {
-      Buffer buffer = new Buffer();
-      try {
-        stats.createSnapshot().dump(buffer);
-      } catch (IOException ioe) {
-        throw new AssertionError(ioe);
-      }
-      exception = new RuntimeException(buffer.readUtf8(), e);
-      dispatcher.dispatchFailed(this);
     } catch (Exception e) {
       exception = e;
       dispatcher.dispatchFailed(this);
@@ -134,7 +122,7 @@ class BitmapHunter implements Runnable {
     if (shouldReadFromMemoryCache(data.memoryPolicy)) {
       Bitmap bitmap = cache.get(key);
       if (bitmap != null) {
-        stats.dispatchCacheHit();
+        picasso.cacheHit();
         if (picasso.loggingEnabled) {
           log(OWNER_HUNTER, VERB_DECODED, data.logId(), "from cache");
         }
@@ -193,7 +181,7 @@ class BitmapHunter implements Runnable {
       if (picasso.loggingEnabled) {
         log(OWNER_HUNTER, VERB_DECODED, data.logId());
       }
-      stats.dispatchBitmapDecoded(bitmap);
+      picasso.bitmapDecoded(bitmap);
 
       List<Transformation> transformations = new ArrayList<>(data.transformations.size() + 1);
       if (data.needsMatrixTransform() || result.getExifRotation() != 0) {
@@ -204,7 +192,7 @@ class BitmapHunter implements Runnable {
       result = applyTransformations(picasso, data, transformations, result);
       bitmap = result.getBitmap();
       if (bitmap != null) {
-        stats.dispatchBitmapTransformed(bitmap);
+        picasso.bitmapTransformed(bitmap);
       }
     }
 
@@ -358,7 +346,7 @@ class BitmapHunter implements Runnable {
   }
 
   static BitmapHunter forRequest(Picasso picasso, Dispatcher dispatcher,
-      PlatformLruCache cache, Stats stats, Action action) {
+      PlatformLruCache cache, Action action) {
     Request request = action.request;
     List<RequestHandler> requestHandlers = picasso.getRequestHandlers();
 
@@ -367,11 +355,11 @@ class BitmapHunter implements Runnable {
     for (int i = 0, count = requestHandlers.size(); i < count; i++) {
       RequestHandler requestHandler = requestHandlers.get(i);
       if (requestHandler.canHandleRequest(request)) {
-        return new BitmapHunter(picasso, dispatcher, cache, stats, action, requestHandler);
+        return new BitmapHunter(picasso, dispatcher, cache, action, requestHandler);
       }
     }
 
-    return new BitmapHunter(picasso, dispatcher, cache, stats, action, ERRORING_HANDLER);
+    return new BitmapHunter(picasso, dispatcher, cache, action, ERRORING_HANDLER);
   }
 
   @SuppressWarnings("NullAway")
