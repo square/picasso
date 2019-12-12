@@ -13,102 +13,71 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.picasso3;
+package com.squareup.picasso3
 
-import android.graphics.Bitmap;
-import android.util.LruCache;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.graphics.BitmapCompat;
+import android.graphics.Bitmap
+import android.util.LruCache
+import androidx.core.graphics.BitmapCompat
 
-import static com.squareup.picasso3.Request.KEY_SEPARATOR;
+typealias Size = Int
 
-/** A memory cache which uses a least-recently used eviction policy. */
-final class PlatformLruCache {
-  final LruCache<String, BitmapAndSize> cache;
+/** A memory cache which uses a least-recently used eviction policy.  */
+internal class PlatformLruCache(maxByteCount: Int) {
 
-  /** Create a cache with a given maximum size in bytes. */
-  PlatformLruCache(int maxByteCount) {
-    cache = new LruCache<String, BitmapAndSize>(maxByteCount != 0 ? maxByteCount : 1) {
-      @Override protected int sizeOf(String key, BitmapAndSize value) {
-        return value.byteCount;
-      }
-    };
-  }
-
-  @Nullable public Bitmap get(@NonNull String key) {
-    BitmapAndSize bitmapAndSize = cache.get(key);
-    return bitmapAndSize != null ? bitmapAndSize.bitmap : null;
-  }
-
-  void set(@NonNull String key, @NonNull Bitmap bitmap) {
-    if (key == null || bitmap == null) {
-      throw new NullPointerException("key == null || bitmap == null");
+  /** Create a cache with a given maximum size in bytes.  */
+  val cache =
+    object : LruCache<String, Pair<Bitmap, Size>>(if (maxByteCount != 0) maxByteCount else 1) {
+      override fun sizeOf(
+        key: String,
+        value: Pair<Bitmap, Size>
+      ): Size = value.second
     }
 
-    int byteCount = BitmapCompat.getAllocationByteCount(bitmap);
+  operator fun get(key: String): Bitmap? = cache[key]?.first
 
+  operator fun set(
+    key: String,
+    bitmap: Bitmap
+  ) {
+    val byteCount = BitmapCompat.getAllocationByteCount(bitmap)
     // If the bitmap is too big for the cache, don't even attempt to store it. Doing so will cause
     // the cache to be cleared. Instead just evict an existing element with the same key if it
     // exists.
     if (byteCount > maxSize()) {
-      cache.remove(key);
-      return;
+      cache.remove(key)
+      return
     }
 
-    cache.put(key, new BitmapAndSize(bitmap, byteCount));
+    cache.put(key, bitmap to byteCount)
   }
 
-  int size() {
-    return cache.size();
-  }
+  fun size(): Int = cache.size()
 
-  int maxSize() {
-    return cache.maxSize();
-  }
+  fun maxSize(): Int = cache.maxSize()
 
-  void clear() {
-    cache.evictAll();
-  }
+  fun clear() = cache.evictAll()
 
-  void clearKeyUri(String uri) {
+  fun clearKeyUri(uri: String) {
     // Keys are prefixed with a URI followed by '\n'.
-    for (String key : cache.snapshot().keySet()) {
-      if (key.startsWith(uri)
-          && key.length() > uri.length()
-          && key.charAt(uri.length()) == KEY_SEPARATOR) {
-        cache.remove(key);
+    for (key in cache.snapshot().keys) {
+      if (key.startsWith(uri) &&
+          key.length > uri.length &&
+          key[uri.length] == Request.KEY_SEPARATOR
+      ) {
+        cache.remove(key)
       }
     }
   }
 
-  /** Returns the number of times {@link #get} returned a value. */
-  int hitCount() {
-    return cache.hitCount();
-  }
+  /** Returns the number of times [get] returned a value.  */
+  fun hitCount(): Int = cache.hitCount()
 
-  /** Returns the number of times {@link #get} returned {@code null}. */
-  int missCount() {
-    return cache.missCount();
-  }
+  /** Returns the number of times [get] returned `null`.  */
+  fun missCount(): Int = cache.missCount()
 
-  /** Returns the number of times {@link #set(String, Bitmap)} was called. */
-  int putCount() {
-    return cache.putCount();
-  }
+  /** Returns the number of times [set] was called.  */
+  fun putCount(): Int = cache.putCount()
 
-  /** Returns the number of values that have been evicted. */
-  int evictionCount() {
-    return cache.evictionCount();
-  }
-
-  static final class BitmapAndSize {
-    final Bitmap bitmap;
-    final int byteCount;
-
-    BitmapAndSize(Bitmap bitmap, int byteCount) {
-      this.bitmap = bitmap;
-      this.byteCount = byteCount;
-    }
-  }
+  /** Returns the number of values that have been evicted.  */
+  fun evictionCount(): Int = cache.evictionCount()
 }
