@@ -26,6 +26,7 @@ import android.widget.ListView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat.checkSelfPermission
 import androidx.core.app.ActivityCompat.requestPermissions
+import androidx.loader.app.LoaderManager
 import androidx.loader.app.LoaderManager.LoaderCallbacks
 import androidx.loader.content.CursorLoader
 import androidx.loader.content.Loader
@@ -52,7 +53,7 @@ class SampleContactsActivity : PicassoSampleActivity(), LoaderCallbacks<Cursor> 
   }
 
   private fun loadContacts() {
-    supportLoaderManager.initLoader(ContactsQuery.QUERY_ID, null, this)
+    LoaderManager.getInstance(this).initLoader(ContactsQuery.QUERY_ID, null, this)
   }
 
   override fun onRequestPermissionsResult(
