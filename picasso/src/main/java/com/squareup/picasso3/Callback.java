@@ -13,21 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.picasso3;
+package com.squareup.picasso3
 
-import androidx.annotation.NonNull;
-
-public interface Callback {
-  void onSuccess();
-
-  void onError(@NonNull Throwable t);
-
-  class EmptyCallback implements Callback {
-
-    @Override public void onSuccess() {
-    }
-
-    @Override public void onError(@NonNull Throwable t) {
-    }
+interface Callback {
+  fun onSuccess()
+  fun onError(t: Throwable)
+  open class EmptyCallback : Callback {
+    override fun onSuccess() = Unit
+    override fun onError(t: Throwable) = Unit
   }
 }

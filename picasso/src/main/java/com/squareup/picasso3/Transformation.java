@@ -13,22 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.picasso3;
+package com.squareup.picasso3
 
-import androidx.annotation.NonNull;
-
-/** Image transformation. */
-public interface Transformation {
+/** Image transformation.  */
+interface Transformation {
   /**
    * Transform the source result into a new result. If you create a new bitmap instance, you must
-   * call {@link android.graphics.Bitmap#recycle()} on {@code source}. You may return the original
+   * call [android.graphics.Bitmap.recycle] on `source`. You may return the original
    * if no transformation is required.
    */
-  @NonNull RequestHandler.Result transform(@NonNull RequestHandler.Result source);
+  fun transform(source: RequestHandler.Result): RequestHandler.Result
 
   /**
    * Returns a unique key for the transformation, used for caching purposes. If the transformation
    * has parameters (e.g. size, scale factor, etc) then these should be part of the key.
    */
-  @NonNull String key();
+  fun key(): String
 }

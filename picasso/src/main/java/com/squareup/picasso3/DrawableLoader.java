@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.picasso3;
+package com.squareup.picasso3
 
-import android.graphics.drawable.Drawable;
-import androidx.annotation.DrawableRes;
-import androidx.annotation.Nullable;
+import android.graphics.drawable.Drawable
+import androidx.annotation.DrawableRes
 
-public interface DrawableLoader {
-  @Nullable Drawable load(@DrawableRes int resId);
+interface DrawableLoader {
+  fun load(@DrawableRes resId: Int): Drawable?
 }
