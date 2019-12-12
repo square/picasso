@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.picasso3
+package com.squareup.picasso3.stats
 
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.core.graphics.BitmapCompat
+import com.squareup.picasso3.EventListener
+import com.squareup.picasso3.Picasso
 import okio.Buffer
 import okio.BufferedSink
 import java.io.IOException

@@ -107,7 +107,7 @@ public class Picasso implements LifecycleObserver {
     HIGH
   }
 
-  static final String TAG = "Picasso";
+  public static final String TAG = "Picasso";
   static final Handler HANDLER = new Handler(Looper.getMainLooper()) {
     @Override public void handleMessage(Message msg) {
       switch (msg.what) {

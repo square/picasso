@@ -1,7 +1,7 @@
 package com.example.picasso.provider
 
 import com.squareup.picasso3.Picasso
-import com.squareup.picasso3.StatsEventListener
+import com.squareup.picasso3.stats.StatsEventListener
 
 /**
  * This instance is automatically initialized with defaults that are suitable to most
