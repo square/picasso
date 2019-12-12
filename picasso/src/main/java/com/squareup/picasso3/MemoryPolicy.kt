@@ -13,31 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.picasso3;
+package com.squareup.picasso3
 
-/** Designates the policy to use when dealing with memory cache. */
-@SuppressWarnings("PointlessBitwiseExpression")
-public enum MemoryPolicy {
+/** Designates the policy to use when dealing with memory cache.  */
+enum class MemoryPolicy(@JvmField val index: Int) {
+  /** Skips memory cache lookup when processing a request.  */
+  NO_CACHE(1 shl 0),
 
-  /** Skips memory cache lookup when processing a request. */
-  NO_CACHE(1 << 0),
   /**
    * Skips storing the final result into memory cache. Useful for one-off requests
    * to avoid evicting other bitmaps from the cache.
    */
-  NO_STORE(1 << 1);
+  NO_STORE(1 shl 1);
 
-  static boolean shouldReadFromMemoryCache(int memoryPolicy) {
-    return (memoryPolicy & MemoryPolicy.NO_CACHE.index) == 0;
-  }
+  companion object {
+    @JvmStatic fun shouldReadFromMemoryCache(memoryPolicy: Int) =
+      memoryPolicy and NO_CACHE.index == 0
 
-  static boolean shouldWriteToMemoryCache(int memoryPolicy) {
-    return (memoryPolicy & MemoryPolicy.NO_STORE.index) == 0;
-  }
-
-  final int index;
-
-  MemoryPolicy(int index) {
-    this.index = index;
+    @JvmStatic fun shouldWriteToMemoryCache(memoryPolicy: Int) =
+      memoryPolicy and NO_STORE.index == 0
   }
 }

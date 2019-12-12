@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Square, Inc.
+ * Copyright (C) 2013 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.picasso3;
+package com.squareup.picasso3
 
-import android.graphics.drawable.Drawable;
-import androidx.annotation.DrawableRes;
-import androidx.annotation.Nullable;
-
-public interface DrawableLoader {
-  @Nullable Drawable load(@DrawableRes int resId);
+interface Callback {
+  fun onSuccess()
+  fun onError(t: Throwable)
+  open class EmptyCallback : Callback {
+    override fun onSuccess() = Unit
+    override fun onError(t: Throwable) = Unit
+  }
 }

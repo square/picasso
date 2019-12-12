@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Square, Inc.
+ * Copyright (C) 2018 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.picasso3;
+package com.squareup.picasso3
 
-import androidx.annotation.NonNull;
+import android.graphics.drawable.Drawable
+import androidx.annotation.DrawableRes
 
-public interface Callback {
-  void onSuccess();
-
-  void onError(@NonNull Throwable t);
-
-  class EmptyCallback implements Callback {
-
-    @Override public void onSuccess() {
-    }
-
-    @Override public void onError(@NonNull Throwable t) {
-    }
-  }
+interface DrawableLoader {
+  fun load(@DrawableRes resId: Int): Drawable?
 }
