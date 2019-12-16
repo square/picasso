@@ -29,6 +29,7 @@ import static androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_90;
 import static androidx.exifinterface.media.ExifInterface.ORIENTATION_TRANSPOSE;
 import static androidx.exifinterface.media.ExifInterface.ORIENTATION_TRANSVERSE;
 import static com.squareup.picasso3.BitmapUtils.shouldResize;
+import static com.squareup.picasso3.RequestHandler.Result;
 
 final class MatrixTransformation implements Transformation {
   private final Request data;
@@ -37,15 +38,12 @@ final class MatrixTransformation implements Transformation {
     this.data = data;
   }
 
-  @NonNull @Override public RequestHandler.Result transform(@NonNull RequestHandler.Result source) {
+  @NonNull @Override public Result.Bitmap transform(@NonNull Result.Bitmap source) {
     Bitmap bitmap = source.getBitmap();
-    if (bitmap == null) {
-      return source;
-    }
 
-    bitmap = transformResult(data, bitmap, source.getExifRotation());
+    bitmap = transformResult(data, bitmap, source.exifRotation);
 
-    return new RequestHandler.Result(bitmap, source.getLoadedFrom(), source.getExifRotation());
+    return new Result.Bitmap(bitmap, source.loadedFrom, source.exifRotation);
   }
 
   @NonNull @Override public String key() {
@@ -90,7 +88,7 @@ final class MatrixTransformation implements Transformation {
           double maxY = Math.max(y4T, Math.max(y3T, Math.max(y1T, y2T)));
           double minY = Math.min(y4T, Math.min(y3T, Math.min(y1T, y2T)));
           targetWidth = (int) Math.floor(maxX - minX);
-          targetHeight  = (int) Math.floor(maxY - minY);
+          targetHeight = (int) Math.floor(maxY - minY);
         } else {
           matrix.setRotate(targetRotation);
           // Recalculate dimensions after rotation (around origin)
@@ -108,7 +106,7 @@ final class MatrixTransformation implements Transformation {
           double maxY = Math.max(y4T, Math.max(y3T, Math.max(y1T, y2T)));
           double minY = Math.min(y4T, Math.min(y3T, Math.min(y1T, y2T)));
           targetWidth = (int) Math.floor(maxX - minX);
-          targetHeight  = (int) Math.floor(maxY - minY);
+          targetHeight = (int) Math.floor(maxY - minY);
         }
       }
 

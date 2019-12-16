@@ -36,6 +36,7 @@ internal open class ContentStreamRequestHandler(@JvmField val context: Context) 
     request: Request,
     callback: Callback
   ) {
+
     var signaledCallback = false
     try {
       val requestUri = checkNotNull(request.uri)
@@ -43,7 +44,7 @@ internal open class ContentStreamRequestHandler(@JvmField val context: Context) 
       val bitmap = BitmapUtils.decodeStream(source, request)
       val exifRotation = getExifOrientation(requestUri)
       signaledCallback = true
-      callback.onSuccess(Result(bitmap, DISK, exifRotation))
+      callback.onSuccess(Result.Bitmap(bitmap, DISK, exifRotation))
     } catch (e: Exception) {
       if (!signaledCallback) {
         callback.onError(e)

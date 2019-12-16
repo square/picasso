@@ -40,7 +40,7 @@ class ResourceDrawableRequestHandler private constructor(
           IllegalArgumentException("invalid resId: ${Integer.toHexString(request.resourceId)}")
       )
     } else {
-      callback.onSuccess(Result(drawable, DISK))
+      callback.onSuccess(Result.Drawable(drawable, DISK))
     }
   }
 

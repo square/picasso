@@ -47,7 +47,7 @@ internal class AssetRequestHandler(private val context: Context) : RequestHandle
           .use { source ->
             val bitmap = decodeStream(source, request)
             signaledCallback = true
-            callback.onSuccess(Result(bitmap, DISK))
+            callback.onSuccess(Result.Bitmap(bitmap, DISK))
           }
     } catch (e: Exception) {
       if (!signaledCallback) {

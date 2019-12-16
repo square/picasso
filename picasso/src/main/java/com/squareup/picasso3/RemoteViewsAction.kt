@@ -22,6 +22,7 @@ import android.widget.RemoteViews
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import com.squareup.picasso3.RequestHandler.Result
+import com.squareup.picasso3.RequestHandler.Result.Bitmap
 
 internal abstract class RemoteViewsAction(
   picasso: Picasso,
@@ -31,9 +32,11 @@ internal abstract class RemoteViewsAction(
   var callback: Callback?
 ) : Action(picasso, data) {
   override fun complete(result: Result) {
-    target.remoteViews.setImageViewBitmap(target.viewId, result.bitmap)
-    update()
-    callback?.onSuccess()
+    if (result is Bitmap) {
+      target.remoteViews.setImageViewBitmap(target.viewId, result.bitmap)
+      update()
+      callback?.onSuccess()
+    }
   }
 
   override fun cancel() {

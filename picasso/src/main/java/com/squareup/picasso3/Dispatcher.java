@@ -30,6 +30,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import androidx.core.content.ContextCompat;
+import com.squareup.picasso3.RequestHandler.Result;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -345,10 +346,10 @@ class Dispatcher {
 
   void performComplete(BitmapHunter hunter) {
     if (shouldWriteToMemoryCache(hunter.data.memoryPolicy)) {
-      RequestHandler.Result result = hunter.getResult();
+      Result result = hunter.getResult();
       if (result != null) {
-        Bitmap bitmap = result.getBitmap();
-        if (bitmap != null) {
+        if (result instanceof Result.Bitmap) {
+          Bitmap bitmap = ((Result.Bitmap) result).getBitmap();
           cache.set(hunter.getKey(), bitmap);
         }
       }
@@ -412,10 +413,10 @@ class Dispatcher {
     if (hunter.isCancelled()) {
       return;
     }
-    RequestHandler.Result result = hunter.getResult();
+    Result result = hunter.getResult();
     if (result != null) {
-      Bitmap bitmap = result.getBitmap();
-      if (bitmap != null) {
+      if (result instanceof Result.Bitmap) {
+        Bitmap bitmap = ((Result.Bitmap) result).getBitmap();
         bitmap.prepareToDraw();
       }
     }

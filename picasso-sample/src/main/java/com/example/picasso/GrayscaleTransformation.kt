@@ -31,8 +31,8 @@ import com.squareup.picasso3.Transformation
 import java.io.IOException
 
 class GrayscaleTransformation(private val picasso: Picasso) : Transformation {
-  override fun transform(source: Result): Result {
-    val bitmap = source.bitmap ?: return source
+  override fun transform(source: Result.Bitmap): Result.Bitmap {
+    val bitmap = source.bitmap
 
     val result = createBitmap(bitmap.width, bitmap.height, bitmap.config)
     val noise = try {
@@ -59,7 +59,7 @@ class GrayscaleTransformation(private val picasso: Picasso) : Transformation {
     bitmap.recycle()
     noise.recycle()
 
-    return Result(result, source.loadedFrom, source.exifRotation)
+    return Result.Bitmap(result, source.loadedFrom, source.exifRotation)
   }
 
   override fun key() = "grayscaleTransformation()"

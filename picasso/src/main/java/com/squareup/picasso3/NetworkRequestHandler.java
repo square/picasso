@@ -77,7 +77,7 @@ final class NetworkRequestHandler extends RequestHandler {
         }
         try {
           Bitmap bitmap = decodeStream(body.source(), request);
-          callback.onSuccess(new Result(bitmap, loadedFrom));
+          callback.onSuccess(new Result.Bitmap(bitmap, loadedFrom));
         } catch (IOException e) {
           body.close();
           callback.onError(e);
@@ -90,15 +90,15 @@ final class NetworkRequestHandler extends RequestHandler {
     });
   }
 
-  @Override int getRetryCount() {
+  @Override public int getRetryCount() {
     return 2;
   }
 
-  @Override boolean shouldRetry(boolean airplaneMode, @Nullable NetworkInfo info) {
+  @Override public boolean shouldRetry(boolean airplaneMode, @Nullable NetworkInfo info) {
     return info == null || info.isConnected();
   }
 
-  @Override boolean supportsReplay() {
+  @Override public boolean supportsReplay() {
     return true;
   }
 
