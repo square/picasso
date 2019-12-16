@@ -36,7 +36,7 @@ internal class ResourceRequestHandler(private val context: Context) : RequestHan
     try {
       val bitmap = decodeResource(context, request)
       signaledCallback = true
-      callback.onSuccess(Result(bitmap, DISK))
+      callback.onSuccess(Result.Bitmap(bitmap, DISK))
     } catch (e: Exception) {
       if (!signaledCallback) {
         callback.onError(e)

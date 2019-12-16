@@ -28,6 +28,7 @@ import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.widget.ImageView;
 import androidx.annotation.Nullable;
+import com.squareup.picasso3.RequestHandler.Result;
 
 import static android.graphics.Color.WHITE;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
@@ -41,24 +42,21 @@ final class PicassoDrawable extends BitmapDrawable {
    * Create or update the drawable on the target {@link ImageView} to display the supplied bitmap
    * image.
    */
-  static void setResult(ImageView target, Context context, RequestHandler.Result result,
-      boolean noFade, boolean debugging) {
+  static void setResult(ImageView target, Context context, Result result, boolean noFade,
+      boolean debugging) {
     Drawable placeholder = target.getDrawable();
     if (placeholder instanceof Animatable) {
       ((Animatable) placeholder).stop();
     }
 
-    Bitmap bitmap = result.getBitmap();
-    if (bitmap != null) {
-      Picasso.LoadedFrom loadedFrom = result.getLoadedFrom();
+    if (result instanceof Result.Bitmap) {
+      Bitmap bitmap = ((Result.Bitmap) result).getBitmap();
+      Picasso.LoadedFrom loadedFrom = result.loadedFrom;
       PicassoDrawable drawable =
           new PicassoDrawable(context, bitmap, placeholder, loadedFrom, noFade, debugging);
       target.setImageDrawable(drawable);
-      return;
-    }
-
-    Drawable drawable = result.getDrawable();
-    if (drawable != null) {
+    } else {
+      Drawable drawable = ((Result.Drawable) result).getDrawable();
       target.setImageDrawable(drawable);
       if (drawable instanceof Animatable) {
         ((Animatable) drawable).start();

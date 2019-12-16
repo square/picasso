@@ -70,7 +70,7 @@ internal class ContactsPhotoRequestHandler(private val context: Context) : Reque
       val source = getSource(requestUri)
       val bitmap = decodeStream(source, request)
       signaledCallback = true
-      callback.onSuccess(Result(bitmap, DISK))
+      callback.onSuccess(Result.Bitmap(bitmap, DISK))
     } catch (e: Exception) {
       if (!signaledCallback) {
         callback.onError(e)

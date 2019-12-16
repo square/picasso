@@ -31,6 +31,7 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
+import com.squareup.picasso3.RequestHandler.Result;
 import com.squareup.picasso3.Utils.PicassoThreadFactory;
 import java.io.File;
 import java.io.IOException;
@@ -568,7 +569,7 @@ public class Picasso implements LifecycleObserver {
 
     Uri uri = checkNotNull(hunter.getData().uri, "uri == null");
     Exception exception = hunter.getException();
-    RequestHandler.Result result = hunter.getResult();
+    Result result = hunter.getResult();
 
     if (single != null) {
       deliverAction(result, single, exception);
@@ -595,7 +596,7 @@ public class Picasso implements LifecycleObserver {
 
     if (bitmap != null) {
       // Resumed action is cached, complete immediately.
-      deliverAction(new RequestHandler.Result(bitmap, MEMORY), action, null);
+      deliverAction(new Result.Bitmap(bitmap, MEMORY), action, null);
       if (loggingEnabled) {
         log(OWNER_MAIN, VERB_COMPLETED, action.request.logId(), "from " + MEMORY);
       }
@@ -608,7 +609,7 @@ public class Picasso implements LifecycleObserver {
     }
   }
 
-  private void deliverAction(@Nullable RequestHandler.Result result, Action action,
+  private void deliverAction(@Nullable Result result, Action action,
       @Nullable Exception e) {
     if (action.cancelled) {
       return;
@@ -619,7 +620,7 @@ public class Picasso implements LifecycleObserver {
     if (result != null) {
       action.complete(result);
       if (loggingEnabled) {
-        log(OWNER_MAIN, VERB_COMPLETED, action.request.logId(), "from " + result.getLoadedFrom());
+        log(OWNER_MAIN, VERB_COMPLETED, action.request.logId(), "from " + result.loadedFrom);
       }
     } else {
       Exception exception = checkNotNull(e, "e == null");

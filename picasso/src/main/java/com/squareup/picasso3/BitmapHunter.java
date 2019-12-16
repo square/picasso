@@ -102,11 +102,7 @@ class BitmapHunter implements Runnable {
 
       result = hunt();
 
-      if (result.getBitmap() == null && result.getDrawable() == null) {
-        dispatcher.dispatchFailed(this);
-      } else {
-        dispatcher.dispatchComplete(this);
-      }
+      dispatcher.dispatchComplete(this);
     } catch (IOException e) {
       exception = e;
       dispatcher.dispatchRetry(this);
@@ -118,7 +114,7 @@ class BitmapHunter implements Runnable {
     }
   }
 
-  Result hunt() throws IOException {
+  Result.Bitmap hunt() throws IOException {
     if (shouldReadFromMemoryCache(data.memoryPolicy)) {
       Bitmap bitmap = cache.get(key);
       if (bitmap != null) {
@@ -126,7 +122,7 @@ class BitmapHunter implements Runnable {
         if (picasso.loggingEnabled) {
           log(OWNER_HUNTER, VERB_DECODED, data.logId(), "from cache");
         }
-        return new Result(bitmap, MEMORY);
+        return new Result.Bitmap(bitmap, MEMORY);
       }
     }
 
@@ -171,30 +167,26 @@ class BitmapHunter implements Runnable {
       throw new RuntimeException(throwable);
     }
 
-    Result result = resultReference.get();
+    Result.Bitmap result = (Result.Bitmap) resultReference.get();
     if (result == null) {
       throw new AssertionError("Request handler neither returned a result nor an exception.");
     }
 
     Bitmap bitmap = result.getBitmap();
-    if (bitmap != null) {
-      if (picasso.loggingEnabled) {
-        log(OWNER_HUNTER, VERB_DECODED, data.logId());
-      }
-      picasso.bitmapDecoded(bitmap);
-
-      List<Transformation> transformations = new ArrayList<>(data.transformations.size() + 1);
-      if (data.needsMatrixTransform() || result.getExifRotation() != 0) {
-        transformations.add(new MatrixTransformation(data));
-      }
-      transformations.addAll(data.transformations);
-
-      result = applyTransformations(picasso, data, transformations, result);
-      bitmap = result.getBitmap();
-      if (bitmap != null) {
-        picasso.bitmapTransformed(bitmap);
-      }
+    if (picasso.loggingEnabled) {
+      log(OWNER_HUNTER, VERB_DECODED, data.logId());
     }
+    picasso.bitmapDecoded(bitmap);
+
+    List<Transformation> transformations = new ArrayList<>(data.transformations.size() + 1);
+    if (data.needsMatrixTransform() || result.exifRotation != 0) {
+      transformations.add(new MatrixTransformation(data));
+    }
+    transformations.addAll(data.transformations);
+
+    result = applyTransformations(picasso, data, transformations, result);
+    bitmap = result.getBitmap();
+    picasso.bitmapTransformed(bitmap);
 
     return result;
   }
@@ -363,11 +355,11 @@ class BitmapHunter implements Runnable {
   }
 
   @SuppressWarnings("NullAway")
-  static Result applyTransformations(Picasso picasso, Request data,
-      List<Transformation> transformations, Result result) {
+  static Result.Bitmap applyTransformations(Picasso picasso, Request data,
+      List<Transformation> transformations, Result.Bitmap result) {
     for (int i = 0, count = transformations.size(); i < count; i++) {
       final Transformation transformation = transformations.get(i);
-      Result newResult;
+      Result.Bitmap newResult;
       try {
         newResult = transformation.transform(result);
         if (picasso.loggingEnabled) {
@@ -402,7 +394,7 @@ class BitmapHunter implements Runnable {
       }
 
       Bitmap bitmap = newResult.getBitmap();
-      if (bitmap != null && bitmap.isRecycled()) {
+      if (bitmap.isRecycled()) {
         Picasso.HANDLER.post(new Runnable() {
           @Override public void run() {
             throw new IllegalStateException("Transformation "

@@ -74,7 +74,7 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
           Source source = getSource(requestUri);
           Bitmap bitmap = decodeStream(source, request);
           signaledCallback = true;
-          callback.onSuccess(new Result(bitmap, DISK, exifOrientation));
+          callback.onSuccess(new Result.Bitmap(bitmap, DISK, exifOrientation));
           return;
         }
 
@@ -101,7 +101,7 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
 
         if (bitmap != null) {
           signaledCallback = true;
-          callback.onSuccess(new Result(bitmap, DISK, exifOrientation));
+          callback.onSuccess(new Result.Bitmap(bitmap, DISK, exifOrientation));
           return;
         }
       }
@@ -109,7 +109,7 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
       Source source = getSource(requestUri);
       Bitmap bitmap = decodeStream(source, request);
       signaledCallback = true;
-      callback.onSuccess(new Result(bitmap, DISK, exifOrientation));
+      callback.onSuccess(new Result.Bitmap(bitmap, DISK, exifOrientation));
     } catch (Exception e) {
       if (!signaledCallback) {
         callback.onError(e);

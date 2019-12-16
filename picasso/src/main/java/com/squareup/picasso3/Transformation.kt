@@ -15,6 +15,8 @@
  */
 package com.squareup.picasso3
 
+import com.squareup.picasso3.RequestHandler.Result
+
 /** Image transformation.  */
 interface Transformation {
   /**
@@ -22,7 +24,7 @@ interface Transformation {
    * call [android.graphics.Bitmap.recycle] on `source`. You may return the original
    * if no transformation is required.
    */
-  fun transform(source: RequestHandler.Result): RequestHandler.Result
+  fun transform(source: Result.Bitmap): Result.Bitmap
 
   /**
    * Returns a unique key for the transformation, used for caching purposes. If the transformation

@@ -42,7 +42,7 @@ internal class FileRequestHandler(context: Context) : ContentStreamRequestHandle
       val bitmap = decodeStream(source, request)
       val exifRotation = getExifOrientation(requestUri)
       signaledCallback = true
-      callback.onSuccess(Result(bitmap, DISK, exifRotation))
+      callback.onSuccess(Result.Bitmap(bitmap, DISK, exifRotation))
     } catch (e: Exception) {
       if (!signaledCallback) {
         callback.onError(e)

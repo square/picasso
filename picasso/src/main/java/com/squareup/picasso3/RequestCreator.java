@@ -31,6 +31,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.content.ContextCompat;
 import com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget;
+import com.squareup.picasso3.RequestHandler.Result;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -417,10 +418,10 @@ public class RequestCreator {
     Request request = createRequest(started);
 
     Action action = new GetAction(picasso, request);
-    RequestHandler.Result result =
+    Result.Bitmap result =
         forRequest(picasso, picasso.dispatcher, picasso.cache, action).hunt();
     Bitmap bitmap = result.getBitmap();
-    if (bitmap != null && shouldWriteToMemoryCache(request.memoryPolicy)) {
+    if (shouldWriteToMemoryCache(request.memoryPolicy)) {
       picasso.cache.set(request.key, bitmap);
     }
     return bitmap;
@@ -717,7 +718,7 @@ public class RequestCreator {
       Bitmap bitmap = picasso.quickMemoryCacheCheck(request.key);
       if (bitmap != null) {
         picasso.cancelRequest(target);
-        RequestHandler.Result result = new RequestHandler.Result(bitmap, MEMORY);
+        Result result = new Result.Bitmap(bitmap, MEMORY);
         setResult(target, picasso.context, result, noFade, picasso.indicatorsEnabled);
         if (picasso.loggingEnabled) {
           log(OWNER_MAIN, VERB_COMPLETED, request.plainId(), "from " + MEMORY);
@@ -775,7 +776,7 @@ public class RequestCreator {
     if (shouldReadFromMemoryCache(request.memoryPolicy)) {
       Bitmap bitmap = picasso.quickMemoryCacheCheck(action.request.key);
       if (bitmap != null) {
-        action.complete(new RequestHandler.Result(bitmap, MEMORY));
+        action.complete(new Result.Bitmap(bitmap, MEMORY));
         return;
       }
     }
