@@ -43,7 +43,6 @@ import java.util.concurrent.ExecutorService;
 import static android.content.Intent.ACTION_AIRPLANE_MODE_CHANGED;
 import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
-import static com.squareup.picasso3.BitmapHunter.forRequest;
 import static com.squareup.picasso3.MemoryPolicy.shouldWriteToMemoryCache;
 import static com.squareup.picasso3.Picasso.TAG;
 import static com.squareup.picasso3.Utils.OWNER_DISPATCHER;
@@ -190,8 +189,8 @@ class Dispatcher {
       return;
     }
 
-    hunter = forRequest(action.picasso, this, cache, action);
-    hunter.future = service.submit(hunter);
+    hunter = BitmapHunter.Companion.forRequest(action.picasso, this, cache, action);
+    hunter.setFuture(service.submit(hunter));
     hunterMap.put(action.request.key, hunter);
     if (dismissFailed) {
       failedActions.remove(action.getTarget());
@@ -332,9 +331,9 @@ class Dispatcher {
         log(OWNER_DISPATCHER, VERB_RETRYING, getLogIdsForHunter(hunter));
       }
       if (hunter.getException() instanceof NetworkRequestHandler.ContentLengthException) {
-        hunter.data = hunter.data.newBuilder().networkPolicy(NetworkPolicy.NO_CACHE).build();
+        hunter.setData(hunter.getData().newBuilder().networkPolicy(NetworkPolicy.NO_CACHE).build());
       }
-      hunter.future = service.submit(hunter);
+      hunter.setFuture(service.submit(hunter));
     } else {
       performError(hunter);
       // Mark for replay only if we observe network info changes and support replay.
@@ -345,7 +344,7 @@ class Dispatcher {
   }
 
   void performComplete(BitmapHunter hunter) {
-    if (shouldWriteToMemoryCache(hunter.data.memoryPolicy)) {
+    if (shouldWriteToMemoryCache(hunter.getData().memoryPolicy)) {
       Result result = hunter.getResult();
       if (result != null) {
         if (result instanceof Result.Bitmap) {
@@ -422,7 +421,7 @@ class Dispatcher {
     }
 
     Message message = mainThreadHandler.obtainMessage(HUNTER_COMPLETE, hunter);
-    if (hunter.priority == Picasso.Priority.HIGH) {
+    if (hunter.getPriority() == Picasso.Priority.HIGH) {
       mainThreadHandler.sendMessageAtFrontOfQueue(message);
     } else {
       mainThreadHandler.sendMessage(message);

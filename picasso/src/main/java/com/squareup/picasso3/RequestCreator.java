@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.squareup.picasso3.BitmapHunter.forRequest;
 import static com.squareup.picasso3.MemoryPolicy.shouldReadFromMemoryCache;
 import static com.squareup.picasso3.MemoryPolicy.shouldWriteToMemoryCache;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
@@ -419,7 +418,11 @@ public class RequestCreator {
 
     Action action = new GetAction(picasso, request);
     Result.Bitmap result =
-        forRequest(picasso, picasso.dispatcher, picasso.cache, action).hunt();
+      BitmapHunter.Companion.forRequest(picasso, picasso.dispatcher, picasso.cache, action).hunt();
+    if (result == null) {
+      return null;
+    }
+
     Bitmap bitmap = result.getBitmap();
     if (shouldWriteToMemoryCache(request.memoryPolicy)) {
       picasso.cache.set(request.key, bitmap);

@@ -114,7 +114,7 @@ public class Picasso implements LifecycleObserver {
       switch (msg.what) {
         case HUNTER_COMPLETE: {
           BitmapHunter hunter = (BitmapHunter) msg.obj;
-          hunter.picasso.complete(hunter);
+          hunter.getPicasso().complete(hunter);
           break;
         }
         case REQUEST_BATCH_RESUME:
