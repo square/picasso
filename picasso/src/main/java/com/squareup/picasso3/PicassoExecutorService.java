@@ -59,7 +59,8 @@ class PicassoExecutorService extends ThreadPoolExecutor {
 
       // High-priority requests are "lesser" so they are sorted to the front.
       // Equal priorities are sorted by sequence number to provide FIFO ordering.
-      return (p1 == p2 ? hunter.getSequence() - other.hunter.getSequence() : p2.ordinal() - p1.ordinal());
+      return (p1 == p2
+        ? hunter.getSequence() - other.hunter.getSequence() : p2.ordinal() - p1.ordinal());
     }
   }
 }
