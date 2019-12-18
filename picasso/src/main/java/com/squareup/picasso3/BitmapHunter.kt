@@ -37,11 +37,11 @@ internal class BitmapHunter(
   priority: Picasso.Priority
 ) : Runnable {
   companion object {
-    private val NAME_BUILDER: ThreadLocal<StringBuilder> = object : ThreadLocal<StringBuilder>() {
+    val NAME_BUILDER: ThreadLocal<StringBuilder> = object : ThreadLocal<StringBuilder>() {
       override fun initialValue(): StringBuilder = StringBuilder(Utils.THREAD_PREFIX)
     }
-    private val SEQUENCE_GENERATOR = AtomicInteger()
-    private val ERRORING_HANDLER: RequestHandler = object : RequestHandler() {
+    val SEQUENCE_GENERATOR = AtomicInteger()
+    val ERRORING_HANDLER: RequestHandler = object : RequestHandler() {
       override fun canHandleRequest(data: Request): Boolean = true
 
       override fun load(picasso: Picasso, request: Request, callback: Callback) {
@@ -89,7 +89,7 @@ internal class BitmapHunter(
       )
     }
 
-    private fun updateThreadName(data: Request) {
+    fun updateThreadName(data: Request) {
       val name = data.name
       val builder = NAME_BUILDER.get()?.also {
         it.ensureCapacity(Utils.THREAD_PREFIX.length + name.length)
@@ -99,7 +99,7 @@ internal class BitmapHunter(
       Thread.currentThread().name = builder.toString()
     }
 
-    private fun applyTransformations(
+    fun applyTransformations(
       picasso: Picasso,
       data: Request,
       transformations: List<Transformation>,
