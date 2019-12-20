@@ -18,6 +18,7 @@ package com.squareup.picasso3
 import android.net.NetworkInfo
 import com.squareup.picasso3.MemoryPolicy.Companion.shouldReadFromMemoryCache
 import com.squareup.picasso3.Picasso.LoadedFrom
+import com.squareup.picasso3.Utils.*
 import java.io.IOException
 import java.io.InterruptedIOException
 import java.util.concurrent.CountDownLatch
@@ -38,7 +39,7 @@ internal class BitmapHunter(
 ) : Runnable {
   companion object {
     val NAME_BUILDER: ThreadLocal<StringBuilder> = object : ThreadLocal<StringBuilder>() {
-      override fun initialValue(): StringBuilder = StringBuilder(Utils.THREAD_PREFIX)
+      override fun initialValue(): StringBuilder = StringBuilder(THREAD_PREFIX)
     }
     val SEQUENCE_GENERATOR = AtomicInteger()
     val ERRORING_HANDLER: RequestHandler = object : RequestHandler() {
@@ -92,8 +93,8 @@ internal class BitmapHunter(
     fun updateThreadName(data: Request) {
       val name = data.name
       val builder = NAME_BUILDER.get()?.also {
-        it.ensureCapacity(Utils.THREAD_PREFIX.length + name.length)
-        it.replace(Utils.THREAD_PREFIX.length, it.length, name)
+        it.ensureCapacity(THREAD_PREFIX.length + name.length)
+        it.replace(THREAD_PREFIX.length, it.length, name)
       } ?: return
 
       Thread.currentThread().name = builder.toString()
@@ -112,7 +113,7 @@ internal class BitmapHunter(
         val newResult = try {
           val transformedResult = transformation.transform(res)
           if (picasso.loggingEnabled) {
-            Utils.log(Utils.OWNER_HUNTER, Utils.VERB_TRANSFORMED, data.logId(), "from transformations")
+            log(OWNER_HUNTER, VERB_TRANSFORMED, data.logId(), "from transformations")
           }
 
           transformedResult
@@ -163,7 +164,7 @@ internal class BitmapHunter(
       updateThreadName(data)
 
       if (picasso.loggingEnabled) {
-        Utils.log(Utils.OWNER_HUNTER, Utils.VERB_EXECUTING, Utils.getLogIdsForHunter(this))
+        log(OWNER_HUNTER, VERB_EXECUTING, getLogIdsForHunter(this))
       }
 
       result = hunt()
@@ -175,7 +176,7 @@ internal class BitmapHunter(
       exception = e
       dispatcher.dispatchFailed(this)
     } finally {
-      Thread.currentThread().name = Utils.THREAD_IDLE_NAME
+      Thread.currentThread().name = THREAD_IDLE_NAME
     }
   }
 
@@ -185,7 +186,7 @@ internal class BitmapHunter(
       cache[key]?.let { bitmap ->
         picasso.cacheHit()
         if (picasso.loggingEnabled) {
-          Utils.log(Utils.OWNER_HUNTER, Utils.VERB_DECODED, data.logId(), "from cache")
+          log(OWNER_HUNTER, VERB_DECODED, data.logId(), "from cache")
         }
 
         return RequestHandler.Result.Bitmap(bitmap, LoadedFrom.MEMORY)
@@ -230,7 +231,7 @@ internal class BitmapHunter(
       ?: throw AssertionError("Request handler neither returned a result nor an exception.")
     val bitmap = result.bitmap
     if (picasso.loggingEnabled) {
-      Utils.log(Utils.OWNER_HUNTER, Utils.VERB_DECODED, data.logId())
+      log(OWNER_HUNTER, VERB_DECODED, data.logId())
     }
     picasso.bitmapDecoded(bitmap)
 
@@ -254,9 +255,9 @@ internal class BitmapHunter(
       this.action = action
       if (loggingEnabled) {
         if (_actions.isNullOrEmpty()) {
-          Utils.log(Utils.OWNER_HUNTER, Utils.VERB_JOINED, request.logId(), "to empty hunter")
+          log(OWNER_HUNTER, VERB_JOINED, request.logId(), "to empty hunter")
         } else {
-          Utils.log(Utils.OWNER_HUNTER, Utils.VERB_JOINED, request.logId(), Utils.getLogIdsForHunter(this, "to "))
+          log(OWNER_HUNTER, VERB_JOINED, request.logId(), getLogIdsForHunter(this, "to "))
         }
       }
 
@@ -269,7 +270,7 @@ internal class BitmapHunter(
     _actions?.add(action)
 
     if (loggingEnabled) {
-      Utils.log(Utils.OWNER_HUNTER, Utils.VERB_JOINED, request.logId(), Utils.getLogIdsForHunter(this, "to "))
+      log(OWNER_HUNTER, VERB_JOINED, request.logId(), getLogIdsForHunter(this, "to "))
     }
 
     val actionPriority = action.request.priority
@@ -299,7 +300,7 @@ internal class BitmapHunter(
     }
 
     if (picasso.loggingEnabled) {
-      Utils.log(Utils.OWNER_HUNTER, Utils.VERB_REMOVED, action.request.logId(), Utils.getLogIdsForHunter(this, "from "))
+      log(OWNER_HUNTER, VERB_REMOVED, action.request.logId(), getLogIdsForHunter(this, "from "))
     }
   }
 
