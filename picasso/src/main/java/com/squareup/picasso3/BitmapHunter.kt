@@ -26,15 +26,15 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
 internal class BitmapHunter(
+  @JvmField val picasso: Picasso,
   @JvmField var data: Request,
-  val picasso: Picasso,
+  @JvmField var priority: Picasso.Priority,
   val key: String,
   private val dispatcher: Dispatcher,
   private val cache: PlatformLruCache,
   private val requestHandler: RequestHandler,
   private var retryCount: Int,
-  action: Action?,
-  priority: Picasso.Priority
+  action: Action?
 ) : Runnable {
   companion object {
     val NAME_BUILDER: ThreadLocal<StringBuilder> = object : ThreadLocal<StringBuilder>() {
@@ -153,9 +153,6 @@ internal class BitmapHunter(
   var result: RequestHandler.Result? = null
     private set
   var exception: Exception? = null
-    private set
-
-  var priority: Picasso.Priority = priority
     private set
 
   val isCancelled: Boolean
