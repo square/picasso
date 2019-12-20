@@ -78,7 +78,7 @@ internal class BitmapHunter(
       val requestHandlers = picasso.getRequestHandlers()
 
       // Index-based loop to avoid allocating an iterator.
-      for (i in 0..requestHandlers.lastIndex) {
+      for (i in requestHandlers.indices) {
         val requestHandler = requestHandlers[i]
         if (requestHandler.canHandleRequest(request)) {
           return BitmapHunter(
