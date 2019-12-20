@@ -236,9 +236,9 @@ internal class BitmapHunter(
 
     val transformations = ArrayList<Transformation>(data.transformations.size + 1)
     if (data.needsMatrixTransform() || result.exifRotation != 0) {
-      transformations.add(MatrixTransformation(data))
+      transformations += MatrixTransformation(data)
     }
-    transformations.addAll(data.transformations)
+    transformations += data.transformations
 
     val transformedResult = applyTransformations(picasso, data, transformations, result) ?: return null
     val transformedBitmap = transformedResult.bitmap
@@ -318,23 +318,19 @@ internal class BitmapHunter(
   fun supportsReplay(): Boolean = requestHandler.supportsReplay()
 
   private fun computeNewPriority(): Picasso.Priority {
-    var newPriority = Picasso.Priority.LOW
-
-    val hasMultiple = !_actions.isNullOrEmpty()
+    val hasMultiple = _actions?.isNotEmpty() ?: false
     val hasAny = action != null || hasMultiple
 
     // Hunter has no requests, low priority.
     if (!hasAny) {
-      return newPriority
+      return Picasso.Priority.LOW
     }
 
-    action?.let { action ->
-      newPriority = action.request.priority
-    }
+    var newPriority = action?.request?.priority ?: Picasso.Priority.LOW
 
     _actions?.let { _actions ->
       // Index-based loop to avoid allocating an iterator.
-      for (i in 0.._actions.lastIndex) {
+      for (i in _actions.indices) {
         val priority = _actions[i].request.priority
         if (priority.ordinal > newPriority.ordinal) {
           newPriority = priority
