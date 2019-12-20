@@ -43,6 +43,7 @@ import java.util.concurrent.ExecutorService;
 import static android.content.Intent.ACTION_AIRPLANE_MODE_CHANGED;
 import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
+import static com.squareup.picasso3.BitmapHunter.forRequest;
 import static com.squareup.picasso3.MemoryPolicy.shouldWriteToMemoryCache;
 import static com.squareup.picasso3.Picasso.TAG;
 import static com.squareup.picasso3.Utils.OWNER_DISPATCHER;
@@ -189,7 +190,7 @@ class Dispatcher {
       return;
     }
 
-    hunter = BitmapHunter.Companion.forRequest(action.picasso, this, cache, action);
+    hunter = forRequest(action.picasso, this, cache, action);
     hunter.future = service.submit(hunter);
     hunterMap.put(action.request.key, hunter);
     if (dismissFailed) {
