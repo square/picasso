@@ -28,16 +28,16 @@ import java.util.concurrent.atomic.AtomicReference
 
 internal class BitmapHunter(
   @JvmField val picasso: Picasso,
-  @JvmField var data: Request,
-  @JvmField var priority: Picasso.Priority,
-  val key: String,
   private val dispatcher: Dispatcher,
   private val cache: PlatformLruCache,
   private val requestHandler: RequestHandler,
-  private var retryCount: Int,
-  action: Action?
+  action: Action
 ) : Runnable {
   @JvmField val sequence: Int = SEQUENCE_GENERATOR.incrementAndGet()
+  @JvmField var priority: Picasso.Priority = action.request.priority
+  @JvmField var data: Request = action.request
+  val key: String = action.request.key
+  private var retryCount: Int = requestHandler.retryCount
 
   var action: Action? = action
     private set
@@ -69,10 +69,10 @@ internal class BitmapHunter(
     }
 
     @JvmStatic fun forRequest(
-            picasso: Picasso,
-            dispatcher: Dispatcher,
-            cache: PlatformLruCache,
-            action: Action
+      picasso: Picasso,
+      dispatcher: Dispatcher,
+      cache: PlatformLruCache,
+      action: Action
     ): BitmapHunter {
       val request = action.request
       val requestHandlers = picasso.getRequestHandlers()
@@ -82,29 +82,21 @@ internal class BitmapHunter(
         val requestHandler = requestHandlers[i]
         if (requestHandler.canHandleRequest(request)) {
           return BitmapHunter(
-                  picasso = picasso,
-                  key = action.request.key,
-                  data = action.request,
-                  dispatcher = dispatcher,
-                  cache = cache,
-                  requestHandler = requestHandler,
-                  retryCount = requestHandler.retryCount,
-                  action = action,
-                  priority = action.request.priority
+            picasso = picasso,
+            dispatcher = dispatcher,
+            cache = cache,
+            requestHandler = requestHandler,
+            action = action
           )
         }
       }
 
       return BitmapHunter(
-              picasso = picasso,
-              key = action.request.key,
-              data = action.request,
-              dispatcher = dispatcher,
-              cache = cache,
-              requestHandler = ERRORING_HANDLER,
-              retryCount = ERRORING_HANDLER.retryCount,
-              action = action,
-              priority = action.request.priority
+        picasso = picasso,
+        dispatcher = dispatcher,
+        cache = cache,
+        requestHandler = ERRORING_HANDLER,
+        action = action
       )
     }
 
@@ -119,14 +111,14 @@ internal class BitmapHunter(
     }
 
     fun applyTransformations(
-            picasso: Picasso,
-            data: Request,
-            transformations: List<Transformation>,
-            result: RequestHandler.Result.Bitmap
+      picasso: Picasso,
+      data: Request,
+      transformations: List<Transformation>,
+      result: RequestHandler.Result.Bitmap
     ): RequestHandler.Result.Bitmap? {
       var res = result
 
-      for (i in 0..transformations.lastIndex) {
+      for (i in transformations.indices) {
         val transformation = transformations[i]
         val newResult = try {
           val transformedResult = transformation.transform(res)
