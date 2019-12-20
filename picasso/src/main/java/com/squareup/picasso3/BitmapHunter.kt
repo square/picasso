@@ -26,8 +26,8 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
 internal class BitmapHunter(
-  @JvmField val picasso: Picasso,
   @JvmField var data: Request,
+  val picasso: Picasso,
   val key: String,
   private val dispatcher: Dispatcher,
   private val cache: PlatformLruCache,
@@ -155,7 +155,8 @@ internal class BitmapHunter(
   var exception: Exception? = null
     private set
 
-  @JvmField var priority: Picasso.Priority = priority
+  var priority: Picasso.Priority = priority
+    private set
 
   val isCancelled: Boolean
     get() = future?.isCancelled ?: false

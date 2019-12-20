@@ -238,7 +238,7 @@ class Dispatcher {
     // that have the paused tag.
     for (Iterator<BitmapHunter> it = hunterMap.values().iterator(); it.hasNext();) {
       BitmapHunter hunter = it.next();
-      boolean loggingEnabled = hunter.picasso.loggingEnabled;
+      boolean loggingEnabled = hunter.getPicasso().loggingEnabled;
 
       Action single = hunter.getAction();
       List<Action> joined = hunter.getActions();
@@ -327,7 +327,7 @@ class Dispatcher {
     }
 
     if (hunter.shouldRetry(airplaneMode, networkInfo)) {
-      if (hunter.picasso.loggingEnabled) {
+      if (hunter.getPicasso().loggingEnabled) {
         log(OWNER_DISPATCHER, VERB_RETRYING, getLogIdsForHunter(hunter));
       }
       if (hunter.getException() instanceof NetworkRequestHandler.ContentLengthException) {
@@ -421,7 +421,7 @@ class Dispatcher {
     }
 
     Message message = mainThreadHandler.obtainMessage(HUNTER_COMPLETE, hunter);
-    if (hunter.priority == Picasso.Priority.HIGH) {
+    if (hunter.getPriority() == Picasso.Priority.HIGH) {
       mainThreadHandler.sendMessageAtFrontOfQueue(message);
     } else {
       mainThreadHandler.sendMessage(message);
@@ -430,7 +430,7 @@ class Dispatcher {
   }
 
   private void logDelivery(BitmapHunter bitmapHunter) {
-    Picasso picasso = bitmapHunter.picasso;
+    Picasso picasso = bitmapHunter.getPicasso();
     if (picasso.loggingEnabled) {
       log(OWNER_DISPATCHER, VERB_DELIVERED, Utils.getLogIdsForHunter(bitmapHunter));
     }
