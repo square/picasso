@@ -262,10 +262,10 @@ class TestUtils {
     BitmapHunter hunter = mock(BitmapHunter.class);
     when(hunter.getKey()).thenReturn(key);
     when(hunter.getResult()).thenReturn(result);
-    when(hunter.getData()).thenReturn(data);
+    when(hunter.data).thenReturn(data);
     when(hunter.getAction()).thenReturn(action);
     Picasso picasso = mockPicasso();
-    when(hunter.getPicasso()).thenReturn(picasso);
+    when(hunter.picasso).thenReturn(picasso);
 
     return hunter;
   }

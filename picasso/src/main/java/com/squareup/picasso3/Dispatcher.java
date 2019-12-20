@@ -190,7 +190,7 @@ class Dispatcher {
     }
 
     hunter = BitmapHunter.Companion.forRequest(action.picasso, this, cache, action);
-    hunter.setFuture(service.submit(hunter));
+    hunter.future = service.submit(hunter);
     hunterMap.put(action.request.key, hunter);
     if (dismissFailed) {
       failedActions.remove(action.getTarget());
@@ -238,7 +238,7 @@ class Dispatcher {
     // that have the paused tag.
     for (Iterator<BitmapHunter> it = hunterMap.values().iterator(); it.hasNext();) {
       BitmapHunter hunter = it.next();
-      boolean loggingEnabled = hunter.getPicasso().loggingEnabled;
+      boolean loggingEnabled = hunter.picasso.loggingEnabled;
 
       Action single = hunter.getAction();
       List<Action> joined = hunter.getActions();
@@ -327,13 +327,13 @@ class Dispatcher {
     }
 
     if (hunter.shouldRetry(airplaneMode, networkInfo)) {
-      if (hunter.getPicasso().loggingEnabled) {
+      if (hunter.picasso.loggingEnabled) {
         log(OWNER_DISPATCHER, VERB_RETRYING, getLogIdsForHunter(hunter));
       }
       if (hunter.getException() instanceof NetworkRequestHandler.ContentLengthException) {
-        hunter.setData(hunter.getData().newBuilder().networkPolicy(NetworkPolicy.NO_CACHE).build());
+        hunter.data = hunter.data.newBuilder().networkPolicy(NetworkPolicy.NO_CACHE).build();
       }
-      hunter.setFuture(service.submit(hunter));
+      hunter.future = service.submit(hunter);
     } else {
       performError(hunter);
       // Mark for replay only if we observe network info changes and support replay.
@@ -344,7 +344,7 @@ class Dispatcher {
   }
 
   void performComplete(BitmapHunter hunter) {
-    if (shouldWriteToMemoryCache(hunter.getData().memoryPolicy)) {
+    if (shouldWriteToMemoryCache(hunter.data.memoryPolicy)) {
       Result result = hunter.getResult();
       if (result != null) {
         if (result instanceof Result.Bitmap) {
@@ -421,7 +421,7 @@ class Dispatcher {
     }
 
     Message message = mainThreadHandler.obtainMessage(HUNTER_COMPLETE, hunter);
-    if (hunter.getPriority() == Picasso.Priority.HIGH) {
+    if (hunter.priority == Picasso.Priority.HIGH) {
       mainThreadHandler.sendMessageAtFrontOfQueue(message);
     } else {
       mainThreadHandler.sendMessage(message);
@@ -430,7 +430,7 @@ class Dispatcher {
   }
 
   private void logDelivery(BitmapHunter bitmapHunter) {
-    Picasso picasso = bitmapHunter.getPicasso();
+    Picasso picasso = bitmapHunter.picasso;
     if (picasso.loggingEnabled) {
       log(OWNER_DISPATCHER, VERB_DELIVERED, Utils.getLogIdsForHunter(bitmapHunter));
     }

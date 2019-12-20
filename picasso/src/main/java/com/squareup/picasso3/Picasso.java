@@ -114,7 +114,7 @@ public class Picasso implements LifecycleObserver {
       switch (msg.what) {
         case HUNTER_COMPLETE: {
           BitmapHunter hunter = (BitmapHunter) msg.obj;
-          hunter.getPicasso().complete(hunter);
+          hunter.picasso.complete(hunter);
           break;
         }
         case REQUEST_BATCH_RESUME:
@@ -567,7 +567,7 @@ public class Picasso implements LifecycleObserver {
       return;
     }
 
-    Uri uri = checkNotNull(hunter.getData().uri, "uri == null");
+    Uri uri = checkNotNull(hunter.data.uri, "uri == null");
     Exception exception = hunter.getException();
     Result result = hunter.getResult();
 

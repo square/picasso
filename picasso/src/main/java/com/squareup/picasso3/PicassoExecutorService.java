@@ -54,13 +54,13 @@ class PicassoExecutorService extends ThreadPoolExecutor {
 
     @Override
     public int compareTo(PicassoFutureTask other) {
-      Picasso.Priority p1 = hunter.getPriority();
-      Picasso.Priority p2 = other.hunter.getPriority();
+      Picasso.Priority p1 = hunter.priority;
+      Picasso.Priority p2 = other.hunter.priority;
 
       // High-priority requests are "lesser" so they are sorted to the front.
       // Equal priorities are sorted by sequence number to provide FIFO ordering.
       return (p1 == p2
-        ? hunter.getSequence() - other.hunter.getSequence() : p2.ordinal() - p1.ordinal());
+        ? hunter.sequence - other.hunter.sequence : p2.ordinal() - p1.ordinal());
     }
   }
 }
