@@ -49,7 +49,7 @@ internal class BitmapHunter(
       }
     }
 
-    fun forRequest(
+    @JvmStatic fun forRequest(
       picasso: Picasso,
       dispatcher: Dispatcher,
       cache: PlatformLruCache,
