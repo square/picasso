@@ -37,6 +37,24 @@ internal class BitmapHunter(
   private var retryCount: Int,
   action: Action?
 ) : Runnable {
+  @JvmField val sequence: Int = SEQUENCE_GENERATOR.incrementAndGet()
+
+  var action: Action? = action
+    private set
+
+  private var _actions: MutableList<Action>? = null
+  val actions: List<Action>?
+    get() = _actions
+
+  @JvmField var future: Future<*>? = null
+  var result: RequestHandler.Result? = null
+    private set
+  var exception: Exception? = null
+    private set
+
+  val isCancelled: Boolean
+    get() = future?.isCancelled ?: false
+
   companion object {
     val NAME_BUILDER: ThreadLocal<StringBuilder> = object : ThreadLocal<StringBuilder>() {
       override fun initialValue(): StringBuilder = StringBuilder(THREAD_PREFIX)
@@ -51,10 +69,10 @@ internal class BitmapHunter(
     }
 
     @JvmStatic fun forRequest(
-      picasso: Picasso,
-      dispatcher: Dispatcher,
-      cache: PlatformLruCache,
-      action: Action
+            picasso: Picasso,
+            dispatcher: Dispatcher,
+            cache: PlatformLruCache,
+            action: Action
     ): BitmapHunter {
       val request = action.request
       val requestHandlers = picasso.getRequestHandlers()
@@ -64,29 +82,29 @@ internal class BitmapHunter(
         val requestHandler = requestHandlers[i]
         if (requestHandler.canHandleRequest(request)) {
           return BitmapHunter(
-            picasso = picasso,
-            key = action.request.key,
-            data = action.request,
-            dispatcher = dispatcher,
-            cache = cache,
-            requestHandler = requestHandler,
-            retryCount = requestHandler.retryCount,
-            action = action,
-            priority = action.request.priority
+                  picasso = picasso,
+                  key = action.request.key,
+                  data = action.request,
+                  dispatcher = dispatcher,
+                  cache = cache,
+                  requestHandler = requestHandler,
+                  retryCount = requestHandler.retryCount,
+                  action = action,
+                  priority = action.request.priority
           )
         }
       }
 
       return BitmapHunter(
-        picasso = picasso,
-        key = action.request.key,
-        data = action.request,
-        dispatcher = dispatcher,
-        cache = cache,
-        requestHandler = ERRORING_HANDLER,
-        retryCount = ERRORING_HANDLER.retryCount,
-        action = action,
-        priority = action.request.priority
+              picasso = picasso,
+              key = action.request.key,
+              data = action.request,
+              dispatcher = dispatcher,
+              cache = cache,
+              requestHandler = ERRORING_HANDLER,
+              retryCount = ERRORING_HANDLER.retryCount,
+              action = action,
+              priority = action.request.priority
       )
     }
 
@@ -101,10 +119,10 @@ internal class BitmapHunter(
     }
 
     fun applyTransformations(
-      picasso: Picasso,
-      data: Request,
-      transformations: List<Transformation>,
-      result: RequestHandler.Result.Bitmap
+            picasso: Picasso,
+            data: Request,
+            transformations: List<Transformation>,
+            result: RequestHandler.Result.Bitmap
     ): RequestHandler.Result.Bitmap? {
       var res = result
 
@@ -140,24 +158,6 @@ internal class BitmapHunter(
       return res
     }
   }
-
-  @JvmField val sequence: Int = SEQUENCE_GENERATOR.incrementAndGet()
-
-  var action: Action? = action
-    private set
-
-  private var _actions: MutableList<Action>? = null
-  val actions: List<Action>?
-    get() = _actions
-
-  @JvmField var future: Future<*>? = null
-  var result: RequestHandler.Result? = null
-    private set
-  var exception: Exception? = null
-    private set
-
-  val isCancelled: Boolean
-    get() = future?.isCancelled ?: false
 
   override fun run() {
     try {
