@@ -18,6 +18,7 @@ package com.squareup.picasso3
 import android.net.NetworkInfo
 import com.squareup.picasso3.MemoryPolicy.Companion.shouldReadFromMemoryCache
 import com.squareup.picasso3.Picasso.LoadedFrom
+import com.squareup.picasso3.RequestHandler.Result.Bitmap
 import com.squareup.picasso3.Utils.*
 import java.io.IOException
 import java.io.InterruptedIOException
@@ -114,8 +115,8 @@ internal class BitmapHunter(
       picasso: Picasso,
       data: Request,
       transformations: List<Transformation>,
-      result: RequestHandler.Result.Bitmap
-    ): RequestHandler.Result.Bitmap? {
+      result: Bitmap
+    ): Bitmap? {
       var res = result
 
       for (i in transformations.indices) {
@@ -173,7 +174,7 @@ internal class BitmapHunter(
   }
 
   @Throws(IOException::class)
-  fun hunt(): RequestHandler.Result.Bitmap? {
+  fun hunt(): Bitmap? {
     if (shouldReadFromMemoryCache(data.memoryPolicy)) {
       cache[key]?.let { bitmap ->
         picasso.cacheHit()
@@ -181,7 +182,7 @@ internal class BitmapHunter(
           log(OWNER_HUNTER, VERB_DECODED, data.logId(), "from cache")
         }
 
-        return RequestHandler.Result.Bitmap(bitmap, LoadedFrom.MEMORY)
+        return Bitmap(bitmap, LoadedFrom.MEMORY)
       }
     }
 
@@ -219,7 +220,7 @@ internal class BitmapHunter(
       }
     }
 
-    val result = resultReference.get() as? RequestHandler.Result.Bitmap
+    val result = resultReference.get() as? Bitmap
       ?: throw AssertionError("Request handler neither returned a result nor an exception.")
     val bitmap = result.bitmap
     if (picasso.loggingEnabled) {
