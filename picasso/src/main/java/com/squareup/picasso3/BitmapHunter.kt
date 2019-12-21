@@ -91,23 +91,11 @@ internal class BitmapHunter(
       for (i in requestHandlers.indices) {
         val requestHandler = requestHandlers[i]
         if (requestHandler.canHandleRequest(request)) {
-          return BitmapHunter(
-            picasso = picasso,
-            dispatcher = dispatcher,
-            cache = cache,
-            requestHandler = requestHandler,
-            action = action
-          )
+          return BitmapHunter(picasso, dispatcher, cache, requestHandler, action)
         }
       }
 
-      return BitmapHunter(
-        picasso = picasso,
-        dispatcher = dispatcher,
-        cache = cache,
-        requestHandler = ERRORING_HANDLER,
-        action = action
-      )
+      return BitmapHunter(picasso, dispatcher, cache, ERRORING_HANDLER, action)
     }
 
     fun updateThreadName(data: Request) {
