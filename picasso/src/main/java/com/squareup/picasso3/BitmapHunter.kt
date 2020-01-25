@@ -252,11 +252,11 @@ internal class BitmapHunter(
   }
 
   companion object {
-    private val NAME_BUILDER: ThreadLocal<StringBuilder> = object : ThreadLocal<StringBuilder>() {
+    val NAME_BUILDER: ThreadLocal<StringBuilder> = object : ThreadLocal<StringBuilder>() {
       override fun initialValue(): StringBuilder = StringBuilder(THREAD_PREFIX)
     }
     val SEQUENCE_GENERATOR = AtomicInteger()
-    private val ERRORING_HANDLER: RequestHandler = object : RequestHandler() {
+    val ERRORING_HANDLER: RequestHandler = object : RequestHandler() {
       override fun canHandleRequest(data: Request): Boolean = true
 
       override fun load(picasso: Picasso, request: Request, callback: Callback) {
