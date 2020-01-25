@@ -567,7 +567,7 @@ public class Picasso implements LifecycleObserver {
       return;
     }
 
-    Uri uri = checkNotNull(hunter.getData().uri, "uri == null");
+    Uri uri = checkNotNull(hunter.data.uri, "uri == null");
     Exception exception = hunter.getException();
     Result result = hunter.getResult();
 
