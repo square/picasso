@@ -77,7 +77,11 @@ internal class BitmapHunter(
       dispatcher.dispatchComplete(this)
     } catch (e: IOException) {
       exception = e
-      dispatcher.dispatchRetry(this)
+      if (retryCount > 0) {
+        dispatcher.dispatchRetry(this)
+      } else {
+        dispatcher.dispatchFailed(this)
+      }
     } catch (e: Exception) {
       exception = e
       dispatcher.dispatchFailed(this)
