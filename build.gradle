@@ -1,8 +1,8 @@
 buildscript {
   ext.versions = [
-    'compileSdk': 27,
+    'compileSdk': 30,
     'minSdk': 14,
-    'targetSdk': 27,
+    'targetSdk': 30,
     'sourceCompatibility': JavaVersion.VERSION_1_7,
     'targetCompatibility': JavaVersion.VERSION_1_7,
     'okhttp': '3.10.0',
