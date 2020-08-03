@@ -26,6 +26,12 @@
     <property name="message" value="Space needed around ':' character."/>
   </module>
 
+  <!-- Checks for Size Violations.                    -->
+  <!-- See http://checkstyle.sf.net/config_sizes.html -->
+  <module name="LineLength">
+    <property name="max" value="100"/>
+  </module>
+
   <module name="TreeWalker">
     <!--<property name="cacheFile" value="${checkstyle.cache.file}"/>-->
 
@@ -64,9 +70,6 @@
 
     <!-- Checks for Size Violations.                    -->
     <!-- See http://checkstyle.sf.net/config_sizes.html -->
-    <module name="LineLength">
-      <property name="max" value="100"/>
-    </module>
     <module name="MethodLength">
       <property name="max" value="200"/>
     </module>
