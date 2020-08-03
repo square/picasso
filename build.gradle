@@ -6,7 +6,6 @@ buildscript {
     'sourceCompatibility': JavaVersion.VERSION_1_7,
     'targetCompatibility': JavaVersion.VERSION_1_7,
     'okhttp': '3.10.0',
-    'supportLibrary': '27.1.0'
   ]
 
   ext.deps = [
@@ -14,10 +13,10 @@ buildscript {
     okhttp: "com.squareup.okhttp3:okhttp:${versions.okhttp}",
     mockWebServer: "com.squareup.okhttp3:mockwebserver:${versions.okhttp}",
     pollexor: 'com.squareup:pollexor:2.0.4',
-    supportCompat: "com.android.support:support-compat:${versions.supportLibrary}",
-    supportFragment: "com.android.support:support-fragment:${versions.supportLibrary}",
-    supportAnnotations: "com.android.support:support-annotations:${versions.supportLibrary}",
-    supportExifInterface: "com.android.support:exifinterface:${versions.supportLibrary}",
+    androidxAnnotations: 'androidx.annotation:annotation:1.0.0',
+    androidxCore: 'androidx.core:core:1.0.0',
+    androidxExifInterface: 'androidx.exifinterface:exifinterface:1.0.0',
+    androidxFragment: 'androidx.fragment:fragment:1.0.0',
     junit: 'junit:junit:4.12',
     truth: 'com.google.truth:truth:0.36',
     robolectric: 'org.robolectric:robolectric:4.0.1',
