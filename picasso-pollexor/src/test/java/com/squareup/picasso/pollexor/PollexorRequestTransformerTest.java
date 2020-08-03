@@ -6,7 +6,7 @@ import com.squareup.pollexor.Thumbor;
 import com.squareup.pollexor.ThumborUrlBuilder.ImageFormat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -14,11 +14,10 @@ import static com.squareup.picasso.Picasso.RequestTransformer;
 import static com.squareup.pollexor.ThumborUrlBuilder.format;
 import static org.robolectric.annotation.Config.NONE;
 
-@RunWith(RobolectricGradleTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
 @Config(
     sdk = 17,
-    manifest = NONE,
-    constants = BuildConfig.class
+    manifest = NONE
 )
 public class PollexorRequestTransformerTest {
   private static final String HOST = "http://example.com/";

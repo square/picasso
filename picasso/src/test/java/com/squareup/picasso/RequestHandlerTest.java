@@ -19,7 +19,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 
 import static android.graphics.Bitmap.Config.RGB_565;
 import static com.google.common.truth.Truth.assertThat;
@@ -28,7 +28,7 @@ import static com.squareup.picasso.RequestHandler.createBitmapOptions;
 import static com.squareup.picasso.RequestHandler.requiresInSampleSize;
 import static com.squareup.picasso.TestUtils.URI_1;
 
-@RunWith(RobolectricGradleTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
 public class RequestHandlerTest {
 
   @Test public void bitmapConfig() throws Exception {
