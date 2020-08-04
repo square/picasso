@@ -22,8 +22,8 @@ android {
 
 dependencies {
   api deps.okhttp
-  implementation deps.supportAnnotations
-  implementation deps.supportExifInterface
+  implementation deps.androidxAnnotations
+  implementation deps.androidxExifInterface
   testImplementation deps.junit
   testImplementation deps.truth
   testImplementation deps.robolectric

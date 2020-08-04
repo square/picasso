@@ -4,11 +4,12 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import java.util.Objects;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowBitmap;
 
@@ -29,7 +30,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(RobolectricGradleTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
 @Config(shadows = { Shadows.ShadowVideoThumbnails.class, Shadows.ShadowImageThumbnails.class })
 public class MediaStoreRequestHandlerTest {
 
@@ -89,16 +90,16 @@ public class MediaStoreRequestHandlerTest {
   }
 
   private static void assertBitmapsEqual(Bitmap a, Bitmap b) {
+    if (a.getHeight() != b.getHeight()) {
+      fail();
+    }
+    if (a.getWidth() != b.getWidth()) {
+      fail();
+    }
+
     ShadowBitmap shadowA = shadowOf(a);
     ShadowBitmap shadowB = shadowOf(b);
-
-    if (shadowA.getHeight() != shadowB.getHeight()) {
-      fail();
-    }
-    if (shadowA.getWidth() != shadowB.getWidth()) {
-      fail();
-    }
-    if (shadowA.getDescription() != null ? !shadowA.getDescription().equals(shadowB.getDescription()) : shadowB.getDescription() != null) {
+    if (!Objects.equals(shadowA.getDescription(), shadowB.getDescription())) {
       fail();
     }
   }

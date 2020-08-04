@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    android:versionCode="1"
-    android:versionName="1.0.0"
     package="com.example.picasso">
-
-  <uses-sdk android:minSdkVersion="9" android:targetSdkVersion="19"/>
 
   <!-- This is required for Picasso to work. -->
   <uses-permission android:name="android.permission.INTERNET"/>

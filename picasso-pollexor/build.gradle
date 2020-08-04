@@ -22,7 +22,7 @@ android {
 dependencies {
   api project(':picasso')
   api deps.pollexor
-  compileOnly deps.supportAnnotations
+  compileOnly deps.androidxAnnotations
   testImplementation deps.junit
   testImplementation deps.robolectric
   testImplementation deps.truth

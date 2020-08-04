@@ -16,7 +16,7 @@
 package com.squareup.picasso;
 
 import android.net.NetworkInfo;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import java.io.IOException;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -34,7 +34,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso.TestUtils.URI_1;
@@ -48,7 +48,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-@RunWith(RobolectricGradleTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
 public class NetworkRequestHandlerTest {
   private final BlockingDeque<Response> responses = new LinkedBlockingDeque<>();
   private final BlockingDeque<okhttp3.Request> requests = new LinkedBlockingDeque<>();
