@@ -567,7 +567,7 @@ public class Picasso implements LifecycleObserver {
       return;
     }
 
-    Uri uri = checkNotNull(hunter.data.uri, "uri == null");
+    Uri uri = hunter.data.uri;
     Exception exception = hunter.getException();
     Result result = hunter.getResult();
 
@@ -584,7 +584,7 @@ public class Picasso implements LifecycleObserver {
     }
 
     if (listener != null && exception != null) {
-      listener.onImageLoadFailed(this, uri, exception);
+      listener.onImageLoadFailed(this, uri == null ? Uri.EMPTY : uri, exception);
     }
   }
 
