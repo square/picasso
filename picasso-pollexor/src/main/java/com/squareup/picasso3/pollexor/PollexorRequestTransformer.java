@@ -17,12 +17,18 @@ import static com.squareup.pollexor.ThumborUrlBuilder.format;
  * By default images are only transformed with Thumbor if they have a size set.
  */
 public class PollexorRequestTransformer implements RequestTransformer {
+
+  private static final Callback NONE = new Callback() {
+    @Override
+    public void configure(ThumborUrlBuilder ignored) { }
+  };
   private final Thumbor thumbor;
   private final boolean alwaysTransform;
+  private final Callback callback;
 
   /** Create a transformer for the specified {@link Thumbor}. */
   public PollexorRequestTransformer(@NonNull Thumbor thumbor) {
-    this(thumbor, false);
+    this(thumbor, false, NONE);
   }
 
   /**
@@ -30,8 +36,27 @@ public class PollexorRequestTransformer implements RequestTransformer {
    * Thumbor even when resize is not set.
    */
   public PollexorRequestTransformer(@NonNull Thumbor thumbor, boolean alwaysTransform) {
+    this(thumbor, alwaysTransform, NONE);
+  }
+
+  /**
+   * Create a transformer for the specified {@link Thumbor} which allows to configure a
+   * {@link ThumborUrlBuilder} using a {@link Callback}
+   */
+  public PollexorRequestTransformer(@NonNull Thumbor thumbor, @NonNull Callback callback) {
+    this(thumbor, false, callback);
+  }
+
+  /**
+   * Create a transformer for the specified {@link Thumbor} which always transforms images using
+   * Thumbor even when resize is not set and allows to configure a {@link ThumborUrlBuilder} using
+   * a {@link Callback}
+   */
+  public PollexorRequestTransformer(@NonNull Thumbor thumbor, boolean alwaysTransform,
+                                    @NonNull Callback callback) {
     this.thumbor = thumbor;
     this.alwaysTransform = alwaysTransform;
+    this.callback = callback;
   }
 
   @NonNull @Override public Request transformRequest(@NonNull Request request) {
@@ -56,6 +81,7 @@ public class PollexorRequestTransformer implements RequestTransformer {
 
     // Create the url builder to use.
     ThumborUrlBuilder urlBuilder = thumbor.buildImage(uri.toString());
+    callback.configure(urlBuilder);
 
     // Resize the image to the target size if it has a size.
     if (request.hasSize()) {
@@ -78,5 +104,9 @@ public class PollexorRequestTransformer implements RequestTransformer {
     newRequest.setUri(Uri.parse(urlBuilder.toUrl()));
 
     return newRequest.build();
+  }
+
+  interface Callback {
+    void configure(ThumborUrlBuilder builder);
   }
 }

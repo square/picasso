@@ -3,6 +3,7 @@ package com.squareup.picasso3.pollexor;
 import android.net.Uri;
 import com.squareup.picasso3.Request;
 import com.squareup.pollexor.Thumbor;
+import com.squareup.pollexor.ThumborUrlBuilder;
 import com.squareup.pollexor.ThumborUrlBuilder.ImageFormat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,6 +30,13 @@ public class PollexorRequestTransformerTest {
   private RequestTransformer secureTransformer =
       new PollexorRequestTransformer(Thumbor.create(HOST, KEY));
   private RequestTransformer alwaysResizeTransformer = new PollexorRequestTransformer(Thumbor.create(HOST), true);
+  private RequestTransformer callbackTransformer =
+          new PollexorRequestTransformer(Thumbor.create(HOST), new PollexorRequestTransformer.Callback() {
+    @Override
+    public void configure(ThumborUrlBuilder builder) {
+      builder.filter("custom");
+    }
+  });
 
   @Test public void resourceIdRequestsAreNotTransformed() {
     Request input = new Request.Builder(12).build();
@@ -128,6 +136,20 @@ public class PollexorRequestTransformerTest {
     assertThat(output.centerInside).isFalse();
 
     String expected = Thumbor.create(HOST, KEY).buildImage(IMAGE).resize(50, 50).fitIn().toUrl();
+    assertThat(output.uri.toString()).isEqualTo(expected);
+  }
+
+  @Test public void configureCallback() {
+    Request input = new Request.Builder(IMAGE_URI).resize(50, 50).build();
+    Request output = callbackTransformer.transformRequest(input);
+    assertThat(output).isNotSameAs(input);
+    assertThat(output.hasSize()).isFalse();
+
+    String expected = Thumbor.create(HOST)
+            .buildImage(IMAGE)
+            .resize(50, 50)
+            .filter("custom")
+            .toUrl();
     assertThat(output.uri.toString()).isEqualTo(expected);
   }
 }
