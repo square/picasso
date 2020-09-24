@@ -69,49 +69,6 @@ class Request internal constructor(builder: Builder) {
       builder.transformations!!.toList()
     }
 
-  /** Target image width for resizing. */
-  @JvmField val targetWidth: Int = builder.targetWidth
-
-  /** Target image height for resizing. */
-  @JvmField val targetHeight: Int = builder.targetHeight
-
-  /**
-   * True if the final image should use the 'centerCrop' scale technique.
-   *
-   * This is mutually exclusive with [.centerInside].
-   */
-  @JvmField val centerCrop: Boolean = builder.centerCrop
-
-  /** If centerCrop is set, controls alignment of centered image */
-  @JvmField val centerCropGravity: Int = builder.centerCropGravity
-
-  /**
-   * True if the final image should use the 'centerInside' scale technique.
-   *
-   * This is mutually exclusive with [.centerCrop].
-   */
-  @JvmField val centerInside: Boolean = builder.centerInside
-
-  @JvmField val onlyScaleDown: Boolean = builder.onlyScaleDown
-
-  /** Amount to rotate the image in degrees. */
-  @JvmField val rotationDegrees: Float = builder.rotationDegrees
-
-  /** Rotation pivot on the X axis. */
-  @JvmField val rotationPivotX: Float = builder.rotationPivotX
-
-  /** Rotation pivot on the Y axis. */
-  @JvmField val rotationPivotY: Float = builder.rotationPivotY
-
-  /** Whether or not [.rotationPivotX] and [.rotationPivotY] are set. */
-  @JvmField val hasRotationPivot: Boolean = builder.hasRotationPivot
-
-  /** True if image should be decoded with inPurgeable and inInputShareable. */
-  @JvmField val purgeable: Boolean = builder.purgeable
-
-  /** Target image config for decoding. */
-  @JvmField val config: Config? = builder.config
-
   /** The priority of this request. */
   @JvmField val priority: Priority = checkNotNull(builder.priority)
 
@@ -125,6 +82,8 @@ class Request internal constructor(builder: Builder) {
 
   /** User-provided value to track this request. */
   val tag: Any? = builder.tag
+
+  val rendering: Rendering = Rendering(builder)
 
   override fun toString() =
     buildString {
@@ -143,36 +102,36 @@ class Request internal constructor(builder: Builder) {
         append(stableKey)
         append(')')
       }
-      if (targetWidth > 0) {
+      if (rendering.targetWidth > 0) {
         append(" resize(")
-        append(targetWidth)
+        append(rendering.targetWidth)
         append(',')
-        append(targetHeight)
+        append(rendering.targetHeight)
         append(')')
       }
-      if (centerCrop) {
+      if (rendering.centerCrop) {
         append(" centerCrop")
       }
-      if (centerInside) {
+      if (rendering.centerInside) {
         append(" centerInside")
       }
-      if (rotationDegrees != 0f) {
+      if (rendering.rotationDegrees != 0f) {
         append(" rotation(")
-        append(rotationDegrees)
-        if (hasRotationPivot) {
+        append(rendering.rotationDegrees)
+        if (rendering.hasRotationPivot) {
           append(" @ ")
-          append(rotationPivotX)
+          append(rendering.rotationPivotX)
           append(',')
-          append(rotationPivotY)
+          append(rendering.rotationPivotY)
         }
         append(')')
       }
-      if (purgeable) {
+      if (rendering.purgeable) {
         append(" purgeable")
       }
-      if (config != null) {
+      if (rendering.config != null) {
         append(' ')
-        append(config)
+        append(rendering.config)
       }
       append('}')
     }
@@ -195,10 +154,10 @@ class Request internal constructor(builder: Builder) {
     get() = uri?.path ?: Integer.toHexString(resourceId)
 
   // TODO make internal
-  fun hasSize(): Boolean = targetWidth != 0 || targetHeight != 0
+  fun hasSize(): Boolean = rendering.targetWidth != 0 || rendering.targetHeight != 0
 
   // TODO make internal
-  fun needsMatrixTransform(): Boolean = hasSize() || rotationDegrees != 0f
+  fun needsMatrixTransform(): Boolean = hasSize() || rendering.rotationDegrees != 0f
 
   fun newBuilder(): Builder = Builder(this)
 
@@ -224,17 +183,17 @@ class Request internal constructor(builder: Builder) {
 
     builder.append(KEY_SEPARATOR)
 
-    if (data.rotationDegrees != 0f) {
+    if (data.rendering.rotationDegrees != 0f) {
       builder
           .append("rotation:")
-          .append(data.rotationDegrees)
+          .append(data.rendering.rotationDegrees)
 
-      if (data.hasRotationPivot) {
+      if (data.rendering.hasRotationPivot) {
         builder
             .append('@')
-            .append(data.rotationPivotX)
+            .append(data.rendering.rotationPivotX)
             .append('x')
-            .append(data.rotationPivotY)
+            .append(data.rendering.rotationPivotY)
       }
 
       builder.append(KEY_SEPARATOR)
@@ -243,19 +202,19 @@ class Request internal constructor(builder: Builder) {
     if (data.hasSize()) {
       builder
           .append("resize:")
-          .append(data.targetWidth)
+          .append(data.rendering.targetWidth)
           .append('x')
-          .append(data.targetHeight)
+          .append(data.rendering.targetHeight)
 
       builder.append(KEY_SEPARATOR)
     }
 
-    if (data.centerCrop) {
+    if (data.rendering.centerCrop) {
       builder
           .append("centerCrop:")
-          .append(data.centerCropGravity)
+          .append(data.rendering.centerCropGravity)
           .append(KEY_SEPARATOR)
-    } else if (data.centerInside) {
+    } else if (data.rendering.centerInside) {
       builder
           .append("centerInside")
           .append(KEY_SEPARATOR)
@@ -317,19 +276,19 @@ class Request internal constructor(builder: Builder) {
       uri = request.uri
       resourceId = request.resourceId
       stableKey = request.stableKey
-      targetWidth = request.targetWidth
-      targetHeight = request.targetHeight
-      centerCrop = request.centerCrop
-      centerInside = request.centerInside
-      centerCropGravity = request.centerCropGravity
-      rotationDegrees = request.rotationDegrees
-      rotationPivotX = request.rotationPivotX
-      rotationPivotY = request.rotationPivotY
-      hasRotationPivot = request.hasRotationPivot
-      purgeable = request.purgeable
-      onlyScaleDown = request.onlyScaleDown
+      targetWidth = request.rendering.targetWidth
+      targetHeight = request.rendering.targetHeight
+      centerCrop = request.rendering.centerCrop
+      centerInside = request.rendering.centerInside
+      centerCropGravity = request.rendering.centerCropGravity
+      rotationDegrees = request.rendering.rotationDegrees
+      rotationPivotX = request.rendering.rotationPivotX
+      rotationPivotY = request.rendering.rotationPivotY
+      hasRotationPivot = request.rendering.hasRotationPivot
+      purgeable = request.rendering.purgeable
+      onlyScaleDown = request.rendering.onlyScaleDown
       transformations = request.transformations.toMutableList()
-      config = request.config
+      config = request.rendering.config
       priority = request.priority
       memoryPolicy = request.memoryPolicy
       networkPolicy = request.networkPolicy
