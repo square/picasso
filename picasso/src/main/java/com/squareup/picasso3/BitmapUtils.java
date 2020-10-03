@@ -75,26 +75,30 @@ final class BitmapUtils {
         || (targetHeight != 0 && inHeight > targetHeight);
   }
 
-  static void calculateInSampleSize(int reqWidth, int reqHeight, int width, int height,
+  static void calculateInSampleSize(int requestWidth, int requestHeight, int width, int height,
       BitmapFactory.Options options, Request request) {
-    int sampleSize = 1;
-    if (height > reqHeight || width > reqWidth) {
-      final int heightRatio;
-      final int widthRatio;
-      if (reqHeight == 0) {
-        sampleSize = (int) Math.floor((float) width / (float) reqWidth);
-      } else if (reqWidth == 0) {
-        sampleSize = (int) Math.floor((float) height / (float) reqHeight);
-      } else {
-        heightRatio = (int) Math.floor((float) height / (float) reqHeight);
-        widthRatio = (int) Math.floor((float) width / (float) reqWidth);
-        sampleSize = request.centerInside
-            ? Math.max(heightRatio, widthRatio)
-            : Math.min(heightRatio, widthRatio);
-      }
-    }
-    options.inSampleSize = sampleSize;
+    options.inSampleSize = ratio(requestWidth, requestHeight, width, height, request);
     options.inJustDecodeBounds = false;
+  }
+
+  static int ratio(int requestWidth, int requestHeight, int width, int height, Request request) {
+    if (height <= requestHeight && width <= requestWidth) {
+      return 1;
+    }
+    if (requestHeight == 0) {
+      int widthRatio = width / requestWidth;
+      return widthRatio != 0 ? widthRatio : 1;
+    }
+    if (requestWidth == 0) {
+      int heightRatio = height / requestHeight;
+      return heightRatio != 0 ? heightRatio : 1;
+    }
+    int heightRatio = height / requestHeight;
+    int widthRatio = width / requestWidth;
+    int ratio = request.centerInside
+        ? Math.max(heightRatio, widthRatio)
+        : Math.min(heightRatio, widthRatio);
+    return ratio != 0 ? ratio : 1;
   }
 
   /**
@@ -194,7 +198,10 @@ final class BitmapUtils {
           Size size = imageInfo.getSize();
           if (shouldResize(request.onlyScaleDown, size.getWidth(), size.getHeight(),
               request.targetWidth, request.targetHeight)) {
-            imageDecoder.setTargetSize(request.targetWidth, request.targetHeight);
+            int width = size.getWidth();
+            int height = size.getHeight();
+            int ratio = ratio(request.targetWidth, request.targetHeight, width, height, request);
+            imageDecoder.setTargetSize(width / ratio, height / ratio);
           }
         }
       }
