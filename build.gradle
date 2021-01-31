@@ -23,6 +23,7 @@ buildscript {
     androidxExifInterface: 'androidx.exifinterface:exifinterface:1.1.0',
     androidxFragment: 'androidx.fragment:fragment:1.0.0',
     androidxLifecycle: 'androidx.lifecycle:lifecycle-common:2.0.0',
+    androidxStartup: "androidx.startup:startup-runtime:1.0.0",
     errorProne: 'com.google.errorprone:error_prone_core:2.3.2',
     junit: 'junit:junit:4.12',
     truth: 'com.google.truth:truth:0.42',
