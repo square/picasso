@@ -191,6 +191,11 @@ public class Picasso implements LifecycleObserver {
     this.loggingEnabled = loggingEnabled;
   }
 
+  @NonNull
+  public static Picasso get() {
+    return PicassoProvider.get();
+  }
+
   @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
   void cancelAll() {
     checkMain();
