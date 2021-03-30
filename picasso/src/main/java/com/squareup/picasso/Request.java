@@ -15,6 +15,8 @@
  */
 package com.squareup.picasso;
 
+import com.squareup.picasso.Picasso.Priority;
+
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.annotation.DrawableRes;
@@ -22,7 +24,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.Px;
 import android.view.Gravity;
-import com.squareup.picasso.Picasso.Priority;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -98,26 +100,35 @@ public final class Request {
       int centerCropGravity, boolean onlyScaleDown, float rotationDegrees,
       float rotationPivotX, float rotationPivotY, boolean hasRotationPivot,
       boolean purgeable, Bitmap.Config config, Priority priority) {
+    // 图片的 Uri，与 resourceId 不能共存
     this.uri = uri;
+    // 图片的 resourceId，与 Uri 不能共存
     this.resourceId = resourceId;
     this.stableKey = stableKey;
+    // 用来对 Bitmap 进行转换的一系列 Transformation
     if (transformations == null) {
       this.transformations = null;
     } else {
-      this.transformations = unmodifiableList(transformations);
+      this.transformations = unmodifiableList(transformations);//名字就知道，将参数中的List返回一个不可修改的List.
     }
+    // resize 方法设置的图片宽度和高度
     this.targetWidth = targetWidth;
     this.targetHeight = targetHeight;
+    // 图片 scaleType 是否为 centerCrop，与 centerInside 不共存
     this.centerCrop = centerCrop;
+    // 图片 scaleType 是否为 centerInside，与 centerCrop 不共存
     this.centerInside = centerInside;
+    // 如果设置了 centerCrop，centerCropGravity 用来设置中心的偏移量
     this.centerCropGravity = centerCropGravity;
     this.onlyScaleDown = onlyScaleDown;
+    // 图片旋转的度数
     this.rotationDegrees = rotationDegrees;
     this.rotationPivotX = rotationPivotX;
     this.rotationPivotY = rotationPivotY;
     this.hasRotationPivot = hasRotationPivot;
     this.purgeable = purgeable;
     this.config = config;
+    // 当前请求的优先级
     this.priority = priority;
   }
 
@@ -489,20 +500,26 @@ public final class Request {
 
     /** Create the immutable {@link Request} object. */
     public Request build() {
+      // 先验证当前的配置参数是否合法
+      // centerInside 和 centerCrop 方法不能同时用
       if (centerInside && centerCrop) {
         throw new IllegalStateException("Center crop and center inside can not be used together.");
       }
+      // centerCrop 方法需要与 resize 方法同用
       if (centerCrop && (targetWidth == 0 && targetHeight == 0)) {
         throw new IllegalStateException(
             "Center crop requires calling resize with positive width and height.");
       }
+      // centerInside 方法需要与 resize 方法同用
       if (centerInside && (targetWidth == 0 && targetHeight == 0)) {
         throw new IllegalStateException(
             "Center inside requires calling resize with positive width and height.");
       }
+      // 设置 priority
       if (priority == null) {
         priority = Priority.NORMAL;
       }
+      // 创建 Request 实例
       return new Request(uri, resourceId, stableKey, transformations, targetWidth, targetHeight,
           centerCrop, centerInside, centerCropGravity, onlyScaleDown, rotationDegrees,
           rotationPivotX, rotationPivotY, hasRotationPivot, purgeable, config, priority);

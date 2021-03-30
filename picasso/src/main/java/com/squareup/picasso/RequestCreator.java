@@ -71,18 +71,18 @@ public class RequestCreator {
   private Drawable errorDrawable;
   private Object tag;
 
-  RequestCreator(Picasso picasso, Uri uri, int resourceId) {
-    if (picasso.shutdown) {
-      throw new IllegalStateException(
-          "Picasso instance already shut down. Cannot submit new requests.");
-    }
-    this.picasso = picasso;
-    this.data = new Request.Builder(uri, resourceId, picasso.defaultBitmapConfig);
-  }
-
   @VisibleForTesting RequestCreator() {
     this.picasso = null;
     this.data = new Request.Builder(null, 0, null);
+  }
+
+  RequestCreator(Picasso picasso, Uri uri, int resourceId) {
+    if (picasso.shutdown) {
+      throw new IllegalStateException(
+              "Picasso instance already shut down. Cannot submit new requests.");
+    }
+    this.picasso = picasso;
+    this.data = new Request.Builder(uri, resourceId, picasso.defaultBitmapConfig);//默认图片配置
   }
 
   /**
@@ -528,16 +528,20 @@ public class RequestCreator {
    * image is loaded use {@link #into(android.widget.ImageView, Callback)}.
    */
   public void into(@NonNull Target target) {
+      // 记录开始处理的时间戳
     long started = System.nanoTime();
+      // 检查当前方法是否在主线程进行调用，如果不是抛出异常
     checkMain();
-
+      // ImageView 实例 target 不能为 null，否则抛异常
     if (target == null) {
       throw new IllegalArgumentException("Target must not be null.");
     }
     if (deferred) {
       throw new IllegalStateException("Fit cannot be used with a Target.");
     }
-
+      // data 即前面的 Request.Builder 实例
+      // 如果 data 中没有图片(例如传入的 path 为 null)
+      // 直接对该 target 取消请求，并设置占位图如果有设置 placeholder
     if (!data.hasImage()) {
       picasso.cancelRequest(target);
       target.onPrepareLoad(setPlaceholder ? getPlaceholderDrawable() : null);
@@ -675,13 +679,17 @@ public class RequestCreator {
    * {@link Picasso#cancelRequest(android.widget.ImageView)} call to prevent temporary leaking.
    */
   public void into(ImageView target, Callback callback) {
+    // 记录开始处理的时间戳
     long started = System.nanoTime();
+    // 检查当前方法是否在主线程进行调用，如果不是抛出异常
     checkMain();
-
+    // ImageView 实例 target 不能为 null，否则抛异常
     if (target == null) {
       throw new IllegalArgumentException("Target must not be null.");
     }
-
+    // data 即前面的 Request.Builder 实例
+    // 如果 data 中没有图片(例如传入的 path 为 null)
+    // 直接对该 target 取消请求，并设置占位图如果有设置 placeholder
     if (!data.hasImage()) {
       picasso.cancelRequest(target);
       if (setPlaceholder) {
@@ -689,7 +697,7 @@ public class RequestCreator {
       }
       return;
     }
-
+     //设置了fit()
     if (deferred) {
       if (data.hasSize()) {
         throw new IllegalStateException("Fit cannot be used with resize.");
@@ -705,10 +713,13 @@ public class RequestCreator {
       }
       data.resize(width, height);
     }
-
+    // 创建 Request 实例
     Request request = createRequest(started);
+    // 为当前 Request 生成一个 requestKey，用来标记 Request
     String requestKey = createKey(request);
-
+    // 如果当前的 memoryPolicy 允许从缓存中读取图片
+    // 从 Cache 中获取 requestKey 对应的 Bitmap，如果该 Bitmap 存在
+    // 则取消当前请求，直接为 target 设置该 Bitmap
     if (shouldReadFromMemoryCache(memoryPolicy)) {
       Bitmap bitmap = picasso.quickMemoryCacheCheck(requestKey);
       if (bitmap != null) {
@@ -724,14 +735,16 @@ public class RequestCreator {
       }
     }
 
+    // 前面缓存中没有查找到图片，从这里开始请求
+    // 先设置 placeholder 如果有配置的话
     if (setPlaceholder) {
       setPlaceholder(target, getPlaceholderDrawable());
     }
-
-    Action action =
+    // 创建一个 ImageViewAction 的实例
+    Action action =//请求包装类--加载图片需要信息在要了
         new ImageViewAction(picasso, target, request, memoryPolicy, networkPolicy, errorResId,
             errorDrawable, requestKey, tag, callback, noFade);
-
+    // 向 picasso 提交该 Action 实例
     picasso.enqueueAndSubmit(action);
   }
 
@@ -753,8 +766,9 @@ public class RequestCreator {
 
   /** Create the request optionally passing it through the request transformer. */
   private Request createRequest(long started) {
+    // 为 Request 实例分配下一个 id
     int id = nextId.getAndIncrement();
-
+    // 创建 Request 实例
     Request request = data.build();
     request.id = id;
     request.started = started;

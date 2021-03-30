@@ -38,7 +38,7 @@ class PicassoExecutorService extends ThreadPoolExecutor {
         new PriorityBlockingQueue<Runnable>(), new Utils.PicassoThreadFactory());
   }
 
-  void adjustThreadCount(NetworkInfo info) {
+  void adjustThreadCount(NetworkInfo info) {//根据网络类型设置线程数量
     if (info == null || !info.isConnectedOrConnecting()) {
       setThreadCount(DEFAULT_THREAD_COUNT);
       return;

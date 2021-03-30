@@ -137,6 +137,8 @@ class BitmapHunter implements Runnable {
       byte[] bytes = bufferedSource.readByteArray();
       if (calculateSize) {
         BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+
+        //根基request.targetWidth, request.targetHeigh,即根据resize  得到 options
         RequestHandler.calculateInSampleSize(request.targetWidth, request.targetHeight, options,
             request);
       }
@@ -172,7 +174,7 @@ class BitmapHunter implements Runnable {
         log(OWNER_HUNTER, VERB_EXECUTING, getLogIdsForHunter(this));
       }
 
-      result = hunt();
+      result = hunt();//线程核心 返回Bitmap
 
       if (result == null) {
         dispatcher.dispatchFailed(this);
@@ -202,7 +204,7 @@ class BitmapHunter implements Runnable {
 
   Bitmap hunt() throws IOException {
     Bitmap bitmap = null;
-
+      // 先从缓存中查找 key 对应的 Bitmap，该 key 即之前创建的 requestKey
     if (shouldReadFromMemoryCache(memoryPolicy)) {
       bitmap = cache.get(key);
       if (bitmap != null) {
@@ -216,12 +218,16 @@ class BitmapHunter implements Runnable {
     }
 
     networkPolicy = retryCount == 0 ? NetworkPolicy.OFFLINE.index : networkPolicy;
+
+      // 调用 RequestHandler 的 load 方法获取 RequestHandler.Result 实例
+      // Picasso 将 RequestHandler 加载的结果封装成一个 Result 对象
+      // 我们这里调用的是 NetworkRequestHandler 类中的 load 方法
     RequestHandler.Result result = requestHandler.load(data, networkPolicy);
     if (result != null) {
       loadedFrom = result.getLoadedFrom();
       exifOrientation = result.getExifOrientation();
       bitmap = result.getBitmap();
-
+      // result 中的 bitmap 为 null，将 source 中的字节流编码成 Bitmap
       // If there was no Bitmap then we need to decode it from the stream.
       if (bitmap == null) {
         Source source = result.getSource();
@@ -286,7 +292,7 @@ class BitmapHunter implements Runnable {
       actions = new ArrayList<>(3);
     }
 
-    actions.add(action);
+    actions.add(action);//讲action放入集合
 
     if (loggingEnabled) {
       log(OWNER_HUNTER, VERB_JOINED, request.logId(), getLogIdsForHunter(this, "to "));
@@ -422,17 +428,22 @@ class BitmapHunter implements Runnable {
 
   static BitmapHunter forRequest(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats,
       Action action) {
+    // 获取 Action 中的 Request 对象
     Request request = action.getRequest();
+    // 获取 Picasso 配置的全部 RequestHandler
     List<RequestHandler> requestHandlers = picasso.getRequestHandlers();
 
     // Index-based loop to avoid allocating an iterator.
     //noinspection ForLoopReplaceableByForEach
+    // 从下标 0 开始迭代全部 RequestHandler，如果该 RequestHandler 能
+    // 处理该 Request，则用该 RequestHandler 创建 BitmapHunter 实例并返回。
     for (int i = 0, count = requestHandlers.size(); i < count; i++) {
       RequestHandler requestHandler = requestHandlers.get(i);
       if (requestHandler.canHandleRequest(request)) {
         return new BitmapHunter(picasso, dispatcher, cache, stats, action, requestHandler);
       }
     }
+    // 没有 RequestHandler 能处理该 Request，传入 ERRORING_HANDLER
 
     return new BitmapHunter(picasso, dispatcher, cache, stats, action, ERRORING_HANDLER);
   }

@@ -156,7 +156,7 @@ public class Picasso {
   final Dispatcher dispatcher;
   final Cache cache;
   final Stats stats;
-  final Map<Object, Action> targetToAction;
+  final Map<Object, Action> targetToAction;//对应 target和action 的map
   final Map<ImageView, DeferredRequestCreator> targetToDeferredRequestCreator;
   final ReferenceQueue<Object> referenceQueue;
   final Bitmap.Config defaultBitmapConfig;
@@ -169,13 +169,16 @@ public class Picasso {
   Picasso(Context context, Dispatcher dispatcher, Cache cache, Listener listener,
       RequestTransformer requestTransformer, List<RequestHandler> extraRequestHandlers, Stats stats,
       Bitmap.Config defaultBitmapConfig, boolean indicatorsEnabled, boolean loggingEnabled) {
+      // 一些赋值操作
     this.context = context;
     this.dispatcher = dispatcher;
     this.cache = cache;
     this.listener = listener;
     this.requestTransformer = requestTransformer;
     this.defaultBitmapConfig = defaultBitmapConfig;
-
+      // Picasso 默认包含七个内置 RequestHandler 分别用来处理七种不同类型的请求
+      // 你也可以自己继承 RequestHandler 类来处理你的自定义请求
+      // 自定义请求放在 extraRequestHandlers 中
     int builtInHandlers = 7; // Adjust this as internal handlers are added or removed.
     int extraCount = (extraRequestHandlers != null ? extraRequestHandlers.size() : 0);
     List<RequestHandler> allRequestHandlers = new ArrayList<>(builtInHandlers + extraCount);
@@ -183,17 +186,29 @@ public class Picasso {
     // ResourceRequestHandler needs to be the first in the list to avoid
     // forcing other RequestHandlers to perform null checks on request.uri
     // to cover the (request.resourceId != 0) case.
+      // 添加 ResourceRequestHandler，用于处理加载图片资源 id 的情况
+      // ResourceRequestHandler 需要第一个进行添加
+      // 避免其他的 RequestHandler 检查 (request.resourceId != 0) 的情况
     allRequestHandlers.add(new ResourceRequestHandler(context));
+      // 然后添加自定义的 RequestHandler (如果有的话)
     if (extraRequestHandlers != null) {
       allRequestHandlers.addAll(extraRequestHandlers);
     }
+      // 添加 ContactsPhotoRequestHandler，用于处理手机联系人图片
     allRequestHandlers.add(new ContactsPhotoRequestHandler(context));
+      // 添加 MediaStoreRequestHandler，用于处理 content://media/ 开头的 URI
     allRequestHandlers.add(new MediaStoreRequestHandler(context));
+      // 添加 ContentStreamRequestHandler，用于处理 scheme 为 content 的 URI
     allRequestHandlers.add(new ContentStreamRequestHandler(context));
+      // 添加 AssetRequestHandler，用于处理 file:///android_asset/ 开头的 URI
     allRequestHandlers.add(new AssetRequestHandler(context));
+      // 添加 FileRequestHandler，用于处理 scheme 为 file 的 URI
     allRequestHandlers.add(new FileRequestHandler(context));
+      // 添加 NetworkRequestHandler，用于处理 http 或 https 图片 url
     allRequestHandlers.add(new NetworkRequestHandler(dispatcher.downloader, stats));
-    requestHandlers = Collections.unmodifiableList(allRequestHandlers);
+      // 调用 Collections 的静态方法 unmodifiableList
+      // 返回一个不能进行修改操作的 List 实例，防止 requestHandlers 被修改
+    requestHandlers = Collections.unmodifiableList(allRequestHandlers);// requestHandlers存放各种业务场景获取图片处理的
 
     this.stats = stats;
     this.targetToAction = new WeakHashMap<>();
@@ -325,9 +340,12 @@ public class Picasso {
    * @throws IllegalArgumentException if {@code path} is empty or blank string.
    */
   public RequestCreator load(@Nullable String path) {
+      // 如果传进来的 path 为 null，创建并返回一个
+      // Uri 为 null 的 RequestCreator 对象。
     if (path == null) {
       return new RequestCreator(this, null, 0);
     }
+      // 如果 path 为空字符串，抛出异常。
     if (path.trim().length() == 0) {
       throw new IllegalArgumentException("Path must not be empty.");
     }
@@ -486,11 +504,15 @@ public class Picasso {
 
   void enqueueAndSubmit(Action action) {
     Object target = action.getTarget();
-    if (target != null && targetToAction.get(target) != action) {
+    if (target != null && targetToAction.get(target) != action) {//不重复
       // This will also check we are on the main thread.
+
+    //这个提交方法就是把对象（这里是要显示的 ImageView）和要执行的操作 保存到一个 map 里，
+    // 如果之前有这个 ImageView 的请求，就取消掉，避免重复加载。
       cancelExistingRequest(target);
       targetToAction.put(target, action);
     }
+   //调用 submit 方法提交该 Action
     submit(action);
   }
 
@@ -543,18 +565,21 @@ public class Picasso {
 
   void resumeAction(Action action) {
     Bitmap bitmap = null;
+    //恢复以后还是先去缓存查
     if (shouldReadFromMemoryCache(action.memoryPolicy)) {
       bitmap = quickMemoryCacheCheck(action.getKey());
     }
 
     if (bitmap != null) {
       // Resumed action is cached, complete immediately.
+      //查到了，直接返回
       deliverAction(bitmap, MEMORY, action, null);
       if (loggingEnabled) {
         log(OWNER_MAIN, VERB_COMPLETED, action.request.logId(), "from " + MEMORY);
       }
     } else {
       // Re-submit the action to the executor.
+      //没查到，再提交到线程池吧
       enqueueAndSubmit(action);
       if (loggingEnabled) {
         log(OWNER_MAIN, VERB_RESUMED, action.request.logId());
@@ -587,15 +612,15 @@ public class Picasso {
 
   void cancelExistingRequest(Object target) {
     checkMain();
-    Action action = targetToAction.remove(target);
+    Action action = targetToAction.remove(target); //1.移除要加载数据 map 中的数据
     if (action != null) {
-      action.cancel();
+      action.cancel(); //2.取消就是通过置一个标志位为 false，置空回调
       dispatcher.dispatchCancel(action);
     }
     if (target instanceof ImageView) {
       ImageView targetImageView = (ImageView) target;
       DeferredRequestCreator deferredRequestCreator =
-          targetToDeferredRequestCreator.remove(targetImageView);
+          targetToDeferredRequestCreator.remove(targetImageView);//获取这个 ImageView 可能有的延迟执行，取消
       if (deferredRequestCreator != null) {
         deferredRequestCreator.cancel();
       }
@@ -843,22 +868,32 @@ public class Picasso {
     /** Create the {@link Picasso} instance. */
     public Picasso build() {
       Context context = this.context;
-
+      // 配置下载器 Downloader，用于从网络下载图片资源，默认为 OkHttp3Downloader
       if (downloader == null) {
         downloader = new OkHttp3Downloader(context);
       }
+        // 配置缓存 Cache，用来保存最近查看使用的图片，默认为 LruCache
       if (cache == null) {
         cache = new LruCache(context);
       }
+        // 配置 ExecutorService，默认为 PicassoExecutorService
+        // 后面 Bitmap 的获取任务就在该线程池中完成
       if (service == null) {
         service = new PicassoExecutorService();
       }
+        // 配置 RequestTransformer 实例 请求转化器
       if (transformer == null) {
         transformer = RequestTransformer.IDENTITY;
       }
-
+        // 创建 Stats 实例，Stats 类用来进行一些统计，如缓存命中数，图片下载数等
+      //缓存状态
       Stats stats = new Stats(cache);
-
+        // 创建 Dispatcher 实例，Dispatcher 类顾名思义，它的作用就是用来分发处理
+        // 各种图片操作事件的如提交图片请求事件，图片获取完成事件等；
+        // 传入前面配置好的对象和 HANDLER 实例给 Dispatcher 类构造函数
+        // 该 HANDLER 在主线程接收处理事件，后面获取到 Bitmap 后需要回调到
+        // 该 HANDLER 的 handleMessage 方法中以便将 Bitmap 切换回主线程显示
+       // 事务分发器。
       Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, downloader, cache, stats);
 
       return new Picasso(context, dispatcher, cache, listener, transformer, requestHandlers, stats,

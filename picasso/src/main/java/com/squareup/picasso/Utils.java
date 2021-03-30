@@ -167,10 +167,10 @@ final class Utils {
   }
 
   static String createKey(Request data, StringBuilder builder) {
-    if (data.stableKey != null) {
+    if (data.stableKey != null) {//创建请求时我们主动指定的一个 key，默认为空
       builder.ensureCapacity(data.stableKey.length() + KEY_PADDING);
       builder.append(data.stableKey);
-    } else if (data.uri != null) {
+    } else if (data.uri != null) { //uri
       String path = data.uri.toString();
       builder.ensureCapacity(path.length() + KEY_PADDING);
       builder.append(path);
@@ -180,24 +180,24 @@ final class Utils {
     }
     builder.append(KEY_SEPARATOR);
 
-    if (data.rotationDegrees != 0) {
+    if (data.rotationDegrees != 0) {//旋转角度
       builder.append("rotation:").append(data.rotationDegrees);
       if (data.hasRotationPivot) {
         builder.append('@').append(data.rotationPivotX).append('x').append(data.rotationPivotY);
       }
       builder.append(KEY_SEPARATOR);
     }
-    if (data.hasSize()) {
+    if (data.hasSize()) { //修改尺寸
       builder.append("resize:").append(data.targetWidth).append('x').append(data.targetHeight);
       builder.append(KEY_SEPARATOR);
     }
-    if (data.centerCrop) {
+    if (data.centerCrop) {  //裁剪
       builder.append("centerCrop:").append(data.centerCropGravity).append(KEY_SEPARATOR);
     } else if (data.centerInside) {
       builder.append("centerInside").append(KEY_SEPARATOR);
     }
 
-    if (data.transformations != null) {
+    if (data.transformations != null) {//变换
       //noinspection ForLoopReplaceableByForEach
       for (int i = 0, count = data.transformations.size(); i < count; i++) {
         builder.append(data.transformations.get(i).key());
@@ -328,6 +328,10 @@ final class Utils {
    * that was sent to it. This method makes sure that stack local reference never stays there
    * for too long by sending new messages to it every second.
    */
+
+//  意思就是5.0之前HandlerThread有个Bug，会保持最后一条消息的引用，
+//  用这种周期性空事件防止引用到重要资源导致内存泄露，
+//  至于怎么验证这个Bug，可以通过dump内存看，后续有时间再具体研究。
   static void flushStackLocalLeaks(Looper looper) {
     Handler handler = new Handler(looper) {
       @Override public void handleMessage(Message msg) {

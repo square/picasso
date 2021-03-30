@@ -55,6 +55,7 @@ public final class LruCache implements Cache {
     // If the bitmap is too big for the cache, don't even attempt to store it. Doing so will cause
     // the cache to be cleared. Instead just evict an existing element with the same key if it
     // exists.
+    //当要放入缓存的图片尺寸大于缓存总容量时，这里会删除掉之前的缓存
     if (byteCount > maxSize()) {
       cache.remove(key);
       return;

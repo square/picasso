@@ -38,7 +38,7 @@ class ImageViewAction extends Action<ImageView> {
       throw new AssertionError(
           String.format("Attempted to complete action with no result!\n%s", this));
     }
-
+    // 获取要加载图片进去的 ImageView
     ImageView target = this.target.get();
     if (target == null) {
       return;
@@ -46,6 +46,7 @@ class ImageViewAction extends Action<ImageView> {
 
     Context context = picasso.context;
     boolean indicatorsEnabled = picasso.indicatorsEnabled;
+    // 为 target 设置 Bitmap
     PicassoDrawable.setBitmap(target, context, result, from, noFade, indicatorsEnabled);
 
     if (callback != null) {
@@ -58,10 +59,13 @@ class ImageViewAction extends Action<ImageView> {
     if (target == null) {
       return;
     }
+    // 获取占位图 Drawable 实例，如果该 Drawable 实现了 Animatable 接口
+    // 这时候就应该停止该 Animatable
     Drawable placeholder = target.getDrawable();
     if (placeholder instanceof Animatable) {
       ((Animatable) placeholder).stop();
     }
+    // 设置错误情况下的图片
     if (errorResId != 0) {
       target.setImageResource(errorResId);
     } else if (errorDrawable != null) {

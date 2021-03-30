@@ -79,19 +79,19 @@ class Dispatcher {
   private static final String DISPATCHER_THREAD_NAME = "Dispatcher";
   private static final int BATCH_DELAY = 200; // ms
 
-  final DispatcherThread dispatcherThread;
+  final DispatcherThread dispatcherThread; //HandlerThread，用于为子线程 Handler 准备 Looper
   final Context context;
-  final ExecutorService service;
-  final Downloader downloader;
-  final Map<String, BitmapHunter> hunterMap;
-  final Map<Object, Action> failedActions;
-  final Map<Object, Action> pausedActions;
-  final Set<Object> pausedTags;
-  final Handler handler;
-  final Handler mainThreadHandler;
-  final Cache cache;
-  final Stats stats;
-  final List<BitmapHunter> batch;
+  final ExecutorService service;//线程池
+  final Downloader downloader;//下载器
+  final Map<String, BitmapHunter> hunterMap; //记录 Action's key 和 BitmapHunter图片猎人 的关联关系 map
+  final Map<Object, Action> failedActions;//失败的操作 map
+  final Map<Object, Action> pausedActions; //暂停的操作 map
+  final Set<Object> pausedTags; //暂停的 tag
+  final Handler handler; //子线程的 Handler
+  final Handler mainThreadHandler; //ui 线程的 Handler
+  final Cache cache;//缓存
+  final Stats stats; //数据统计
+  final List<BitmapHunter> batch;  //后面介绍，获取图片最核心的类
   final NetworkBroadcastReceiver receiver;
   final boolean scansNetworkChanges;
 
@@ -99,7 +99,8 @@ class Dispatcher {
 
   Dispatcher(Context context, ExecutorService service, Handler mainThreadHandler,
       Downloader downloader, Cache cache, Stats stats) {
-    this.dispatcherThread = new DispatcherThread();
+    //创建静态内部类 DispatcherThread 的实例并启动
+    this.dispatcherThread = new DispatcherThread(); //Dispatcher的工作线程
     this.dispatcherThread.start();
     Utils.flushStackLocalLeaks(dispatcherThread.getLooper());
     this.context = context;
@@ -108,8 +109,20 @@ class Dispatcher {
     this.failedActions = new WeakHashMap<>();
     this.pausedActions = new WeakHashMap<>();
     this.pausedTags = new LinkedHashSet<>();
-    this.handler = new DispatcherHandler(dispatcherThread.getLooper(), this);
+    // 创建静态内部类 DispatcherHandler 的实例 子线程的handler
+
+    //可以看到，DispatcherThread 继承自 HandlerThread，
+
+    // 而 DispatcherHandler 实例是通过 DispatcherThread 的 Looper 创建的，
+    // 因此 DispatcherHandler 发送的消息将切换到工作线程 (即 DispatcherThread) 中处理，
+    // 即 DispatcherHandler 的 handleMessage
+
+    // 方法会在工作线程中执行。
+
+
+    this.handler = new DispatcherHandler(dispatcherThread.getLooper(), this);//子线程的 Handler
     this.downloader = downloader;
+    // 保存前面 Picasso 类传进来的主线程 HANDLER
     this.mainThreadHandler = mainThreadHandler;
     this.cache = cache;
     this.stats = stats;
@@ -177,7 +190,7 @@ class Dispatcher {
   }
 
   void performSubmit(Action action, boolean dismissFailed) {
-    if (pausedTags.contains(action.getTag())) {
+    if (pausedTags.contains(action.getTag())) { //如果暂停集合里有这个 action 的 tag，这次就先不请求，返回
       pausedActions.put(action.getTarget(), action);
       if (action.getPicasso().loggingEnabled) {
         log(OWNER_DISPATCHER, VERB_PAUSED, action.request.logId(),
@@ -185,22 +198,28 @@ class Dispatcher {
       }
       return;
     }
-
+    //如果已经创建了这个 action 对应的 BitmapHunter，就把数据添加到待操作列表，不重复创建了
     BitmapHunter hunter = hunterMap.get(action.getKey());
     if (hunter != null) {
+      //通过action的key来在hunterMap查找是否有相同的hunter,这个key里保存的是我们
+      //的uri或者resourceId和一些参数,
+      // 如果都是一样就将这些action合并到一个BitmapHunter里去.
       hunter.attach(action);
       return;
     }
 
-    if (service.isShutdown()) {
+    if (service.isShutdown()) {//线程池是否关闭
       if (action.getPicasso().loggingEnabled) {
         log(OWNER_DISPATCHER, VERB_IGNORED, action.request.logId(), "because shut down");
       }
       return;
     }
-
+    //这一步是遍历 picasso 的 requestHandlers，找到合适的 requestHandler，构造 BitmapHunter
+    // 创建 BitmapHunter 实例
     hunter = forRequest(action.getPicasso(), this, cache, stats, action);
-    hunter.future = service.submit(hunter);
+    // 使用配置好的 PicassoExecutorService 提交该 BitmapHunter 实例
+//      System.out.println("Thread11:"+Thread.currentThread().getName());
+    hunter.future = service.submit(hunter);//返回future 用于任务的执行结果进行取消、查询是否完成、获取结果
     hunterMap.put(action.getKey(), hunter);
     if (dismissFailed) {
       failedActions.remove(action.getTarget());
@@ -215,16 +234,16 @@ class Dispatcher {
     String key = action.getKey();
     BitmapHunter hunter = hunterMap.get(key);
     if (hunter != null) {
-      hunter.detach(action);
-      if (hunter.cancel()) {
-        hunterMap.remove(key);
+      hunter.detach(action);//移除 hunter 中的这个 action
+      if (hunter.cancel()) {//停止线程 runnable 的执行
+        hunterMap.remove(key);//这个 hunter 没有操作了，移除
         if (action.getPicasso().loggingEnabled) {
           log(OWNER_DISPATCHER, VERB_CANCELED, action.getRequest().logId());
         }
       }
     }
 
-    if (pausedTags.contains(action.getTag())) {
+    if (pausedTags.contains(action.getTag())) {//如果处于暂停状态，也从暂停列表里移除
       pausedActions.remove(action.getTarget());
       if (action.getPicasso().loggingEnabled) {
         log(OWNER_DISPATCHER, VERB_CANCELED, action.getRequest().logId(),
@@ -246,6 +265,7 @@ class Dispatcher {
 
     // Go through all active hunters and detach/pause the requests
     // that have the paused tag.
+    //遍历所有的 BitmapHunter，解除、暂停请求
     for (Iterator<BitmapHunter> it = hunterMap.values().iterator(); it.hasNext();) {
       BitmapHunter hunter = it.next();
       boolean loggingEnabled = hunter.getPicasso().loggingEnabled;
@@ -253,15 +273,15 @@ class Dispatcher {
       Action single = hunter.getAction();
       List<Action> joined = hunter.getActions();
       boolean hasMultiple = joined != null && !joined.isEmpty();
-
+      //这个 Hunter 已经完成请求了，看看下一个是不是你要找的
       // Hunter has no requests, bail early.
       if (single == null && !hasMultiple) {
         continue;
       }
 
-      if (single != null && single.getTag().equals(tag)) {
-        hunter.detach(single);
-        pausedActions.put(single.getTarget(), single);
+      if (single != null && single.getTag().equals(tag)) { //找到了要暂停的
+        hunter.detach(single); //解除
+        pausedActions.put(single.getTarget(), single);//添加到暂停结合里
         if (loggingEnabled) {
           log(OWNER_DISPATCHER, VERB_PAUSED, single.request.logId(),
               "because tag '" + tag + "' was paused");
@@ -286,7 +306,7 @@ class Dispatcher {
 
       // Check if the hunter can be cancelled in case all its requests
       // had the tag being paused here.
-      if (hunter.cancel()) {
+      if (hunter.cancel()) {    //如果这个 hunter 没有请求并且停止成功了，就移除
         it.remove();
         if (loggingEnabled) {
           log(OWNER_DISPATCHER, VERB_CANCELED, getLogIdsForHunter(hunter), "all actions paused");
@@ -297,10 +317,11 @@ class Dispatcher {
 
   void performResumeTag(Object tag) {
     // Trying to resume a tag that is not paused.
+    //如果这个 tag 并没有暂停，就返回
     if (!pausedTags.remove(tag)) {
       return;
     }
-
+    //遍历暂停的 action 集合
     List<Action> batch = null;
     for (Iterator<Action> i = pausedActions.values().iterator(); i.hasNext();) {
       Action action = i.next();
@@ -312,7 +333,7 @@ class Dispatcher {
         i.remove();
       }
     }
-
+    //把要恢复的 action 找到，发给主线程
     if (batch != null) {
       mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(REQUEST_BATCH_RESUME, batch));
     }
@@ -355,7 +376,7 @@ class Dispatcher {
     if (shouldWriteToMemoryCache(hunter.getMemoryPolicy())) {
       cache.set(hunter.getKey(), hunter.getResult());
     }
-    hunterMap.remove(hunter.getKey());
+    hunterMap.remove(hunter.getKey());//删除map中的
     batch(hunter);
     if (hunter.getPicasso().loggingEnabled) {
       log(OWNER_DISPATCHER, VERB_BATCHED, getLogIdsForHunter(hunter), "for completion");
@@ -387,6 +408,7 @@ class Dispatcher {
       ((PicassoExecutorService) service).adjustThreadCount(info);
     }
     // Intentionally check only if isConnected() here before we flush out failed actions.
+    //调整线程后，记得将失败的任务重新提交
     if (info != null && info.isConnected()) {
       flushFailedActions();
     }

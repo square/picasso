@@ -1,10 +1,13 @@
 package com.example.picasso;
 
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
+
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -20,7 +23,7 @@ final class SampleGridViewAdapter extends BaseAdapter {
 
     // Ensure we get a different ordering of images on each run.
     Collections.addAll(urls, Data.URLS);
-    Collections.shuffle(urls);
+//    Collections.shuffle(urls);
 
     // Triple up the list.
     ArrayList<String> copy = new ArrayList<>(urls);
@@ -39,13 +42,29 @@ final class SampleGridViewAdapter extends BaseAdapter {
     String url = getItem(position);
 
     // Trigger the download of the URL asynchronously into the image view.
+
+
+
+
     Picasso.get() //
         .load(url) //
         .placeholder(R.drawable.placeholder) //
         .error(R.drawable.error) //
+//        .resize(400,200)
         .fit() //
         .tag(context) //
-        .into(view);
+//        .centerCrop()
+        .into(view, new Callback() {
+          @Override
+          public void onSuccess() {
+
+          }
+
+          @Override
+          public void onError(Exception e) {
+
+          }
+        });
 
     return view;
   }

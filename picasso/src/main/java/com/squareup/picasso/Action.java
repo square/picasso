@@ -22,7 +22,7 @@ import java.lang.ref.WeakReference;
 
 import static com.squareup.picasso.Picasso.Priority;
 
-abstract class Action<T> {
+abstract class Action<T> {//request 的包装类
   static class RequestWeakReference<M> extends WeakReference<M> {
     final Action action;
 
@@ -51,7 +51,7 @@ abstract class Action<T> {
     this.picasso = picasso;
     this.request = request;
     this.target =
-        target == null ? null : new RequestWeakReference<>(this, target, picasso.referenceQueue);
+        target == null ? null : new RequestWeakReference<>(this, target, picasso.referenceQueue);//弱引用
     this.memoryPolicy = memoryPolicy;
     this.networkPolicy = networkPolicy;
     this.noFade = noFade;
