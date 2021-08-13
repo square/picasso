@@ -28,6 +28,9 @@ import okio.Source;
 
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentUris.parseId;
+import static androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_180;
+import static androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_270;
+import static androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_90;
 import static android.provider.MediaStore.Images;
 import static android.provider.MediaStore.Video;
 import static android.provider.MediaStore.Images.Thumbnails.FULL_SCREEN_KIND;
@@ -85,6 +88,7 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
       } else {
         bitmap =
             Images.Thumbnails.getThumbnail(contentResolver, id, picassoKind.androidKind, options);
+        exifOrientation = 0; // The thumbnails don't need to rotate.
       }
 
       if (bitmap != null) {
@@ -112,7 +116,25 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
       if (cursor == null || !cursor.moveToFirst()) {
         return 0;
       }
-      return cursor.getInt(0);
+      // CONTENT_ORIENTATION returns the actual angle integer such as 90, 180, etc.
+      // But BitmapHunter requires the ExifInterface's constants.
+      int contentOrientation = cursor.getInt(0);
+      int exifOrientation;
+      switch (contentOrientation) {
+        case 90:
+          exifOrientation = ORIENTATION_ROTATE_90;
+          break;
+        case 180:
+          exifOrientation = ORIENTATION_ROTATE_180;
+          break;
+        case 270:
+          exifOrientation = ORIENTATION_ROTATE_270;
+          break;
+        default:
+          exifOrientation = 0;
+          break;
+      }
+      return exifOrientation;
     } catch (RuntimeException ignored) {
       // If the orientation column doesn't exist, assume no rotation.
       return 0;
