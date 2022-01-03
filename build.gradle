@@ -1,3 +1,5 @@
+import net.ltgt.gradle.errorprone.CheckSeverity
+
 buildscript {
   ext.versions = [
     'compileSdk': 29,
@@ -22,7 +24,7 @@ buildscript {
     androidxExifInterface: 'androidx.exifinterface:exifinterface:1.3.3',
     androidxFragment: 'androidx.fragment:fragment:1.0.0',
     androidxLifecycle: 'androidx.lifecycle:lifecycle-common:2.4.0',
-    errorProne: 'com.google.errorprone:error_prone_core:2.3.2',
+    errorProne: 'com.google.errorprone:error_prone_core:2.10.0',
     junit: 'junit:junit:4.13.2',
     truth: 'com.google.truth:truth:1.1.3',
     robolectric: 'org.robolectric:robolectric:4.0.2',
@@ -41,7 +43,7 @@ buildscript {
     classpath deps.androidPlugin
     classpath deps.kotlinPlugin
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.40.0'
-    classpath 'net.ltgt.gradle:gradle-errorprone-plugin:0.0.16'
+    classpath 'net.ltgt.gradle:gradle-errorprone-plugin:2.0.2'
   }
 }
 
@@ -55,27 +57,28 @@ allprojects {
 }
 
 subprojects {
-  tasks.withType(JavaCompile) {
-    options.compilerArgs += [
-        '-Xep:UnnecessaryDefaultInEnumSwitch:ERROR',
-        '-Xep:TypeParameterUnusedInFormals:ERROR',
-        '-Xep:OperatorPrecedence:ERROR',
-        '-Xep:ReferenceEquality:ERROR',
-        '-Xep:FloatingPointLiteralPrecision:ERROR',
-        '-Xep:DateFormatConstant:ERROR',
-        '-Xep:PrivateConstructorForUtilityClass:ERROR',
-        '-Xep:DateFormatConstant:ERROR',
-        '-XepExcludedPaths:.*/build/.*'
-    ]
+  apply plugin: 'net.ltgt.errorprone'
+
+  tasks.withType(JavaCompile).configureEach {
+    options.errorprone {
+      excludedPaths = ".*/build/.*"
+      check("UnnecessaryDefaultInEnumSwitch", CheckSeverity.ERROR)
+      check("TypeParameterUnusedInFormals", CheckSeverity.ERROR)
+      check("OperatorPrecedence", CheckSeverity.ERROR)
+      check("ReferenceEquality", CheckSeverity.ERROR)
+      check("FloatingPointLiteralPrecision", CheckSeverity.ERROR)
+      check("DateFormatConstant", CheckSeverity.ERROR)
+      check("PrivateConstructorForUtilityClass", CheckSeverity.ERROR)
+      check("DateFormatConstant", CheckSeverity.ERROR)
+    }
 
     if (!name.toLowerCase().contains("test")) {
       // NullAway args
-      options.compilerArgs += [
-          '-Xep:NullAway:ERROR',
-          '-XepOpt:NullAway:AnnotatedPackages=com.squareup.picasso3'
-      ]
+      options.errorprone {
+        check("NullAway", CheckSeverity.ERROR)
+        option("NullAway:AnnotatedPackages", "com.squareup.picasso3")
+      }
     }
-
   }
 
   tasks.withType(Test) {
@@ -106,8 +109,6 @@ subprojects {
   afterEvaluate {
     tasks.findByName('check').dependsOn('checkstyle')
   }
-
-  apply plugin: 'net.ltgt.errorprone'
 
   dependencies {
     errorprone deps.errorProne
