@@ -28,6 +28,7 @@ android {
 dependencies {
   compileOnly deps.androidxAnnotations
   implementation deps.androidxCore
+  implementation deps.androidxCursorAdapter
   implementation deps.androidxFragment
 
   implementation project(':picasso')
