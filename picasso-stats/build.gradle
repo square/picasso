@@ -21,7 +21,6 @@ android {
 }
 
 dependencies {
-  implementation deps.kotlinStdlibJdk8
   implementation deps.androidxCore
   api deps.okio
 
