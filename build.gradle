@@ -2,9 +2,9 @@ import net.ltgt.gradle.errorprone.CheckSeverity
 
 buildscript {
   ext.versions = [
-    'compileSdk': 29,
+    'compileSdk': 31,
     'minSdk': 14,
-    'targetSdk': 29,
+    'targetSdk': 31,
     'sourceCompatibility': JavaVersion.VERSION_1_8,
     'targetCompatibility': JavaVersion.VERSION_1_8,
     'kotlin': '1.5.21',
@@ -13,7 +13,7 @@ buildscript {
   ]
 
   ext.deps = [
-    androidPlugin: 'com.android.tools.build:gradle:4.2.2',
+    androidPlugin: 'com.android.tools.build:gradle:7.0.4',
     kotlinPlugin: "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}",
     okhttp: "com.squareup.okhttp3:okhttp:${versions.okhttp}",
     okio: "com.squareup.okio:okio:${versions.okio}",
