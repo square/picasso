@@ -33,31 +33,31 @@ public class PollexorRequestTransformerTest {
   @Test public void resourceIdRequestsAreNotTransformed() {
     Request input = new Request.Builder(12).build();
     Request output = transformer.transformRequest(input);
-    assertThat(output).isSameAs(input);
+    assertThat(output).isSameInstanceAs(input);
   }
 
   @Test public void resourceIdRequestsAreNotTransformedWhenAlwaysTransformIsTrue() {
     Request input = new Request.Builder(12).build();
     Request output = alwaysResizeTransformer.transformRequest(input);
-    assertThat(output).isSameAs(input);
+    assertThat(output).isSameInstanceAs(input);
   }
 
   @Test public void nonHttpRequestsAreNotTransformed() {
     Request input = new Request.Builder(IMAGE_URI).build();
     Request output = transformer.transformRequest(input);
-    assertThat(output).isSameAs(input);
+    assertThat(output).isSameInstanceAs(input);
   }
 
   @Test public void nonResizedRequestsAreNotTransformed() {
     Request input = new Request.Builder(IMAGE_URI).build();
     Request output = transformer.transformRequest(input);
-    assertThat(output).isSameAs(input);
+    assertThat(output).isSameInstanceAs(input);
   }
 
   @Test public void nonResizedRequestsAreTransformedWhenAlwaysTransformIsSet() {
     Request input = new Request.Builder(IMAGE_URI).build();
     Request output = alwaysResizeTransformer.transformRequest(input);
-    assertThat(output).isNotSameAs(input);
+    assertThat(output).isNotSameInstanceAs(input);
     assertThat(output.hasSize()).isFalse();
     String expected = Thumbor.create(HOST).buildImage(IMAGE).toUrl();
     assertThat(output.uri.toString()).isEqualTo(expected);
@@ -66,7 +66,7 @@ public class PollexorRequestTransformerTest {
   @Test public void simpleResize() {
     Request input = new Request.Builder(IMAGE_URI).resize(50, 50).build();
     Request output = transformer.transformRequest(input);
-    assertThat(output).isNotSameAs(input);
+    assertThat(output).isNotSameInstanceAs(input);
     assertThat(output.hasSize()).isFalse();
 
     String expected = Thumbor.create(HOST).buildImage(IMAGE).resize(50, 50).toUrl();
@@ -77,7 +77,7 @@ public class PollexorRequestTransformerTest {
   @Test public void simpleResizeOnJbMr2UsesWebP() {
     Request input = new Request.Builder(IMAGE_URI).resize(50, 50).build();
     Request output = transformer.transformRequest(input);
-    assertThat(output).isNotSameAs(input);
+    assertThat(output).isNotSameInstanceAs(input);
     assertThat(output.hasSize()).isFalse();
 
     String expected = Thumbor.create(HOST)
@@ -91,7 +91,7 @@ public class PollexorRequestTransformerTest {
   @Test public void simpleResizeWithCenterCrop() {
     Request input = new Request.Builder(IMAGE_URI).resize(50, 50).centerCrop().build();
     Request output = transformer.transformRequest(input);
-    assertThat(output).isNotSameAs(input);
+    assertThat(output).isNotSameInstanceAs(input);
     assertThat(output.hasSize()).isFalse();
     assertThat(output.centerCrop).isFalse();
 
@@ -102,7 +102,7 @@ public class PollexorRequestTransformerTest {
   @Test public void simpleResizeWithCenterInside() {
     Request input = new Request.Builder(IMAGE_URI).resize(50, 50).centerInside().build();
     Request output = transformer.transformRequest(input);
-    assertThat(output).isNotSameAs(input);
+    assertThat(output).isNotSameInstanceAs(input);
     assertThat(output.hasSize()).isFalse();
     assertThat(output.centerInside).isFalse();
 
@@ -113,7 +113,7 @@ public class PollexorRequestTransformerTest {
   @Test public void simpleResizeWithEncryption() {
     Request input = new Request.Builder(IMAGE_URI).resize(50, 50).build();
     Request output = secureTransformer.transformRequest(input);
-    assertThat(output).isNotSameAs(input);
+    assertThat(output).isNotSameInstanceAs(input);
     assertThat(output.hasSize()).isFalse();
 
     String expected = Thumbor.create(HOST, KEY).buildImage(IMAGE).resize(50, 50).toUrl();
@@ -123,7 +123,7 @@ public class PollexorRequestTransformerTest {
   @Test public void simpleResizeWithCenterInsideAndEncryption() {
     Request input = new Request.Builder(IMAGE_URI).resize(50, 50).centerInside().build();
     Request output = secureTransformer.transformRequest(input);
-    assertThat(output).isNotSameAs(input);
+    assertThat(output).isNotSameInstanceAs(input);
     assertThat(output.hasSize()).isFalse();
     assertThat(output.centerInside).isFalse();
 
