@@ -1,5 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'org.jetbrains.kotlin.android'
+apply plugin: 'com.vanniktech.maven.publish'
 
 android {
   compileSdkVersion versions.compileSdk
@@ -34,12 +35,9 @@ dependencies {
   implementation deps.androidxAnnotations
   implementation deps.androidxCore
   implementation deps.androidxExifInterface
-  implementation deps.kotlinStdlibJdk8
 
   testImplementation deps.junit
   testImplementation deps.truth
 
   annotationProcessor deps.nullaway
 }
-
-apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
