@@ -20,6 +20,16 @@ android {
     textReport true
     lintConfig file('lint.xml')
   }
+
+  testOptions {
+    unitTests {
+      includeAndroidResources = true
+    }
+
+    unitTests.all {
+      systemProperty "robolectric.looperMode", "LEGACY"
+    }
+  }
 }
 
 dependencies {

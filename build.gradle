@@ -18,7 +18,7 @@ buildscript {
     androidxFragment: 'androidx.fragment:fragment:1.0.0',
     junit: 'junit:junit:4.12',
     truth: 'com.google.truth:truth:0.36',
-    robolectric: 'org.robolectric:robolectric:4.0.1',
+    robolectric: 'org.robolectric:robolectric:4.4',
     mockito: 'org.mockito:mockito-core:1.9.5'
   ]
 
