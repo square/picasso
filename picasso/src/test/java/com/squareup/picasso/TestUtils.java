@@ -247,7 +247,7 @@ class TestUtils {
     try {
       Bitmap defaultResult = makeBitmap();
       RequestHandler.Result result = new RequestHandler.Result(defaultResult, MEMORY);
-      when(requestHandler.load(any(Request.class), anyInt())).thenReturn(result);
+      when(requestHandler.load(any(Picasso.class), any(Request.class), anyInt())).thenReturn(result);
       when(requestHandler.canHandleRequest(any(Request.class))).thenReturn(true);
     } catch (IOException e) {
       throw new RuntimeException(e);

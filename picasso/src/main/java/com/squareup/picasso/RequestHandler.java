@@ -31,7 +31,7 @@ import static com.squareup.picasso.Utils.checkNotNull;
  * <p>
  * <h2>Usage</h2>
  * {@code RequestHandler} must be subclassed to be used. You will have to override two methods
- * ({@link #canHandleRequest(Request)} and {@link #load(Request, int)}) with your custom logic to
+ * ({@link #canHandleRequest(Request)} and {@link #load(Picasso, Request, int)}) with your custom logic to
  * load images.
  * <p>
  * You should then register your {@link RequestHandler} using
@@ -44,11 +44,11 @@ import static com.squareup.picasso.Utils.checkNotNull;
  */
 public abstract class RequestHandler {
   /**
-   * {@link Result} represents the result of a {@link #load(Request, int)} call in a
+   * {@link Result} represents the result of a {@link #load(Picasso, Request, int)} call in a
    * {@link RequestHandler}.
    *
    * @see RequestHandler
-   * @see #load(Request, int)
+   * @see #load(Picasso, Request, int)
    */
   public static final class Result {
     private final Picasso.LoadedFrom loadedFrom;
@@ -90,14 +90,14 @@ public abstract class RequestHandler {
 
     /**
      * Returns the resulting {@link Picasso.LoadedFrom} generated from a
-     * {@link #load(Request, int)} call.
+     * {@link #load(Picasso, Request, int)} call.
      */
     @NonNull public Picasso.LoadedFrom getLoadedFrom() {
       return loadedFrom;
     }
 
     /**
-     * Returns the resulting EXIF orientation generated from a {@link #load(Request, int)} call.
+     * Returns the resulting EXIF orientation generated from a {@link #load(Picasso, Request, int)} call.
      * This is only accessible to built-in RequestHandlers.
      */
     int getExifOrientation() {
@@ -113,10 +113,11 @@ public abstract class RequestHandler {
   /**
    * Loads an image for the given {@link Request}.
    *
+   * @param picasso
    * @param request the data from which the image should be resolved.
    * @param networkPolicy the {@link NetworkPolicy} for this request.
    */
-  @Nullable public abstract Result load(Request request, int networkPolicy) throws IOException;
+  @Nullable public abstract Result load(@NonNull Picasso picasso, Request request, int networkPolicy) throws IOException;
 
   int getRetryCount() {
     return 0;

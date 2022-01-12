@@ -1068,7 +1068,7 @@ public class BitmapHunterTest {
       return true;
     }
 
-    @Override public Result load(Request request, int networkPolicy) throws IOException {
+    @Override public Result load(@NonNull Picasso picasso, Request request, int networkPolicy) throws IOException {
       if (exception != null) {
         throw exception;
       }
@@ -1092,7 +1092,7 @@ public class BitmapHunterTest {
       super(null, null);
     }
 
-    @Override public Result load(Request request, int networkPolicy) throws IOException {
+    @Override public Result load(@NonNull Picasso picasso, Request request, int networkPolicy) throws IOException {
       throw new OutOfMemoryError();
     }
   }
@@ -1102,7 +1102,7 @@ public class BitmapHunterTest {
         return CUSTOM_URI.getScheme().equals(data.uri.getScheme());
     }
 
-    @Override public Result load(Request request, int networkPolicy) {
+    @Override public Result load(@NonNull Picasso picasso, Request request, int networkPolicy) {
       return new Result(bitmap, MEMORY);
     }
   }

@@ -82,7 +82,7 @@ public class NetworkRequestHandlerTest {
   @Test public void doesNotForceLocalCacheOnlyWithAirplaneModeOffAndRetryCount() throws Exception {
     responses.add(responseOf(ResponseBody.create(null, new byte[10])));
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
-    networkHandler.load(action.getRequest(), 0);
+    networkHandler.load(picasso, action.getRequest(), 0);
     assertThat(requests.takeFirst().cacheControl().toString()).isEmpty();
   }
 
@@ -146,7 +146,7 @@ public class NetworkRequestHandlerTest {
         .build());
     Action action = TestUtils.mockAction(URI_KEY_1, URI_1);
     try {
-      networkHandler.load(action.getRequest(), 0);
+      networkHandler.load(picasso, action.getRequest(), 0);
       fail();
     } catch(IOException expected) {
       verifyZeroInteractions(stats);

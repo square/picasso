@@ -22,6 +22,8 @@ import android.net.Uri;
 import android.provider.ContactsContract;
 import java.io.IOException;
 import java.io.InputStream;
+
+import androidx.annotation.NonNull;
 import okio.Okio;
 
 import static android.content.ContentResolver.SCHEME_CONTENT;
@@ -65,7 +67,7 @@ class ContactsPhotoRequestHandler extends RequestHandler {
         && matcher.match(data.uri) != UriMatcher.NO_MATCH);
   }
 
-  @Override public Result load(Request request, int networkPolicy) throws IOException {
+  @Override public Result load(@NonNull Picasso picasso, Request request, int networkPolicy) throws IOException {
     InputStream is = getInputStream(request);
     if (is == null) {
       return null;

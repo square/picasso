@@ -19,6 +19,8 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.net.Uri;
 import java.io.IOException;
+
+import androidx.annotation.NonNull;
 import okio.Okio;
 import okio.Source;
 
@@ -44,7 +46,7 @@ class AssetRequestHandler extends RequestHandler {
         && !uri.getPathSegments().isEmpty() && ANDROID_ASSET.equals(uri.getPathSegments().get(0)));
   }
 
-  @Override public Result load(Request request, int networkPolicy) throws IOException {
+  @Override public Result load(@NonNull Picasso picasso, Request request, int networkPolicy) throws IOException {
     if (assetManager == null) {
       synchronized (lock) {
         if (assetManager == null) {

@@ -74,7 +74,7 @@ class BitmapHunter implements Runnable {
       return true;
     }
 
-    @Override public Result load(Request request, int networkPolicy) throws IOException {
+    @Override public Result load(@NonNull Picasso picasso, Request request, int networkPolicy) throws IOException {
       throw new IllegalStateException("Unrecognized type of request: " + request);
     }
   };
@@ -216,7 +216,7 @@ class BitmapHunter implements Runnable {
     }
 
     networkPolicy = retryCount == 0 ? NetworkPolicy.OFFLINE.index : networkPolicy;
-    RequestHandler.Result result = requestHandler.load(data, networkPolicy);
+    RequestHandler.Result result = requestHandler.load(picasso, data, networkPolicy);
     if (result != null) {
       loadedFrom = result.getLoadedFrom();
       exifOrientation = result.getExifOrientation();

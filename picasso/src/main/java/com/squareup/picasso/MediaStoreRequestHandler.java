@@ -23,6 +23,8 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
 import java.io.IOException;
+
+import androidx.annotation.NonNull;
 import okio.Okio;
 import okio.Source;
 
@@ -53,7 +55,7 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
             && MediaStore.AUTHORITY.equals(uri.getAuthority()));
   }
 
-  @Override public Result load(Request request, int networkPolicy) throws IOException {
+  @Override public Result load(@NonNull Picasso picasso, Request request, int networkPolicy) throws IOException {
     ContentResolver contentResolver = context.getContentResolver();
     int exifOrientation = getExifOrientation(contentResolver, request.uri);
 
