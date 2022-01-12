@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.vanniktech.maven.publish'
 
 android {
   compileSdkVersion versions.compileSdk
@@ -28,5 +29,3 @@ dependencies {
   testImplementation deps.truth
   testImplementation deps.pollexor
 }
-
-apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
