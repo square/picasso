@@ -9,7 +9,6 @@ buildscript {
   ]
 
   ext.deps = [
-    androidPlugin: 'com.android.tools.build:gradle:4.0.1',
     okhttp: "com.squareup.okhttp3:okhttp:${versions.okhttp}",
     mockWebServer: "com.squareup.okhttp3:mockwebserver:${versions.okhttp}",
     pollexor: 'com.squareup:pollexor:2.0.4',
@@ -31,7 +30,8 @@ buildscript {
   }
 
   dependencies {
-    classpath deps.androidPlugin
+    classpath 'com.android.tools.build:gradle:7.0.4'
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.21"
     classpath 'com.vanniktech:gradle-maven-publish-plugin:0.18.0'
   }
 }
