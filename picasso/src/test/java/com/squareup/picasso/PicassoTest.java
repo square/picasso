@@ -20,10 +20,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.concurrent.ExecutorService;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,6 +28,11 @@ import org.mockito.Mock;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.concurrent.ExecutorService;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.google.common.truth.Truth.assertThat;
@@ -68,14 +70,14 @@ public class PicassoTest {
   @Mock RequestHandler requestHandler;
   @Mock Cache cache;
   @Mock Listener listener;
-  @Mock Stats stats;
 
-  private Picasso picasso;
-  final Bitmap bitmap = makeBitmap();
+  private Picasso                 picasso;
+  private TestUtils.EventRecorder eventRecorder = new TestUtils.EventRecorder();
+  final   Bitmap                  bitmap        = makeBitmap();
 
   @Before public void setUp() {
     initMocks(this);
-    picasso = new Picasso(context, dispatcher, cache, listener, transformer, null, stats, ARGB_8888,
+    picasso = new Picasso(context, dispatcher, cache, listener, transformer, null, Collections.singletonList(eventRecorder), ARGB_8888,
         false, false);
   }
 
@@ -109,13 +111,13 @@ public class PicassoTest {
     when(cache.get(URI_KEY_1)).thenReturn(bitmap);
     Bitmap cached = picasso.quickMemoryCacheCheck(URI_KEY_1);
     assertThat(cached).isEqualTo(bitmap);
-    verify(stats).dispatchCacheHit();
+    assertThat(eventRecorder.cacheHits).isEqualTo(1);
   }
 
   @Test public void quickMemoryCheckReturnsNullIfNotInCache() {
     Bitmap cached = picasso.quickMemoryCacheCheck(URI_KEY_1);
     assertThat(cached).isNull();
-    verify(stats).dispatchCacheMiss();
+    assertThat(eventRecorder.cacheMisses).isEqualTo(1);
   }
 
   @Test public void completeInvokesSuccessOnAllSuccessfulRequests() {
@@ -336,7 +338,7 @@ public class PicassoTest {
   @Test public void shutdown() {
     picasso.shutdown();
     verify(cache).clear();
-    verify(stats).shutdown();
+    assertThat(eventRecorder.closed).isTrue();
     verify(dispatcher).shutdown();
     assertThat(picasso.shutdown).isTrue();
   }
@@ -345,7 +347,7 @@ public class PicassoTest {
     picasso.shutdown();
     picasso.shutdown();
     verify(cache).clear();
-    verify(stats).shutdown();
+    assertThat(eventRecorder.closed).isTrue();
     verify(dispatcher).shutdown();
     assertThat(picasso.shutdown).isTrue();
   }
@@ -435,11 +437,6 @@ public class PicassoTest {
       fail("Returning null from transformRequest() should throw");
     } catch (IllegalStateException expected) {
     }
-  }
-
-  @Test public void getSnapshotInvokesStats() {
-    picasso.getSnapshot();
-    verify(stats).createSnapshot();
   }
 
   @Test public void enableIndicators() {

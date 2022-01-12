@@ -30,8 +30,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
+import androidx.annotation.NonNull;
 
 import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static android.graphics.Bitmap.Config.ARGB_8888;
@@ -260,6 +265,41 @@ class TestUtils {
     Picasso picasso = mock(Picasso.class);
     when(picasso.getRequestHandlers()).thenReturn(Arrays.asList(requestHandler));
     return picasso;
+  }
+
+  static final List<EventListener> NO_EVENT_LISTENERS = Collections.emptyList();
+
+  static final class EventRecorder implements EventListener {
+    int cacheHits = 0;
+    int cacheMisses = 0;
+    long downloadSize = 0;
+    Bitmap decodedBitmap = null;
+    Bitmap transformedBitmap = null;
+    boolean closed = false;
+
+    @Override public void cacheHit() {
+      cacheHits++;
+    }
+
+    @Override public void cacheMiss() {
+      cacheMisses++;
+    }
+
+    @Override public void downloadFinished(long size) {
+      downloadSize = size;
+    }
+
+    @Override public void bitmapDecoded(@NonNull Bitmap bitmap) {
+      decodedBitmap = bitmap;
+    }
+
+    @Override public void bitmapTransformed(@NonNull Bitmap bitmap) {
+      transformedBitmap = bitmap;
+    }
+
+    @Override public void close() {
+      closed = true;
+    }
   }
 
   static Bitmap makeBitmap() {

@@ -27,6 +27,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -90,15 +91,15 @@ class Dispatcher {
   final Handler handler;
   final Handler mainThreadHandler;
   final Cache cache;
-  final Stats stats;
   final List<BitmapHunter> batch;
   final NetworkBroadcastReceiver receiver;
   final boolean scansNetworkChanges;
 
   boolean airplaneMode;
 
-  Dispatcher(Context context, ExecutorService service, Handler mainThreadHandler,
-      Downloader downloader, Cache cache, Stats stats) {
+  Dispatcher(
+          Context context, ExecutorService service, Handler mainThreadHandler,
+          Downloader downloader, Cache cache) {
     this.dispatcherThread = new DispatcherThread();
     this.dispatcherThread.start();
     Utils.flushStackLocalLeaks(dispatcherThread.getLooper());
@@ -112,7 +113,6 @@ class Dispatcher {
     this.downloader = downloader;
     this.mainThreadHandler = mainThreadHandler;
     this.cache = cache;
-    this.stats = stats;
     this.batch = new ArrayList<>(4);
     this.airplaneMode = Utils.isAirplaneModeOn(this.context);
     this.scansNetworkChanges = hasPermission(context, Manifest.permission.ACCESS_NETWORK_STATE);
@@ -199,7 +199,7 @@ class Dispatcher {
       return;
     }
 
-    hunter = forRequest(action.getPicasso(), this, cache, stats, action);
+    hunter = forRequest(action.getPicasso(), this, cache, action);
     hunter.future = service.submit(hunter);
     hunterMap.put(action.getKey(), hunter);
     if (dismissFailed) {

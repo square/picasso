@@ -21,14 +21,15 @@ import android.graphics.Matrix;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.view.Gravity;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import androidx.annotation.NonNull;
 import okio.BufferedSource;
 import okio.Okio;
 import okio.Source;
@@ -83,7 +84,6 @@ class BitmapHunter implements Runnable {
   final Picasso picasso;
   final Dispatcher dispatcher;
   final Cache cache;
-  final Stats stats;
   final String key;
   final Request data;
   final int memoryPolicy;
@@ -100,13 +100,13 @@ class BitmapHunter implements Runnable {
   int retryCount;
   Priority priority;
 
-  BitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats, Action action,
-      RequestHandler requestHandler) {
+  BitmapHunter(
+          Picasso picasso, Dispatcher dispatcher, Cache cache, @NonNull Action action,
+          RequestHandler requestHandler) {
     this.sequence = SEQUENCE_GENERATOR.incrementAndGet();
     this.picasso = picasso;
     this.dispatcher = dispatcher;
     this.cache = cache;
-    this.stats = stats;
     this.action = action;
     this.key = action.getKey();
     this.data = action.getRequest();
@@ -188,9 +188,7 @@ class BitmapHunter implements Runnable {
       exception = e;
       dispatcher.dispatchRetry(this);
     } catch (OutOfMemoryError e) {
-      StringWriter writer = new StringWriter();
-      stats.createSnapshot().dump(new PrintWriter(writer));
-      exception = new RuntimeException(writer.toString(), e);
+      exception = new RuntimeException("OutOfMemoryError", e);
       dispatcher.dispatchFailed(this);
     } catch (Exception e) {
       exception = e;
@@ -206,7 +204,7 @@ class BitmapHunter implements Runnable {
     if (shouldReadFromMemoryCache(memoryPolicy)) {
       bitmap = cache.get(key);
       if (bitmap != null) {
-        stats.dispatchCacheHit();
+        picasso.cacheHit();
         loadedFrom = MEMORY;
         if (picasso.loggingEnabled) {
           log(OWNER_HUNTER, VERB_DECODED, data.logId(), "from cache");
@@ -241,7 +239,7 @@ class BitmapHunter implements Runnable {
       if (picasso.loggingEnabled) {
         log(OWNER_HUNTER, VERB_DECODED, data.logId());
       }
-      stats.dispatchBitmapDecoded(bitmap);
+      picasso.bitmapDecoded(bitmap);
       if (data.needsTransformation() || exifOrientation != 0) {
         synchronized (DECODE_LOCK) {
           if (data.needsMatrixTransform() || exifOrientation != 0) {
@@ -258,7 +256,7 @@ class BitmapHunter implements Runnable {
           }
         }
         if (bitmap != null) {
-          stats.dispatchBitmapTransformed(bitmap);
+          picasso.bitmapTransformed(bitmap);
         }
       }
     }
@@ -420,8 +418,9 @@ class BitmapHunter implements Runnable {
     Thread.currentThread().setName(builder.toString());
   }
 
-  static BitmapHunter forRequest(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats,
-      Action action) {
+  static BitmapHunter forRequest(
+          Picasso picasso, Dispatcher dispatcher, Cache cache,
+          Action action) {
     Request request = action.getRequest();
     List<RequestHandler> requestHandlers = picasso.getRequestHandlers();
 
@@ -430,11 +429,11 @@ class BitmapHunter implements Runnable {
     for (int i = 0, count = requestHandlers.size(); i < count; i++) {
       RequestHandler requestHandler = requestHandlers.get(i);
       if (requestHandler.canHandleRequest(request)) {
-        return new BitmapHunter(picasso, dispatcher, cache, stats, action, requestHandler);
+        return new BitmapHunter(picasso, dispatcher, cache, action, requestHandler);
       }
     }
 
-    return new BitmapHunter(picasso, dispatcher, cache, stats, action, ERRORING_HANDLER);
+    return new BitmapHunter(picasso, dispatcher, cache, action, ERRORING_HANDLER);
   }
 
   static Bitmap applyCustomTransformations(List<Transformation> transformations, Bitmap result) {

@@ -426,7 +426,7 @@ public class RequestCreator {
     String key = createKey(finalData, new StringBuilder());
 
     Action action = new GetAction(picasso, finalData, memoryPolicy, networkPolicy, tag, key);
-    return forRequest(picasso, picasso.dispatcher, picasso.cache, picasso.stats, action).hunt();
+    return forRequest(picasso, picasso.dispatcher, picasso.cache, action).hunt();
   }
 
   /**

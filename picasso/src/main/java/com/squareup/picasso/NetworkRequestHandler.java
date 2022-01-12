@@ -16,7 +16,10 @@
 package com.squareup.picasso;
 
 import android.net.NetworkInfo;
+
 import java.io.IOException;
+
+import androidx.annotation.NonNull;
 import okhttp3.CacheControl;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -29,11 +32,9 @@ class NetworkRequestHandler extends RequestHandler {
   private static final String SCHEME_HTTPS = "https";
 
   private final Downloader downloader;
-  private final Stats stats;
 
-  NetworkRequestHandler(Downloader downloader, Stats stats) {
+  NetworkRequestHandler(Downloader downloader) {
     this.downloader = downloader;
-    this.stats = stats;
   }
 
   @Override public boolean canHandleRequest(Request data) {
@@ -62,7 +63,7 @@ class NetworkRequestHandler extends RequestHandler {
       throw new ContentLengthException("Received response with 0 content-length header.");
     }
     if (loadedFrom == NETWORK && body.contentLength() > 0) {
-      stats.dispatchDownloadFinished(body.contentLength());
+      picasso.downloadFinished(body.contentLength());
     }
     return new Result(body.source(), loadedFrom);
   }

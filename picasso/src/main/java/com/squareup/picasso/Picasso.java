@@ -54,6 +54,7 @@ import static com.squareup.picasso.Utils.VERB_COMPLETED;
 import static com.squareup.picasso.Utils.VERB_ERRORED;
 import static com.squareup.picasso.Utils.VERB_RESUMED;
 import static com.squareup.picasso.Utils.checkMain;
+import static com.squareup.picasso.Utils.checkNotNull;
 import static com.squareup.picasso.Utils.log;
 
 /**
@@ -151,11 +152,11 @@ public class Picasso {
   private final RequestTransformer requestTransformer;
   private final CleanupThread cleanupThread;
   private final List<RequestHandler> requestHandlers;
+  private final List<EventListener> eventListeners;
 
   final Context context;
   final Dispatcher dispatcher;
   final Cache cache;
-  final Stats stats;
   final Map<Object, Action> targetToAction;
   final Map<ImageView, DeferredRequestCreator> targetToDeferredRequestCreator;
   final ReferenceQueue<Object> referenceQueue;
@@ -167,7 +168,7 @@ public class Picasso {
   boolean shutdown;
 
   Picasso(Context context, Dispatcher dispatcher, Cache cache, Listener listener,
-      RequestTransformer requestTransformer, List<RequestHandler> extraRequestHandlers, Stats stats,
+      RequestTransformer requestTransformer, List<RequestHandler> extraRequestHandlers, List<? extends EventListener> eventListeners,
       Bitmap.Config defaultBitmapConfig, boolean indicatorsEnabled, boolean loggingEnabled) {
     this.context = context;
     this.dispatcher = dispatcher;
@@ -192,10 +193,10 @@ public class Picasso {
     allRequestHandlers.add(new ContentStreamRequestHandler(context));
     allRequestHandlers.add(new AssetRequestHandler(context));
     allRequestHandlers.add(new FileRequestHandler(context));
-    allRequestHandlers.add(new NetworkRequestHandler(dispatcher.downloader, stats));
+    allRequestHandlers.add(new NetworkRequestHandler(dispatcher.downloader));
     requestHandlers = Collections.unmodifiableList(allRequestHandlers);
 
-    this.stats = stats;
+    this.eventListeners = Collections.unmodifiableList(eventListeners);
     this.targetToAction = new WeakHashMap<>();
     this.targetToDeferredRequestCreator = new WeakHashMap<>();
     this.indicatorsEnabled = indicatorsEnabled;
@@ -432,15 +433,6 @@ public class Picasso {
     return loggingEnabled;
   }
 
-  /**
-   * Creates a {@link StatsSnapshot} of the current stats for this instance.
-   * <p>
-   * <b>NOTE:</b> The snapshot may not always be completely up-to-date if requests are still in
-   * progress.
-   */
-  @SuppressWarnings("UnusedDeclaration") public StatsSnapshot getSnapshot() {
-    return stats.createSnapshot();
-  }
 
   /** Stops this instance from accepting further requests. */
   public void shutdown() {
@@ -451,8 +443,9 @@ public class Picasso {
       return;
     }
     cache.clear();
+
+    close();
     cleanupThread.shutdown();
-    stats.shutdown();
     dispatcher.shutdown();
     for (DeferredRequestCreator deferredRequestCreator : targetToDeferredRequestCreator.values()) {
       deferredRequestCreator.cancel();
@@ -501,11 +494,59 @@ public class Picasso {
   Bitmap quickMemoryCacheCheck(String key) {
     Bitmap cached = cache.get(key);
     if (cached != null) {
-      stats.dispatchCacheHit();
+      cacheHit();
     } else {
-      stats.dispatchCacheMiss();
+      cacheMiss();
     }
     return cached;
+  }
+
+  void cacheHit() {
+    int numListeners = eventListeners.size();
+    for (int i = 0; i < numListeners; i++) {
+      EventListener listener = eventListeners.get(i);
+      listener.cacheHit();
+    }
+  }
+
+  void cacheMiss() {
+    int numListeners = eventListeners.size();
+    for (int i = 0; i < numListeners; i++) {
+      EventListener listener = eventListeners.get(i);
+      listener.cacheMiss();
+    }
+  }
+
+  void downloadFinished(long size) {
+    int numListeners = eventListeners.size();
+    for (int i = 0; i < numListeners; i++) {
+      EventListener listener = eventListeners.get(i);
+      listener.downloadFinished(size);
+    }
+  }
+
+  void bitmapDecoded(@NonNull Bitmap bitmap) {
+    int numListeners = eventListeners.size();
+    for (int i = 0; i < numListeners; i++) {
+      EventListener listener = eventListeners.get(i);
+      listener.bitmapDecoded(bitmap);
+    }
+  }
+
+  void bitmapTransformed(@NonNull Bitmap bitmap) {
+    int numListeners = eventListeners.size();
+    for (int i = 0; i < numListeners; i++) {
+      EventListener listener = eventListeners.get(i);
+      listener.bitmapTransformed(bitmap);
+    }
+  }
+
+  void close() {
+    int numListeners = eventListeners.size();
+    for (int i = 0; i < numListeners; i++) {
+      EventListener listener = eventListeners.get(i);
+      listener.close();
+    }
   }
 
   void complete(BitmapHunter hunter) {
@@ -717,7 +758,8 @@ public class Picasso {
     private Bitmap.Config defaultBitmapConfig;
 
     private boolean indicatorsEnabled;
-    private boolean loggingEnabled;
+    private boolean             loggingEnabled;
+    private final List<EventListener> eventListeners = new ArrayList<>();
 
     /** Start building a new {@link Picasso} instance. */
     public Builder(@NonNull Context context) {
@@ -791,6 +833,14 @@ public class Picasso {
       return this;
     }
 
+    /** Register a {@link EventListener}. */
+    @NonNull
+    public Builder addEventListener(@NonNull EventListener eventListener) {
+      checkNotNull(eventListener, "eventListener == null");
+      eventListeners.add(eventListener);
+      return this;
+    }
+
     /**
      * Specify a transformer for all incoming requests.
      * <p>
@@ -857,11 +907,9 @@ public class Picasso {
         transformer = RequestTransformer.IDENTITY;
       }
 
-      Stats stats = new Stats(cache);
+      Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, downloader, cache);
 
-      Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, downloader, cache, stats);
-
-      return new Picasso(context, dispatcher, cache, listener, transformer, requestHandlers, stats,
+      return new Picasso(context, dispatcher, cache, listener, transformer, requestHandlers, eventListeners,
           defaultBitmapConfig, indicatorsEnabled, loggingEnabled);
     }
   }

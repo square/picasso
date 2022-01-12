@@ -20,11 +20,7 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.net.Uri;
 import android.view.Gravity;
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.FutureTask;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,6 +28,14 @@ import org.mockito.Mock;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.ShadowBitmap;
 import org.robolectric.shadows.ShadowMatrix;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.FutureTask;
+
+import androidx.annotation.NonNull;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static androidx.exifinterface.media.ExifInterface.ORIENTATION_FLIP_HORIZONTAL;
@@ -60,6 +64,7 @@ import static com.squareup.picasso.TestUtils.FILE_1_URL;
 import static com.squareup.picasso.TestUtils.FILE_KEY_1;
 import static com.squareup.picasso.TestUtils.MEDIA_STORE_CONTENT_1_URL;
 import static com.squareup.picasso.TestUtils.MEDIA_STORE_CONTENT_KEY_1;
+import static com.squareup.picasso.TestUtils.NO_EVENT_LISTENERS;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_1;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_KEY_1;
 import static com.squareup.picasso.TestUtils.RESOURCE_ID_URI;
@@ -87,7 +92,6 @@ public class BitmapHunterTest {
   @Mock Context context;
   @Mock Picasso picasso;
   @Mock Cache cache;
-  @Mock Stats stats;
   @Mock Dispatcher dispatcher;
   @Mock Downloader downloader;
 
@@ -99,54 +103,49 @@ public class BitmapHunterTest {
 
   @Test public void nullDecodeResponseIsError() {
     Action action = mockAction(URI_KEY_1, URI_1);
-    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, null);
+    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, action, null);
     hunter.run();
     verify(dispatcher).dispatchFailed(hunter);
   }
 
   @Test public void runWithResultDispatchComplete() {
     Action action = mockAction(URI_KEY_1, URI_1);
-    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, bitmap);
+    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, action, bitmap);
     hunter.run();
     verify(dispatcher).dispatchComplete(hunter);
   }
 
   @Test public void runWithNoResultDispatchFailed() {
     Action action = mockAction(URI_KEY_1, URI_1);
-    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action);
+    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, action);
     hunter.run();
     verify(dispatcher).dispatchFailed(hunter);
   }
 
   @Test public void responseExceptionDispatchFailed() {
     Action action = mockAction(URI_KEY_1, URI_1);
-    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, null,
-        new NetworkRequestHandler.ResponseException(0, 504));
+    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, action, null,
+                                                   new NetworkRequestHandler.ResponseException(0, 504));
     hunter.run();
     verify(dispatcher).dispatchFailed(hunter);
   }
 
   @Test public void outOfMemoryDispatchFailed() {
-    when(stats.createSnapshot()).thenReturn(mock(StatsSnapshot.class));
 
     Action action = mockAction(URI_KEY_1, URI_1);
-    BitmapHunter hunter = new OOMBitmapHunter(picasso, dispatcher, cache, stats, action);
-    try {
-      hunter.run();
-    } catch (Throwable t) {
-      Exception exception = hunter.getException();
-      verify(dispatcher).dispatchFailed(hunter);
-      verify(stats).createSnapshot();
-      assertThat(hunter.getResult()).isNull();
-      assertThat(exception).isNotNull();
-      assertThat(exception.getCause()).isInstanceOf(OutOfMemoryError.class);
-    }
+    BitmapHunter hunter = new OOMBitmapHunter(picasso, dispatcher, cache, action);
+    hunter.run();
+    Exception exception = hunter.getException();
+    verify(dispatcher).dispatchFailed(hunter);
+    assertThat(hunter.getResult()).isNull();
+    assertThat(exception).isNotNull();
+    assertThat(exception).hasCauseThat().isInstanceOf(OutOfMemoryError.class);
   }
 
   @Test public void runWithIoExceptionDispatchRetry() {
     Action action = mockAction(URI_KEY_1, URI_1);
-    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, null,
-        new IOException());
+    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, action, null,
+                                                   new IOException());
     hunter.run();
     verify(dispatcher).dispatchRetry(hunter);
   }
@@ -154,11 +153,11 @@ public class BitmapHunterTest {
   @Test public void huntDecodesWhenNotInCache() throws Exception {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     TestableBitmapHunter hunter =
-        new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, bitmap);
+        new TestableBitmapHunter(picasso, dispatcher, cache, action, bitmap);
 
     Bitmap result = hunter.hunt();
     verify(cache).get(URI_KEY_1);
-    verify(hunter.requestHandler).load(action.getRequest(), 0);
+    verify(hunter.requestHandler).load(picasso, action.getRequest(), 0);
     assertThat(result).isEqualTo(bitmap);
   }
 
@@ -166,17 +165,17 @@ public class BitmapHunterTest {
     when(cache.get(URI_KEY_1)).thenReturn(bitmap);
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     TestableBitmapHunter hunter =
-        new TestableBitmapHunter(picasso, dispatcher, cache, stats, action, bitmap);
+        new TestableBitmapHunter(picasso, dispatcher, cache, action, bitmap);
 
     Bitmap result = hunter.hunt();
     verify(cache).get(URI_KEY_1);
-    verify(hunter.requestHandler, never()).load(action.getRequest(), 0);
+    verify(hunter.requestHandler, never()).load(picasso, action.getRequest(), 0);
     assertThat(result).isEqualTo(bitmap);
   }
 
   @Test public void huntUnrecognizedUri() throws Exception {
     Action action = mockAction(CUSTOM_URI_KEY, CUSTOM_URI);
-    BitmapHunter hunter = forRequest(picasso, dispatcher, cache, stats, action);
+    BitmapHunter hunter = forRequest(picasso, dispatcher, cache, action);
     try {
       hunter.hunt();
       fail("Unrecognized URI should throw exception.");
@@ -187,14 +186,14 @@ public class BitmapHunterTest {
   @Test public void huntDecodesWithRequestHandler() throws Exception {
     Action action = mockAction(CUSTOM_URI_KEY, CUSTOM_URI);
     BitmapHunter hunter = forRequest(mockPicasso(new CustomRequestHandler()), dispatcher,
-        cache, stats, action);
+                                     cache, action);
     Bitmap result = hunter.hunt();
     assertThat(result).isEqualTo(bitmap);
   }
 
   @Test public void attachSingleRequest() {
     Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
-    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action1);
+    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, action1);
     assertThat(hunter.action).isEqualTo(action1);
     hunter.detach(action1);
     hunter.attach(action1);
@@ -205,7 +204,7 @@ public class BitmapHunterTest {
   @Test public void attachMultipleRequests() {
     Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     Action action2 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
-    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action1);
+    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, action1);
     assertThat(hunter.actions).isNull();
     hunter.attach(action2);
     assertThat(hunter.actions).isNotNull();
@@ -214,7 +213,7 @@ public class BitmapHunterTest {
 
   @Test public void detachSingleRequest() {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
-    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action);
+    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, action);
     assertThat(hunter.action).isNotNull();
     hunter.detach(action);
     assertThat(hunter.action).isNull();
@@ -223,7 +222,7 @@ public class BitmapHunterTest {
   @Test public void detachMultipleRequests() {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     Action action2 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
-    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action);
+    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, action);
     hunter.attach(action2);
     hunter.detach(action2);
     assertThat(hunter.action).isNotNull();
@@ -235,7 +234,7 @@ public class BitmapHunterTest {
 
   @Test public void cancelSingleRequest() {
     Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
-    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action1);
+    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, action1);
     hunter.future = new FutureTask<>(mock(Runnable.class), mock(Object.class));
     assertThat(hunter.isCancelled()).isFalse();
     assertThat(hunter.cancel()).isFalse();
@@ -247,7 +246,7 @@ public class BitmapHunterTest {
   @Test public void cancelMultipleRequests() {
     Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     Action action2 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
-    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, stats, action1);
+    BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, action1);
     hunter.future = new FutureTask<>(mock(Runnable.class), mock(Object.class));
     hunter.attach(action2);
     assertThat(hunter.isCancelled()).isFalse();
@@ -263,84 +262,84 @@ public class BitmapHunterTest {
   @Test public void forContentProviderRequest() {
     Action action = mockAction(CONTENT_KEY_1, CONTENT_1_URL);
     BitmapHunter hunter = forRequest(mockPicasso(new ContentStreamRequestHandler(context)),
-        dispatcher, cache, stats, action);
+                                     dispatcher, cache, action);
     assertThat(hunter.requestHandler).isInstanceOf(ContentStreamRequestHandler.class);
   }
 
   @Test public void forMediaStoreRequest() {
     Action action = mockAction(MEDIA_STORE_CONTENT_KEY_1, MEDIA_STORE_CONTENT_1_URL);
     BitmapHunter hunter = forRequest(mockPicasso(new MediaStoreRequestHandler(context)), dispatcher,
-        cache, stats, action);
+                                     cache, action);
     assertThat(hunter.requestHandler).isInstanceOf(MediaStoreRequestHandler.class);
   }
 
   @Test public void forContactsPhotoRequest() {
     Action action = mockAction(CONTACT_KEY_1, CONTACT_URI_1);
     BitmapHunter hunter = forRequest(mockPicasso(new ContactsPhotoRequestHandler(context)),
-        dispatcher, cache, stats, action);
+                                     dispatcher, cache, action);
     assertThat(hunter.requestHandler).isInstanceOf(ContactsPhotoRequestHandler.class);
   }
 
   @Test public void forContactsThumbnailPhotoRequest() {
     Action action = mockAction(CONTACT_PHOTO_KEY_1, CONTACT_PHOTO_URI_1);
     BitmapHunter hunter = forRequest(mockPicasso(new ContactsPhotoRequestHandler(context)),
-      dispatcher, cache, stats, action);
+                                     dispatcher, cache, action);
     assertThat(hunter.requestHandler).isInstanceOf(ContactsPhotoRequestHandler.class);
   }
 
   @Test public void forNetworkRequest() {
     Action action = mockAction(URI_KEY_1, URI_1);
-    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
-        dispatcher, cache, stats, action);
+    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader)),
+                                     dispatcher, cache, action);
     assertThat(hunter.requestHandler).isInstanceOf(NetworkRequestHandler.class);
   }
 
   @Test public void forFileWithAuthorityRequest() {
     Action action = mockAction(FILE_KEY_1, FILE_1_URL);
     BitmapHunter hunter = forRequest(mockPicasso(new FileRequestHandler(context)), dispatcher,
-        cache, stats, action);
+                                     cache, action);
     assertThat(hunter.requestHandler).isInstanceOf(FileRequestHandler.class);
   }
 
   @Test public void forAndroidResourceRequest() {
     Action action = mockAction(RESOURCE_ID_KEY_1, null, null, RESOURCE_ID_1);
     BitmapHunter hunter = forRequest(mockPicasso(new ResourceRequestHandler(context)), dispatcher,
-        cache, stats, action);
+                                     cache, action);
     assertThat(hunter.requestHandler).isInstanceOf(ResourceRequestHandler.class);
   }
 
   @Test public void forAndroidResourceUriWithId() {
     Action action = mockAction(RESOURCE_ID_URI_KEY, RESOURCE_ID_URI);
     BitmapHunter hunter = forRequest(mockPicasso(new ResourceRequestHandler(context)), dispatcher,
-        cache, stats, action);
+                                     cache, action);
     assertThat(hunter.requestHandler).isInstanceOf(ResourceRequestHandler.class);
   }
 
   @Test public void forAndroidResourceUriWithType() {
     Action action = mockAction(RESOURCE_TYPE_URI_KEY, RESOURCE_TYPE_URI);
     BitmapHunter hunter = forRequest(mockPicasso(new ResourceRequestHandler(context)), dispatcher,
-        cache, stats, action);
+                                     cache, action);
     assertThat(hunter.requestHandler).isInstanceOf(ResourceRequestHandler.class);
   }
 
   @Test public void forAssetRequest() {
     Action action = mockAction(ASSET_KEY_1, ASSET_URI_1);
     BitmapHunter hunter = forRequest(mockPicasso(new AssetRequestHandler(context)), dispatcher,
-        cache, stats, action);
+                                     cache, action);
     assertThat(hunter.requestHandler).isInstanceOf(AssetRequestHandler.class);
   }
 
   @Test public void forFileWithNoPathSegments() {
     Action action = mockAction("keykeykey", Uri.fromFile(new File("/")));
     BitmapHunter hunter = forRequest(mockPicasso(new FileRequestHandler(context)), dispatcher,
-        cache, stats, action);
+                                     cache, action);
     assertThat(hunter.requestHandler).isInstanceOf(FileRequestHandler.class);
   }
 
   @Test public void forCustomRequest() {
     Action action = mockAction(CUSTOM_URI_KEY, CUSTOM_URI);
     BitmapHunter hunter = forRequest(mockPicasso(new CustomRequestHandler()), dispatcher, cache,
-        stats, action);
+                                     action);
     assertThat(hunter.requestHandler).isInstanceOf(CustomRequestHandler.class);
   }
 
@@ -349,24 +348,24 @@ public class BitmapHunterTest {
     RequestHandler handler = new AssetRequestHandler(context);
     List<RequestHandler> handlers = Collections.singletonList(handler);
     // Must use non-mock constructor because that is where Picasso's list of handlers is created.
-    Picasso picasso = new Picasso(context, dispatcher, cache, null, null, handlers, stats,
+    Picasso picasso = new Picasso(context, dispatcher, cache, null, null, handlers, NO_EVENT_LISTENERS,
         ARGB_8888, false, false);
-    BitmapHunter hunter = forRequest(picasso, dispatcher, cache, stats, action);
+    BitmapHunter hunter = forRequest(picasso, dispatcher, cache, action);
     assertThat(hunter.requestHandler).isEqualTo(handler);
   }
 
   @Test public void sequenceIsIncremented() {
     Action action = mockAction(URI_KEY_1, URI_1);
     Picasso picasso = mockPicasso();
-    BitmapHunter hunter1 = forRequest(picasso, dispatcher, cache, stats, action);
-    BitmapHunter hunter2 = forRequest(picasso, dispatcher, cache, stats, action);
+    BitmapHunter hunter1 = forRequest(picasso, dispatcher, cache, action);
+    BitmapHunter hunter2 = forRequest(picasso, dispatcher, cache, action);
     assertThat(hunter2.sequence).isGreaterThan(hunter1.sequence);
   }
 
   @Test public void getPriorityWithNoRequests() {
     Action action = mockAction(URI_KEY_1, URI_1);
-    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
-        dispatcher, cache, stats, action);
+    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader)),
+                                     dispatcher, cache, action);
     hunter.detach(action);
     assertThat(hunter.getAction()).isNull();
     assertThat(hunter.getActions()).isNull();
@@ -375,8 +374,8 @@ public class BitmapHunterTest {
 
   @Test public void getPriorityWithSingleRequest() {
     Action action = mockAction(URI_KEY_1, URI_1, HIGH);
-    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
-        dispatcher, cache, stats, action);
+    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader)),
+                                     dispatcher, cache, action);
     assertThat(hunter.getAction()).isEqualTo(action);
     assertThat(hunter.getActions()).isNull();
     assertThat(hunter.getPriority()).isEqualTo(HIGH);
@@ -385,8 +384,8 @@ public class BitmapHunterTest {
   @Test public void getPriorityWithMultipleRequests() {
     Action action1 = mockAction(URI_KEY_1, URI_1, NORMAL);
     Action action2 = mockAction(URI_KEY_1, URI_1, HIGH);
-    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
-        dispatcher, cache, stats, action1);
+    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader)),
+                                     dispatcher, cache, action1);
     hunter.attach(action2);
     assertThat(hunter.getAction()).isEqualTo(action1);
     assertThat(hunter.getActions()).containsExactly(action2);
@@ -396,8 +395,8 @@ public class BitmapHunterTest {
   @Test public void getPriorityAfterDetach() {
     Action action1 = mockAction(URI_KEY_1, URI_1, NORMAL);
     Action action2 = mockAction(URI_KEY_1, URI_1, HIGH);
-    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader, stats)),
-        dispatcher, cache, stats, action1);
+    BitmapHunter hunter = forRequest(mockPicasso(new NetworkRequestHandler(downloader)),
+                                     dispatcher, cache, action1);
     hunter.attach(action2);
     assertThat(hunter.getAction()).isEqualTo(action1);
     assertThat(hunter.getActions()).containsExactly(action2);
@@ -1035,19 +1034,22 @@ public class BitmapHunterTest {
   }
 
   private static class TestableBitmapHunter extends BitmapHunter {
-    TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats,
-        Action action) {
-      this(picasso, dispatcher, cache, stats, action, null);
+    TestableBitmapHunter(
+            Picasso picasso, Dispatcher dispatcher, Cache cache,
+            Action action) {
+      this(picasso, dispatcher, cache, action, null);
     }
 
-    TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats,
-        Action action, Bitmap result) {
-      this(picasso, dispatcher, cache, stats, action, result, null);
+    TestableBitmapHunter(
+            Picasso picasso, Dispatcher dispatcher, Cache cache,
+            Action action, Bitmap result) {
+      this(picasso, dispatcher, cache, action, result, null);
     }
 
-    TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats,
-        Action action, Bitmap result, IOException exception) {
-      super(picasso, dispatcher, cache, stats, action, spy(new TestableRequestHandler(result, exception)));
+    TestableBitmapHunter(
+            Picasso picasso, Dispatcher dispatcher, Cache cache,
+            Action action, Bitmap result, IOException exception) {
+      super(picasso, dispatcher, cache, action, spy(new TestableRequestHandler(result, exception)));
     }
 
     @Override Picasso.LoadedFrom getLoadedFrom() {
@@ -1081,9 +1083,10 @@ public class BitmapHunterTest {
   }
 
   private static class OOMBitmapHunter extends BitmapHunter {
-    OOMBitmapHunter(Picasso picasso, Dispatcher dispatcher, Cache cache, Stats stats,
-        Action action) {
-      super(picasso, dispatcher, cache, stats, action, spy(new OOMRequestHandler()));
+    OOMBitmapHunter(
+            Picasso picasso, Dispatcher dispatcher, Cache cache,
+            Action action) {
+      super(picasso, dispatcher, cache, action, new OOMRequestHandler());
     }
   }
 
