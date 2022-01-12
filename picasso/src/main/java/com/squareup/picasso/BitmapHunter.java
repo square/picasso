@@ -75,7 +75,9 @@ class BitmapHunter implements Runnable {
       return true;
     }
 
-    @Override public Result load(@NonNull Picasso picasso, Request request, int networkPolicy) throws IOException {
+    @Override public Result load(@NonNull Picasso picasso,
+                                 @NonNull Request request,
+                                 int networkPolicy) throws IOException {
       throw new IllegalStateException("Unrecognized type of request: " + request);
     }
   };

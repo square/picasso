@@ -39,7 +39,9 @@ class ContentStreamRequestHandler extends RequestHandler {
     return SCHEME_CONTENT.equals(data.uri.getScheme());
   }
 
-  @Override public Result load(@NonNull Picasso picasso, Request request, int networkPolicy) throws IOException {
+  @Override public Result load(@NonNull Picasso picasso,
+                               @NonNull Request request,
+                               int networkPolicy) throws IOException {
     Source source = Okio.source(getInputStream(request));
     return new Result(source, DISK);
   }

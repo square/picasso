@@ -39,7 +39,9 @@ class FileRequestHandler extends ContentStreamRequestHandler {
     return SCHEME_FILE.equals(data.uri.getScheme());
   }
 
-  @Override public Result load(@NonNull Picasso picasso, Request request, int networkPolicy) throws IOException {
+  @Override public Result load(@NonNull Picasso picasso,
+                               @NonNull Request request,
+                               int networkPolicy) throws IOException {
     Source source = Okio.source(getInputStream(request));
     return new Result(null, source, DISK, getFileExifRotation(request.uri));
   }

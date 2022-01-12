@@ -42,7 +42,9 @@ class NetworkRequestHandler extends RequestHandler {
     return (SCHEME_HTTP.equals(scheme) || SCHEME_HTTPS.equals(scheme));
   }
 
-  @Override public Result load(@NonNull Picasso picasso, Request request, int networkPolicy) throws IOException {
+  @Override public Result load(@NonNull Picasso picasso,
+                               @NonNull Request request,
+                               int networkPolicy) throws IOException {
     okhttp3.Request downloaderRequest = createRequest(request, networkPolicy);
     Response response = downloader.load(downloaderRequest);
     ResponseBody body = response.body();

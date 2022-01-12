@@ -6,10 +6,12 @@ buildscript {
     'sourceCompatibility': JavaVersion.VERSION_1_7,
     'targetCompatibility': JavaVersion.VERSION_1_7,
     'okhttp': '3.10.0',
+    'okio': '1.14.0',
   ]
 
   ext.deps = [
     okhttp: "com.squareup.okhttp3:okhttp:${versions.okhttp}",
+    okio: "com.squareup.okhttp3:okhttp:${versions.okhttp}",
     mockWebServer: "com.squareup.okhttp3:mockwebserver:${versions.okhttp}",
     pollexor: 'com.squareup:pollexor:2.0.4',
     androidxAnnotations: 'androidx.annotation:annotation:1.0.0',
@@ -25,21 +27,23 @@ buildscript {
   ext.isCi = "true" == System.getenv('CI')
 
   repositories {
-    jcenter()
+    mavenCentral()
     google()
+    jcenter()
   }
 
   dependencies {
     classpath 'com.android.tools.build:gradle:7.0.4'
-    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.21"
+    classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.31'
     classpath 'com.vanniktech:gradle-maven-publish-plugin:0.18.0'
   }
 }
 
 subprojects {
   repositories {
-    jcenter()
+    mavenCentral()
     google()
+    jcenter()
   }
 
   tasks.withType(Test) {

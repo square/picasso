@@ -55,7 +55,9 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
             && MediaStore.AUTHORITY.equals(uri.getAuthority()));
   }
 
-  @Override public Result load(@NonNull Picasso picasso, Request request, int networkPolicy) throws IOException {
+  @Override public Result load(@NonNull Picasso picasso,
+                               @NonNull Request request,
+                               int networkPolicy) throws IOException {
     ContentResolver contentResolver = context.getContentResolver();
     int exifOrientation = getExifOrientation(contentResolver, request.uri);
 
@@ -75,7 +77,7 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
       options.inJustDecodeBounds = true;
 
       calculateInSampleSize(request.targetWidth, request.targetHeight, picassoKind.width,
-              picassoKind.height, options, request);
+        picassoKind.height, options, request);
 
       Bitmap bitmap;
 
@@ -86,7 +88,7 @@ class MediaStoreRequestHandler extends ContentStreamRequestHandler {
         bitmap = Video.Thumbnails.getThumbnail(contentResolver, id, kind, options);
       } else {
         bitmap =
-            Images.Thumbnails.getThumbnail(contentResolver, id, picassoKind.androidKind, options);
+          Images.Thumbnails.getThumbnail(contentResolver, id, picassoKind.androidKind, options);
       }
 
       if (bitmap != null) {

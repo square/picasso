@@ -46,7 +46,9 @@ class AssetRequestHandler extends RequestHandler {
         && !uri.getPathSegments().isEmpty() && ANDROID_ASSET.equals(uri.getPathSegments().get(0)));
   }
 
-  @Override public Result load(@NonNull Picasso picasso, Request request, int networkPolicy) throws IOException {
+  @Override public Result load(@NonNull Picasso picasso,
+                               @NonNull Request request,
+                               int networkPolicy) throws IOException {
     if (assetManager == null) {
       synchronized (lock) {
         if (assetManager == null) {

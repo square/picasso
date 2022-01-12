@@ -111,8 +111,8 @@ public class Picasso {
     HIGH
   }
 
-  static final String TAG = "Picasso";
-  static final Handler HANDLER = new Handler(Looper.getMainLooper()) {
+  public static final String  TAG     = "Picasso";
+  static final        Handler HANDLER = new Handler(Looper.getMainLooper()) {
     @Override public void handleMessage(Message msg) {
       switch (msg.what) {
         case HUNTER_BATCH_COMPLETE: {
@@ -167,9 +167,16 @@ public class Picasso {
 
   boolean shutdown;
 
-  Picasso(Context context, Dispatcher dispatcher, Cache cache, Listener listener,
-      RequestTransformer requestTransformer, List<RequestHandler> extraRequestHandlers, List<? extends EventListener> eventListeners,
-      Bitmap.Config defaultBitmapConfig, boolean indicatorsEnabled, boolean loggingEnabled) {
+  Picasso(Context context,
+          Dispatcher dispatcher,
+          Cache cache,
+          Listener listener,
+          RequestTransformer requestTransformer,
+          List<RequestHandler> extraRequestHandlers,
+          List<? extends EventListener> eventListeners,
+          Bitmap.Config defaultBitmapConfig,
+          boolean indicatorsEnabled,
+          boolean loggingEnabled) {
     this.context = context;
     this.dispatcher = dispatcher;
     this.cache = cache;
@@ -909,8 +916,16 @@ public class Picasso {
 
       Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, downloader, cache);
 
-      return new Picasso(context, dispatcher, cache, listener, transformer, requestHandlers, eventListeners,
-          defaultBitmapConfig, indicatorsEnabled, loggingEnabled);
+      return new Picasso(context,
+        dispatcher,
+        cache,
+        listener,
+        transformer,
+        requestHandlers,
+        eventListeners,
+        defaultBitmapConfig,
+        indicatorsEnabled,
+        loggingEnabled);
     }
   }
 
