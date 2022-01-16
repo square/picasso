@@ -138,8 +138,7 @@ internal class BitmapHunter(
       }
     }
 
-    val result = resultReference.get() as? Bitmap
-      ?: throw AssertionError("Request handler neither returned a result nor an exception.")
+    val result = resultReference.get() as? Bitmap ?: return null
     val bitmap = result.bitmap
     if (picasso.loggingEnabled) {
       log(OWNER_HUNTER, VERB_DECODED, data.logId())
