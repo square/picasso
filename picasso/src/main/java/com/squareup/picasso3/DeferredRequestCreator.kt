@@ -20,66 +20,62 @@ import android.view.View
 import android.view.View.OnAttachStateChangeListener
 import android.view.ViewTreeObserver
 import android.widget.ImageView
-import androidx.annotation.VisibleForTesting
-
 
 internal class DeferredRequestCreator(
-        private val creator: RequestCreator,
-        @field:VisibleForTesting private val target: ImageView,
-        @field:VisibleForTesting private var callback: Callback?
+  private val creator: RequestCreator,
+  internal val target: ImageView,
+  internal var callback: Callback?
 ) : ViewTreeObserver.OnPreDrawListener, OnAttachStateChangeListener {
+  init {
+    target.addOnAttachStateChangeListener(this)
 
+    // Only add the pre-draw listener if the view is already attached.
+    // See: https://github.com/square/picasso/issues/1321
+    if (target.windowToken != null) {
+      onViewAttachedToWindow(target)
+    }
+  }
 
-    init {
-        target.addOnAttachStateChangeListener(this)
+  override fun onViewAttachedToWindow(view: View) {
+    view.viewTreeObserver.addOnPreDrawListener(this)
+  }
 
-        // Only add the pre-draw listener if the view is already attached.
-        // See: https://github.com/square/picasso/issues/1321
-        if (target.windowToken != null) {
-            onViewAttachedToWindow(target)
-        }
+  override fun onViewDetachedFromWindow(view: View) {
+    view.viewTreeObserver.removeOnPreDrawListener(this)
+  }
+
+  override fun onPreDraw(): Boolean {
+    val vto = target.viewTreeObserver
+    if (!vto.isAlive) {
+      return true
     }
 
-    override fun onViewAttachedToWindow(view: View) {
-        view.viewTreeObserver.addOnPreDrawListener(this)
+    val width = target.width
+    val height = target.height
+
+    if (width <= 0 || height <= 0) {
+      return true
     }
 
-    override fun onViewDetachedFromWindow(view: View) {
-        view.viewTreeObserver.removeOnPreDrawListener(this)
+    target.removeOnAttachStateChangeListener(this)
+    vto.removeOnPreDrawListener(this)
+
+    creator.unfit().resize(width, height).into(target, callback)
+    return true
+  }
+
+  fun cancel() {
+    creator.clearTag()
+    callback = null
+
+    target.removeOnAttachStateChangeListener(this)
+
+    val vto = target.viewTreeObserver
+    if (vto.isAlive) {
+      vto.removeOnPreDrawListener(this)
     }
+  }
 
-    override fun onPreDraw(): Boolean {
-        val vto = target.viewTreeObserver
-        if (!vto.isAlive) {
-            return true
-        }
-
-        val width = target.width
-        val height = target.height
-
-        if (width <= 0 || height <= 0) {
-            return true
-        }
-
-        target.removeOnAttachStateChangeListener(this)
-        vto.removeOnPreDrawListener(this)
-
-        creator.unfit().resize(width, height).into(target, callback)
-        return true
-    }
-
-    fun cancel() {
-        creator.clearTag()
-        callback = null
-
-        target.removeOnAttachStateChangeListener(this)
-
-        val vto = target.viewTreeObserver
-        if (vto.isAlive) {
-            vto.removeOnPreDrawListener(this)
-        }
-    }
-
-    val tag: Any?
-        get() = creator.tag
+  val tag: Any?
+    get() = creator.tag
 }
