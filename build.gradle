@@ -93,6 +93,26 @@ subprojects {
     }
   }
 
+  plugins.withId('com.vanniktech.maven.publish') {
+    publishing {
+      repositories {
+        /**
+         * Want to push to an internal repository for testing?
+         * Set the following properties in ~/.gradle/gradle.properties.
+         *
+         * internalUrl=YOUR_INTERNAL_URL
+         * internalUsername=YOUR_USERNAME
+         * internalPassword=YOUR_PASSWORD
+         */
+        maven {
+          name = "internal"
+          url = providers.gradleProperty("internalUrl").forUseAtConfigurationTime()
+          credentials(PasswordCredentials)
+        }
+      }
+    }
+  }
+
   plugins.apply('checkstyle')
 
   task('checkstyle', type: Checkstyle) {
