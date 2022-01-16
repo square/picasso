@@ -15,10 +15,6 @@
  */
 package com.squareup.picasso3
 
-import com.squareup.picasso3.PicassoExecutorService
-import com.squareup.picasso3.PicassoExecutorService.PicassoFutureTask
-import com.squareup.picasso3.BitmapHunter
-import com.squareup.picasso3.Picasso
 import java.util.concurrent.Future
 import java.util.concurrent.FutureTask
 import java.util.concurrent.PriorityBlockingQueue
@@ -29,11 +25,12 @@ import java.util.concurrent.TimeUnit.MILLISECONDS
 /**
  * The default [java.util.concurrent.ExecutorService] used for new [Picasso] instances.
  *
- *
  * Exists as a custom type so that we can differentiate the use of defaults versus a user-supplied
  * instance.
  */
-internal class PicassoExecutorService(threadFactory: ThreadFactory?) : ThreadPoolExecutor(
+internal class PicassoExecutorService(
+  threadFactory: ThreadFactory
+) : ThreadPoolExecutor(
   DEFAULT_THREAD_COUNT, DEFAULT_THREAD_COUNT, 0, MILLISECONDS,
   PriorityBlockingQueue(), threadFactory
 ) {
@@ -43,10 +40,8 @@ internal class PicassoExecutorService(threadFactory: ThreadFactory?) : ThreadPoo
     return ftask
   }
 
-  private class PicassoFutureTask internal constructor(private val hunter: BitmapHunter) :
-    FutureTask<BitmapHunter?>(
-      hunter, null
-    ), Comparable<PicassoFutureTask> {
+  private class PicassoFutureTask(private val hunter: BitmapHunter) :
+    FutureTask<BitmapHunter>(hunter, null), Comparable<PicassoFutureTask> {
     override fun compareTo(other: PicassoFutureTask): Int {
       val p1 = hunter.priority
       val p2 = other.hunter.priority
