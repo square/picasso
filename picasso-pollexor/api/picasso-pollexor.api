@@ -1,0 +1,17 @@
+public final class com/squareup/picasso3/pollexor/PollexorRequestTransformer : com/squareup/picasso3/Picasso$RequestTransformer {
+	public static final field Companion Lcom/squareup/picasso3/pollexor/PollexorRequestTransformer$Companion;
+	public fun <init> (Lcom/squareup/pollexor/Thumbor;)V
+	public fun <init> (Lcom/squareup/pollexor/Thumbor;Lcom/squareup/picasso3/pollexor/PollexorRequestTransformer$Callback;)V
+	public fun <init> (Lcom/squareup/pollexor/Thumbor;Z)V
+	public fun <init> (Lcom/squareup/pollexor/Thumbor;ZLcom/squareup/picasso3/pollexor/PollexorRequestTransformer$Callback;)V
+	public synthetic fun <init> (Lcom/squareup/pollexor/Thumbor;ZLcom/squareup/picasso3/pollexor/PollexorRequestTransformer$Callback;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun transformRequest (Lcom/squareup/picasso3/Request;)Lcom/squareup/picasso3/Request;
+}
+
+public abstract interface class com/squareup/picasso3/pollexor/PollexorRequestTransformer$Callback {
+	public abstract fun configure (Lcom/squareup/pollexor/ThumborUrlBuilder;)V
+}
+
+public final class com/squareup/picasso3/pollexor/PollexorRequestTransformer$Companion {
+}
+

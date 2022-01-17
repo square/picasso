@@ -46,10 +46,16 @@ buildscript {
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.40.0'
     classpath 'net.ltgt.gradle:gradle-errorprone-plugin:2.0.2'
     classpath 'com.vanniktech:gradle-maven-publish-plugin:0.18.0'
+    classpath 'org.jetbrains.kotlinx:binary-compatibility-validator:0.8.0'
   }
 }
 
 apply plugin: 'com.github.ben-manes.versions'
+apply plugin: 'binary-compatibility-validator'
+
+apiValidation {
+  ignoredProjects += ['picasso-sample']
+}
 
 allprojects {
   repositories {

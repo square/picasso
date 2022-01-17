@@ -1,0 +1,357 @@
+public abstract interface class com/squareup/picasso3/BitmapTarget {
+	public abstract fun onBitmapFailed (Ljava/lang/Exception;Landroid/graphics/drawable/Drawable;)V
+	public abstract fun onBitmapLoaded (Landroid/graphics/Bitmap;Lcom/squareup/picasso3/Picasso$LoadedFrom;)V
+	public abstract fun onPrepareLoad (Landroid/graphics/drawable/Drawable;)V
+}
+
+public final class com/squareup/picasso3/BitmapUtils {
+	public static final field INSTANCE Lcom/squareup/picasso3/BitmapUtils;
+	public static final fun calculateInSampleSize (IIIILandroid/graphics/BitmapFactory$Options;Lcom/squareup/picasso3/Request;)V
+	public static final fun calculateInSampleSize (IILandroid/graphics/BitmapFactory$Options;Lcom/squareup/picasso3/Request;)V
+	public static final fun createBitmapOptions (Lcom/squareup/picasso3/Request;)Landroid/graphics/BitmapFactory$Options;
+	public final fun decodeResource (Landroid/content/Context;Lcom/squareup/picasso3/Request;)Landroid/graphics/Bitmap;
+	public static final fun decodeStream (Lokio/Source;Lcom/squareup/picasso3/Request;)Landroid/graphics/Bitmap;
+	public final fun isXmlResource (Landroid/content/res/Resources;I)Z
+	public static final fun requiresInSampleSize (Landroid/graphics/BitmapFactory$Options;)Z
+	public static final fun shouldResize (ZIIII)Z
+}
+
+public abstract interface class com/squareup/picasso3/Callback {
+	public abstract fun onError (Ljava/lang/Throwable;)V
+	public abstract fun onSuccess ()V
+}
+
+public class com/squareup/picasso3/Callback$EmptyCallback : com/squareup/picasso3/Callback {
+	public fun <init> ()V
+	public fun onError (Ljava/lang/Throwable;)V
+	public fun onSuccess ()V
+}
+
+public abstract interface class com/squareup/picasso3/DrawableLoader {
+	public abstract fun load (I)Landroid/graphics/drawable/Drawable;
+}
+
+public abstract interface class com/squareup/picasso3/EventListener : java/io/Closeable {
+	public abstract fun bitmapDecoded (Landroid/graphics/Bitmap;)V
+	public abstract fun bitmapTransformed (Landroid/graphics/Bitmap;)V
+	public abstract fun cacheHit ()V
+	public abstract fun cacheMaxSize (I)V
+	public abstract fun cacheMiss ()V
+	public abstract fun cacheSize (I)V
+	public abstract fun close ()V
+	public abstract fun downloadFinished (J)V
+}
+
+public final class com/squareup/picasso3/EventListener$DefaultImpls {
+	public static fun close (Lcom/squareup/picasso3/EventListener;)V
+}
+
+public abstract interface annotation class com/squareup/picasso3/Initializer : java/lang/annotation/Annotation {
+}
+
+public final class com/squareup/picasso3/MemoryPolicy : java/lang/Enum {
+	public static final field Companion Lcom/squareup/picasso3/MemoryPolicy$Companion;
+	public static final field NO_CACHE Lcom/squareup/picasso3/MemoryPolicy;
+	public static final field NO_STORE Lcom/squareup/picasso3/MemoryPolicy;
+	public final field index I
+	public static final fun shouldReadFromMemoryCache (I)Z
+	public static final fun shouldWriteToMemoryCache (I)Z
+	public static fun valueOf (Ljava/lang/String;)Lcom/squareup/picasso3/MemoryPolicy;
+	public static fun values ()[Lcom/squareup/picasso3/MemoryPolicy;
+}
+
+public final class com/squareup/picasso3/MemoryPolicy$Companion {
+	public final fun shouldReadFromMemoryCache (I)Z
+	public final fun shouldWriteToMemoryCache (I)Z
+}
+
+public final class com/squareup/picasso3/NetworkPolicy : java/lang/Enum {
+	public static final field Companion Lcom/squareup/picasso3/NetworkPolicy$Companion;
+	public static final field NO_CACHE Lcom/squareup/picasso3/NetworkPolicy;
+	public static final field NO_STORE Lcom/squareup/picasso3/NetworkPolicy;
+	public static final field OFFLINE Lcom/squareup/picasso3/NetworkPolicy;
+	public final field index I
+	public static final fun isOfflineOnly (I)Z
+	public static final fun shouldReadFromDiskCache (I)Z
+	public static final fun shouldWriteToDiskCache (I)Z
+	public static fun valueOf (Ljava/lang/String;)Lcom/squareup/picasso3/NetworkPolicy;
+	public static fun values ()[Lcom/squareup/picasso3/NetworkPolicy;
+}
+
+public final class com/squareup/picasso3/NetworkPolicy$Companion {
+	public final fun isOfflineOnly (I)Z
+	public final fun shouldReadFromDiskCache (I)Z
+	public final fun shouldWriteToDiskCache (I)Z
+}
+
+public class com/squareup/picasso3/Picasso : androidx/lifecycle/LifecycleObserver {
+	public static final field TAG Ljava/lang/String;
+	public fun cancelRequest (Landroid/widget/ImageView;)V
+	public fun cancelRequest (Landroid/widget/RemoteViews;I)V
+	public fun cancelRequest (Lcom/squareup/picasso3/BitmapTarget;)V
+	public fun cancelTag (Ljava/lang/Object;)V
+	public fun evictAll ()V
+	public fun getIndicatorsEnabled ()Z
+	public fun invalidate (Landroid/net/Uri;)V
+	public fun invalidate (Ljava/io/File;)V
+	public fun invalidate (Ljava/lang/String;)V
+	public fun isLoggingEnabled ()Z
+	public fun load (I)Lcom/squareup/picasso3/RequestCreator;
+	public fun load (Landroid/net/Uri;)Lcom/squareup/picasso3/RequestCreator;
+	public fun load (Ljava/io/File;)Lcom/squareup/picasso3/RequestCreator;
+	public fun load (Ljava/lang/String;)Lcom/squareup/picasso3/RequestCreator;
+	public fun newBuilder ()Lcom/squareup/picasso3/Picasso$Builder;
+	public fun pauseTag (Ljava/lang/Object;)V
+	public fun resumeTag (Ljava/lang/Object;)V
+	public fun setIndicatorsEnabled (Z)V
+	public fun setLoggingEnabled (Z)V
+	public fun shutdown ()V
+}
+
+public class com/squareup/picasso3/Picasso$Builder {
+	public fun <init> (Landroid/content/Context;)V
+	public fun addEventListener (Lcom/squareup/picasso3/EventListener;)Lcom/squareup/picasso3/Picasso$Builder;
+	public fun addRequestHandler (Lcom/squareup/picasso3/RequestHandler;)Lcom/squareup/picasso3/Picasso$Builder;
+	public fun addRequestTransformer (Lcom/squareup/picasso3/Picasso$RequestTransformer;)Lcom/squareup/picasso3/Picasso$Builder;
+	public fun build ()Lcom/squareup/picasso3/Picasso;
+	public fun callFactory (Lokhttp3/Call$Factory;)Lcom/squareup/picasso3/Picasso$Builder;
+	public fun client (Lokhttp3/OkHttpClient;)Lcom/squareup/picasso3/Picasso$Builder;
+	public fun defaultBitmapConfig (Landroid/graphics/Bitmap$Config;)Lcom/squareup/picasso3/Picasso$Builder;
+	public fun executor (Ljava/util/concurrent/ExecutorService;)Lcom/squareup/picasso3/Picasso$Builder;
+	public fun indicatorsEnabled (Z)Lcom/squareup/picasso3/Picasso$Builder;
+	public fun listener (Lcom/squareup/picasso3/Picasso$Listener;)Lcom/squareup/picasso3/Picasso$Builder;
+	public fun loggingEnabled (Z)Lcom/squareup/picasso3/Picasso$Builder;
+	public fun threadFactory (Ljava/util/concurrent/ThreadFactory;)Lcom/squareup/picasso3/Picasso$Builder;
+	public fun withCacheSize (I)Lcom/squareup/picasso3/Picasso$Builder;
+}
+
+public abstract interface class com/squareup/picasso3/Picasso$Listener {
+	public abstract fun onImageLoadFailed (Lcom/squareup/picasso3/Picasso;Landroid/net/Uri;Ljava/lang/Exception;)V
+}
+
+public final class com/squareup/picasso3/Picasso$LoadedFrom : java/lang/Enum {
+	public static final field DISK Lcom/squareup/picasso3/Picasso$LoadedFrom;
+	public static final field MEMORY Lcom/squareup/picasso3/Picasso$LoadedFrom;
+	public static final field NETWORK Lcom/squareup/picasso3/Picasso$LoadedFrom;
+	public static fun valueOf (Ljava/lang/String;)Lcom/squareup/picasso3/Picasso$LoadedFrom;
+	public static fun values ()[Lcom/squareup/picasso3/Picasso$LoadedFrom;
+}
+
+public final class com/squareup/picasso3/Picasso$Priority : java/lang/Enum {
+	public static final field HIGH Lcom/squareup/picasso3/Picasso$Priority;
+	public static final field LOW Lcom/squareup/picasso3/Picasso$Priority;
+	public static final field NORMAL Lcom/squareup/picasso3/Picasso$Priority;
+	public static fun valueOf (Ljava/lang/String;)Lcom/squareup/picasso3/Picasso$Priority;
+	public static fun values ()[Lcom/squareup/picasso3/Picasso$Priority;
+}
+
+public abstract interface class com/squareup/picasso3/Picasso$RequestTransformer {
+	public abstract fun transformRequest (Lcom/squareup/picasso3/Request;)Lcom/squareup/picasso3/Request;
+}
+
+public final class com/squareup/picasso3/Request {
+	public static final field Companion Lcom/squareup/picasso3/Request$Companion;
+	public static final field KEY_SEPARATOR C
+	public final field centerCrop Z
+	public final field centerCropGravity I
+	public final field centerInside Z
+	public final field config Landroid/graphics/Bitmap$Config;
+	public final field hasRotationPivot Z
+	public field id I
+	public field key Ljava/lang/String;
+	public final field memoryPolicy I
+	public final field networkPolicy I
+	public final field onlyScaleDown Z
+	public final field priority Lcom/squareup/picasso3/Picasso$Priority;
+	public final field purgeable Z
+	public final field resourceId I
+	public final field rotationDegrees F
+	public final field rotationPivotX F
+	public final field rotationPivotY F
+	public field started J
+	public final field targetHeight I
+	public final field targetWidth I
+	public field transformations Ljava/util/List;
+	public final field uri Landroid/net/Uri;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getStableKey ()Ljava/lang/String;
+	public final fun getTag ()Ljava/lang/Object;
+	public final fun hasSize ()Z
+	public final fun logId ()Ljava/lang/String;
+	public final fun needsMatrixTransform ()Z
+	public final fun newBuilder ()Lcom/squareup/picasso3/Request$Builder;
+	public final fun plainId ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/squareup/picasso3/Request$Builder {
+	public fun <init> (I)V
+	public fun <init> (Landroid/net/Uri;)V
+	public final fun build ()Lcom/squareup/picasso3/Request;
+	public final fun centerCrop ()Lcom/squareup/picasso3/Request$Builder;
+	public final fun centerCrop (I)Lcom/squareup/picasso3/Request$Builder;
+	public static synthetic fun centerCrop$default (Lcom/squareup/picasso3/Request$Builder;IILjava/lang/Object;)Lcom/squareup/picasso3/Request$Builder;
+	public final fun centerInside ()Lcom/squareup/picasso3/Request$Builder;
+	public final fun clearCenterCrop ()Lcom/squareup/picasso3/Request$Builder;
+	public final fun clearCenterInside ()Lcom/squareup/picasso3/Request$Builder;
+	public final fun clearOnlyScaleDown ()Lcom/squareup/picasso3/Request$Builder;
+	public final fun clearResize ()Lcom/squareup/picasso3/Request$Builder;
+	public final fun clearRotation ()Lcom/squareup/picasso3/Request$Builder;
+	public final fun clearTag ()Lcom/squareup/picasso3/Request$Builder;
+	public final fun config (Landroid/graphics/Bitmap$Config;)Lcom/squareup/picasso3/Request$Builder;
+	public final fun getCenterCrop ()Z
+	public final fun getCenterCropGravity ()I
+	public final fun getCenterInside ()Z
+	public final fun getConfig ()Landroid/graphics/Bitmap$Config;
+	public final fun getHasRotationPivot ()Z
+	public final fun getMemoryPolicy ()I
+	public final fun getNetworkPolicy ()I
+	public final fun getOnlyScaleDown ()Z
+	public final fun getPriority ()Lcom/squareup/picasso3/Picasso$Priority;
+	public final fun getPurgeable ()Z
+	public final fun getResourceId ()I
+	public final fun getRotationDegrees ()F
+	public final fun getRotationPivotX ()F
+	public final fun getRotationPivotY ()F
+	public final fun getStableKey ()Ljava/lang/String;
+	public final fun getTag ()Ljava/lang/Object;
+	public final fun getTargetHeight ()I
+	public final fun getTargetWidth ()I
+	public final fun getTransformations ()Ljava/util/List;
+	public final fun getUri ()Landroid/net/Uri;
+	public final fun hasImage ()Z
+	public final fun hasPriority ()Z
+	public final fun hasSize ()Z
+	public final fun memoryPolicy (Lcom/squareup/picasso3/MemoryPolicy;[Lcom/squareup/picasso3/MemoryPolicy;)Lcom/squareup/picasso3/Request$Builder;
+	public final fun networkPolicy (Lcom/squareup/picasso3/NetworkPolicy;[Lcom/squareup/picasso3/NetworkPolicy;)Lcom/squareup/picasso3/Request$Builder;
+	public final fun onlyScaleDown ()Lcom/squareup/picasso3/Request$Builder;
+	public final fun priority (Lcom/squareup/picasso3/Picasso$Priority;)Lcom/squareup/picasso3/Request$Builder;
+	public final fun purgeable ()Lcom/squareup/picasso3/Request$Builder;
+	public final fun resize (II)Lcom/squareup/picasso3/Request$Builder;
+	public final fun rotate (F)Lcom/squareup/picasso3/Request$Builder;
+	public final fun rotate (FFF)Lcom/squareup/picasso3/Request$Builder;
+	public final fun setCenterCrop (Z)V
+	public final fun setCenterCropGravity (I)V
+	public final fun setCenterInside (Z)V
+	public final fun setConfig (Landroid/graphics/Bitmap$Config;)V
+	public final fun setHasRotationPivot (Z)V
+	public final fun setMemoryPolicy (I)V
+	public final fun setNetworkPolicy (I)V
+	public final fun setOnlyScaleDown (Z)V
+	public final fun setPriority (Lcom/squareup/picasso3/Picasso$Priority;)V
+	public final fun setPurgeable (Z)V
+	public final fun setResourceId (I)Lcom/squareup/picasso3/Request$Builder;
+	public final fun setResourceId (I)V
+	public final fun setRotationDegrees (F)V
+	public final fun setRotationPivotX (F)V
+	public final fun setRotationPivotY (F)V
+	public final fun setStableKey (Ljava/lang/String;)V
+	public final fun setTag (Ljava/lang/Object;)V
+	public final fun setTargetHeight (I)V
+	public final fun setTargetWidth (I)V
+	public final fun setTransformations (Ljava/util/List;)V
+	public final fun setUri (Landroid/net/Uri;)Lcom/squareup/picasso3/Request$Builder;
+	public final fun setUri (Landroid/net/Uri;)V
+	public final fun stableKey (Ljava/lang/String;)Lcom/squareup/picasso3/Request$Builder;
+	public final fun tag (Ljava/lang/Object;)Lcom/squareup/picasso3/Request$Builder;
+	public final fun transform (Lcom/squareup/picasso3/Transformation;)Lcom/squareup/picasso3/Request$Builder;
+	public final fun transform (Ljava/util/List;)Lcom/squareup/picasso3/Request$Builder;
+}
+
+public final class com/squareup/picasso3/Request$Companion {
+}
+
+public class com/squareup/picasso3/RequestCreator {
+	public fun centerCrop ()Lcom/squareup/picasso3/RequestCreator;
+	public fun centerCrop (I)Lcom/squareup/picasso3/RequestCreator;
+	public fun centerInside ()Lcom/squareup/picasso3/RequestCreator;
+	public fun config (Landroid/graphics/Bitmap$Config;)Lcom/squareup/picasso3/RequestCreator;
+	public fun error (I)Lcom/squareup/picasso3/RequestCreator;
+	public fun error (Landroid/graphics/drawable/Drawable;)Lcom/squareup/picasso3/RequestCreator;
+	public fun fetch ()V
+	public fun fetch (Lcom/squareup/picasso3/Callback;)V
+	public fun fit ()Lcom/squareup/picasso3/RequestCreator;
+	public fun get ()Landroid/graphics/Bitmap;
+	public fun into (Landroid/widget/ImageView;)V
+	public fun into (Landroid/widget/ImageView;Lcom/squareup/picasso3/Callback;)V
+	public fun into (Landroid/widget/RemoteViews;II)V
+	public fun into (Landroid/widget/RemoteViews;IILandroid/app/Notification;)V
+	public fun into (Landroid/widget/RemoteViews;IILandroid/app/Notification;Ljava/lang/String;)V
+	public fun into (Landroid/widget/RemoteViews;IILandroid/app/Notification;Ljava/lang/String;Lcom/squareup/picasso3/Callback;)V
+	public fun into (Landroid/widget/RemoteViews;IILcom/squareup/picasso3/Callback;)V
+	public fun into (Landroid/widget/RemoteViews;I[I)V
+	public fun into (Landroid/widget/RemoteViews;I[ILcom/squareup/picasso3/Callback;)V
+	public fun into (Lcom/squareup/picasso3/BitmapTarget;)V
+	public fun memoryPolicy (Lcom/squareup/picasso3/MemoryPolicy;[Lcom/squareup/picasso3/MemoryPolicy;)Lcom/squareup/picasso3/RequestCreator;
+	public fun networkPolicy (Lcom/squareup/picasso3/NetworkPolicy;[Lcom/squareup/picasso3/NetworkPolicy;)Lcom/squareup/picasso3/RequestCreator;
+	public fun noFade ()Lcom/squareup/picasso3/RequestCreator;
+	public fun noPlaceholder ()Lcom/squareup/picasso3/RequestCreator;
+	public fun onlyScaleDown ()Lcom/squareup/picasso3/RequestCreator;
+	public fun placeholder (I)Lcom/squareup/picasso3/RequestCreator;
+	public fun placeholder (Landroid/graphics/drawable/Drawable;)Lcom/squareup/picasso3/RequestCreator;
+	public fun priority (Lcom/squareup/picasso3/Picasso$Priority;)Lcom/squareup/picasso3/RequestCreator;
+	public fun purgeable ()Lcom/squareup/picasso3/RequestCreator;
+	public fun resize (II)Lcom/squareup/picasso3/RequestCreator;
+	public fun resizeDimen (II)Lcom/squareup/picasso3/RequestCreator;
+	public fun rotate (F)Lcom/squareup/picasso3/RequestCreator;
+	public fun rotate (FFF)Lcom/squareup/picasso3/RequestCreator;
+	public fun stableKey (Ljava/lang/String;)Lcom/squareup/picasso3/RequestCreator;
+	public fun tag (Ljava/lang/Object;)Lcom/squareup/picasso3/RequestCreator;
+	public fun transform (Lcom/squareup/picasso3/Transformation;)Lcom/squareup/picasso3/RequestCreator;
+	public fun transform (Ljava/util/List;)Lcom/squareup/picasso3/RequestCreator;
+}
+
+public abstract class com/squareup/picasso3/RequestHandler {
+	public fun <init> ()V
+	public abstract fun canHandleRequest (Lcom/squareup/picasso3/Request;)Z
+	public fun getRetryCount ()I
+	public abstract fun load (Lcom/squareup/picasso3/Picasso;Lcom/squareup/picasso3/Request;Lcom/squareup/picasso3/RequestHandler$Callback;)V
+	public fun shouldRetry (ZLandroid/net/NetworkInfo;)Z
+	public fun supportsReplay ()Z
+}
+
+public abstract interface class com/squareup/picasso3/RequestHandler$Callback {
+	public abstract fun onError (Ljava/lang/Throwable;)V
+	public abstract fun onSuccess (Lcom/squareup/picasso3/RequestHandler$Result;)V
+}
+
+public abstract class com/squareup/picasso3/RequestHandler$Result {
+	public final field exifRotation I
+	public final field loadedFrom Lcom/squareup/picasso3/Picasso$LoadedFrom;
+	public synthetic fun <init> (Lcom/squareup/picasso3/Picasso$LoadedFrom;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Lcom/squareup/picasso3/Picasso$LoadedFrom;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class com/squareup/picasso3/RequestHandler$Result$Bitmap : com/squareup/picasso3/RequestHandler$Result {
+	public fun <init> (Landroid/graphics/Bitmap;Lcom/squareup/picasso3/Picasso$LoadedFrom;)V
+	public fun <init> (Landroid/graphics/Bitmap;Lcom/squareup/picasso3/Picasso$LoadedFrom;I)V
+	public synthetic fun <init> (Landroid/graphics/Bitmap;Lcom/squareup/picasso3/Picasso$LoadedFrom;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getBitmap ()Landroid/graphics/Bitmap;
+}
+
+public final class com/squareup/picasso3/RequestHandler$Result$Drawable : com/squareup/picasso3/RequestHandler$Result {
+	public fun <init> (Landroid/graphics/drawable/Drawable;Lcom/squareup/picasso3/Picasso$LoadedFrom;)V
+	public fun <init> (Landroid/graphics/drawable/Drawable;Lcom/squareup/picasso3/Picasso$LoadedFrom;I)V
+	public synthetic fun <init> (Landroid/graphics/drawable/Drawable;Lcom/squareup/picasso3/Picasso$LoadedFrom;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getDrawable ()Landroid/graphics/drawable/Drawable;
+}
+
+public final class com/squareup/picasso3/ResourceDrawableRequestHandler : com/squareup/picasso3/RequestHandler {
+	public static final field Companion Lcom/squareup/picasso3/ResourceDrawableRequestHandler$Companion;
+	public synthetic fun <init> (Landroid/content/Context;Lcom/squareup/picasso3/DrawableLoader;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun canHandleRequest (Lcom/squareup/picasso3/Request;)Z
+	public static final fun create (Landroid/content/Context;)Lcom/squareup/picasso3/ResourceDrawableRequestHandler;
+	public static final fun create (Landroid/content/Context;Lcom/squareup/picasso3/DrawableLoader;)Lcom/squareup/picasso3/ResourceDrawableRequestHandler;
+	public fun load (Lcom/squareup/picasso3/Picasso;Lcom/squareup/picasso3/Request;Lcom/squareup/picasso3/RequestHandler$Callback;)V
+}
+
+public final class com/squareup/picasso3/ResourceDrawableRequestHandler$Companion {
+	public final fun create (Landroid/content/Context;)Lcom/squareup/picasso3/ResourceDrawableRequestHandler;
+	public final fun create (Landroid/content/Context;Lcom/squareup/picasso3/DrawableLoader;)Lcom/squareup/picasso3/ResourceDrawableRequestHandler;
+}
+
+public abstract interface class com/squareup/picasso3/Transformation {
+	public abstract fun key ()Ljava/lang/String;
+	public abstract fun transform (Lcom/squareup/picasso3/RequestHandler$Result$Bitmap;)Lcom/squareup/picasso3/RequestHandler$Result$Bitmap;
+}
+

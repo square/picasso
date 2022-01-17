@@ -1,0 +1,52 @@
+public final class com/squareup/picasso3/stats/StatsEventListener : com/squareup/picasso3/EventListener {
+	public fun <init> ()V
+	public fun bitmapDecoded (Landroid/graphics/Bitmap;)V
+	public fun bitmapTransformed (Landroid/graphics/Bitmap;)V
+	public fun cacheHit ()V
+	public fun cacheMaxSize (I)V
+	public fun cacheMiss ()V
+	public fun cacheSize (I)V
+	public fun close ()V
+	public fun downloadFinished (J)V
+	public final fun getSnapshot ()Lcom/squareup/picasso3/stats/StatsEventListener$Snapshot;
+}
+
+public final class com/squareup/picasso3/stats/StatsEventListener$Snapshot {
+	public fun <init> (IIJJJJJDDDIIIJ)V
+	public final fun component1 ()I
+	public final fun component10 ()D
+	public final fun component11 ()I
+	public final fun component12 ()I
+	public final fun component13 ()I
+	public final fun component14 ()J
+	public final fun component2 ()I
+	public final fun component3 ()J
+	public final fun component4 ()J
+	public final fun component5 ()J
+	public final fun component6 ()J
+	public final fun component7 ()J
+	public final fun component8 ()D
+	public final fun component9 ()D
+	public final fun copy (IIJJJJJDDDIIIJ)Lcom/squareup/picasso3/stats/StatsEventListener$Snapshot;
+	public static synthetic fun copy$default (Lcom/squareup/picasso3/stats/StatsEventListener$Snapshot;IIJJJJJDDDIIIJILjava/lang/Object;)Lcom/squareup/picasso3/stats/StatsEventListener$Snapshot;
+	public final fun dump ()V
+	public final fun dump (Lokio/BufferedSink;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAverageDownloadSize ()D
+	public final fun getAverageOriginalBitmapSize ()D
+	public final fun getAverageTransformedBitmapSize ()D
+	public final fun getCacheHits ()J
+	public final fun getCacheMisses ()J
+	public final fun getDownloadCount ()I
+	public final fun getMaxSize ()I
+	public final fun getOriginalBitmapCount ()I
+	public final fun getSize ()I
+	public final fun getTimeStamp ()J
+	public final fun getTotalDownloadSize ()J
+	public final fun getTotalOriginalBitmapSize ()J
+	public final fun getTotalTransformedBitmapSize ()J
+	public final fun getTransformedBitmapCount ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
