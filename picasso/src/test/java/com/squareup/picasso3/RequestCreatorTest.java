@@ -612,42 +612,10 @@ public class RequestCreatorTest {
     assertThat(actionCaptor.getValue().getTag()).isEqualTo("tag");
   }
 
-  @Test public void nullMemoryPolicy() {
-    try {
-      new RequestCreator().memoryPolicy(null);
-      fail("Null memory policy should throw exception.");
-    } catch (NullPointerException ignored) {
-    }
-  }
-
-  @Test public void nullAdditionalMemoryPolicy() {
-    try {
-      new RequestCreator().memoryPolicy(MemoryPolicy.NO_CACHE, (MemoryPolicy[]) null);
-      fail("Null additional memory policy should throw exception.");
-    } catch (NullPointerException ignored) {
-    }
-  }
-
   @Test public void nullMemoryPolicyAssholeStyle() {
     try {
       new RequestCreator().memoryPolicy(MemoryPolicy.NO_CACHE, new MemoryPolicy[] { null });
       fail("Null additional memory policy should throw exception.");
-    } catch (NullPointerException ignored) {
-    }
-  }
-
-  @Test public void nullNetworkPolicy() {
-    try {
-      new RequestCreator().networkPolicy(null);
-      fail("Null network policy should throw exception.");
-    } catch (NullPointerException ignored) {
-    }
-  }
-
-  @Test public void nullAdditionalNetworkPolicy() {
-    try {
-      new RequestCreator().networkPolicy(NetworkPolicy.NO_CACHE, (NetworkPolicy[]) null);
-      fail("Null additional network policy should throw exception.");
     } catch (NullPointerException ignored) {
     }
   }
@@ -760,11 +728,6 @@ public class RequestCreatorTest {
 
   @Test public void invalidPriority() {
     try {
-      new RequestCreator().priority(null);
-      fail("Null priority should throw exception.");
-    } catch (NullPointerException ignored) {
-    }
-    try {
       new RequestCreator().priority(LOW).priority(HIGH);
       fail("Two priorities should throw exception.");
     } catch (IllegalStateException ignored) {
@@ -783,16 +746,6 @@ public class RequestCreatorTest {
       fail("Two tags should throw exception.");
     } catch (IllegalStateException ignored) {
     }
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void nullTransformationsInvalid() {
-    new RequestCreator().transform((Transformation) null);
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void nullTransformationListInvalid() {
-    new RequestCreator().transform((List<Transformation>) null);
   }
 
   @Test(expected = IllegalArgumentException.class)
