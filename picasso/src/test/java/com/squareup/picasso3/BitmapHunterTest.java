@@ -102,7 +102,6 @@ public final class BitmapHunterTest {
   @Mock Context context;
   @Mock Picasso picasso;
   final PlatformLruCache cache = new PlatformLruCache(2048);
-  final Stats stats = new Stats(cache);
   @Mock Dispatcher dispatcher;
 
   final Bitmap bitmap = makeBitmap();
@@ -138,17 +137,6 @@ public final class BitmapHunterTest {
         new NetworkRequestHandler.ResponseException(504, 0));
     hunter.run();
     verify(dispatcher).dispatchFailed(hunter);
-  }
-
-  @Test public void outOfMemoryDispatchFailed() {
-    Action action = mockAction(URI_KEY_1, URI_1);
-    BitmapHunter hunter = new OOMBitmapHunter(picasso, dispatcher, cache, action);
-    hunter.run();
-    Exception exception = hunter.getException();
-    verify(dispatcher).dispatchFailed(hunter);
-    assertThat(hunter.getResult()).isNull();
-    //assertThat(exception).hasMessageThat().contains("BEGIN PICASSO STATS");
-    assertThat(exception.getCause()).isInstanceOf(OutOfMemoryError.class);
   }
 
   @Test public void runWithIoExceptionDispatchRetry() {
@@ -1105,22 +1093,6 @@ public final class BitmapHunterTest {
 
     @Override int getRetryCount() {
       return 1;
-    }
-  }
-
-  private static class OOMBitmapHunter extends BitmapHunter {
-    OOMBitmapHunter(Picasso picasso, Dispatcher dispatcher, PlatformLruCache cache, Action action) {
-      super(picasso, dispatcher, cache, action, spy(new OOMRequestHandler()));
-    }
-  }
-
-  private static class OOMRequestHandler extends TestableRequestHandler {
-    OOMRequestHandler() {
-      super(null, null);
-    }
-
-    @Override public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull Callback callback) {
-      callback.onError(new OutOfMemoryError());
     }
   }
 

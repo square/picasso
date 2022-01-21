@@ -73,7 +73,6 @@ public class DispatcherTest {
   @Mock PicassoExecutorService service;
   @Mock ExecutorService serviceMock;
   final PlatformLruCache cache = new PlatformLruCache(2048);
-  @Mock Stats stats;
   private Dispatcher dispatcher;
 
   final Bitmap bitmap1 = makeBitmap();
@@ -547,7 +546,7 @@ public class DispatcherTest {
     when(context.getSystemService(Context.CONNECTIVITY_SERVICE)).thenReturn(connectivityManager);
     when(context.checkCallingOrSelfPermission(anyString())).thenReturn(
         scansNetworkChanges ? PERMISSION_GRANTED : PERMISSION_DENIED);
-    return new Dispatcher(context, service, new Handler(Looper.getMainLooper()), cache, stats);
+    return new Dispatcher(context, service, new Handler(Looper.getMainLooper()), cache);
   }
 
   private static final RequestHandler RETRYING_REQUEST_HANDLER = new RequestHandler() {
