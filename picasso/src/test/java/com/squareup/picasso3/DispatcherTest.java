@@ -577,13 +577,13 @@ public class DispatcherTest {
 
   private static Action noopAction(Request data) {
     return new Action(mockPicasso(), data) {
-      @Override void complete(RequestHandler.Result result) {
+      @Override public void complete(RequestHandler.Result result) {
       }
 
-      @Override void error(Exception e) {
+      @Override public void error(Exception e) {
       }
 
-      @NonNull @Override Object getTarget() {
+      @NonNull @Override public Object getTarget() {
         throw new AssertionError();
       }
     };

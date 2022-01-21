@@ -1,18 +1,18 @@
 /*
-* Copyright (C) 2013 Square, Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright (C) 2013 Square, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.squareup.picasso3;
 
 import android.app.Notification;
@@ -54,7 +54,6 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 class TestUtils {
@@ -66,7 +65,8 @@ class TestUtils {
   static final Uri URI_1 = Uri.parse("http://example.com/1.png");
   static final Uri URI_2 = Uri.parse("http://example.com/2.png");
   static final String STABLE_1 = "stableExampleKey1";
-  static final String URI_KEY_1 = new Request.Builder(URI_1).build().key;
+  static final Request SIMPLE_REQUEST = new Request.Builder(URI_1).build();
+  static final String URI_KEY_1 = SIMPLE_REQUEST.key;
   static final String URI_KEY_2 = new Request.Builder(URI_2).build().key;
   static final String STABLE_URI_KEY_1 = new Request.Builder(URI_1).stableKey(STABLE_1).build().key;
   static final File FILE_1 = new File("C:\\windows\\system32\\logo.exe");
@@ -141,58 +141,49 @@ class TestUtils {
     return new Request.Builder(uri).build();
   }
 
-  static Action mockAction(String key, Uri uri) {
+  static FakeAction mockAction(String key, Uri uri) {
     return mockAction(key, uri, null, 0, null, null);
   }
 
-  static Action mockAction(String key, Uri uri, Object target) {
+  static FakeAction mockAction(String key, Uri uri, Object target) {
     return mockAction(key, uri, target, 0, null, null);
   }
 
-  static Action mockAction(String key, Uri uri, Priority priority) {
+  static FakeAction mockAction(String key, Uri uri, Priority priority) {
     return mockAction(key, uri, null, 0, priority, null);
   }
 
-  static Action mockAction(String key, Uri uri, String tag) {
+  static FakeAction mockAction(String key, Uri uri, String tag) {
     return mockAction(key, uri, null, 0, null, tag);
   }
 
-  static Action mockAction(String key, Uri uri, Object target, String tag) {
+  static FakeAction mockAction(String key, Uri uri, Object target, String tag) {
     return mockAction(key, uri, target, 0, null, tag);
   }
 
-  static Action mockAction(String key, Uri uri, Object target, int resourceId) {
+  static FakeAction mockAction(String key, Uri uri, Object target, int resourceId) {
     return mockAction(key, uri, target, resourceId, null, null);
   }
 
-  static Action mockAction(String key, Uri uri, Object target, int resourceId, Priority priority,
-                           String tag) {
+  static FakeAction mockAction(String key, Uri uri, Object target, int resourceId,
+      Priority priority, String tag) {
     Request.Builder builder = new Request.Builder(uri, resourceId, DEFAULT_CONFIG).stableKey(key);
     if (priority != null) {
       builder.priority(priority);
     }
+    if (tag != null) {
+      builder.tag(tag);
+    }
     Request request = builder.build();
-    return mockAction(request, target, tag);
+    return mockAction(request, target);
   }
 
-  static Action mockAction(Request request) {
-    return mockAction(request, null, null);
+  static FakeAction mockAction(Request request) {
+    return mockAction(request, null);
   }
 
-  static Action mockAction(Request request, final Object target, String tag) {
-    Action action = spy(new Action(mockPicasso(), request) {
-      @Override void complete(RequestHandler.Result result) {
-      }
-
-      @Override void error(Exception e) {
-      }
-
-      @Override Object getTarget() {
-        return target;
-      }
-    });
-    when(action.getTag()).thenReturn(tag != null ? tag : action);
-    return action;
+  static FakeAction mockAction(Request request, final Object target) {
+    return new FakeAction(mockPicasso(), request, target);
   }
 
   static Action mockCanceledAction() {
@@ -309,6 +300,31 @@ class TestUtils {
       }
     };
   }
+
+  static class FakeAction extends Action {
+    Object target;
+    RequestHandler.Result completedResult;
+    Exception errorException;
+
+    public FakeAction(@NonNull Picasso picasso, @NonNull Request request, @NonNull Object target) {
+      super(picasso, request);
+      this.target = target;
+    }
+
+    @Override public void complete(@NonNull RequestHandler.Result result) {
+      completedResult = result;
+    }
+
+    @Override public void error(@NonNull Exception e) {
+      errorException = e;
+    }
+
+    @NonNull @Override public Object getTarget() {
+      return target;
+    }
+  }
+
+  ;
 
   static final Call.Factory UNUSED_CALL_FACTORY = new Call.Factory() {
     @Override public Call newCall(okhttp3.Request request) {

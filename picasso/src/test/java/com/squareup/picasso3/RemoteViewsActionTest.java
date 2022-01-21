@@ -19,7 +19,6 @@ import android.graphics.Bitmap;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 import androidx.annotation.DrawableRes;
-import androidx.annotation.NonNull;
 import com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +32,7 @@ import static com.squareup.picasso3.Picasso.LoadedFrom.NETWORK;
 import static com.squareup.picasso3.TestUtils.NO_EVENT_LISTENERS;
 import static com.squareup.picasso3.TestUtils.NO_HANDLERS;
 import static com.squareup.picasso3.TestUtils.NO_TRANSFORMERS;
+import static com.squareup.picasso3.TestUtils.SIMPLE_REQUEST;
 import static com.squareup.picasso3.TestUtils.UNUSED_CALL_FACTORY;
 import static com.squareup.picasso3.TestUtils.makeBitmap;
 import static com.squareup.picasso3.TestUtils.mockCallback;
@@ -86,7 +86,7 @@ public class RemoteViewsActionTest {
     ImageView target = mockImageViewTarget();
     Callback callback = mockCallback();
     ImageViewAction request =
-        new ImageViewAction(picasso, target, null, null, 0, false, callback);
+        new ImageViewAction(picasso, target, SIMPLE_REQUEST, null, 0, false, callback);
     request.cancel();
     assertThat(request.callback).isNull();
   }
@@ -96,7 +96,7 @@ public class RemoteViewsActionTest {
   }
 
   private TestableRemoteViewsAction createAction(int errorResId, Callback callback) {
-    return new TestableRemoteViewsAction(picasso, null, errorResId,
+    return new TestableRemoteViewsAction(picasso, SIMPLE_REQUEST, errorResId,
         new RemoteViewsTarget(remoteViews, 1), callback);
   }
 
@@ -113,11 +113,7 @@ public class RemoteViewsActionTest {
       super(picasso, data, errorResId, target, callback);
     }
 
-    @Override void update() {
-    }
-
-    @NonNull @Override Object getTarget() {
-      throw new AssertionError();
+    @Override public void update() {
     }
   }
 }
