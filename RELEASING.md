@@ -10,7 +10,7 @@ Releasing
  7. Update the `gradle.properties` to the next SNAPSHOT version.
  8. `git commit -am "Prepare next development version."`
  9. `git push && git push --tags`
- 10. Visit [Sonatype Nexus](https://oss.sonatype.org/) and promote the artifact.
+ 10. Visit [Sonatype Nexus](https://s01.oss.sonatype.org/) and promote the artifact.
 
 If step 6 or 7 fails, drop the Sonatype repo, fix the problem, commit, and start again at step 5.
 
