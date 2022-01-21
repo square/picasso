@@ -56,7 +56,7 @@ public class ImageViewActionTest {
     Callback callback = mockCallback();
     ImageViewAction request =
         new ImageViewAction(picasso, target, SIMPLE_REQUEST, null, 0, false, callback);
-    request.complete(new RequestHandler.Result(bitmap, MEMORY));
+    request.complete(new RequestHandler.Result.Bitmap(bitmap, MEMORY));
     verify(target).setImageDrawable(any(PicassoDrawable.class));
     verify(callback).onSuccess();
   }

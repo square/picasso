@@ -51,7 +51,7 @@ public class MediaStoreRequestHandlerTest {
     MediaStoreRequestHandler requestHandler = create("video/");
     requestHandler.load(null, action.request, new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
-        assertBitmapsEqual(result.getBitmap(), bitmap);
+        assertBitmapsEqual(((Result.Bitmap) result).getBitmap(), bitmap);
       }
 
       @Override public void onError(@NonNull Throwable t) {
@@ -69,7 +69,7 @@ public class MediaStoreRequestHandlerTest {
     MediaStoreRequestHandler requestHandler = create("image/png");
     requestHandler.load(null, action.request, new RequestHandler.Callback() {
       @Override public void onSuccess(Result result) {
-        assertBitmapsEqual(result.getBitmap(), bitmap);
+        assertBitmapsEqual(((Result.Bitmap) result).getBitmap(), bitmap);
       }
 
       @Override public void onError(@NonNull Throwable t) {

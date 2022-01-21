@@ -751,7 +751,7 @@ public class RequestCreatorTest {
   @Test(expected = IllegalArgumentException.class)
   public void nullKeyTransformationInvalid() {
     new RequestCreator().transform(new Transformation() {
-      @Override public RequestHandler.Result transform(RequestHandler.Result source) {
+      @Override public RequestHandler.Result.Bitmap transform(RequestHandler.Result.Bitmap source) {
         return source;
       }
 
@@ -765,7 +765,7 @@ public class RequestCreatorTest {
   public void nullKeyInTransformationListInvalid() {
     List<? extends Transformation> transformations =
         Collections.singletonList(new Transformation() {
-          @Override public RequestHandler.Result transform(RequestHandler.Result source) {
+          @Override public RequestHandler.Result.Bitmap transform(RequestHandler.Result.Bitmap source) {
             return source;
           }
 

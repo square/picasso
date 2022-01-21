@@ -47,7 +47,7 @@ public class BitmapTargetActionTest {
     BitmapTarget target = mockTarget();
     BitmapTargetAction request =
         new BitmapTargetAction(mock(Picasso.class), target, SIMPLE_REQUEST, null, 0);
-    request.complete(new RequestHandler.Result(bitmap, MEMORY));
+    request.complete(new RequestHandler.Result.Bitmap(bitmap, MEMORY));
     verify(target).onBitmapLoaded(bitmap, MEMORY);
   }
 
@@ -105,7 +105,7 @@ public class BitmapTargetActionTest {
     Bitmap bitmap = makeBitmap();
     BitmapTargetAction tr = new BitmapTargetAction(picasso, bad, SIMPLE_REQUEST, null, 0);
     try {
-      tr.complete(new RequestHandler.Result(bitmap, MEMORY));
+      tr.complete(new RequestHandler.Result.Bitmap(bitmap, MEMORY));
       fail();
     } catch (IllegalStateException ignored) {
     }

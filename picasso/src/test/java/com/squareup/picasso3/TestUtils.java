@@ -271,7 +271,7 @@ class TestUtils {
       @Override public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull
           Callback callback) {
         Bitmap defaultResult = makeBitmap();
-        RequestHandler.Result result = new RequestHandler.Result(defaultResult, MEMORY);
+        RequestHandler.Result result = new RequestHandler.Result.Bitmap(defaultResult, MEMORY);
         callback.onSuccess(result);
       }
     };
