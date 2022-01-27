@@ -735,12 +735,7 @@ public class RequestCreatorTest {
   }
 
 
-  @Test public void invalidTag() {
-    try {
-      new RequestCreator().tag(null);
-      fail("Null tag should throw exception.");
-    } catch (IllegalArgumentException ignored) {
-    }
+  @Test public void alreadySetTagThrows() {
     try {
       new RequestCreator().tag("tag1").tag("tag2");
       fail("Two tags should throw exception.");
