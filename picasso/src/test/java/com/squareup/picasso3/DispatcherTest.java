@@ -37,6 +37,7 @@ import static android.content.Intent.ACTION_AIRPLANE_MODE_CHANGED;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
+import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso3.Dispatcher.NetworkBroadcastReceiver;
 import static com.squareup.picasso3.Dispatcher.NetworkBroadcastReceiver.EXTRA_AIRPLANE_STATE;
@@ -63,6 +64,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricTestRunner.class)
 public class DispatcherTest {
@@ -88,6 +90,7 @@ public class DispatcherTest {
 
   @Test public void shutdownUnregistersReceiver() {
     dispatcher.shutdown();
+    shadowOf(getMainLooper()).idle();
     verify(context).unregisterReceiver(dispatcher.receiver);
   }
 

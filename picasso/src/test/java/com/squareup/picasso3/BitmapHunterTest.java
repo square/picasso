@@ -38,6 +38,7 @@ import org.robolectric.shadows.ShadowBitmap;
 import org.robolectric.shadows.ShadowMatrix;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
+import static android.os.Looper.getMainLooper;
 import static androidx.exifinterface.media.ExifInterface.ORIENTATION_FLIP_HORIZONTAL;
 import static androidx.exifinterface.media.ExifInterface.ORIENTATION_FLIP_VERTICAL;
 import static androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_90;
@@ -975,6 +976,7 @@ public final class BitmapHunterTest {
     Request data = new Request.Builder(URI_1).build();
     try {
       BitmapHunter.applyTransformations(picasso, data, transformations, result);
+      shadowOf(getMainLooper()).idle();
       fail("Expected exception to be thrown.");
     } catch (RuntimeException e) {
       assertThat(e).hasMessageThat().isEqualTo("Transformation " + badTransformation.key() + " crashed with exception.");
@@ -998,6 +1000,7 @@ public final class BitmapHunterTest {
     Request data = new Request.Builder(URI_1).build();
     try {
       BitmapHunter.applyTransformations(picasso, data, transformations, result);
+      shadowOf(getMainLooper()).idle();
       fail("Expected exception to be thrown.");
     } catch (RuntimeException e) {
       assertThat(e).hasMessageThat().isEqualTo("Transformation "
