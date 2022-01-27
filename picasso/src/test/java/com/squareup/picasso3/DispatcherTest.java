@@ -204,7 +204,7 @@ public class DispatcherTest {
     RequestHandler.Result.Bitmap result = (RequestHandler.Result.Bitmap) hunter.getResult();
     assertThat(result.getBitmap()).isEqualTo(bitmap1);
     assertThat(result.loadedFrom).isEqualTo(NETWORK);
-    assertThat(cache.get(hunter.getKey())).isSameAs(bitmap1);
+    assertThat(cache.get(hunter.getKey())).isSameInstanceAs(bitmap1);
   }
 
   @Test public void performCompleteWithNoStoreMemoryPolicy() {

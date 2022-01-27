@@ -288,7 +288,7 @@ public final class BitmapHunterTest {
     Action action = mockAction(URI_KEY_1, URI_1);
     NetworkRequestHandler requestHandler = new NetworkRequestHandler(UNUSED_CALL_FACTORY);
     BitmapHunter hunter = forRequest(mockPicasso(requestHandler), dispatcher, cache, action);
-    assertThat(hunter.requestHandler).isSameAs(requestHandler);
+    assertThat(hunter.requestHandler).isSameInstanceAs(requestHandler);
   }
 
   @Test public void forFileWithAuthorityRequest() {
@@ -425,7 +425,7 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, ORIENTATION_ROTATE_90);
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -437,7 +437,7 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, ORIENTATION_ROTATE_90);
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -449,7 +449,7 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, ORIENTATION_ROTATE_90);
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -461,7 +461,7 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, 0);
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -473,7 +473,7 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, 0);
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -485,7 +485,7 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, 0);
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -497,7 +497,7 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, ORIENTATION_FLIP_VERTICAL);
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -510,7 +510,7 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, ORIENTATION_FLIP_HORIZONTAL);
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -525,7 +525,7 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, ORIENTATION_TRANSPOSE);
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -538,7 +538,7 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, ORIENTATION_TRANSVERSE);
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -627,7 +627,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, ORIENTATION_ROTATE_90);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -642,7 +642,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -656,7 +656,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -670,7 +670,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -684,7 +684,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
     assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
     assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(5);
     assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(10);
@@ -702,7 +702,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
     assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
     assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(50);
     assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(100);
@@ -720,7 +720,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
     assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(5);
     assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
     assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(10);
@@ -738,7 +738,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
     assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
     assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
     assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(10);
@@ -756,7 +756,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
     assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(10);
     assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
     assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(10);
@@ -774,7 +774,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
     assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
     assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
     assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(10);
@@ -792,7 +792,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
     assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
     assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(10);
     assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(10);
@@ -810,7 +810,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
     assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(50);
     assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
     assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(100);
@@ -828,7 +828,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -842,7 +842,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -856,7 +856,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -870,7 +870,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -884,7 +884,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -896,18 +896,18 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(50, 50, ARGB_8888);
     Request data = new Request.Builder(URI_1).resize(100, 100).onlyScaleDown().build();
     Bitmap result = transformResult(data, source, 0);
-    assertThat(result).isSameAs(source);
+    assertThat(result).isSameInstanceAs(source);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
     assertThat(shadowBitmap.getCreatedFromBitmap()).isNull();
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isNotSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isNotSameInstanceAs(source);
   }
 
   @Test public void onlyScaleDownOriginalSmallerWidthIs0() {
     Bitmap source = Bitmap.createBitmap(50, 50, ARGB_8888);
     Request data = new Request.Builder(URI_1).resize(0, 60).onlyScaleDown().build();
     Bitmap result = transformResult(data, source, 0);
-    assertThat(result).isSameAs(source);
+    assertThat(result).isSameInstanceAs(source);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
     assertThat(shadowBitmap.getCreatedFromBitmap()).isNull();
@@ -917,7 +917,7 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(50, 50, ARGB_8888);
     Request data = new Request.Builder(URI_1).resize(60, 0).onlyScaleDown().build();
     Bitmap result = transformResult(data, source, 0);
-    assertThat(result).isSameAs(source);
+    assertThat(result).isSameInstanceAs(source);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
     assertThat(shadowBitmap.getCreatedFromBitmap()).isNull();
@@ -929,7 +929,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -943,7 +943,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -955,7 +955,7 @@ public final class BitmapHunterTest {
     Request data = new Request.Builder(URI_1).build();
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, 0);
-    assertThat(result).isSameAs(source);
+    assertThat(result).isSameInstanceAs(source);
     assertThat(result.isRecycled()).isFalse();
   }
 

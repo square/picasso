@@ -38,21 +38,21 @@ public class PicassoDrawableTest {
 
   @Test public void createWithNoPlaceholderAnimation() {
     PicassoDrawable pd = new PicassoDrawable(context, bitmap, null, DISK, false, false);
-    assertThat(pd.getBitmap()).isSameAs(bitmap);
+    assertThat(pd.getBitmap()).isSameInstanceAs(bitmap);
     assertThat(pd.placeholder).isNull();
     assertThat(pd.animating).isTrue();
   }
 
   @Test public void createWithPlaceholderAnimation() {
     PicassoDrawable pd = new PicassoDrawable(context, bitmap, placeholder, DISK, false, false);
-    assertThat(pd.getBitmap()).isSameAs(bitmap);
-    assertThat(pd.placeholder).isSameAs(placeholder);
+    assertThat(pd.getBitmap()).isSameInstanceAs(bitmap);
+    assertThat(pd.placeholder).isSameInstanceAs(placeholder);
     assertThat(pd.animating).isTrue();
   }
 
   @Test public void createWithBitmapCacheHit() {
     PicassoDrawable pd = new PicassoDrawable(context, bitmap, placeholder, MEMORY, false, false);
-    assertThat(pd.getBitmap()).isSameAs(bitmap);
+    assertThat(pd.getBitmap()).isSameInstanceAs(bitmap);
     assertThat(pd.placeholder).isNull();
     assertThat(pd.animating).isFalse();
   }
