@@ -19,17 +19,16 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.view.Gravity;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,6 +47,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso3.BitmapHunter.forRequest;
 import static com.squareup.picasso3.MatrixTransformation.transformResult;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
+import static com.squareup.picasso3.Picasso.LoadedFrom.NETWORK;
 import static com.squareup.picasso3.Picasso.Priority.HIGH;
 import static com.squareup.picasso3.Picasso.Priority.LOW;
 import static com.squareup.picasso3.Picasso.Priority.NORMAL;
@@ -84,13 +84,9 @@ import static com.squareup.picasso3.TestUtils.mockAction;
 import static com.squareup.picasso3.TestUtils.mockImageViewTarget;
 import static com.squareup.picasso3.TestUtils.mockPicasso;
 import static com.squareup.picasso3.TestUtils.mockResources;
-import static java.util.Arrays.asList;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -154,10 +150,10 @@ public final class BitmapHunterTest {
 
     RequestHandler.Result.Bitmap result = hunter.hunt();
     assertThat(cache.missCount()).isEqualTo(1);
-    Request request = action.request;
-    verify(hunter.requestHandler)
-        .load(eq(picasso), eq(request), any(RequestHandler.Callback.class));
+    assertThat(result).isNotNull();
     assertThat(result.getBitmap()).isEqualTo(bitmap);
+    assertThat(result.loadedFrom).isEqualTo(NETWORK);
+    verify(picasso).bitmapDecoded(bitmap);
   }
 
   @Test public void huntReturnsWhenResultInCache() throws Exception {
@@ -168,10 +164,10 @@ public final class BitmapHunterTest {
 
     RequestHandler.Result.Bitmap result = hunter.hunt();
     assertThat(cache.hitCount()).isEqualTo(1);
-    Request request = action.request;
-    verify(hunter.requestHandler, never())
-        .load(eq(picasso), eq(request), any(RequestHandler.Callback.class));
+    assertThat(result).isNotNull();
     assertThat(result.getBitmap()).isEqualTo(bitmap);
+    assertThat(result.loadedFrom).isEqualTo(MEMORY);
+    verify(picasso, never()).bitmapDecoded(bitmap);
   }
 
   @Test public void huntUnrecognizedUri() throws Exception {
@@ -195,29 +191,29 @@ public final class BitmapHunterTest {
   @Test public void attachSingleRequest() {
     Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, action1);
-    assertThat(hunter.action).isEqualTo(action1);
+    assertThat(hunter.getAction()).isEqualTo(action1);
     hunter.detach(action1);
     hunter.attach(action1);
-    assertThat(hunter.action).isEqualTo(action1);
-    assertThat(hunter.actions).isNull();
+    assertThat(hunter.getAction()).isEqualTo(action1);
+    assertThat(hunter.getActions()).isNull();
   }
 
   @Test public void attachMultipleRequests() {
     Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     Action action2 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, action1);
-    assertThat(hunter.actions).isNull();
+    assertThat(hunter.getActions()).isNull();
     hunter.attach(action2);
-    assertThat(hunter.actions).isNotNull();
-    assertThat(hunter.actions).hasSize(1);
+    assertThat(hunter.getActions()).isNotNull();
+    assertThat(hunter.getActions()).hasSize(1);
   }
 
   @Test public void detachSingleRequest() {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, action);
-    assertThat(hunter.action).isNotNull();
+    assertThat(hunter.getAction()).isNotNull();
     hunter.detach(action);
-    assertThat(hunter.action).isNull();
+    assertThat(hunter.getAction()).isNull();
   }
 
   @Test public void detachMultipleRequests() {
@@ -226,11 +222,11 @@ public final class BitmapHunterTest {
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, action);
     hunter.attach(action2);
     hunter.detach(action2);
-    assertThat(hunter.action).isNotNull();
-    assertThat(hunter.actions).isNotNull();
-    assertThat(hunter.actions).isEmpty();
+    assertThat(hunter.getAction()).isNotNull();
+    assertThat(hunter.getActions()).isNotNull();
+    assertThat(hunter.getActions()).isEmpty();
     hunter.detach(action);
-    assertThat(hunter.action).isNull();
+    assertThat(hunter.getAction()).isNull();
   }
 
   @Test public void cancelSingleRequest() {
@@ -385,7 +381,7 @@ public final class BitmapHunterTest {
     hunter.detach(action);
     assertThat(hunter.getAction()).isNull();
     assertThat(hunter.getActions()).isNull();
-    assertThat(hunter.getPriority()).isEqualTo(LOW);
+    assertThat(hunter.priority).isEqualTo(LOW);
   }
 
   @Test public void getPriorityWithSingleRequest() {
@@ -394,7 +390,7 @@ public final class BitmapHunterTest {
     BitmapHunter hunter = forRequest(mockPicasso(requestHandler), dispatcher, cache, action);
     assertThat(hunter.getAction()).isEqualTo(action);
     assertThat(hunter.getActions()).isNull();
-    assertThat(hunter.getPriority()).isEqualTo(HIGH);
+    assertThat(hunter.priority).isEqualTo(HIGH);
   }
 
   @Test public void getPriorityWithMultipleRequests() {
@@ -405,7 +401,7 @@ public final class BitmapHunterTest {
     hunter.attach(action2);
     assertThat(hunter.getAction()).isEqualTo(action1);
     assertThat(hunter.getActions()).containsExactly(action2);
-    assertThat(hunter.getPriority()).isEqualTo(HIGH);
+    assertThat(hunter.priority).isEqualTo(HIGH);
   }
 
   @Test public void getPriorityAfterDetach() {
@@ -417,11 +413,11 @@ public final class BitmapHunterTest {
     hunter.attach(action2);
     assertThat(hunter.getAction()).isEqualTo(action1);
     assertThat(hunter.getActions()).containsExactly(action2);
-    assertThat(hunter.getPriority()).isEqualTo(HIGH);
+    assertThat(hunter.priority).isEqualTo(HIGH);
     hunter.detach(action2);
     assertThat(hunter.getAction()).isEqualTo(action1);
     assertThat(hunter.getActions()).isEmpty();
-    assertThat(hunter.getPriority()).isEqualTo(NORMAL);
+    assertThat(hunter.priority).isEqualTo(NORMAL);
   }
 
   @Test public void exifRotation() {
@@ -985,29 +981,6 @@ public final class BitmapHunterTest {
     }
   }
 
-  @Test public void nullResultFromTransformationThrows() {
-    Transformation badTransformation = new Transformation() {
-      @Override public RequestHandler.Result.Bitmap transform(RequestHandler.Result.Bitmap source) {
-        return null;
-      }
-
-      @Override public String key() {
-        return "test";
-      }
-    };
-    List<Transformation> transformations = Collections.singletonList(badTransformation);
-    Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
-    RequestHandler.Result.Bitmap result = new RequestHandler.Result.Bitmap(original, MEMORY, 0);
-    Request data = new Request.Builder(URI_1).build();
-    try {
-      BitmapHunter.applyTransformations(picasso, data, transformations, result);
-      fail("Expected exception to be thrown.");
-    } catch (RuntimeException e) {
-      assertThat(e).hasMessageThat().contains(
-          "Transformation " + badTransformation.key() + " returned null");
-    }
-  }
-
   @Test public void recycledTransformationBitmapThrows() {
     Transformation badTransformation = new Transformation() {
       @Override public RequestHandler.Result.Bitmap transform(RequestHandler.Result.Bitmap source) {
@@ -1054,7 +1027,7 @@ public final class BitmapHunterTest {
   //  assertThat(transformationCount.get()).isEqualTo(3);
   //}
 
-  private static class TestableBitmapHunter extends BitmapHunter {
+  static class TestableBitmapHunter extends BitmapHunter {
     TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, PlatformLruCache cache,
         Action action) {
       this(picasso, dispatcher, cache, action, null);
@@ -1067,17 +1040,31 @@ public final class BitmapHunterTest {
 
     TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, PlatformLruCache cache,
         Action action, Bitmap result, Exception exception) {
-      super(picasso, dispatcher, cache, action, spy(new TestableRequestHandler(result, exception)));
+      this(picasso, dispatcher, cache, action, result, exception, false);
+    }
+
+    TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, PlatformLruCache cache,
+        Action action, Bitmap result, Exception exception, boolean shouldRetry) {
+      this(picasso, dispatcher, cache, action, result, exception, shouldRetry, false);
+    }
+
+    TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, PlatformLruCache cache,
+        Action action, Bitmap result, Exception exception, boolean shouldRetry, boolean supportsReplay) {
+      super(picasso, dispatcher, cache, action, new TestableRequestHandler(result, exception, shouldRetry, supportsReplay));
     }
   }
 
   private static class TestableRequestHandler extends RequestHandler {
     private final Bitmap bitmap;
     private final Exception exception;
+    private final boolean shouldRetry;
+    private final boolean supportsReplay;
 
-    TestableRequestHandler(Bitmap bitmap, Exception exception) {
+    TestableRequestHandler(Bitmap bitmap, Exception exception, boolean shouldRetry, boolean supportsReplay) {
       this.bitmap = bitmap;
       this.exception = exception;
+      this.shouldRetry = shouldRetry;
+      this.supportsReplay = supportsReplay;
     }
 
     @Override public boolean canHandleRequest(@NonNull Request data) {
@@ -1088,12 +1075,20 @@ public final class BitmapHunterTest {
       if (exception != null) {
         callback.onError(exception);
       } else {
-        callback.onSuccess(new Result.Bitmap(bitmap, MEMORY));
+        callback.onSuccess(new Result.Bitmap(bitmap, NETWORK));
       }
     }
 
     @Override public int getRetryCount() {
       return 1;
+    }
+
+    @Override public boolean shouldRetry(boolean airplaneMode, @Nullable NetworkInfo info) {
+      return shouldRetry;
+    }
+
+    @Override public boolean supportsReplay() {
+      return supportsReplay;
     }
   }
 

@@ -244,21 +244,38 @@ class TestUtils {
     return mock(InputStream.class);
   }
 
-  static BitmapHunter mockHunter(String key, RequestHandler.Result result) {
-    return mockHunter(key, result, null);
+  static BitmapHunter mockHunter(RequestHandler.Result result) {
+    return mockHunter(result, null);
   }
 
-  static BitmapHunter mockHunter(String key, RequestHandler.Result result, Action action) {
-    Request data = new Request.Builder(URI_1).build();
-    BitmapHunter hunter = mock(BitmapHunter.class);
-    when(hunter.getKey()).thenReturn(key);
-    when(hunter.getResult()).thenReturn(result);
-    when(hunter.getData()).thenReturn(data);
-    when(hunter.getAction()).thenReturn(action);
-    Picasso picasso = mockPicasso();
-    when(hunter.getPicasso()).thenReturn(picasso);
+  static BitmapHunter mockHunter(RequestHandler.Result result, Action action) {
+    return mockHunter(result, action, null);
+  }
 
-    return hunter;
+  static BitmapHunter mockHunter(RequestHandler.Result result, Action action, Exception e) {
+    return mockHunter(result, action, e, false);
+  }
+
+  static BitmapHunter mockHunter(RequestHandler.Result result, Action action, boolean shouldRetry) {
+    return mockHunter(result, action, null, shouldRetry);
+  }
+
+  static BitmapHunter mockHunter(RequestHandler.Result result, Action action, boolean shouldRetry,
+      boolean supportsReplay) {
+    return mockHunter(result, action, null, shouldRetry, supportsReplay);
+  }
+
+  static BitmapHunter mockHunter(RequestHandler.Result result, Action action, Exception e,
+      boolean shouldRetry) {
+    return mockHunter(result, action, e, shouldRetry, false);
+  }
+
+  static BitmapHunter mockHunter(RequestHandler.Result result, Action action, Exception e,
+      boolean shouldRetry, boolean supportsReplay) {
+    return new BitmapHunterTest.TestableBitmapHunter(
+        mockPicasso(), mock(Dispatcher.class), new PlatformLruCache(0), action,
+        ((RequestHandler.Result.Bitmap) result).getBitmap(), e, shouldRetry, supportsReplay
+    );
   }
 
   static Picasso mockPicasso() {
