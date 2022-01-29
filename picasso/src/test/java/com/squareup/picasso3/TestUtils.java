@@ -225,8 +225,10 @@ class TestUtils {
     return mock(Callback.class);
   }
 
-  static DeferredRequestCreator mockDeferredRequestCreator() {
-    return mock(DeferredRequestCreator.class);
+  static DeferredRequestCreator mockDeferredRequestCreator(ImageView target) {
+    ViewTreeObserver observer = mock(ViewTreeObserver.class);
+    when(target.getViewTreeObserver()).thenReturn(observer);
+    return new DeferredRequestCreator(mock(RequestCreator.class), target, null);
   }
 
   static NetworkInfo mockNetworkInfo() {
