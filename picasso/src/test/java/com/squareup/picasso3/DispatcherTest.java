@@ -24,6 +24,8 @@ import android.os.Handler;
 import android.os.Looper;
 import androidx.annotation.NonNull;
 import com.squareup.picasso3.NetworkRequestHandler.ContentLengthException;
+import com.squareup.picasso3.TestUtils.TestDelegatingService;
+import com.squareup.picasso3.Utils.PicassoThreadFactory;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.FutureTask;
 import org.junit.Before;
@@ -55,11 +57,8 @@ import static com.squareup.picasso3.TestUtils.mockHunter;
 import static com.squareup.picasso3.TestUtils.mockNetworkInfo;
 import static com.squareup.picasso3.TestUtils.mockPicasso;
 import static com.squareup.picasso3.TestUtils.mockTarget;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -70,9 +69,10 @@ import static org.robolectric.Shadows.shadowOf;
 public class DispatcherTest {
   @Mock Context context;
   @Mock ConnectivityManager connectivityManager;
-  @Mock PicassoExecutorService service;
   @Mock ExecutorService serviceMock;
   final PlatformLruCache cache = new PlatformLruCache(2048);
+  final TestDelegatingService service =
+      new TestDelegatingService(new PicassoExecutorService(new PicassoThreadFactory()));
   private Dispatcher dispatcher;
 
   final Bitmap bitmap1 = makeBitmap();
@@ -80,12 +80,14 @@ public class DispatcherTest {
 
   @Before public void setUp() {
     initMocks(this);
-    dispatcher = createDispatcher();
+    dispatcher = createDispatcher(service);
   }
 
   @Test public void shutdownStopsService() {
+    PicassoExecutorService service = new PicassoExecutorService(new PicassoThreadFactory());
+    dispatcher = createDispatcher(service);
     dispatcher.shutdown();
-    verify(service).shutdown();
+    assertThat(service.isShutdown()).isEqualTo(true);
   }
 
   @Test public void shutdownUnregistersReceiver() {
@@ -98,7 +100,7 @@ public class DispatcherTest {
     Action action = mockAction(URI_KEY_1, URI_1);
     dispatcher.performSubmit(action);
     assertThat(dispatcher.hunterMap).hasSize(1);
-    verify(service).submit(any(BitmapHunter.class));
+    assertThat(service.submissions).isEqualTo(1);
   }
 
   @Test public void performSubmitWithTwoDifferentRequestsQueuesHunters() {
@@ -107,7 +109,7 @@ public class DispatcherTest {
     dispatcher.performSubmit(action1);
     dispatcher.performSubmit(action2);
     assertThat(dispatcher.hunterMap).hasSize(2);
-    verify(service, times(2)).submit(any(BitmapHunter.class));
+    assertThat(service.submissions).isEqualTo(2);
   }
 
   @Test public void performSubmitWithExistingRequestAttachesToHunter() {
@@ -115,18 +117,18 @@ public class DispatcherTest {
     Action action2 = mockAction(URI_KEY_1, URI_1);
     dispatcher.performSubmit(action1);
     assertThat(dispatcher.hunterMap).hasSize(1);
-    verify(service).submit(any(BitmapHunter.class));
+    assertThat(service.submissions).isEqualTo(1);
     dispatcher.performSubmit(action2);
     assertThat(dispatcher.hunterMap).hasSize(1);
-    verify(service).submit(any(BitmapHunter.class));
+    assertThat(service.submissions).isEqualTo(1);
   }
 
   @Test public void performSubmitWithShutdownServiceIgnoresRequest() {
-    when(service.isShutdown()).thenReturn(true);
+    service.shutdown();
     Action action = mockAction(URI_KEY_1, URI_1);
     dispatcher.performSubmit(action);
     assertThat(dispatcher.hunterMap).isEmpty();
-    verify(service, never()).submit(any(BitmapHunter.class));
+    assertThat(service.submissions).isEqualTo(0);
   }
 
   @Test public void performSubmitWithFetchAction() {
@@ -275,7 +277,7 @@ public class DispatcherTest {
     hunter.future = new FutureTask<>(mock(Runnable.class), mock(Object.class));
     hunter.future.cancel(false);
     dispatcher.performRetry(hunter);
-    verifyZeroInteractions(service);
+    assertThat(hunter.isCancelled()).isTrue();
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.failedActions).isEmpty();
   }
@@ -300,7 +302,7 @@ public class DispatcherTest {
     dispatcher.performRetry(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.failedActions).isEmpty();
-    verify(service, never()).submit(hunter);
+    assertThat(service.submissions).isEqualTo(0);
   }
 
   @Test public void performRetryDoesNotMarkForReplayIfNoNetworkScanning() {
@@ -310,7 +312,7 @@ public class DispatcherTest {
     dispatcher.performRetry(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.failedActions).isEmpty();
-    verify(service, never()).submit(hunter);
+    assertThat(service.submissions).isEqualTo(0);
   }
 
   @Test public void performRetryMarksForReplayIfSupportedScansNetworkChangesAndShouldNotRetry() {
@@ -322,7 +324,7 @@ public class DispatcherTest {
     dispatcher.performRetry(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.failedActions).hasSize(1);
-    verify(service, never()).submit(hunter);
+    assertThat(service.submissions).isEqualTo(0);
   }
 
   @Test public void performRetryRetriesIfNoNetworkScanning() {
@@ -332,7 +334,7 @@ public class DispatcherTest {
     dispatcher.performRetry(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.failedActions).isEmpty();
-    verify(service).submit(hunter);
+    assertThat(service.submissions).isEqualTo(1);
   }
 
   @Test public void performRetryMarksForReplayIfSupportsReplayAndShouldNotRetry() {
@@ -342,7 +344,7 @@ public class DispatcherTest {
     dispatcher.performRetry(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.failedActions).hasSize(1);
-    verify(service, never()).submit(hunter);
+    assertThat(service.submissions).isEqualTo(0);
   }
 
   @Test public void performRetryRetriesIfShouldRetry() {
@@ -352,15 +354,15 @@ public class DispatcherTest {
     dispatcher.performRetry(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.failedActions).isEmpty();
-    verify(service).submit(hunter);
+    assertThat(service.submissions).isEqualTo(1);
   }
 
   @Test public void performRetrySkipIfServiceShutdown() {
-    when(service.isShutdown()).thenReturn(true);
     Action action = mockAction(URI_KEY_1, URI_1, mockTarget());
     BitmapHunter hunter = mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action);
+    service.shutdown();
     dispatcher.performRetry(hunter);
-    verify(service, never()).submit(hunter);
+    assertThat(service.submissions).isEqualTo(0);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.failedActions).isEmpty();
   }
@@ -376,7 +378,7 @@ public class DispatcherTest {
   @Test public void performNetworkStateChangeWithNullInfoIgnores() {
     Dispatcher dispatcher = createDispatcher(serviceMock);
     dispatcher.performNetworkStateChange(null);
-    verifyZeroInteractions(service);
+    assertThat(dispatcher.failedActions).isEmpty();
   }
 
   @Test public void performNetworkStateChangeWithDisconnectedInfoIgnores() {
@@ -384,14 +386,14 @@ public class DispatcherTest {
     NetworkInfo info = mockNetworkInfo();
     when(info.isConnectedOrConnecting()).thenReturn(false);
     dispatcher.performNetworkStateChange(info);
-    verifyZeroInteractions(service);
+    assertThat(dispatcher.failedActions).isEmpty();
   }
 
   @Test public void performNetworkStateChangeWithConnectedInfoDifferentInstanceIgnores() {
     Dispatcher dispatcher = createDispatcher(serviceMock);
     NetworkInfo info = mockNetworkInfo(true);
     dispatcher.performNetworkStateChange(info);
-    verifyZeroInteractions(service);
+    assertThat(dispatcher.failedActions).isEmpty();
   }
 
   @Test public void performPauseAndResumeUpdatesListOfPausedTags() {
@@ -420,7 +422,7 @@ public class DispatcherTest {
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.pausedActions).hasSize(1);
     assertThat(dispatcher.pausedActions.containsValue(action)).isTrue();
-    verify(service, never()).submit(any(BitmapHunter.class));
+    assertThat(service.submissions).isEqualTo(0);
   }
 
   @Test public void performPauseTagDoesNotQueueUnrelatedRequest() {
@@ -429,7 +431,7 @@ public class DispatcherTest {
     dispatcher.performSubmit(action);
     assertThat(dispatcher.hunterMap).hasSize(1);
     assertThat(dispatcher.pausedActions).isEmpty();
-    verify(service).submit(any(BitmapHunter.class));
+    assertThat(service.submissions).isEqualTo(1);
   }
 
   @Test public void performPauseDetachesRequestAndCancelsHunter() {
@@ -467,15 +469,13 @@ public class DispatcherTest {
   }
 
   @Test public void performNetworkStateChangeFlushesFailedHunters() {
-    PicassoExecutorService service = mock(PicassoExecutorService.class);
     NetworkInfo info = mockNetworkInfo(true);
-    Dispatcher dispatcher = createDispatcher(service);
     Action failedAction1 = mockAction(URI_KEY_1, URI_1);
     Action failedAction2 = mockAction(URI_KEY_2, URI_2);
     dispatcher.failedActions.put(URI_KEY_1, failedAction1);
     dispatcher.failedActions.put(URI_KEY_2, failedAction2);
     dispatcher.performNetworkStateChange(info);
-    verify(service, times(2)).submit(any(BitmapHunter.class));
+    assertThat(service.submissions).isEqualTo(2);
     assertThat(dispatcher.failedActions).isEmpty();
   }
 

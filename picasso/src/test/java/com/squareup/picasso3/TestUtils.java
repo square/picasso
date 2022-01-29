@@ -34,8 +34,13 @@ import com.squareup.picasso3.Utils.PicassoThreadFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import okhttp3.Call;
 import okhttp3.Response;
 import okio.Timeout;
@@ -484,6 +489,72 @@ class TestUtils {
 
     @Override public Timeout timeout() {
       throw new AssertionError();
+    }
+  }
+
+  static final class TestDelegatingService implements ExecutorService {
+    private ExecutorService delegate;
+    int submissions = 0;
+
+    public TestDelegatingService(ExecutorService delegate) {
+      this.delegate = delegate;
+    }
+
+    @Override public void shutdown() {
+      delegate.shutdown();
+    }
+
+    @Override public List<Runnable> shutdownNow() {
+      throw new AssertionError("Not implemented.");
+    }
+
+    @Override public boolean isShutdown() {
+      return delegate.isShutdown();
+    }
+
+    @Override public boolean isTerminated() {
+      throw new AssertionError("Not implemented.");
+    }
+
+    @Override public boolean awaitTermination(long timeout, TimeUnit unit)
+        throws InterruptedException {
+      return delegate.awaitTermination(timeout, unit);
+    }
+
+    @Override public <T> Future<T> submit(Callable<T> task) {
+      throw new AssertionError("Not implemented.");
+    }
+
+    @Override public <T> Future<T> submit(Runnable task, T result) {
+      throw new AssertionError("Not implemented.");
+    }
+
+    @Override public Future<?> submit(Runnable task) {
+      submissions++;
+      return delegate.submit(task);
+    }
+
+    @Override public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) {
+      throw new AssertionError("Not implemented.");
+    }
+
+    @Override
+    public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout,
+        TimeUnit unit) {
+      throw new AssertionError("Not implemented.");
+    }
+
+    @Override public <T> T invokeAny(Collection<? extends Callable<T>> tasks) {
+      throw new AssertionError("Not implemented.");
+    }
+
+    @Override
+    public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) {
+      throw new AssertionError("Not implemented.");
+    }
+
+    @Override public void execute(Runnable command) {
+      delegate.execute(command);
     }
   }
 
