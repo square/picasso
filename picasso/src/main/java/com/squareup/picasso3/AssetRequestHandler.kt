@@ -71,6 +71,7 @@ internal class AssetRequestHandler(private val context: Context) : RequestHandle
     private const val ASSET_PREFIX_LENGTH =
       "${ContentResolver.SCHEME_FILE}:///$ANDROID_ASSET/".length
 
+    @JvmStatic
     fun getFilePath(request: Request): String {
       val uri = checkNotNull(request.uri)
       return uri.toString()

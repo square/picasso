@@ -24,7 +24,7 @@ import android.widget.ImageView
 internal class DeferredRequestCreator(
   private val creator: RequestCreator,
   internal val target: ImageView,
-  internal var callback: Callback?
+  @JvmField internal var callback: Callback?
 ) : ViewTreeObserver.OnPreDrawListener, OnAttachStateChangeListener {
   init {
     target.addOnAttachStateChangeListener(this)

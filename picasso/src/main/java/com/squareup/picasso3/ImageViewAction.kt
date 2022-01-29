@@ -28,7 +28,7 @@ internal class ImageViewAction(
   val errorDrawable: Drawable?,
   @DrawableRes val errorResId: Int,
   val noFade: Boolean,
-  var callback: Callback?
+  @JvmField var callback: Callback?
 ) : Action(picasso, data) {
   override fun complete(result: Result) {
     PicassoDrawable.setResult(target, picasso.context, result, noFade, picasso.indicatorsEnabled)

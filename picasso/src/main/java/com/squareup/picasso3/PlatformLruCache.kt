@@ -23,7 +23,7 @@ import androidx.core.graphics.BitmapCompat
 internal class PlatformLruCache(maxByteCount: Int) {
 
   /** Create a cache with a given maximum size in bytes.  */
-  val cache =
+  @JvmField val cache =
     object : LruCache<String, BitmapAndSize>(if (maxByteCount != 0) maxByteCount else 1) {
       override fun sizeOf(
         key: String,
@@ -80,7 +80,7 @@ internal class PlatformLruCache(maxByteCount: Int) {
   fun evictionCount(): Int = cache.evictionCount()
 
   internal class BitmapAndSize(
-    val bitmap: Bitmap,
+    @JvmField val bitmap: Bitmap,
     val byteCount: Int
   )
 }

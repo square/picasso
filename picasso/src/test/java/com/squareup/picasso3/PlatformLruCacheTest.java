@@ -27,7 +27,6 @@ import org.robolectric.RobolectricTestRunner;
 
 import static android.graphics.Bitmap.Config.ALPHA_8;
 import static com.google.common.truth.Truth.assertThat;
-import static junit.framework.Assert.fail;
 
 @RunWith(RobolectricTestRunner.class)
 public class PlatformLruCacheTest {
@@ -91,38 +90,11 @@ public class PlatformLruCacheTest {
     assertSnapshot(cache, "e", E, "b", B, "c", C);
   }
 
-  @Test public void cannotPutNullKey() {
-    PlatformLruCache cache = new PlatformLruCache(3);
-    try {
-      cache.set(null, A);
-      fail();
-    } catch (NullPointerException expected) {
-    }
-  }
-
-  @Test public void cannotPutNullValue() {
-    PlatformLruCache cache = new PlatformLruCache(3);
-    try {
-      cache.set("a", null);
-      fail();
-    } catch (NullPointerException expected) {
-    }
-  }
-
   @Test public void evictionWithSingletonCache() {
     PlatformLruCache cache = new PlatformLruCache(1);
     cache.set("a", A);
     cache.set("b", B);
     assertSnapshot(cache, "b", B);
-  }
-
-  @Test public void throwsWithNullKey() {
-    PlatformLruCache cache = new PlatformLruCache(1);
-    try {
-      cache.get(null);
-      fail("Expected NullPointerException");
-    } catch (NullPointerException expected) {
-    }
   }
 
   /**

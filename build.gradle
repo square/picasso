@@ -26,9 +26,10 @@ buildscript {
     androidxFragment: 'androidx.fragment:fragment:1.4.0',
     androidxLifecycle: 'androidx.lifecycle:lifecycle-common:2.4.0',
     errorProne: 'com.google.errorprone:error_prone_core:2.10.0',
+    errorProneJavac: 'com.google.errorprone:javac:9+181-r4173-1',
     junit: 'junit:junit:4.13.2',
     truth: 'com.google.truth:truth:1.1.3',
-    robolectric: 'org.robolectric:robolectric:4.0.2',
+    robolectric: 'org.robolectric:robolectric:4.4',
     mockito: 'org.mockito:mockito-core:2.23.0',
     nullaway: 'com.uber.nullaway:nullaway:0.9.4',
   ]
@@ -143,6 +144,7 @@ subprojects {
 
   dependencies {
     errorprone deps.errorProne
+    errorproneJavac deps.errorProneJavac
   }
 }
 

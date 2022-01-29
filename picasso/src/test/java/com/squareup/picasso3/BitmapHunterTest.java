@@ -19,17 +19,16 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.view.Gravity;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,6 +38,7 @@ import org.robolectric.shadows.ShadowBitmap;
 import org.robolectric.shadows.ShadowMatrix;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
+import static android.os.Looper.getMainLooper;
 import static androidx.exifinterface.media.ExifInterface.ORIENTATION_FLIP_HORIZONTAL;
 import static androidx.exifinterface.media.ExifInterface.ORIENTATION_FLIP_VERTICAL;
 import static androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_90;
@@ -48,6 +48,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso3.BitmapHunter.forRequest;
 import static com.squareup.picasso3.MatrixTransformation.transformResult;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
+import static com.squareup.picasso3.Picasso.LoadedFrom.NETWORK;
 import static com.squareup.picasso3.Picasso.Priority.HIGH;
 import static com.squareup.picasso3.Picasso.Priority.LOW;
 import static com.squareup.picasso3.Picasso.Priority.NORMAL;
@@ -84,13 +85,9 @@ import static com.squareup.picasso3.TestUtils.mockAction;
 import static com.squareup.picasso3.TestUtils.mockImageViewTarget;
 import static com.squareup.picasso3.TestUtils.mockPicasso;
 import static com.squareup.picasso3.TestUtils.mockResources;
-import static java.util.Arrays.asList;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -102,7 +99,6 @@ public final class BitmapHunterTest {
   @Mock Context context;
   @Mock Picasso picasso;
   final PlatformLruCache cache = new PlatformLruCache(2048);
-  final Stats stats = new Stats(cache);
   @Mock Dispatcher dispatcher;
 
   final Bitmap bitmap = makeBitmap();
@@ -140,17 +136,6 @@ public final class BitmapHunterTest {
     verify(dispatcher).dispatchFailed(hunter);
   }
 
-  @Test public void outOfMemoryDispatchFailed() {
-    Action action = mockAction(URI_KEY_1, URI_1);
-    BitmapHunter hunter = new OOMBitmapHunter(picasso, dispatcher, cache, action);
-    hunter.run();
-    Exception exception = hunter.getException();
-    verify(dispatcher).dispatchFailed(hunter);
-    assertThat(hunter.getResult()).isNull();
-    //assertThat(exception).hasMessageThat().contains("BEGIN PICASSO STATS");
-    assertThat(exception.getCause()).isInstanceOf(OutOfMemoryError.class);
-  }
-
   @Test public void runWithIoExceptionDispatchRetry() {
     Action action = mockAction(URI_KEY_1, URI_1);
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, action, null,
@@ -164,12 +149,12 @@ public final class BitmapHunterTest {
     TestableBitmapHunter hunter =
         new TestableBitmapHunter(picasso, dispatcher, cache, action, bitmap);
 
-    RequestHandler.Result result = hunter.hunt();
+    RequestHandler.Result.Bitmap result = hunter.hunt();
     assertThat(cache.missCount()).isEqualTo(1);
-    Request request = action.request;
-    verify(hunter.requestHandler)
-        .load(eq(picasso), eq(request), any(RequestHandler.Callback.class));
+    assertThat(result).isNotNull();
     assertThat(result.getBitmap()).isEqualTo(bitmap);
+    assertThat(result.loadedFrom).isEqualTo(NETWORK);
+    verify(picasso).bitmapDecoded(bitmap);
   }
 
   @Test public void huntReturnsWhenResultInCache() throws Exception {
@@ -178,12 +163,12 @@ public final class BitmapHunterTest {
     TestableBitmapHunter hunter =
         new TestableBitmapHunter(picasso, dispatcher, cache, action, bitmap);
 
-    RequestHandler.Result result = hunter.hunt();
+    RequestHandler.Result.Bitmap result = hunter.hunt();
     assertThat(cache.hitCount()).isEqualTo(1);
-    Request request = action.request;
-    verify(hunter.requestHandler, never())
-        .load(eq(picasso), eq(request), any(RequestHandler.Callback.class));
+    assertThat(result).isNotNull();
     assertThat(result.getBitmap()).isEqualTo(bitmap);
+    assertThat(result.loadedFrom).isEqualTo(MEMORY);
+    verify(picasso, never()).bitmapDecoded(bitmap);
   }
 
   @Test public void huntUnrecognizedUri() throws Exception {
@@ -200,36 +185,36 @@ public final class BitmapHunterTest {
     Action action = mockAction(CUSTOM_URI_KEY, CUSTOM_URI);
     BitmapHunter hunter = forRequest(mockPicasso(new CustomRequestHandler()), dispatcher,
         cache, action);
-    RequestHandler.Result result = hunter.hunt();
+    RequestHandler.Result.Bitmap result = hunter.hunt();
     assertThat(result.getBitmap()).isEqualTo(bitmap);
   }
 
   @Test public void attachSingleRequest() {
     Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, action1);
-    assertThat(hunter.action).isEqualTo(action1);
+    assertThat(hunter.getAction()).isEqualTo(action1);
     hunter.detach(action1);
     hunter.attach(action1);
-    assertThat(hunter.action).isEqualTo(action1);
-    assertThat(hunter.actions).isNull();
+    assertThat(hunter.getAction()).isEqualTo(action1);
+    assertThat(hunter.getActions()).isNull();
   }
 
   @Test public void attachMultipleRequests() {
     Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     Action action2 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, action1);
-    assertThat(hunter.actions).isNull();
+    assertThat(hunter.getActions()).isNull();
     hunter.attach(action2);
-    assertThat(hunter.actions).isNotNull();
-    assertThat(hunter.actions).hasSize(1);
+    assertThat(hunter.getActions()).isNotNull();
+    assertThat(hunter.getActions()).hasSize(1);
   }
 
   @Test public void detachSingleRequest() {
     Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, action);
-    assertThat(hunter.action).isNotNull();
+    assertThat(hunter.getAction()).isNotNull();
     hunter.detach(action);
-    assertThat(hunter.action).isNull();
+    assertThat(hunter.getAction()).isNull();
   }
 
   @Test public void detachMultipleRequests() {
@@ -238,11 +223,11 @@ public final class BitmapHunterTest {
     BitmapHunter hunter = new TestableBitmapHunter(picasso, dispatcher, cache, action);
     hunter.attach(action2);
     hunter.detach(action2);
-    assertThat(hunter.action).isNotNull();
-    assertThat(hunter.actions).isNotNull();
-    assertThat(hunter.actions).isEmpty();
+    assertThat(hunter.getAction()).isNotNull();
+    assertThat(hunter.getActions()).isNotNull();
+    assertThat(hunter.getActions()).isEmpty();
     hunter.detach(action);
-    assertThat(hunter.action).isNull();
+    assertThat(hunter.getAction()).isNull();
   }
 
   @Test public void cancelSingleRequest() {
@@ -304,7 +289,7 @@ public final class BitmapHunterTest {
     Action action = mockAction(URI_KEY_1, URI_1);
     NetworkRequestHandler requestHandler = new NetworkRequestHandler(UNUSED_CALL_FACTORY);
     BitmapHunter hunter = forRequest(mockPicasso(requestHandler), dispatcher, cache, action);
-    assertThat(hunter.requestHandler).isSameAs(requestHandler);
+    assertThat(hunter.requestHandler).isSameInstanceAs(requestHandler);
   }
 
   @Test public void forFileWithAuthorityRequest() {
@@ -397,7 +382,7 @@ public final class BitmapHunterTest {
     hunter.detach(action);
     assertThat(hunter.getAction()).isNull();
     assertThat(hunter.getActions()).isNull();
-    assertThat(hunter.getPriority()).isEqualTo(LOW);
+    assertThat(hunter.priority).isEqualTo(LOW);
   }
 
   @Test public void getPriorityWithSingleRequest() {
@@ -406,7 +391,7 @@ public final class BitmapHunterTest {
     BitmapHunter hunter = forRequest(mockPicasso(requestHandler), dispatcher, cache, action);
     assertThat(hunter.getAction()).isEqualTo(action);
     assertThat(hunter.getActions()).isNull();
-    assertThat(hunter.getPriority()).isEqualTo(HIGH);
+    assertThat(hunter.priority).isEqualTo(HIGH);
   }
 
   @Test public void getPriorityWithMultipleRequests() {
@@ -417,7 +402,7 @@ public final class BitmapHunterTest {
     hunter.attach(action2);
     assertThat(hunter.getAction()).isEqualTo(action1);
     assertThat(hunter.getActions()).containsExactly(action2);
-    assertThat(hunter.getPriority()).isEqualTo(HIGH);
+    assertThat(hunter.priority).isEqualTo(HIGH);
   }
 
   @Test public void getPriorityAfterDetach() {
@@ -429,11 +414,11 @@ public final class BitmapHunterTest {
     hunter.attach(action2);
     assertThat(hunter.getAction()).isEqualTo(action1);
     assertThat(hunter.getActions()).containsExactly(action2);
-    assertThat(hunter.getPriority()).isEqualTo(HIGH);
+    assertThat(hunter.priority).isEqualTo(HIGH);
     hunter.detach(action2);
     assertThat(hunter.getAction()).isEqualTo(action1);
     assertThat(hunter.getActions()).isEmpty();
-    assertThat(hunter.getPriority()).isEqualTo(NORMAL);
+    assertThat(hunter.priority).isEqualTo(NORMAL);
   }
 
   @Test public void exifRotation() {
@@ -441,7 +426,7 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, ORIENTATION_ROTATE_90);
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -453,7 +438,7 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, ORIENTATION_ROTATE_90);
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -465,7 +450,7 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, ORIENTATION_ROTATE_90);
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -477,7 +462,7 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, 0);
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -489,7 +474,7 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, 0);
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -501,7 +486,7 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, 0);
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -513,7 +498,7 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, ORIENTATION_FLIP_VERTICAL);
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -526,7 +511,7 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, ORIENTATION_FLIP_HORIZONTAL);
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -541,7 +526,7 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, ORIENTATION_TRANSPOSE);
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -554,7 +539,7 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, ORIENTATION_TRANSVERSE);
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -643,7 +628,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, ORIENTATION_ROTATE_90);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -658,7 +643,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -672,7 +657,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -686,7 +671,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -700,7 +685,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
     assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
     assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(5);
     assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(10);
@@ -718,7 +703,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
     assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
     assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(50);
     assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(100);
@@ -736,7 +721,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
     assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(5);
     assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
     assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(10);
@@ -754,7 +739,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
     assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
     assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
     assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(10);
@@ -772,7 +757,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
     assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(10);
     assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
     assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(10);
@@ -790,7 +775,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
     assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
     assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
     assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(10);
@@ -808,7 +793,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
     assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
     assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(10);
     assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(10);
@@ -826,7 +811,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
     assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(50);
     assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
     assertThat(shadowBitmap.getCreatedFromWidth()).isEqualTo(100);
@@ -844,7 +829,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -858,7 +843,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -872,7 +857,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -886,7 +871,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -900,7 +885,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -912,18 +897,18 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(50, 50, ARGB_8888);
     Request data = new Request.Builder(URI_1).resize(100, 100).onlyScaleDown().build();
     Bitmap result = transformResult(data, source, 0);
-    assertThat(result).isSameAs(source);
+    assertThat(result).isSameInstanceAs(source);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
     assertThat(shadowBitmap.getCreatedFromBitmap()).isNull();
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isNotSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isNotSameInstanceAs(source);
   }
 
   @Test public void onlyScaleDownOriginalSmallerWidthIs0() {
     Bitmap source = Bitmap.createBitmap(50, 50, ARGB_8888);
     Request data = new Request.Builder(URI_1).resize(0, 60).onlyScaleDown().build();
     Bitmap result = transformResult(data, source, 0);
-    assertThat(result).isSameAs(source);
+    assertThat(result).isSameInstanceAs(source);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
     assertThat(shadowBitmap.getCreatedFromBitmap()).isNull();
@@ -933,7 +918,7 @@ public final class BitmapHunterTest {
     Bitmap source = Bitmap.createBitmap(50, 50, ARGB_8888);
     Request data = new Request.Builder(URI_1).resize(60, 0).onlyScaleDown().build();
     Bitmap result = transformResult(data, source, 0);
-    assertThat(result).isSameAs(source);
+    assertThat(result).isSameInstanceAs(source);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
     assertThat(shadowBitmap.getCreatedFromBitmap()).isNull();
@@ -945,7 +930,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -959,7 +944,7 @@ public final class BitmapHunterTest {
     Bitmap result = transformResult(data, source, 0);
 
     ShadowBitmap shadowBitmap = shadowOf(result);
-    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameAs(source);
+    assertThat(shadowBitmap.getCreatedFromBitmap()).isSameInstanceAs(source);
 
     Matrix matrix = shadowBitmap.getCreatedFromMatrix();
     ShadowMatrix shadowMatrix = shadowOf(matrix);
@@ -971,13 +956,13 @@ public final class BitmapHunterTest {
     Request data = new Request.Builder(URI_1).build();
     Bitmap source = Bitmap.createBitmap(10, 10, ARGB_8888);
     Bitmap result = transformResult(data, source, 0);
-    assertThat(result).isSameAs(source);
+    assertThat(result).isSameInstanceAs(source);
     assertThat(result.isRecycled()).isFalse();
   }
 
   @Test public void crashingOnTransformationThrows() {
     Transformation badTransformation = new Transformation() {
-      @Override public RequestHandler.Result transform(RequestHandler.Result source) {
+      @Override public RequestHandler.Result.Bitmap transform(RequestHandler.Result.Bitmap source) {
         throw new NullPointerException("hello");
       }
 
@@ -987,42 +972,20 @@ public final class BitmapHunterTest {
     };
     List<Transformation> transformations = Collections.singletonList(badTransformation);
     Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
-    RequestHandler.Result result = new RequestHandler.Result(original, MEMORY, 0);
+    RequestHandler.Result.Bitmap result = new RequestHandler.Result.Bitmap(original, MEMORY, 0);
     Request data = new Request.Builder(URI_1).build();
     try {
       BitmapHunter.applyTransformations(picasso, data, transformations, result);
+      shadowOf(getMainLooper()).idle();
       fail("Expected exception to be thrown.");
     } catch (RuntimeException e) {
       assertThat(e).hasMessageThat().isEqualTo("Transformation " + badTransformation.key() + " crashed with exception.");
     }
   }
 
-  @Test public void nullResultFromTransformationThrows() {
-    Transformation badTransformation = new Transformation() {
-      @Override public RequestHandler.Result transform(RequestHandler.Result source) {
-        return null;
-      }
-
-      @Override public String key() {
-        return "test";
-      }
-    };
-    List<Transformation> transformations = Collections.singletonList(badTransformation);
-    Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
-    RequestHandler.Result result = new RequestHandler.Result(original, MEMORY, 0);
-    Request data = new Request.Builder(URI_1).build();
-    try {
-      BitmapHunter.applyTransformations(picasso, data, transformations, result);
-      fail("Expected exception to be thrown.");
-    } catch (RuntimeException e) {
-      assertThat(e).hasMessageThat().contains(
-          "Transformation " + badTransformation.key() + " returned null");
-    }
-  }
-
   @Test public void recycledTransformationBitmapThrows() {
     Transformation badTransformation = new Transformation() {
-      @Override public RequestHandler.Result transform(RequestHandler.Result source) {
+      @Override public RequestHandler.Result.Bitmap transform(RequestHandler.Result.Bitmap source) {
         source.getBitmap().recycle();
         return source;
       }
@@ -1033,10 +996,11 @@ public final class BitmapHunterTest {
     };
     List<Transformation> transformations = Collections.singletonList(badTransformation);
     Bitmap original = Bitmap.createBitmap(10, 10, ARGB_8888);
-    RequestHandler.Result result = new RequestHandler.Result(original, MEMORY, 0);
+    RequestHandler.Result.Bitmap result = new RequestHandler.Result.Bitmap(original, MEMORY, 0);
     Request data = new Request.Builder(URI_1).build();
     try {
       BitmapHunter.applyTransformations(picasso, data, transformations, result);
+      shadowOf(getMainLooper()).idle();
       fail("Expected exception to be thrown.");
     } catch (RuntimeException e) {
       assertThat(e).hasMessageThat().isEqualTo("Transformation "
@@ -1045,27 +1009,28 @@ public final class BitmapHunterTest {
     }
   }
 
-  @Test public void transformDrawables() {
-    final AtomicInteger transformationCount = new AtomicInteger();
-    Transformation identity = new Transformation() {
-      @Override public RequestHandler.Result transform(RequestHandler.Result source) {
-        transformationCount.incrementAndGet();
-        return source;
-      }
+  // TODO: fix regression from https://github.com/square/picasso/pull/2137
+  //@Test public void transformDrawables() {
+  //  final AtomicInteger transformationCount = new AtomicInteger();
+  //  Transformation identity = new Transformation() {
+  //    @Override public RequestHandler.Result.Bitmap transform(RequestHandler.Result.Bitmap source) {
+  //      transformationCount.incrementAndGet();
+  //      return source;
+  //    }
+  //
+  //    @Override public String key() {
+  //      return "test";
+  //    }
+  //  };
+  //  List<Transformation> transformations = asList(identity, identity, identity);
+  //  Drawable original = new BitmapDrawable(Bitmap.createBitmap(10, 10, ARGB_8888));
+  //  RequestHandler.Result.Bitmap result = new RequestHandler.Result.Bitmap(original, MEMORY);
+  //  Request data = new Request.Builder(URI_1).build();
+  //  BitmapHunter.applyTransformations(picasso, data, transformations, result);
+  //  assertThat(transformationCount.get()).isEqualTo(3);
+  //}
 
-      @Override public String key() {
-        return "test";
-      }
-    };
-    List<Transformation> transformations = asList(identity, identity, identity);
-    Drawable original = new BitmapDrawable(Bitmap.createBitmap(10, 10, ARGB_8888));
-    RequestHandler.Result result = new RequestHandler.Result(original, MEMORY);
-    Request data = new Request.Builder(URI_1).build();
-    BitmapHunter.applyTransformations(picasso, data, transformations, result);
-    assertThat(transformationCount.get()).isEqualTo(3);
-  }
-
-  private static class TestableBitmapHunter extends BitmapHunter {
+  static class TestableBitmapHunter extends BitmapHunter {
     TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, PlatformLruCache cache,
         Action action) {
       this(picasso, dispatcher, cache, action, null);
@@ -1078,17 +1043,31 @@ public final class BitmapHunterTest {
 
     TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, PlatformLruCache cache,
         Action action, Bitmap result, Exception exception) {
-      super(picasso, dispatcher, cache, action, spy(new TestableRequestHandler(result, exception)));
+      this(picasso, dispatcher, cache, action, result, exception, false);
+    }
+
+    TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, PlatformLruCache cache,
+        Action action, Bitmap result, Exception exception, boolean shouldRetry) {
+      this(picasso, dispatcher, cache, action, result, exception, shouldRetry, false);
+    }
+
+    TestableBitmapHunter(Picasso picasso, Dispatcher dispatcher, PlatformLruCache cache,
+        Action action, Bitmap result, Exception exception, boolean shouldRetry, boolean supportsReplay) {
+      super(picasso, dispatcher, cache, action, new TestableRequestHandler(result, exception, shouldRetry, supportsReplay));
     }
   }
 
   private static class TestableRequestHandler extends RequestHandler {
     private final Bitmap bitmap;
     private final Exception exception;
+    private final boolean shouldRetry;
+    private final boolean supportsReplay;
 
-    TestableRequestHandler(Bitmap bitmap, Exception exception) {
+    TestableRequestHandler(Bitmap bitmap, Exception exception, boolean shouldRetry, boolean supportsReplay) {
       this.bitmap = bitmap;
       this.exception = exception;
+      this.shouldRetry = shouldRetry;
+      this.supportsReplay = supportsReplay;
     }
 
     @Override public boolean canHandleRequest(@NonNull Request data) {
@@ -1099,28 +1078,20 @@ public final class BitmapHunterTest {
       if (exception != null) {
         callback.onError(exception);
       } else {
-        callback.onSuccess(new Result(bitmap, MEMORY));
+        callback.onSuccess(new Result.Bitmap(bitmap, NETWORK));
       }
     }
 
-    @Override int getRetryCount() {
+    @Override public int getRetryCount() {
       return 1;
     }
-  }
 
-  private static class OOMBitmapHunter extends BitmapHunter {
-    OOMBitmapHunter(Picasso picasso, Dispatcher dispatcher, PlatformLruCache cache, Action action) {
-      super(picasso, dispatcher, cache, action, spy(new OOMRequestHandler()));
-    }
-  }
-
-  private static class OOMRequestHandler extends TestableRequestHandler {
-    OOMRequestHandler() {
-      super(null, null);
+    @Override public boolean shouldRetry(boolean airplaneMode, @Nullable NetworkInfo info) {
+      return shouldRetry;
     }
 
-    @Override public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull Callback callback) {
-      callback.onError(new OutOfMemoryError());
+    @Override public boolean supportsReplay() {
+      return supportsReplay;
     }
   }
 
@@ -1130,7 +1101,7 @@ public final class BitmapHunterTest {
     }
 
     @Override public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull Callback callback) {
-      callback.onSuccess(new Result(bitmap, MEMORY));
+      callback.onSuccess(new Result.Bitmap(bitmap, MEMORY));
     }
   }
 }

@@ -73,7 +73,6 @@ internal abstract class RemoteViewsAction(
     override fun hashCode(): Int {
       return 31 * remoteViews.hashCode() + viewId
     }
-
   }
 
   internal class AppWidgetAction(
@@ -92,7 +91,6 @@ internal abstract class RemoteViewsAction(
     override fun getTarget(): Any {
       return target
     }
-
   }
 
   internal class NotificationAction(

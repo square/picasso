@@ -36,8 +36,8 @@ public class BitmapUtilsTest {
       Request data = new Request.Builder(URI_1).config(config).build();
       Request copy = data.newBuilder().build();
 
-      assertThat(createBitmapOptions(data).inPreferredConfig).isSameAs(config);
-      assertThat(createBitmapOptions(copy).inPreferredConfig).isSameAs(config);
+      assertThat(createBitmapOptions(data).inPreferredConfig).isSameInstanceAs(config);
+      assertThat(createBitmapOptions(copy).inPreferredConfig).isSameInstanceAs(config);
     }
   }
 

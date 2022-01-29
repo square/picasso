@@ -109,15 +109,13 @@ public class RequestCreatorTest {
     final CountDownLatch latch = new CountDownLatch(1);
     final Bitmap[] result = new Bitmap[1];
 
-    new Thread(new Runnable() {
-      @Override public void run() {
-        try {
-          result[0] = new RequestCreator(picasso, null, 0).get();
-        } catch (IOException e) {
-          fail(e.getMessage());
-        } finally {
-          latch.countDown();
-        }
+    new Thread(() -> {
+      try {
+        result[0] = new RequestCreator(picasso, null, 0).get();
+      } catch (IOException e) {
+        fail(e.getMessage());
+      } finally {
+        latch.countDown();
       }
     }).start();
     latch.await();
@@ -337,15 +335,13 @@ public class RequestCreatorTest {
   public void cancelNotOnMainThreadCrashes() throws InterruptedException {
     doCallRealMethod().when(picasso).cancelRequest(any(BitmapTarget.class));
     final CountDownLatch latch = new CountDownLatch(1);
-    new Thread(new Runnable() {
-      @Override public void run() {
-        try {
-          new RequestCreator(picasso, null, 0).into(mockTarget());
-          fail("Should have thrown IllegalStateException");
-        } catch (IllegalStateException ignored) {
-        } finally {
-          latch.countDown();
-        }
+    new Thread(() -> {
+      try {
+        new RequestCreator(picasso, null, 0).into(mockTarget());
+        fail("Should have thrown IllegalStateException");
+      } catch (IllegalStateException ignored) {
+      } finally {
+        latch.countDown();
       }
     }).start();
     latch.await();
@@ -355,15 +351,13 @@ public class RequestCreatorTest {
   public void intoNotOnMainThreadCrashes() throws InterruptedException {
     doCallRealMethod().when(picasso).enqueueAndSubmit(any(Action.class));
     final CountDownLatch latch = new CountDownLatch(1);
-    new Thread(new Runnable() {
-      @Override public void run() {
-        try {
-          new RequestCreator(picasso, URI_1, 0).into(mockImageViewTarget());
-          fail("Should have thrown IllegalStateException");
-        } catch (IllegalStateException ignored) {
-        } finally {
-          latch.countDown();
-        }
+    new Thread(() -> {
+      try {
+        new RequestCreator(picasso, URI_1, 0).into(mockImageViewTarget());
+        fail("Should have thrown IllegalStateException");
+      } catch (IllegalStateException ignored) {
+      } finally {
+        latch.countDown();
       }
     }).start();
     latch.await();
@@ -612,42 +606,10 @@ public class RequestCreatorTest {
     assertThat(actionCaptor.getValue().getTag()).isEqualTo("tag");
   }
 
-  @Test public void nullMemoryPolicy() {
-    try {
-      new RequestCreator().memoryPolicy(null);
-      fail("Null memory policy should throw exception.");
-    } catch (NullPointerException ignored) {
-    }
-  }
-
-  @Test public void nullAdditionalMemoryPolicy() {
-    try {
-      new RequestCreator().memoryPolicy(MemoryPolicy.NO_CACHE, (MemoryPolicy[]) null);
-      fail("Null additional memory policy should throw exception.");
-    } catch (NullPointerException ignored) {
-    }
-  }
-
   @Test public void nullMemoryPolicyAssholeStyle() {
     try {
       new RequestCreator().memoryPolicy(MemoryPolicy.NO_CACHE, new MemoryPolicy[] { null });
       fail("Null additional memory policy should throw exception.");
-    } catch (NullPointerException ignored) {
-    }
-  }
-
-  @Test public void nullNetworkPolicy() {
-    try {
-      new RequestCreator().networkPolicy(null);
-      fail("Null network policy should throw exception.");
-    } catch (NullPointerException ignored) {
-    }
-  }
-
-  @Test public void nullAdditionalNetworkPolicy() {
-    try {
-      new RequestCreator().networkPolicy(NetworkPolicy.NO_CACHE, (NetworkPolicy[]) null);
-      fail("Null additional network policy should throw exception.");
     } catch (NullPointerException ignored) {
     }
   }
@@ -760,11 +722,6 @@ public class RequestCreatorTest {
 
   @Test public void invalidPriority() {
     try {
-      new RequestCreator().priority(null);
-      fail("Null priority should throw exception.");
-    } catch (NullPointerException ignored) {
-    }
-    try {
       new RequestCreator().priority(LOW).priority(HIGH);
       fail("Two priorities should throw exception.");
     } catch (IllegalStateException ignored) {
@@ -772,12 +729,7 @@ public class RequestCreatorTest {
   }
 
 
-  @Test public void invalidTag() {
-    try {
-      new RequestCreator().tag(null);
-      fail("Null tag should throw exception.");
-    } catch (IllegalArgumentException ignored) {
-    }
+  @Test public void alreadySetTagThrows() {
     try {
       new RequestCreator().tag("tag1").tag("tag2");
       fail("Two tags should throw exception.");
@@ -785,20 +737,10 @@ public class RequestCreatorTest {
     }
   }
 
-  @Test(expected = NullPointerException.class)
-  public void nullTransformationsInvalid() {
-    new RequestCreator().transform((Transformation) null);
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void nullTransformationListInvalid() {
-    new RequestCreator().transform((List<Transformation>) null);
-  }
-
   @Test(expected = IllegalArgumentException.class)
   public void nullKeyTransformationInvalid() {
     new RequestCreator().transform(new Transformation() {
-      @Override public RequestHandler.Result transform(RequestHandler.Result source) {
+      @Override public RequestHandler.Result.Bitmap transform(RequestHandler.Result.Bitmap source) {
         return source;
       }
 
@@ -812,7 +754,7 @@ public class RequestCreatorTest {
   public void nullKeyInTransformationListInvalid() {
     List<? extends Transformation> transformations =
         Collections.singletonList(new Transformation() {
-          @Override public RequestHandler.Result transform(RequestHandler.Result source) {
+          @Override public RequestHandler.Result.Bitmap transform(RequestHandler.Result.Bitmap source) {
             return source;
           }
 

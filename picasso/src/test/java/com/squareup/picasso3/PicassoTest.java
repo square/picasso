@@ -23,15 +23,14 @@ import android.widget.RemoteViews;
 import androidx.annotation.NonNull;
 import com.squareup.picasso3.Picasso.RequestTransformer;
 import com.squareup.picasso3.TestUtils.EventRecorder;
+import com.squareup.picasso3.TestUtils.FakeAction;
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collections;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
@@ -42,6 +41,7 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
 import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso3.Picasso.Listener;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
+import static com.squareup.picasso3.Picasso.LoadedFrom.NETWORK;
 import static com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget;
 import static com.squareup.picasso3.TestUtils.NOOP_REQUEST_HANDLER;
 import static com.squareup.picasso3.TestUtils.NOOP_TRANSFORMER;
@@ -54,18 +54,15 @@ import static com.squareup.picasso3.TestUtils.URI_KEY_1;
 import static com.squareup.picasso3.TestUtils.defaultPicasso;
 import static com.squareup.picasso3.TestUtils.makeBitmap;
 import static com.squareup.picasso3.TestUtils.mockAction;
-import static com.squareup.picasso3.TestUtils.mockCanceledAction;
 import static com.squareup.picasso3.TestUtils.mockDeferredRequestCreator;
 import static com.squareup.picasso3.TestUtils.mockHunter;
 import static com.squareup.picasso3.TestUtils.mockImageViewTarget;
 import static com.squareup.picasso3.TestUtils.mockPicasso;
 import static com.squareup.picasso3.TestUtils.mockTarget;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -109,7 +106,7 @@ public final class PicassoTest {
     assertThat(picasso.targetToAction).hasSize(1);
     assertThat(picasso.targetToAction.containsValue(action)).isTrue();
     picasso.enqueueAndSubmit(action);
-    verify(action, never()).cancel();
+    assertThat(action.cancelled).isFalse();
     verify(dispatcher, never()).dispatchCancel(action);
   }
 
@@ -127,45 +124,48 @@ public final class PicassoTest {
   }
 
   @Test public void completeInvokesSuccessOnAllSuccessfulRequests() {
-    Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
-    Action action2 = mockCanceledAction();
-    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap, MEMORY));
-    when(hunter.getActions()).thenReturn(Arrays.asList(action1, action2));
+    FakeAction action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
+    BitmapHunter hunter = mockHunter(new RequestHandler.Result.Bitmap(bitmap, MEMORY), action1);
+    FakeAction action2 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
+    hunter.attach(action2);
+    action2.cancelled = true;
+
+    hunter.run();
     picasso.complete(hunter);
 
     verifyActionComplete(action1);
-
-    verify(action2, never()).complete(any(RequestHandler.Result.class));
+    assertThat(action2.completedResult).isNull();
   }
 
   @Test public void completeInvokesErrorOnAllFailedRequests() {
-    Action action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
-    Action action2 = mockCanceledAction();
+    FakeAction action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     Exception exception = mock(Exception.class);
-    BitmapHunter hunter = mockHunter(URI_KEY_1, null);
-    when(hunter.getException()).thenReturn(exception);
-    when(hunter.getActions()).thenReturn(Arrays.asList(action1, action2));
+    BitmapHunter hunter = mockHunter(new RequestHandler.Result.Bitmap(bitmap, MEMORY), action1, exception);
+    FakeAction action2 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
+    hunter.attach(action2);
+    action2.cancelled = true;
+    hunter.run();
     picasso.complete(hunter);
-    verify(action1).error(exception);
-    verify(action2, never()).error(exception);
-    verify(listener).onImageLoadFailed(picasso, URI_1, exception);
+
+    assertThat(action1.errorException).hasCauseThat().isEqualTo(exception);
+    assertThat(action2.errorException).isNull();
+    verify(listener).onImageLoadFailed(picasso, URI_1, action1.errorException);
   }
 
   @Test public void completeDeliversToSingle() {
-    Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
-    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap, MEMORY));
-    when(hunter.getAction()).thenReturn(action);
-    when(hunter.getActions()).thenReturn(Collections.<Action>emptyList());
+    FakeAction action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
+    BitmapHunter hunter = mockHunter(new RequestHandler.Result.Bitmap(bitmap, MEMORY), action);
+    hunter.run();
     picasso.complete(hunter);
 
     verifyActionComplete(action);
   }
 
   @Test public void completeWithReplayDoesNotRemove() {
-    Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
+    FakeAction action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
     action.willReplay = true;
-    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap, MEMORY));
-    when(hunter.getAction()).thenReturn(action);
+    BitmapHunter hunter = mockHunter(new RequestHandler.Result.Bitmap(bitmap, MEMORY), action);
+    hunter.run();
     picasso.enqueueAndSubmit(action);
     assertThat(picasso.targetToAction).hasSize(1);
     picasso.complete(hunter);
@@ -175,11 +175,11 @@ public final class PicassoTest {
   }
 
   @Test public void completeDeliversToSingleAndMultiple() {
-    Action action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
-    Action action2 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
-    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap, MEMORY));
-    when(hunter.getAction()).thenReturn(action);
-    when(hunter.getActions()).thenReturn(Arrays.asList(action2));
+    FakeAction action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
+    FakeAction action2 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
+    BitmapHunter hunter = mockHunter(new RequestHandler.Result.Bitmap(bitmap, MEMORY), action);
+    hunter.attach(action2);
+    hunter.run();
     picasso.complete(hunter);
 
     verifyActionComplete(action);
@@ -187,26 +187,29 @@ public final class PicassoTest {
   }
 
   @Test public void completeSkipsIfNoActions() {
-    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap, MEMORY));
+    FakeAction action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget());
+    BitmapHunter hunter = mockHunter(new RequestHandler.Result.Bitmap(bitmap, MEMORY), action);
+    hunter.detach(action);
+    hunter.run();
     picasso.complete(hunter);
-    verify(hunter).getAction();
-    verify(hunter).getActions();
-    verifyNoMoreInteractions(hunter);
+
+    assertThat(hunter.getAction()).isNull();
+    assertThat(hunter.getActions()).isNull();
   }
 
   @Test public void resumeActionTriggersSubmitOnPausedAction() {
     Request request = new Request.Builder(URI_1, 0, ARGB_8888).build();
     Action action =
         new Action(mockPicasso(), request) {
-          @Override void complete(RequestHandler.Result result) {
+          @Override public void complete(RequestHandler.Result result) {
             fail("Test execution should not call this method");
           }
 
-          @Override void error(Exception e) {
+          @Override public void error(Exception e) {
             fail("Test execution should not call this method");
           }
 
-          @NonNull @Override Object getTarget() {
+          @NonNull @Override public Object getTarget() {
             return this;
           }
         };
@@ -219,16 +222,18 @@ public final class PicassoTest {
     Request request = new Request.Builder(URI_1, 0, ARGB_8888).build();
     Action action =
         new Action(mockPicasso(), request) {
-          @Override void complete(RequestHandler.Result result) {
-            assertThat(result.getBitmap()).isEqualTo(bitmap);
-            assertThat(result.getLoadedFrom()).isEqualTo(MEMORY);
+          @Override public void complete(RequestHandler.Result result) {
+            assertThat(result).isInstanceOf(RequestHandler.Result.Bitmap.class);
+            RequestHandler.Result.Bitmap bitmapResult = (RequestHandler.Result.Bitmap) result;
+            assertThat(bitmapResult.getBitmap()).isEqualTo(bitmap);
+            assertThat(bitmapResult.loadedFrom).isEqualTo(MEMORY);
           }
 
-          @Override void error(Exception e) {
+          @Override public void error(Exception e) {
             fail("Reading from memory cache should not throw an exception");
           }
 
-          @NonNull @Override Object getTarget() {
+          @NonNull @Override public Object getTarget() {
             return this;
           }
         };
@@ -239,8 +244,10 @@ public final class PicassoTest {
   @Test public void cancelExistingRequestWithUnknownTarget() {
     ImageView target = mockImageViewTarget();
     Action action = mockAction(URI_KEY_1, URI_1, target);
+    assertThat(action.cancelled).isFalse();
     picasso.cancelRequest(target);
-    verifyZeroInteractions(action, dispatcher);
+    assertThat(action.cancelled).isFalse();
+    verifyZeroInteractions(dispatcher);
   }
 
   @Test public void cancelExistingRequestWithNullImageView() {
@@ -264,30 +271,31 @@ public final class PicassoTest {
     Action action = mockAction(URI_KEY_1, URI_1, target);
     picasso.enqueueAndSubmit(action);
     assertThat(picasso.targetToAction).hasSize(1);
+    assertThat(action.cancelled).isFalse();
     picasso.cancelRequest(target);
     assertThat(picasso.targetToAction).isEmpty();
-    verify(action).cancel();
+    assertThat(action.cancelled).isTrue();
     verify(dispatcher).dispatchCancel(action);
   }
 
   @Test public void cancelExistingRequestWithDeferredImageViewTarget() {
     ImageView target = mockImageViewTarget();
-    DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator();
+    DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator(target);
     picasso.targetToDeferredRequestCreator.put(target, deferredRequestCreator);
     picasso.cancelRequest(target);
-    verify(deferredRequestCreator).cancel();
+    verify(target).removeOnAttachStateChangeListener(deferredRequestCreator);
     assertThat(picasso.targetToDeferredRequestCreator).isEmpty();
   }
 
   @Test public void enqueueingDeferredRequestCancelsThePreviousOne() {
     ImageView target = mockImageViewTarget();
-    DeferredRequestCreator firstRequestCreator = mockDeferredRequestCreator();
+    DeferredRequestCreator firstRequestCreator = mockDeferredRequestCreator(target);
     picasso.defer(target, firstRequestCreator);
     assertThat(picasso.targetToDeferredRequestCreator).containsKey(target);
 
-    DeferredRequestCreator secondRequestCreator = mockDeferredRequestCreator();
+    DeferredRequestCreator secondRequestCreator = mockDeferredRequestCreator(target);
     picasso.defer(target, secondRequestCreator);
-    verify(firstRequestCreator).cancel();
+    verify(target).removeOnAttachStateChangeListener(firstRequestCreator);
     assertThat(picasso.targetToDeferredRequestCreator).containsKey(target);
   }
 
@@ -296,9 +304,10 @@ public final class PicassoTest {
     Action action = mockAction(URI_KEY_1, URI_1, target);
     picasso.enqueueAndSubmit(action);
     assertThat(picasso.targetToAction).hasSize(1);
+    assertThat(action.cancelled).isFalse();
     picasso.cancelRequest(target);
     assertThat(picasso.targetToAction).isEmpty();
-    verify(action).cancel();
+    assertThat(action.cancelled).isTrue();
     verify(dispatcher).dispatchCancel(action);
   }
 
@@ -319,9 +328,10 @@ public final class PicassoTest {
     Action action = mockAction(URI_KEY_1, URI_1, target);
     picasso.enqueueAndSubmit(action);
     assertThat(picasso.targetToAction).hasSize(1);
+    assertThat(action.cancelled).isFalse();
     picasso.cancelRequest(remoteViews, viewId);
     assertThat(picasso.targetToAction).isEmpty();
-    verify(action).cancel();
+    assertThat(action.cancelled).isTrue();
     verify(dispatcher).dispatchCancel(action);
   }
 
@@ -338,23 +348,24 @@ public final class PicassoTest {
     Action action = mockAction(URI_KEY_1, URI_1, target, "TAG");
     picasso.enqueueAndSubmit(action);
     assertThat(picasso.targetToAction).hasSize(1);
+    assertThat(action.cancelled).isFalse();
     picasso.cancelTag("TAG");
     assertThat(picasso.targetToAction).isEmpty();
-    verify(action).cancel();
+    assertThat(action.cancelled).isTrue();
   }
 
   @Test public void cancelTagAllDeferredRequests() {
     ImageView target = mockImageViewTarget();
-    DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator();
+    DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator(target);
     when(deferredRequestCreator.getTag()).thenReturn("TAG");
     picasso.defer(target, deferredRequestCreator);
     picasso.cancelTag("TAG");
-    verify(deferredRequestCreator).cancel();
+    verify(target).removeOnAttachStateChangeListener(deferredRequestCreator);
   }
 
   @Test public void deferAddsToMap() {
     ImageView target = mockImageViewTarget();
-    DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator();
+    DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator(target);
     assertThat(picasso.targetToDeferredRequestCreator).isEmpty();
     picasso.defer(target, deferredRequestCreator);
     assertThat(picasso.targetToDeferredRequestCreator).hasSize(1);
@@ -392,20 +403,16 @@ public final class PicassoTest {
   }
 
   @Test public void shutdownClearsDeferredRequests() {
-    DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator();
     ImageView target = mockImageViewTarget();
+    DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator(target);
     picasso.targetToDeferredRequestCreator.put(target, deferredRequestCreator);
     picasso.shutdown();
-    verify(deferredRequestCreator).cancel();
+    verify(target).removeOnAttachStateChangeListener(deferredRequestCreator);
     assertThat(picasso.targetToDeferredRequestCreator).isEmpty();
   }
 
   @Test public void throwWhenTransformRequestReturnsNull() {
-    RequestTransformer brokenTransformer = new RequestTransformer() {
-      @Override public Request transformRequest(Request request) {
-        return null;
-      }
-    };
+    RequestTransformer brokenTransformer = request -> null;
     Picasso picasso = new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, listener,
         Collections.singletonList(brokenTransformer), NO_HANDLERS, NO_EVENT_LISTENERS, ARGB_8888,
         false, false);
@@ -585,12 +592,12 @@ public final class PicassoTest {
         parent.targetToDeferredRequestCreator);
   }
 
-  private void verifyActionComplete(Action action) {
-    ArgumentCaptor<RequestHandler.Result> captor =
-        ArgumentCaptor.forClass(RequestHandler.Result.class);
-    verify(action).complete(captor.capture());
-    RequestHandler.Result result = captor.getValue();
-    assertThat(result.getBitmap()).isEqualTo(bitmap);
-    assertThat(result.getLoadedFrom()).isEqualTo(MEMORY);
+  private void verifyActionComplete(FakeAction action) {
+    RequestHandler.Result result = action.completedResult;
+    assertThat(result).isNotNull();
+    assertThat(result).isInstanceOf(RequestHandler.Result.Bitmap.class);
+    RequestHandler.Result.Bitmap bitmapResult = (RequestHandler.Result.Bitmap) result;
+    assertThat(bitmapResult.getBitmap()).isEqualTo(bitmap);
+    assertThat(bitmapResult.loadedFrom).isEqualTo(NETWORK);
   }
 }

@@ -30,14 +30,10 @@ class TestTransformation implements Transformation {
     this.result = result;
   }
 
-  @Override public RequestHandler.Result transform(RequestHandler.Result source) {
+  @Override public RequestHandler.Result.Bitmap transform(RequestHandler.Result.Bitmap source) {
     Bitmap bitmap = source.getBitmap();
-    if (bitmap == null) {
-      return source;
-    }
-
     bitmap.recycle();
-    return new RequestHandler.Result(result, source.getLoadedFrom(), source.getExifRotation());
+    return new RequestHandler.Result.Bitmap(result, source.loadedFrom, source.exifRotation);
   }
 
   @Override public String key() {

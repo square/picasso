@@ -24,7 +24,8 @@ import android.os.Handler;
 import android.os.Looper;
 import androidx.annotation.NonNull;
 import com.squareup.picasso3.NetworkRequestHandler.ContentLengthException;
-import java.util.Arrays;
+import com.squareup.picasso3.TestUtils.TestDelegatingService;
+import com.squareup.picasso3.Utils.PicassoThreadFactory;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.FutureTask;
 import org.junit.Before;
@@ -38,10 +39,12 @@ import static android.content.Intent.ACTION_AIRPLANE_MODE_CHANGED;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
+import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
 import static com.squareup.picasso3.Dispatcher.NetworkBroadcastReceiver;
 import static com.squareup.picasso3.Dispatcher.NetworkBroadcastReceiver.EXTRA_AIRPLANE_STATE;
 import static com.squareup.picasso3.Picasso.LoadedFrom.MEMORY;
+import static com.squareup.picasso3.Picasso.LoadedFrom.NETWORK;
 import static com.squareup.picasso3.Request.KEY_SEPARATOR;
 import static com.squareup.picasso3.TestUtils.URI_1;
 import static com.squareup.picasso3.TestUtils.URI_2;
@@ -54,26 +57,22 @@ import static com.squareup.picasso3.TestUtils.mockHunter;
 import static com.squareup.picasso3.TestUtils.mockNetworkInfo;
 import static com.squareup.picasso3.TestUtils.mockPicasso;
 import static com.squareup.picasso3.TestUtils.mockTarget;
-import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricTestRunner.class)
 public class DispatcherTest {
   @Mock Context context;
   @Mock ConnectivityManager connectivityManager;
-  @Mock PicassoExecutorService service;
   @Mock ExecutorService serviceMock;
   final PlatformLruCache cache = new PlatformLruCache(2048);
-  @Mock Stats stats;
+  final TestDelegatingService service =
+      new TestDelegatingService(new PicassoExecutorService(new PicassoThreadFactory()));
   private Dispatcher dispatcher;
 
   final Bitmap bitmap1 = makeBitmap();
@@ -81,16 +80,19 @@ public class DispatcherTest {
 
   @Before public void setUp() {
     initMocks(this);
-    dispatcher = createDispatcher();
+    dispatcher = createDispatcher(service);
   }
 
   @Test public void shutdownStopsService() {
+    PicassoExecutorService service = new PicassoExecutorService(new PicassoThreadFactory());
+    dispatcher = createDispatcher(service);
     dispatcher.shutdown();
-    verify(service).shutdown();
+    assertThat(service.isShutdown()).isEqualTo(true);
   }
 
   @Test public void shutdownUnregistersReceiver() {
     dispatcher.shutdown();
+    shadowOf(getMainLooper()).idle();
     verify(context).unregisterReceiver(dispatcher.receiver);
   }
 
@@ -98,7 +100,7 @@ public class DispatcherTest {
     Action action = mockAction(URI_KEY_1, URI_1);
     dispatcher.performSubmit(action);
     assertThat(dispatcher.hunterMap).hasSize(1);
-    verify(service).submit(any(BitmapHunter.class));
+    assertThat(service.submissions).isEqualTo(1);
   }
 
   @Test public void performSubmitWithTwoDifferentRequestsQueuesHunters() {
@@ -107,36 +109,26 @@ public class DispatcherTest {
     dispatcher.performSubmit(action1);
     dispatcher.performSubmit(action2);
     assertThat(dispatcher.hunterMap).hasSize(2);
-    verify(service, times(2)).submit(any(BitmapHunter.class));
+    assertThat(service.submissions).isEqualTo(2);
   }
 
   @Test public void performSubmitWithExistingRequestAttachesToHunter() {
     Action action1 = mockAction(URI_KEY_1, URI_1);
     Action action2 = mockAction(URI_KEY_1, URI_1);
     dispatcher.performSubmit(action1);
+    assertThat(dispatcher.hunterMap).hasSize(1);
+    assertThat(service.submissions).isEqualTo(1);
     dispatcher.performSubmit(action2);
     assertThat(dispatcher.hunterMap).hasSize(1);
-    verify(service).submit(any(BitmapHunter.class));
+    assertThat(service.submissions).isEqualTo(1);
   }
 
   @Test public void performSubmitWithShutdownServiceIgnoresRequest() {
-    when(service.isShutdown()).thenReturn(true);
+    service.shutdown();
     Action action = mockAction(URI_KEY_1, URI_1);
     dispatcher.performSubmit(action);
     assertThat(dispatcher.hunterMap).isEmpty();
-    verify(service, never()).submit(any(BitmapHunter.class));
-  }
-
-  @Test public void performSubmitWithShutdownAttachesRequest() {
-    BitmapHunter hunter = mockHunter(URI_KEY_1 + KEY_SEPARATOR,
-        new RequestHandler.Result(bitmap1, MEMORY));
-    dispatcher.hunterMap.put(URI_KEY_1 + KEY_SEPARATOR, hunter);
-    when(service.isShutdown()).thenReturn(true);
-    Action action = mockAction(URI_KEY_1, URI_1);
-    dispatcher.performSubmit(action);
-    assertThat(dispatcher.hunterMap).hasSize(1);
-    verify(hunter).attach(action);
-    verify(service, never()).submit(any(BitmapHunter.class));
+    assertThat(service.submissions).isEqualTo(0);
   }
 
   @Test public void performSubmitWithFetchAction() {
@@ -170,14 +162,12 @@ public class DispatcherTest {
   @Test public void performCancelDetachesRequestAndCleansUp() {
     BitmapTarget target = mockTarget();
     Action action = mockAction(URI_KEY_1, URI_1, target);
-    BitmapHunter hunter = mockHunter(URI_KEY_1 + KEY_SEPARATOR, new RequestHandler.Result(bitmap1, MEMORY));
-    hunter.attach(action);
-    when(hunter.cancel()).thenReturn(true);
+    BitmapHunter hunter = mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action);
+    hunter.future = new FutureTask<>(mock(Runnable.class), mock(Object.class));
     dispatcher.hunterMap.put(URI_KEY_1 + KEY_SEPARATOR, hunter);
     dispatcher.failedActions.put(target, action);
     dispatcher.performCancel(action);
-    verify(hunter).detach(action);
-    verify(hunter).cancel();
+    assertThat(hunter.getAction()).isNull();
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.failedActions).isEmpty();
   }
@@ -185,47 +175,49 @@ public class DispatcherTest {
   @Test public void performCancelMultipleRequestsDetachesOnly() {
     Action action1 = mockAction(URI_KEY_1, URI_1);
     Action action2 = mockAction(URI_KEY_1, URI_1);
-    BitmapHunter hunter = mockHunter(URI_KEY_1 + KEY_SEPARATOR, new RequestHandler.Result(bitmap1, MEMORY));
-    hunter.attach(action1);
+    BitmapHunter hunter = mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action1);
     hunter.attach(action2);
     dispatcher.hunterMap.put(URI_KEY_1 + KEY_SEPARATOR, hunter);
     dispatcher.performCancel(action1);
-    verify(hunter).detach(action1);
-    verify(hunter).cancel();
+    assertThat(hunter.getAction()).isNull();
+    assertThat(hunter.getActions()).containsExactly(action2);
     assertThat(dispatcher.hunterMap).hasSize(1);
   }
 
   @Test public void performCancelUnqueuesAndDetachesPausedRequest() {
     Action action = mockAction(URI_KEY_1, URI_1, mockTarget(), "tag");
-    BitmapHunter hunter =
-        mockHunter(URI_KEY_1 + KEY_SEPARATOR, new RequestHandler.Result(bitmap1, MEMORY), action);
+    BitmapHunter hunter = mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action);
     dispatcher.hunterMap.put(URI_KEY_1 + KEY_SEPARATOR, hunter);
     dispatcher.pausedTags.add("tag");
     dispatcher.pausedActions.put(action.getTarget(), action);
     dispatcher.performCancel(action);
+    assertThat(hunter.getAction()).isNull();
     assertThat(dispatcher.pausedTags).containsExactly("tag");
     assertThat(dispatcher.pausedActions).isEmpty();
-    verify(hunter).detach(action);
   }
 
   @Test public void performCompleteSetsResultInCache() {
     Request data = new Request.Builder(URI_1).build();
     Action action = noopAction(data);
-    BitmapHunter hunter =
-        new BitmapHunter(mockPicasso(), dispatcher, cache, action, EMPTY_REQUEST_HANDLER);
-    hunter.result = new RequestHandler.Result(bitmap1, MEMORY);
+    BitmapHunter hunter = mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action);
+    hunter.run();
+    assertThat(cache.size()).isEqualTo(0);
 
     dispatcher.performComplete(hunter);
 
-    assertThat(cache.get(hunter.getKey())).isSameAs(hunter.result.getBitmap());
+    assertThat(hunter.getResult()).isInstanceOf(RequestHandler.Result.Bitmap.class);
+    RequestHandler.Result.Bitmap result = (RequestHandler.Result.Bitmap) hunter.getResult();
+    assertThat(result.getBitmap()).isEqualTo(bitmap1);
+    assertThat(result.loadedFrom).isEqualTo(NETWORK);
+    assertThat(cache.get(hunter.getKey())).isSameInstanceAs(bitmap1);
   }
 
   @Test public void performCompleteWithNoStoreMemoryPolicy() {
     Request data = new Request.Builder(URI_1).memoryPolicy(MemoryPolicy.NO_STORE).build();
     Action action = noopAction(data);
-    BitmapHunter hunter =
-        new BitmapHunter(mockPicasso(), dispatcher, cache, action, EMPTY_REQUEST_HANDLER);
-    hunter.result = new RequestHandler.Result(bitmap1, MEMORY);
+    BitmapHunter hunter = mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action);
+    hunter.run();
+    assertThat(cache.size()).isEqualTo(0);
 
     dispatcher.performComplete(hunter);
 
@@ -236,9 +228,8 @@ public class DispatcherTest {
   @Test public void performCompleteCleansUpAndPostsToMain() {
     Request data = new Request.Builder(URI_1).build();
     Action action = noopAction(data);
-    BitmapHunter hunter =
-        new BitmapHunter(mockPicasso(), dispatcher, cache, action, EMPTY_REQUEST_HANDLER);
-    hunter.result = new RequestHandler.Result(bitmap1, MEMORY);
+    BitmapHunter hunter = mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action);
+    hunter.run();
 
     dispatcher.performComplete(hunter);
 
@@ -249,9 +240,8 @@ public class DispatcherTest {
   @Test public void performCompleteCleansUpAndDoesNotPostToMainIfCancelled() {
     Request data = new Request.Builder(URI_1).build();
     Action action = noopAction(data);
-    BitmapHunter hunter =
-        new BitmapHunter(mockPicasso(), dispatcher, cache, action, EMPTY_REQUEST_HANDLER);
-    hunter.result = new RequestHandler.Result(bitmap1, MEMORY);
+    BitmapHunter hunter = mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action);
+    hunter.run();
     hunter.future = new FutureTask<>(mock(Runnable.class), null);
     hunter.future.cancel(false);
 
@@ -262,7 +252,8 @@ public class DispatcherTest {
   }
 
   @Test public void performErrorCleansUpAndPostsToMain() {
-    BitmapHunter hunter = mockHunter(URI_KEY_1 + KEY_SEPARATOR, new RequestHandler.Result(bitmap1, MEMORY));
+    Action action = mockAction(URI_KEY_1, URI_1, mockTarget(), "tag");
+    BitmapHunter hunter = mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action);
     dispatcher.hunterMap.put(hunter.getKey(), hunter);
     dispatcher.performError(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
@@ -270,8 +261,10 @@ public class DispatcherTest {
   }
 
   @Test public void performErrorCleansUpAndDoesNotPostToMainIfCancelled() {
-    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap1, MEMORY));
-    when(hunter.isCancelled()).thenReturn(true);
+    Action action = mockAction(URI_KEY_1, URI_1, mockTarget(), "tag");
+    BitmapHunter hunter = mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action);
+    hunter.future = new FutureTask<>(mock(Runnable.class), mock(Object.class));
+    hunter.future.cancel(false);
     dispatcher.hunterMap.put(hunter.getKey(), hunter);
     dispatcher.performError(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
@@ -279,10 +272,12 @@ public class DispatcherTest {
   }
 
   @Test public void performRetrySkipsIfHunterIsCancelled() {
-    BitmapHunter hunter = mockHunter(URI_KEY_2, new RequestHandler.Result(bitmap1, MEMORY));
-    when(hunter.isCancelled()).thenReturn(true);
+    Action action = mockAction(URI_KEY_1, URI_1, mockTarget(), "tag");
+    BitmapHunter hunter = mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action);
+    hunter.future = new FutureTask<>(mock(Runnable.class), mock(Object.class));
+    hunter.future.cancel(false);
     dispatcher.performRetry(hunter);
-    verifyZeroInteractions(service);
+    assertThat(hunter.isCancelled()).isTrue();
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.failedActions).isEmpty();
   }
@@ -290,91 +285,84 @@ public class DispatcherTest {
   @Test public void performRetryForContentLengthResetsNetworkPolicy() {
     NetworkInfo networkInfo = mockNetworkInfo(true);
     when(connectivityManager.getActiveNetworkInfo()).thenReturn(networkInfo);
-    BitmapHunter hunter = new BitmapHunter(mockPicasso(), dispatcher, cache,
-        mockAction(URI_KEY_2, URI_2), RETRYING_REQUEST_HANDLER);
-    hunter.exception = new ContentLengthException("304 error");
+    Action action = mockAction(URI_KEY_2, URI_2);
+    Exception e = new ContentLengthException("304 error");
+    BitmapHunter hunter =
+        mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action, e, true);
+    hunter.run();
     dispatcher.performRetry(hunter);
     assertThat(NetworkPolicy.shouldReadFromDiskCache(hunter.data.networkPolicy)).isFalse();
   }
 
   @Test public void performRetryDoesNotMarkForReplayIfNotSupported() {
     NetworkInfo networkInfo = mockNetworkInfo(true);
-    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap1, MEMORY),
+    BitmapHunter hunter = mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY),
         mockAction(URI_KEY_1, URI_1));
-    when(hunter.supportsReplay()).thenReturn(false);
-    when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(false);
     when(connectivityManager.getActiveNetworkInfo()).thenReturn(networkInfo);
     dispatcher.performRetry(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.failedActions).isEmpty();
-    verify(service, never()).submit(hunter);
+    assertThat(service.submissions).isEqualTo(0);
   }
 
   @Test public void performRetryDoesNotMarkForReplayIfNoNetworkScanning() {
-    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap1, MEMORY),
-        mockAction(URI_KEY_1, URI_1));
-    when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(false);
-    when(hunter.supportsReplay()).thenReturn(true);
+    BitmapHunter hunter = mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY),
+        mockAction(URI_KEY_1, URI_1), false, true);
     Dispatcher dispatcher = createDispatcher(false);
     dispatcher.performRetry(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.failedActions).isEmpty();
-    verify(service, never()).submit(hunter);
+    assertThat(service.submissions).isEqualTo(0);
   }
 
   @Test public void performRetryMarksForReplayIfSupportedScansNetworkChangesAndShouldNotRetry() {
     NetworkInfo networkInfo = mockNetworkInfo(true);
     Action action = mockAction(URI_KEY_1, URI_1, mockTarget());
     BitmapHunter hunter =
-        mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap1, MEMORY), action);
-    when(hunter.supportsReplay()).thenReturn(true);
-    when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(false);
+        mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action, false, true);
     when(connectivityManager.getActiveNetworkInfo()).thenReturn(networkInfo);
     dispatcher.performRetry(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.failedActions).hasSize(1);
-    verify(service, never()).submit(hunter);
+    assertThat(service.submissions).isEqualTo(0);
   }
 
   @Test public void performRetryRetriesIfNoNetworkScanning() {
-    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap1, MEMORY),
-        mockAction(URI_KEY_1, URI_1));
-    when(hunter.shouldRetry(anyBoolean(), isNull(NetworkInfo.class))).thenReturn(true);
+    BitmapHunter hunter = mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY),
+        mockAction(URI_KEY_1, URI_1), true);
     Dispatcher dispatcher = createDispatcher(false);
     dispatcher.performRetry(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.failedActions).isEmpty();
-    verify(service).submit(hunter);
+    assertThat(service.submissions).isEqualTo(1);
   }
 
   @Test public void performRetryMarksForReplayIfSupportsReplayAndShouldNotRetry() {
     Action action = mockAction(URI_KEY_1, URI_1, mockTarget());
     BitmapHunter hunter =
-        mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap1, MEMORY), action);
-    when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(false);
-    when(hunter.supportsReplay()).thenReturn(true);
+        mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action, false, true);
     dispatcher.performRetry(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.failedActions).hasSize(1);
-    verify(service, never()).submit(hunter);
+    assertThat(service.submissions).isEqualTo(0);
   }
 
   @Test public void performRetryRetriesIfShouldRetry() {
     Action action = mockAction(URI_KEY_1, URI_1, mockTarget());
     BitmapHunter hunter =
-        mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap1, MEMORY), action);
-    when(hunter.shouldRetry(anyBoolean(), any(NetworkInfo.class))).thenReturn(true);
+        mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action, true);
     dispatcher.performRetry(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.failedActions).isEmpty();
-    verify(service).submit(hunter);
+    assertThat(service.submissions).isEqualTo(1);
   }
 
   @Test public void performRetrySkipIfServiceShutdown() {
-    when(service.isShutdown()).thenReturn(true);
-    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap1, MEMORY));
+    Action action = mockAction(URI_KEY_1, URI_1, mockTarget());
+    BitmapHunter hunter = mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action);
+    service.shutdown();
     dispatcher.performRetry(hunter);
-    verify(service, never()).submit(hunter);
+    assertThat(service.submissions).isEqualTo(0);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.failedActions).isEmpty();
   }
@@ -390,7 +378,7 @@ public class DispatcherTest {
   @Test public void performNetworkStateChangeWithNullInfoIgnores() {
     Dispatcher dispatcher = createDispatcher(serviceMock);
     dispatcher.performNetworkStateChange(null);
-    verifyZeroInteractions(service);
+    assertThat(dispatcher.failedActions).isEmpty();
   }
 
   @Test public void performNetworkStateChangeWithDisconnectedInfoIgnores() {
@@ -398,14 +386,14 @@ public class DispatcherTest {
     NetworkInfo info = mockNetworkInfo();
     when(info.isConnectedOrConnecting()).thenReturn(false);
     dispatcher.performNetworkStateChange(info);
-    verifyZeroInteractions(service);
+    assertThat(dispatcher.failedActions).isEmpty();
   }
 
   @Test public void performNetworkStateChangeWithConnectedInfoDifferentInstanceIgnores() {
     Dispatcher dispatcher = createDispatcher(serviceMock);
     NetworkInfo info = mockNetworkInfo(true);
     dispatcher.performNetworkStateChange(info);
-    verifyZeroInteractions(service);
+    assertThat(dispatcher.failedActions).isEmpty();
   }
 
   @Test public void performPauseAndResumeUpdatesListOfPausedTags() {
@@ -418,11 +406,13 @@ public class DispatcherTest {
   @Test public void performPauseTagIsIdempotent() {
     Action action = mockAction(URI_KEY_1, URI_1, mockTarget(), "tag");
     BitmapHunter hunter =
-        mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap1, MEMORY), action);
+        mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action);
     dispatcher.hunterMap.put(URI_KEY_1, hunter);
-    dispatcher.pausedTags.add("tag");
+    assertThat(dispatcher.pausedActions).isEmpty();
     dispatcher.performPauseTag("tag");
-    verify(hunter, never()).getAction();
+    assertThat(dispatcher.pausedActions).containsEntry(action.getTarget(), action);
+    dispatcher.performPauseTag("tag");
+    assertThat(dispatcher.pausedActions).containsEntry(action.getTarget(), action);
   }
 
   @Test public void performPauseTagQueuesNewRequestDoesNotSubmit() {
@@ -432,7 +422,7 @@ public class DispatcherTest {
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.pausedActions).hasSize(1);
     assertThat(dispatcher.pausedActions.containsValue(action)).isTrue();
-    verify(service, never()).submit(any(BitmapHunter.class));
+    assertThat(service.submissions).isEqualTo(0);
   }
 
   @Test public void performPauseTagDoesNotQueueUnrelatedRequest() {
@@ -441,36 +431,36 @@ public class DispatcherTest {
     dispatcher.performSubmit(action);
     assertThat(dispatcher.hunterMap).hasSize(1);
     assertThat(dispatcher.pausedActions).isEmpty();
-    verify(service).submit(any(BitmapHunter.class));
+    assertThat(service.submissions).isEqualTo(1);
   }
 
   @Test public void performPauseDetachesRequestAndCancelsHunter() {
     Action action = mockAction(URI_KEY_1, URI_1, "tag");
     BitmapHunter hunter =
-        mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap1, MEMORY), action);
-    when(hunter.cancel()).thenReturn(true);
+        mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action);
+    hunter.future = new FutureTask<>(mock(Runnable.class), mock(Object.class));
     dispatcher.hunterMap.put(URI_KEY_1, hunter);
     dispatcher.performPauseTag("tag");
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.pausedActions).hasSize(1);
     assertThat(dispatcher.pausedActions.containsValue(action)).isTrue();
-    verify(hunter).detach(action);
-    verify(hunter).cancel();
+    assertThat(hunter.getAction()).isNull();
   }
 
   @Test public void performPauseOnlyDetachesPausedRequest() {
     Action action1 = mockAction(URI_KEY_1, URI_1, mockTarget(), "tag1");
     Action action2 = mockAction(URI_KEY_1, URI_1, mockTarget(), "tag2");
-    BitmapHunter hunter = mockHunter(URI_KEY_1, new RequestHandler.Result(bitmap1, MEMORY));
-    when(hunter.getActions()).thenReturn(Arrays.asList(action1, action2));
+    BitmapHunter hunter =
+        mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action1);
+    hunter.attach(action2);
     dispatcher.hunterMap.put(URI_KEY_1, hunter);
     dispatcher.performPauseTag("tag1");
     assertThat(dispatcher.hunterMap).hasSize(1);
     assertThat(dispatcher.hunterMap.containsValue(hunter)).isTrue();
     assertThat(dispatcher.pausedActions).hasSize(1);
     assertThat(dispatcher.pausedActions.containsValue(action1)).isTrue();
-    verify(hunter).detach(action1);
-    verify(hunter, never()).detach(action2);
+    assertThat(hunter.getAction()).isNull();
+    assertThat(hunter.getActions()).containsExactly(action2);
   }
 
   @Test public void performResumeTagIsIdempotent() {
@@ -479,15 +469,13 @@ public class DispatcherTest {
   }
 
   @Test public void performNetworkStateChangeFlushesFailedHunters() {
-    PicassoExecutorService service = mock(PicassoExecutorService.class);
     NetworkInfo info = mockNetworkInfo(true);
-    Dispatcher dispatcher = createDispatcher(service);
     Action failedAction1 = mockAction(URI_KEY_1, URI_1);
     Action failedAction2 = mockAction(URI_KEY_2, URI_2);
     dispatcher.failedActions.put(URI_KEY_1, failedAction1);
     dispatcher.failedActions.put(URI_KEY_2, failedAction2);
     dispatcher.performNetworkStateChange(info);
-    verify(service, times(2)).submit(any(BitmapHunter.class));
+    assertThat(service.submissions).isEqualTo(2);
     assertThat(dispatcher.failedActions).isEmpty();
   }
 
@@ -530,10 +518,6 @@ public class DispatcherTest {
     verify(dispatcher).dispatchAirplaneModeChange(airplaneOn);
   }
 
-  private Dispatcher createDispatcher() {
-    return createDispatcher(service);
-  }
-
   private Dispatcher createDispatcher(boolean scansNetworkChanges) {
     return createDispatcher(service, scansNetworkChanges);
   }
@@ -547,44 +531,18 @@ public class DispatcherTest {
     when(context.getSystemService(Context.CONNECTIVITY_SERVICE)).thenReturn(connectivityManager);
     when(context.checkCallingOrSelfPermission(anyString())).thenReturn(
         scansNetworkChanges ? PERMISSION_GRANTED : PERMISSION_DENIED);
-    return new Dispatcher(context, service, new Handler(Looper.getMainLooper()), cache, stats);
+    return new Dispatcher(context, service, new Handler(Looper.getMainLooper()), cache);
   }
-
-  private static final RequestHandler RETRYING_REQUEST_HANDLER = new RequestHandler() {
-    @Override public boolean canHandleRequest(@NonNull Request data) {
-      return true;
-    }
-
-    @Override public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull Callback callback) {
-    }
-
-    @Override int getRetryCount() {
-      return 1;
-    }
-
-    @Override boolean shouldRetry(boolean airplaneMode, NetworkInfo info) {
-      return true;
-    }
-  };
-
-  private static final RequestHandler EMPTY_REQUEST_HANDLER = new RequestHandler() {
-    @Override public boolean canHandleRequest(@NonNull Request data) {
-      return false;
-    }
-
-    @Override public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull Callback callback) {
-    }
-  };
 
   private static Action noopAction(Request data) {
     return new Action(mockPicasso(), data) {
-      @Override void complete(RequestHandler.Result result) {
+      @Override public void complete(@NonNull RequestHandler.Result result) {
       }
 
-      @Override void error(Exception e) {
+      @Override public void error(@NonNull Exception e) {
       }
 
-      @NonNull @Override Object getTarget() {
+      @NonNull @Override public Object getTarget() {
         throw new AssertionError();
       }
     };

@@ -1,18 +1,18 @@
 /*
-* Copyright (C) 2013 Square, Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright (C) 2013 Square, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.squareup.picasso3;
 
 import android.app.Notification;
@@ -33,13 +33,16 @@ import com.squareup.picasso3.Picasso.RequestTransformer;
 import com.squareup.picasso3.Utils.PicassoThreadFactory;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import okhttp3.Call;
 import okhttp3.Response;
 import okio.Timeout;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
@@ -54,19 +57,15 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 class TestUtils {
-  static final Answer<Object> TRANSFORM_REQUEST_ANSWER = new Answer<Object>() {
-    @Override public Object answer(InvocationOnMock invocation) throws Throwable {
-      return invocation.getArguments()[0];
-    }
-  };
+  static final Answer<Object> TRANSFORM_REQUEST_ANSWER = invocation -> invocation.getArguments()[0];
   static final Uri URI_1 = Uri.parse("http://example.com/1.png");
   static final Uri URI_2 = Uri.parse("http://example.com/2.png");
   static final String STABLE_1 = "stableExampleKey1";
-  static final String URI_KEY_1 = new Request.Builder(URI_1).build().key;
+  static final Request SIMPLE_REQUEST = new Request.Builder(URI_1).build();
+  static final String URI_KEY_1 = SIMPLE_REQUEST.key;
   static final String URI_KEY_2 = new Request.Builder(URI_2).build().key;
   static final String STABLE_URI_KEY_1 = new Request.Builder(URI_1).stableKey(STABLE_1).build().key;
   static final File FILE_1 = new File("C:\\windows\\system32\\logo.exe");
@@ -126,12 +125,10 @@ class TestUtils {
 
   static Resources mockResources(final String resValueString) {
     Resources resources = mock(Resources.class);
-    doAnswer(new Answer<Void>() {
-      @Override public Void answer(InvocationOnMock invocation) {
-        Object[] args = invocation.getArguments();
-        ((TypedValue) args[1]).string = resValueString;
-        return null;
-      }
+    doAnswer((Answer<Void>) invocation -> {
+      Object[] args = invocation.getArguments();
+      ((TypedValue) args[1]).string = resValueString;
+      return null;
     }).when(resources).getValue(anyInt(), any(TypedValue.class), anyBoolean());
 
     return resources;
@@ -141,64 +138,49 @@ class TestUtils {
     return new Request.Builder(uri).build();
   }
 
-  static Action mockAction(String key, Uri uri) {
+  static FakeAction mockAction(String key, Uri uri) {
     return mockAction(key, uri, null, 0, null, null);
   }
 
-  static Action mockAction(String key, Uri uri, Object target) {
+  static FakeAction mockAction(String key, Uri uri, Object target) {
     return mockAction(key, uri, target, 0, null, null);
   }
 
-  static Action mockAction(String key, Uri uri, Priority priority) {
+  static FakeAction mockAction(String key, Uri uri, Priority priority) {
     return mockAction(key, uri, null, 0, priority, null);
   }
 
-  static Action mockAction(String key, Uri uri, String tag) {
+  static FakeAction mockAction(String key, Uri uri, String tag) {
     return mockAction(key, uri, null, 0, null, tag);
   }
 
-  static Action mockAction(String key, Uri uri, Object target, String tag) {
+  static FakeAction mockAction(String key, Uri uri, Object target, String tag) {
     return mockAction(key, uri, target, 0, null, tag);
   }
 
-  static Action mockAction(String key, Uri uri, Object target, int resourceId) {
+  static FakeAction mockAction(String key, Uri uri, Object target, int resourceId) {
     return mockAction(key, uri, target, resourceId, null, null);
   }
 
-  static Action mockAction(String key, Uri uri, Object target, int resourceId, Priority priority,
-                           String tag) {
+  static FakeAction mockAction(String key, Uri uri, Object target, int resourceId,
+      Priority priority, String tag) {
     Request.Builder builder = new Request.Builder(uri, resourceId, DEFAULT_CONFIG).stableKey(key);
     if (priority != null) {
       builder.priority(priority);
     }
+    if (tag != null) {
+      builder.tag(tag);
+    }
     Request request = builder.build();
-    return mockAction(request, target, tag);
+    return mockAction(request, target);
   }
 
-  static Action mockAction(Request request) {
-    return mockAction(request, null, null);
+  static FakeAction mockAction(Request request) {
+    return mockAction(request, null);
   }
 
-  static Action mockAction(Request request, final Object target, String tag) {
-    Action action = spy(new Action(mockPicasso(), request) {
-      @Override void complete(RequestHandler.Result result) {
-      }
-
-      @Override void error(Exception e) {
-      }
-
-      @Override Object getTarget() {
-        return target;
-      }
-    });
-    when(action.getTag()).thenReturn(tag != null ? tag : action);
-    return action;
-  }
-
-  static Action mockCanceledAction() {
-    Action action = mock(Action.class);
-    action.cancelled = true;
-    return action;
+  static FakeAction mockAction(Request request, final Object target) {
+    return new FakeAction(mockPicasso(), request, target);
   }
 
   static ImageView mockImageViewTarget() {
@@ -226,16 +208,14 @@ class TestUtils {
     return mock(BitmapTarget.class);
   }
 
-  static RemoteViewsAction.RemoteViewsTarget mockRemoteViewsTarget() {
-    return mock(RemoteViewsAction.RemoteViewsTarget.class);
-  }
-
   static Callback mockCallback() {
     return mock(Callback.class);
   }
 
-  static DeferredRequestCreator mockDeferredRequestCreator() {
-    return mock(DeferredRequestCreator.class);
+  static DeferredRequestCreator mockDeferredRequestCreator(ImageView target) {
+    ViewTreeObserver observer = mock(ViewTreeObserver.class);
+    when(target.getViewTreeObserver()).thenReturn(observer);
+    return new DeferredRequestCreator(mock(RequestCreator.class), target, null);
   }
 
   static NetworkInfo mockNetworkInfo() {
@@ -249,25 +229,38 @@ class TestUtils {
     return mock;
   }
 
-  static InputStream mockInputStream() throws IOException {
-    return mock(InputStream.class);
+  static BitmapHunter mockHunter(RequestHandler.Result result) {
+    return mockHunter(result, null);
   }
 
-  static BitmapHunter mockHunter(String key, RequestHandler.Result result) {
-    return mockHunter(key, result, null);
+  static BitmapHunter mockHunter(RequestHandler.Result result, Action action) {
+    return mockHunter(result, action, null);
   }
 
-  static BitmapHunter mockHunter(String key, RequestHandler.Result result, Action action) {
-    Request data = new Request.Builder(URI_1).build();
-    BitmapHunter hunter = mock(BitmapHunter.class);
-    when(hunter.getKey()).thenReturn(key);
-    when(hunter.getResult()).thenReturn(result);
-    when(hunter.getData()).thenReturn(data);
-    when(hunter.getAction()).thenReturn(action);
-    Picasso picasso = mockPicasso();
-    when(hunter.getPicasso()).thenReturn(picasso);
+  static BitmapHunter mockHunter(RequestHandler.Result result, Action action, Exception e) {
+    return mockHunter(result, action, e, false);
+  }
 
-    return hunter;
+  static BitmapHunter mockHunter(RequestHandler.Result result, Action action, boolean shouldRetry) {
+    return mockHunter(result, action, null, shouldRetry);
+  }
+
+  static BitmapHunter mockHunter(RequestHandler.Result result, Action action, boolean shouldRetry,
+      boolean supportsReplay) {
+    return mockHunter(result, action, null, shouldRetry, supportsReplay);
+  }
+
+  static BitmapHunter mockHunter(RequestHandler.Result result, Action action, Exception e,
+      boolean shouldRetry) {
+    return mockHunter(result, action, e, shouldRetry, false);
+  }
+
+  static BitmapHunter mockHunter(RequestHandler.Result result, Action action, Exception e,
+      boolean shouldRetry, boolean supportsReplay) {
+    return new BitmapHunterTest.TestableBitmapHunter(
+        mockPicasso(), mock(Dispatcher.class), new PlatformLruCache(0), action,
+        ((RequestHandler.Result.Bitmap) result).getBitmap(), e, shouldRetry, supportsReplay
+    );
   }
 
   static Picasso mockPicasso() {
@@ -280,7 +273,7 @@ class TestUtils {
       @Override public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull
           Callback callback) {
         Bitmap defaultResult = makeBitmap();
-        RequestHandler.Result result = new RequestHandler.Result(defaultResult, MEMORY);
+        RequestHandler.Result result = new RequestHandler.Result.Bitmap(defaultResult, MEMORY);
         callback.onSuccess(result);
       }
     };
@@ -303,18 +296,33 @@ class TestUtils {
   }
 
   static DrawableLoader makeLoaderWithDrawable(final Drawable drawable) {
-    return new DrawableLoader() {
-      @Override public Drawable load(int resId) {
-        return drawable;
-      }
-    };
+    return resId -> drawable;
   }
 
-  static final Call.Factory UNUSED_CALL_FACTORY = new Call.Factory() {
-    @Override public Call newCall(okhttp3.Request request) {
-      throw new AssertionError();
+  static class FakeAction extends Action {
+    Object target;
+    RequestHandler.Result completedResult;
+    Exception errorException;
+
+    public FakeAction(@NonNull Picasso picasso, @NonNull Request request, @NonNull Object target) {
+      super(picasso, request);
+      this.target = target;
     }
-  };
+
+    @Override public void complete(@NonNull RequestHandler.Result result) {
+      completedResult = result;
+    }
+
+    @Override public void error(@NonNull Exception e) {
+      errorException = e;
+    }
+
+    @NonNull @Override public Object getTarget() {
+      return target;
+    }
+  }
+
+  static final Call.Factory UNUSED_CALL_FACTORY = request -> { throw new AssertionError(); };
 
   static final RequestHandler NOOP_REQUEST_HANDLER = new RequestHandler() {
     @Override public boolean canHandleRequest(@NonNull Request data) {
@@ -326,17 +334,9 @@ class TestUtils {
     }
   };
 
-  static final RequestTransformer NOOP_TRANSFORMER = new RequestTransformer() {
-    @NonNull @Override public Request transformRequest(@NonNull Request request) {
-      return new Request.Builder(0).build();
-    }
-  };
+  static final RequestTransformer NOOP_TRANSFORMER = request -> new Request.Builder(0).build();
 
-  static final Picasso.Listener NOOP_LISTENER = new Picasso.Listener() {
-    @Override public void onImageLoadFailed(@NonNull Picasso picasso, @NonNull Uri uri,
-        @NonNull Exception exception) {
-    }
-  };
+  static final Picasso.Listener NOOP_LISTENER = (picasso, uri, exception) -> { };
 
   static final List<RequestTransformer> NO_TRANSFORMERS = Collections.emptyList();
   static final List<RequestHandler> NO_HANDLERS = Collections.emptyList();
@@ -415,11 +415,11 @@ class TestUtils {
       this.response = response;
     }
 
-    @Override public okhttp3.Request request() {
+    @NonNull @Override public okhttp3.Request request() {
       return request;
     }
 
-    @Override public Response execute() {
+    @NonNull @Override public Response execute() {
       return response;
     }
 
@@ -443,12 +443,78 @@ class TestUtils {
       throw new AssertionError();
     }
 
-    @Override public Call clone() {
+    @NonNull @Override public Call clone() {
       throw new AssertionError();
     }
 
-    @Override public Timeout timeout() {
+    @NonNull @Override public Timeout timeout() {
       throw new AssertionError();
+    }
+  }
+
+  static final class TestDelegatingService implements ExecutorService {
+    private final ExecutorService delegate;
+    int submissions = 0;
+
+    public TestDelegatingService(ExecutorService delegate) {
+      this.delegate = delegate;
+    }
+
+    @Override public void shutdown() {
+      delegate.shutdown();
+    }
+
+    @Override public List<Runnable> shutdownNow() {
+      throw new AssertionError("Not implemented.");
+    }
+
+    @Override public boolean isShutdown() {
+      return delegate.isShutdown();
+    }
+
+    @Override public boolean isTerminated() {
+      throw new AssertionError("Not implemented.");
+    }
+
+    @Override public boolean awaitTermination(long timeout, TimeUnit unit)
+        throws InterruptedException {
+      return delegate.awaitTermination(timeout, unit);
+    }
+
+    @Override public <T> Future<T> submit(Callable<T> task) {
+      throw new AssertionError("Not implemented.");
+    }
+
+    @Override public <T> Future<T> submit(Runnable task, T result) {
+      throw new AssertionError("Not implemented.");
+    }
+
+    @Override public Future<?> submit(Runnable task) {
+      submissions++;
+      return delegate.submit(task);
+    }
+
+    @Override public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) {
+      throw new AssertionError("Not implemented.");
+    }
+
+    @Override
+    public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout,
+        TimeUnit unit) {
+      throw new AssertionError("Not implemented.");
+    }
+
+    @Override public <T> T invokeAny(Collection<? extends Callable<T>> tasks) {
+      throw new AssertionError("Not implemented.");
+    }
+
+    @Override
+    public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) {
+      throw new AssertionError("Not implemented.");
+    }
+
+    @Override public void execute(Runnable command) {
+      delegate.execute(command);
     }
   }
 

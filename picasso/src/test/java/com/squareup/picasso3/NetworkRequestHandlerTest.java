@@ -25,9 +25,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import okhttp3.CacheControl;
-import okhttp3.Call;
 import okhttp3.MediaType;
-import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okio.Buffer;
@@ -63,14 +61,12 @@ public class NetworkRequestHandlerTest {
 
   @Before public void setUp() {
     initMocks(this);
-    networkHandler = new NetworkRequestHandler(new Call.Factory() {
-      @Override public Call newCall(Request request) {
-        requests.add(request);
-        try {
-          return new PremadeCall(request, responses.takeFirst());
-        } catch (InterruptedException e) {
-          throw new AssertionError(e);
-        }
+    networkHandler = new NetworkRequestHandler(request -> {
+      requests.add(request);
+      try {
+        return new PremadeCall(request, responses.takeFirst());
+      } catch (InterruptedException e) {
+        throw new AssertionError(e);
       }
     });
   }
