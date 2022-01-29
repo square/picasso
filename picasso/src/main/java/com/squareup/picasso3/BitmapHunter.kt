@@ -36,25 +36,23 @@ import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
-internal class BitmapHunter(
+internal open class BitmapHunter(
   @JvmField val picasso: Picasso,
   private val dispatcher: Dispatcher,
   private val cache: PlatformLruCache,
-  private val requestHandler: RequestHandler,
-  action: Action
+  action: Action,
+  @JvmField val requestHandler: RequestHandler
 ) : Runnable {
   @JvmField val sequence: Int = SEQUENCE_GENERATOR.incrementAndGet()
   @JvmField var priority: Picasso.Priority = action.request.priority
   @JvmField var data: Request = action.request
   val key: String = action.request.key
-  private var retryCount: Int = requestHandler.retryCount
+  @JvmField var retryCount: Int = requestHandler.retryCount
 
   var action: Action? = action
     private set
-
-  private var _actions: MutableList<Action>? = null
-  val actions: List<Action>?
-    get() = _actions
+  var actions: MutableList<Action>? = null
+    private set
 
   @JvmField var future: Future<*>? = null
   var result: RequestHandler.Result? = null
@@ -108,7 +106,7 @@ internal class BitmapHunter(
     }
 
     val resultReference = AtomicReference<RequestHandler.Result?>()
-    val exceptionReference = AtomicReference<Throwable?>()
+    val exceptionReference = AtomicReference<Throwable>()
 
     val latch = CountDownLatch(1)
     try {
@@ -165,7 +163,7 @@ internal class BitmapHunter(
     if (this.action == null) {
       this.action = action
       if (loggingEnabled) {
-        if (_actions.isNullOrEmpty()) {
+        if (actions.isNullOrEmpty()) {
           log(OWNER_HUNTER, VERB_JOINED, request.logId(), "to empty hunter")
         } else {
           log(OWNER_HUNTER, VERB_JOINED, request.logId(), getLogIdsForHunter(this, "to "))
@@ -175,10 +173,10 @@ internal class BitmapHunter(
       return
     }
 
-    if (_actions == null) {
-      _actions = ArrayList(3)
+    if (actions == null) {
+      actions = ArrayList(3)
     }
-    _actions?.add(action)
+    actions!!.add(action)
 
     if (loggingEnabled) {
       log(OWNER_HUNTER, VERB_JOINED, request.logId(), getLogIdsForHunter(this, "to "))
@@ -196,12 +194,7 @@ internal class BitmapHunter(
         this.action = null
         true
       }
-      _actions != null -> {
-        _actions?.remove(action) ?: false
-      }
-      else -> {
-        false
-      }
+      else -> actions?.remove(action) ?: false
     }
 
     // The action being detached had the highest priority. Update this
@@ -216,7 +209,7 @@ internal class BitmapHunter(
   }
 
   fun cancel(): Boolean =
-    action == null && _actions.isNullOrEmpty() && future?.cancel(false) ?: false
+    action == null && actions.isNullOrEmpty() && future?.cancel(false) ?: false
 
   fun shouldRetry(airplaneMode: Boolean, info: NetworkInfo?): Boolean {
     val hasRetries = retryCount > 0
@@ -231,7 +224,7 @@ internal class BitmapHunter(
   fun supportsReplay(): Boolean = requestHandler.supportsReplay()
 
   private fun computeNewPriority(): Picasso.Priority {
-    val hasMultiple = _actions?.isNotEmpty() ?: false
+    val hasMultiple = actions?.isNotEmpty() ?: false
     val hasAny = action != null || hasMultiple
 
     // Hunter has no requests, low priority.
@@ -241,10 +234,10 @@ internal class BitmapHunter(
 
     var newPriority = action?.request?.priority ?: Picasso.Priority.LOW
 
-    _actions?.let { _actions ->
+    actions?.let { actions ->
       // Index-based loop to avoid allocating an iterator.
-      for (i in _actions.indices) {
-        val priority = _actions[i].request.priority
+      for (i in actions.indices) {
+        val priority = actions[i].request.priority
         if (priority.ordinal > newPriority.ordinal) {
           newPriority = priority
         }
@@ -280,24 +273,24 @@ internal class BitmapHunter(
       for (i in requestHandlers.indices) {
         val requestHandler = requestHandlers[i]
         if (requestHandler.canHandleRequest(request)) {
-          return BitmapHunter(picasso, dispatcher, cache, requestHandler, action)
+          return BitmapHunter(picasso, dispatcher, cache, action, requestHandler)
         }
       }
 
-      return BitmapHunter(picasso, dispatcher, cache, ERRORING_HANDLER, action)
+      return BitmapHunter(picasso, dispatcher, cache, action, ERRORING_HANDLER)
     }
 
     fun updateThreadName(data: Request) {
       val name = data.name
-      val builder = NAME_BUILDER.get()?.also {
+      val builder = NAME_BUILDER.get()!!.also {
         it.ensureCapacity(THREAD_PREFIX.length + name.length)
         it.replace(THREAD_PREFIX.length, it.length, name)
-      } ?: return
+      }
 
       Thread.currentThread().name = builder.toString()
     }
 
-    fun applyTransformations(
+    @JvmStatic fun applyTransformations(
       picasso: Picasso,
       data: Request,
       transformations: List<Transformation>,
