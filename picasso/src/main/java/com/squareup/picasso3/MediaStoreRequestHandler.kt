@@ -98,16 +98,6 @@ internal class MediaStoreRequestHandler(context: Context) : ContentStreamRequest
     }
   }
 
-  private fun getPicassoKind(targetWidth: Int, targetHeight: Int): PicassoKind {
-    return if (targetWidth <= PicassoKind.MICRO.width && targetHeight <= PicassoKind.MICRO.height) {
-      PicassoKind.MICRO
-    } else if (targetWidth <= PicassoKind.MINI.width && targetHeight <= PicassoKind.MINI.height) {
-      PicassoKind.MINI
-    } else {
-      PicassoKind.FULL
-    }
-  }
-
   override fun getExifOrientation(uri: Uri): Int {
     var cursor: Cursor? = null
     return try {
@@ -134,5 +124,16 @@ internal class MediaStoreRequestHandler(context: Context) : ContentStreamRequest
 
   companion object {
     private val CONTENT_ORIENTATION = arrayOf(MediaStore.Images.ImageColumns.ORIENTATION)
+
+    @JvmStatic
+    fun getPicassoKind(targetWidth: Int, targetHeight: Int): PicassoKind {
+      return if (targetWidth <= PicassoKind.MICRO.width && targetHeight <= PicassoKind.MICRO.height) {
+        PicassoKind.MICRO
+      } else if (targetWidth <= PicassoKind.MINI.width && targetHeight <= PicassoKind.MINI.height) {
+        PicassoKind.MINI
+      } else {
+        PicassoKind.FULL
+      }
+    }
   }
 }
