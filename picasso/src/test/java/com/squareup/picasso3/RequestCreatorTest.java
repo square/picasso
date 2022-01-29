@@ -109,15 +109,13 @@ public class RequestCreatorTest {
     final CountDownLatch latch = new CountDownLatch(1);
     final Bitmap[] result = new Bitmap[1];
 
-    new Thread(new Runnable() {
-      @Override public void run() {
-        try {
-          result[0] = new RequestCreator(picasso, null, 0).get();
-        } catch (IOException e) {
-          fail(e.getMessage());
-        } finally {
-          latch.countDown();
-        }
+    new Thread(() -> {
+      try {
+        result[0] = new RequestCreator(picasso, null, 0).get();
+      } catch (IOException e) {
+        fail(e.getMessage());
+      } finally {
+        latch.countDown();
       }
     }).start();
     latch.await();
@@ -337,15 +335,13 @@ public class RequestCreatorTest {
   public void cancelNotOnMainThreadCrashes() throws InterruptedException {
     doCallRealMethod().when(picasso).cancelRequest(any(BitmapTarget.class));
     final CountDownLatch latch = new CountDownLatch(1);
-    new Thread(new Runnable() {
-      @Override public void run() {
-        try {
-          new RequestCreator(picasso, null, 0).into(mockTarget());
-          fail("Should have thrown IllegalStateException");
-        } catch (IllegalStateException ignored) {
-        } finally {
-          latch.countDown();
-        }
+    new Thread(() -> {
+      try {
+        new RequestCreator(picasso, null, 0).into(mockTarget());
+        fail("Should have thrown IllegalStateException");
+      } catch (IllegalStateException ignored) {
+      } finally {
+        latch.countDown();
       }
     }).start();
     latch.await();
@@ -355,15 +351,13 @@ public class RequestCreatorTest {
   public void intoNotOnMainThreadCrashes() throws InterruptedException {
     doCallRealMethod().when(picasso).enqueueAndSubmit(any(Action.class));
     final CountDownLatch latch = new CountDownLatch(1);
-    new Thread(new Runnable() {
-      @Override public void run() {
-        try {
-          new RequestCreator(picasso, URI_1, 0).into(mockImageViewTarget());
-          fail("Should have thrown IllegalStateException");
-        } catch (IllegalStateException ignored) {
-        } finally {
-          latch.countDown();
-        }
+    new Thread(() -> {
+      try {
+        new RequestCreator(picasso, URI_1, 0).into(mockImageViewTarget());
+        fail("Should have thrown IllegalStateException");
+      } catch (IllegalStateException ignored) {
+      } finally {
+        latch.countDown();
       }
     }).start();
     latch.await();

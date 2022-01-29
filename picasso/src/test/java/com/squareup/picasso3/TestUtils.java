@@ -33,7 +33,6 @@ import com.squareup.picasso3.Picasso.RequestTransformer;
 import com.squareup.picasso3.Utils.PicassoThreadFactory;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -44,7 +43,6 @@ import java.util.concurrent.TimeUnit;
 import okhttp3.Call;
 import okhttp3.Response;
 import okio.Timeout;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
@@ -62,11 +60,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class TestUtils {
-  static final Answer<Object> TRANSFORM_REQUEST_ANSWER = new Answer<Object>() {
-    @Override public Object answer(InvocationOnMock invocation) throws Throwable {
-      return invocation.getArguments()[0];
-    }
-  };
+  static final Answer<Object> TRANSFORM_REQUEST_ANSWER = invocation -> invocation.getArguments()[0];
   static final Uri URI_1 = Uri.parse("http://example.com/1.png");
   static final Uri URI_2 = Uri.parse("http://example.com/2.png");
   static final String STABLE_1 = "stableExampleKey1";
@@ -131,12 +125,10 @@ class TestUtils {
 
   static Resources mockResources(final String resValueString) {
     Resources resources = mock(Resources.class);
-    doAnswer(new Answer<Void>() {
-      @Override public Void answer(InvocationOnMock invocation) {
-        Object[] args = invocation.getArguments();
-        ((TypedValue) args[1]).string = resValueString;
-        return null;
-      }
+    doAnswer((Answer<Void>) invocation -> {
+      Object[] args = invocation.getArguments();
+      ((TypedValue) args[1]).string = resValueString;
+      return null;
     }).when(resources).getValue(anyInt(), any(TypedValue.class), anyBoolean());
 
     return resources;
@@ -191,12 +183,6 @@ class TestUtils {
     return new FakeAction(mockPicasso(), request, target);
   }
 
-  static Action mockCanceledAction() {
-    Action action = mock(Action.class);
-    action.cancelled = true;
-    return action;
-  }
-
   static ImageView mockImageViewTarget() {
     return mock(ImageView.class);
   }
@@ -222,10 +208,6 @@ class TestUtils {
     return mock(BitmapTarget.class);
   }
 
-  static RemoteViewsAction.RemoteViewsTarget mockRemoteViewsTarget() {
-    return mock(RemoteViewsAction.RemoteViewsTarget.class);
-  }
-
   static Callback mockCallback() {
     return mock(Callback.class);
   }
@@ -245,10 +227,6 @@ class TestUtils {
     when(mock.isConnected()).thenReturn(isConnected);
     when(mock.isConnectedOrConnecting()).thenReturn(isConnected);
     return mock;
-  }
-
-  static InputStream mockInputStream() throws IOException {
-    return mock(InputStream.class);
   }
 
   static BitmapHunter mockHunter(RequestHandler.Result result) {
@@ -318,11 +296,7 @@ class TestUtils {
   }
 
   static DrawableLoader makeLoaderWithDrawable(final Drawable drawable) {
-    return new DrawableLoader() {
-      @Override public Drawable load(int resId) {
-        return drawable;
-      }
-    };
+    return resId -> drawable;
   }
 
   static class FakeAction extends Action {
@@ -348,13 +322,7 @@ class TestUtils {
     }
   }
 
-  ;
-
-  static final Call.Factory UNUSED_CALL_FACTORY = new Call.Factory() {
-    @Override public Call newCall(okhttp3.Request request) {
-      throw new AssertionError();
-    }
-  };
+  static final Call.Factory UNUSED_CALL_FACTORY = request -> { throw new AssertionError(); };
 
   static final RequestHandler NOOP_REQUEST_HANDLER = new RequestHandler() {
     @Override public boolean canHandleRequest(@NonNull Request data) {
@@ -366,17 +334,9 @@ class TestUtils {
     }
   };
 
-  static final RequestTransformer NOOP_TRANSFORMER = new RequestTransformer() {
-    @NonNull @Override public Request transformRequest(@NonNull Request request) {
-      return new Request.Builder(0).build();
-    }
-  };
+  static final RequestTransformer NOOP_TRANSFORMER = request -> new Request.Builder(0).build();
 
-  static final Picasso.Listener NOOP_LISTENER = new Picasso.Listener() {
-    @Override public void onImageLoadFailed(@NonNull Picasso picasso, @NonNull Uri uri,
-        @NonNull Exception exception) {
-    }
-  };
+  static final Picasso.Listener NOOP_LISTENER = (picasso, uri, exception) -> { };
 
   static final List<RequestTransformer> NO_TRANSFORMERS = Collections.emptyList();
   static final List<RequestHandler> NO_HANDLERS = Collections.emptyList();
@@ -455,11 +415,11 @@ class TestUtils {
       this.response = response;
     }
 
-    @Override public okhttp3.Request request() {
+    @NonNull @Override public okhttp3.Request request() {
       return request;
     }
 
-    @Override public Response execute() {
+    @NonNull @Override public Response execute() {
       return response;
     }
 
@@ -483,17 +443,17 @@ class TestUtils {
       throw new AssertionError();
     }
 
-    @Override public Call clone() {
+    @NonNull @Override public Call clone() {
       throw new AssertionError();
     }
 
-    @Override public Timeout timeout() {
+    @NonNull @Override public Timeout timeout() {
       throw new AssertionError();
     }
   }
 
   static final class TestDelegatingService implements ExecutorService {
-    private ExecutorService delegate;
+    private final ExecutorService delegate;
     int submissions = 0;
 
     public TestDelegatingService(ExecutorService delegate) {

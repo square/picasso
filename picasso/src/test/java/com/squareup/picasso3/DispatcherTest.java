@@ -518,10 +518,6 @@ public class DispatcherTest {
     verify(dispatcher).dispatchAirplaneModeChange(airplaneOn);
   }
 
-  private Dispatcher createDispatcher() {
-    return createDispatcher(service);
-  }
-
   private Dispatcher createDispatcher(boolean scansNetworkChanges) {
     return createDispatcher(service, scansNetworkChanges);
   }
@@ -538,38 +534,12 @@ public class DispatcherTest {
     return new Dispatcher(context, service, new Handler(Looper.getMainLooper()), cache);
   }
 
-  private static final RequestHandler RETRYING_REQUEST_HANDLER = new RequestHandler() {
-    @Override public boolean canHandleRequest(@NonNull Request data) {
-      return true;
-    }
-
-    @Override public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull Callback callback) {
-    }
-
-    @Override public int getRetryCount() {
-      return 1;
-    }
-
-    @Override public boolean shouldRetry(boolean airplaneMode, NetworkInfo info) {
-      return true;
-    }
-  };
-
-  private static final RequestHandler EMPTY_REQUEST_HANDLER = new RequestHandler() {
-    @Override public boolean canHandleRequest(@NonNull Request data) {
-      return false;
-    }
-
-    @Override public void load(@NonNull Picasso picasso, @NonNull Request request, @NonNull Callback callback) {
-    }
-  };
-
   private static Action noopAction(Request data) {
     return new Action(mockPicasso(), data) {
-      @Override public void complete(RequestHandler.Result result) {
+      @Override public void complete(@NonNull RequestHandler.Result result) {
       }
 
-      @Override public void error(Exception e) {
+      @Override public void error(@NonNull Exception e) {
       }
 
       @NonNull @Override public Object getTarget() {

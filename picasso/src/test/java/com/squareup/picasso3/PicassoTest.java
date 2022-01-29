@@ -412,11 +412,7 @@ public final class PicassoTest {
   }
 
   @Test public void throwWhenTransformRequestReturnsNull() {
-    RequestTransformer brokenTransformer = new RequestTransformer() {
-      @Override public Request transformRequest(Request request) {
-        return null;
-      }
-    };
+    RequestTransformer brokenTransformer = request -> null;
     Picasso picasso = new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, listener,
         Collections.singletonList(brokenTransformer), NO_HANDLERS, NO_EVENT_LISTENERS, ARGB_8888,
         false, false);
