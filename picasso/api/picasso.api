@@ -121,7 +121,6 @@ public class com/squareup/picasso3/Picasso$Builder {
 	public fun indicatorsEnabled (Z)Lcom/squareup/picasso3/Picasso$Builder;
 	public fun listener (Lcom/squareup/picasso3/Picasso$Listener;)Lcom/squareup/picasso3/Picasso$Builder;
 	public fun loggingEnabled (Z)Lcom/squareup/picasso3/Picasso$Builder;
-	public fun threadFactory (Ljava/util/concurrent/ThreadFactory;)Lcom/squareup/picasso3/Picasso$Builder;
 	public fun withCacheSize (I)Lcom/squareup/picasso3/Picasso$Builder;
 }
 
@@ -147,6 +146,13 @@ public final class com/squareup/picasso3/Picasso$Priority : java/lang/Enum {
 
 public abstract interface class com/squareup/picasso3/Picasso$RequestTransformer {
 	public abstract fun transformRequest (Lcom/squareup/picasso3/Request;)Lcom/squareup/picasso3/Request;
+}
+
+public final class com/squareup/picasso3/PicassoExecutorService : java/util/concurrent/ThreadPoolExecutor {
+	public fun <init> ()V
+	public fun <init> (ILjava/util/concurrent/ThreadFactory;)V
+	public synthetic fun <init> (ILjava/util/concurrent/ThreadFactory;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun submit (Ljava/lang/Runnable;)Ljava/util/concurrent/Future;
 }
 
 public final class com/squareup/picasso3/Request {

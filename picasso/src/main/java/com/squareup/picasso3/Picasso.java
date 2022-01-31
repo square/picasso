@@ -32,7 +32,6 @@ import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 import com.squareup.picasso3.RequestHandler.Result;
-import com.squareup.picasso3.Utils.PicassoThreadFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,7 +40,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadFactory;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 
@@ -731,24 +729,11 @@ public class Picasso implements LifecycleObserver {
      * Specify the executor service for loading images in the background.
      * <p>
      * Note: Calling {@link Picasso#shutdown() shutdown()} will not shutdown supplied executors.
-     * Note: Calling {@link #threadFactory(ThreadFactory)} overwrites this value.
      */
     @NonNull
     public Builder executor(@NonNull ExecutorService executorService) {
       checkNotNull(executorService, "executorService == null");
       this.service = executorService;
-      return this;
-    }
-
-    /**
-     * Specify the the thread factory for loading images in the background.
-     * <p>
-     * Note: Calling {@link #executor(ExecutorService)} overwrites this value.
-     */
-    @NonNull
-    public Builder threadFactory(@NonNull ThreadFactory threadFactory) {
-      checkNotNull(threadFactory, "threadFactory == null");
-      service = new PicassoExecutorService(threadFactory);
       return this;
     }
 
@@ -834,7 +819,7 @@ public class Picasso implements LifecycleObserver {
         cache = new PlatformLruCache(Utils.calculateMemoryCacheSize(context));
       }
       if (service == null) {
-        service = new PicassoExecutorService(new PicassoThreadFactory());
+        service = new PicassoExecutorService();
       }
 
       Dispatcher dispatcher = new Dispatcher(context, service, HANDLER, cache);
