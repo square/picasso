@@ -31,6 +31,9 @@ import static com.squareup.picasso3.Picasso.LoadedFrom.DISK;
 import static com.squareup.picasso3.Picasso.LoadedFrom.NETWORK;
 import static com.squareup.picasso3.Utils.checkNotNull;
 
+import com.squareup.picasso3.ImageDecoder.Image;
+import com.squareup.picasso3.Picasso.LoadedFrom;
+
 final class NetworkRequestHandler extends RequestHandler {
   private static final String SCHEME_HTTP = "http";
   private static final String SCHEME_HTTPS = "https";
@@ -61,7 +64,7 @@ final class NetworkRequestHandler extends RequestHandler {
 
         // Cache response is only null when the response comes fully from the network. Both
         // completely cached and conditionally cached responses will have a non-null cache response.
-        Picasso.LoadedFrom loadedFrom = response.cacheResponse() == null ? NETWORK : DISK;
+        LoadedFrom loadedFrom = response.cacheResponse() == null ? NETWORK : DISK;
 
         // Sometimes response content length is zero when requests are being replayed. Haven't found
         // root cause to this but retrying the request seems safe to do so.
@@ -76,8 +79,33 @@ final class NetworkRequestHandler extends RequestHandler {
           picasso.downloadFinished(body.contentLength());
         }
         try {
-          Bitmap bitmap = decodeStream(body.source(), request);
-          callback.onSuccess(new Result.Bitmap(bitmap, loadedFrom));
+          okio.BufferedSource source = body.source();
+          ImageDecoderFactory decoderFactory = request.decoderFactory;
+          if (decoderFactory == null) {
+            callback.onError(new IllegalStateException("No image decoder factory for request: " + request));
+            return;
+          }
+
+
+          ImageDecoder imageDecoder = decoderFactory.getImageDecoderForSource(source);
+          if (imageDecoder == null) {
+            callback.onError(new IllegalStateException("No image decoder for request: " + request));
+            return;
+          }
+
+          Image image = imageDecoder.decodeImage(source, request);
+          if (image == null) {
+            callback.onError(new IllegalStateException("Image failed to decode: " + request));
+            return;
+          }
+
+          if (image.getBitmap() != null) {
+            callback.onSuccess(new Result.Bitmap(image.getBitmap(), loadedFrom, image.getExifOrientation()));
+          }
+
+          if (image.getDrawable() != null) {
+            callback.onSuccess(new Result.Drawable(image.getDrawable(), loadedFrom, image.getExifOrientation()));
+          }
         } catch (IOException e) {
           body.close();
           callback.onError(e);

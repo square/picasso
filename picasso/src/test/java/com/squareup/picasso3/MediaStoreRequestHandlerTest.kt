@@ -13,10 +13,7 @@ import com.squareup.picasso3.MediaStoreRequestHandler.PicassoKind.MINI
 import com.squareup.picasso3.RequestHandler.Callback
 import com.squareup.picasso3.Shadows.ShadowImageThumbnails
 import com.squareup.picasso3.Shadows.ShadowVideoThumbnails
-import com.squareup.picasso3.TestUtils.MEDIA_STORE_CONTENT_1_URL
-import com.squareup.picasso3.TestUtils.MEDIA_STORE_CONTENT_KEY_1
-import com.squareup.picasso3.TestUtils.makeBitmap
-import com.squareup.picasso3.TestUtils.mockAction
+import com.squareup.picasso3.TestUtils.*
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
@@ -45,7 +42,8 @@ class MediaStoreRequestHandlerTest {
     val request = Request.Builder(
       uri = MEDIA_STORE_CONTENT_1_URL,
       resourceId = 0,
-      bitmapConfig = ARGB_8888
+      bitmapConfig = ARGB_8888,
+      decoderFactory = DEFAULT_DECODERS
     )
       .stableKey(MEDIA_STORE_CONTENT_KEY_1)
       .resize(100, 100)
@@ -65,7 +63,8 @@ class MediaStoreRequestHandlerTest {
     val request = Request.Builder(
       uri = MEDIA_STORE_CONTENT_1_URL,
       resourceId = 0,
-      bitmapConfig = ARGB_8888
+      bitmapConfig = ARGB_8888,
+      decoderFactory = DEFAULT_DECODERS
     )
       .stableKey(MEDIA_STORE_CONTENT_KEY_1)
       .resize(100, 100)

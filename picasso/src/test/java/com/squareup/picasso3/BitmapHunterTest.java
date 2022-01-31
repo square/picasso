@@ -68,6 +68,7 @@ import static com.squareup.picasso3.TestUtils.FILE_1_URL;
 import static com.squareup.picasso3.TestUtils.FILE_KEY_1;
 import static com.squareup.picasso3.TestUtils.MEDIA_STORE_CONTENT_1_URL;
 import static com.squareup.picasso3.TestUtils.MEDIA_STORE_CONTENT_KEY_1;
+import static com.squareup.picasso3.TestUtils.DEFAULT_DECODERS;
 import static com.squareup.picasso3.TestUtils.NO_TRANSFORMERS;
 import static com.squareup.picasso3.TestUtils.RESOURCE_ID_1;
 import static com.squareup.picasso3.TestUtils.RESOURCE_ID_KEY_1;
@@ -361,7 +362,7 @@ public final class BitmapHunterTest {
     List<EventListener> eventListeners = Collections.emptyList();
     // Must use non-mock constructor because that is where Picasso's list of handlers is created.
     Picasso picasso =
-        new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, null, NO_TRANSFORMERS,
+        new Picasso(context, dispatcher, UNUSED_CALL_FACTORY, null, cache, null, DEFAULT_DECODERS, NO_TRANSFORMERS,
             handlers, eventListeners, ARGB_8888, false, false);
     BitmapHunter hunter = forRequest(picasso, dispatcher, cache, action);
     assertThat(hunter.requestHandler).isEqualTo(handler);

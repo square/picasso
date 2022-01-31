@@ -19,10 +19,12 @@ import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
 import androidx.exifinterface.media.ExifInterface
-import com.squareup.picasso3.BitmapUtils.decodeStream
-import com.squareup.picasso3.Picasso.LoadedFrom.DISK
 import java.io.FileNotFoundException
 import java.io.IOException
+import okio.BufferedSource
+import okio.buffer
+import java.lang.IllegalStateException
+
 
 internal class FileRequestHandler(context: Context) : ContentStreamRequestHandler(context) {
   override fun canHandleRequest(data: Request): Boolean {
@@ -38,11 +40,22 @@ internal class FileRequestHandler(context: Context) : ContentStreamRequestHandle
     var signaledCallback = false
     try {
       val requestUri = checkNotNull(request.uri)
-      val source = getSource(requestUri)
-      val bitmap = decodeStream(source, request)
-      val exifRotation = getExifOrientation(requestUri)
-      signaledCallback = true
-      callback.onSuccess(Result.Bitmap(bitmap, DISK, exifRotation))
+      val source: BufferedSource = getSource(requestUri).buffer()
+      val imageDecoder = request.decoderFactory!!.getImageDecoderForSource(source)
+      if (imageDecoder == null) {
+        callback.onError(IllegalStateException("No image decoder for request: $request"))
+        return
+      }
+      val image = imageDecoder.decodeImage(source.buffer, request)!!
+      image.bitmap?.let {
+        callback.onSuccess(Result.Bitmap(it, Picasso.LoadedFrom.DISK, image.exifOrientation))
+        signaledCallback = true
+      }
+
+      image.drawable?.let {
+        callback.onSuccess(Result.Drawable(it, Picasso.LoadedFrom.DISK, image.exifOrientation))
+        signaledCallback = true
+      }
     } catch (e: Exception) {
       if (!signaledCallback) {
         callback.onError(e)

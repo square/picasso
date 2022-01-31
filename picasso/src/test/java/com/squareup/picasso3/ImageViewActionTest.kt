@@ -21,15 +21,7 @@ import android.graphics.drawable.Drawable
 import com.google.common.truth.Truth.assertThat
 import com.squareup.picasso3.Picasso.LoadedFrom.MEMORY
 import com.squareup.picasso3.RequestHandler.Result.Bitmap
-import com.squareup.picasso3.TestUtils.NO_EVENT_LISTENERS
-import com.squareup.picasso3.TestUtils.NO_HANDLERS
-import com.squareup.picasso3.TestUtils.NO_TRANSFORMERS
-import com.squareup.picasso3.TestUtils.RESOURCE_ID_1
-import com.squareup.picasso3.TestUtils.SIMPLE_REQUEST
-import com.squareup.picasso3.TestUtils.UNUSED_CALL_FACTORY
-import com.squareup.picasso3.TestUtils.makeBitmap
-import com.squareup.picasso3.TestUtils.mockCallback
-import com.squareup.picasso3.TestUtils.mockImageViewTarget
+import com.squareup.picasso3.TestUtils.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.any
@@ -49,7 +41,7 @@ class ImageViewActionTest {
     val cache = PlatformLruCache(0)
     val picasso = Picasso(
       RuntimeEnvironment.application, dispatcher, UNUSED_CALL_FACTORY, null, cache, null,
-      NO_TRANSFORMERS, NO_HANDLERS, NO_EVENT_LISTENERS, ARGB_8888, false, false
+      DEFAULT_DECODERS, NO_TRANSFORMERS, NO_HANDLERS, NO_EVENT_LISTENERS, ARGB_8888, false, false
     )
     val target = mockImageViewTarget()
     val callback = mockCallback()

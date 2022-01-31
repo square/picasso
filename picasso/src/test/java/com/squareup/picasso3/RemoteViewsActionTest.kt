@@ -21,14 +21,7 @@ import androidx.annotation.DrawableRes
 import com.google.common.truth.Truth.assertThat
 import com.squareup.picasso3.Picasso.LoadedFrom.NETWORK
 import com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget
-import com.squareup.picasso3.TestUtils.NO_EVENT_LISTENERS
-import com.squareup.picasso3.TestUtils.NO_HANDLERS
-import com.squareup.picasso3.TestUtils.NO_TRANSFORMERS
-import com.squareup.picasso3.TestUtils.SIMPLE_REQUEST
-import com.squareup.picasso3.TestUtils.UNUSED_CALL_FACTORY
-import com.squareup.picasso3.TestUtils.makeBitmap
-import com.squareup.picasso3.TestUtils.mockCallback
-import com.squareup.picasso3.TestUtils.mockImageViewTarget
+import com.squareup.picasso3.TestUtils.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -47,7 +40,7 @@ class RemoteViewsActionTest {
   @Before fun setUp() {
     picasso = Picasso(
       RuntimeEnvironment.application, mock(Dispatcher::class.java), UNUSED_CALL_FACTORY, null,
-      PlatformLruCache(0), null, NO_TRANSFORMERS, NO_HANDLERS, NO_EVENT_LISTENERS, ARGB_8888,
+      PlatformLruCache(0), null, DEFAULT_DECODERS, NO_TRANSFORMERS, NO_HANDLERS, NO_EVENT_LISTENERS, ARGB_8888,
       false, false
     )
     remoteViews = mock(RemoteViews::class.java)

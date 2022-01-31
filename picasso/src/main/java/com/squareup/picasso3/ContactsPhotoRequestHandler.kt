@@ -21,9 +21,9 @@ import android.content.UriMatcher
 import android.net.Uri
 import android.provider.ContactsContract
 import android.provider.ContactsContract.Contacts
-import com.squareup.picasso3.BitmapUtils.decodeStream
 import com.squareup.picasso3.Picasso.LoadedFrom.DISK
 import okio.Source
+import okio.buffer
 import okio.source
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -68,9 +68,22 @@ internal class ContactsPhotoRequestHandler(private val context: Context) : Reque
     try {
       val requestUri = checkNotNull(request.uri)
       val source = getSource(requestUri)
-      val bitmap = decodeStream(source, request)
-      signaledCallback = true
-      callback.onSuccess(Result.Bitmap(bitmap, DISK))
+      val imageDecoder = request.decoderFactory!!.getImageDecoderForSource(source.buffer())
+      if (imageDecoder == null) {
+        callback.onError(java.lang.IllegalStateException("No image decoder for request: $request"))
+        return
+      }
+
+      val image = imageDecoder.decodeImage(source.buffer(), request)!!
+      image.bitmap?.let {
+        callback.onSuccess(Result.Bitmap(it, DISK, image.exifOrientation))
+        signaledCallback = true
+      }
+
+      image.drawable?.let {
+        callback.onSuccess(Result.Drawable(it, DISK, image.exifOrientation))
+        signaledCallback = true
+      }
     } catch (e: Exception) {
       if (!signaledCallback) {
         callback.onError(e)

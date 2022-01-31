@@ -6,6 +6,7 @@ internal object Data {
 
   @JvmField
   val URLS = arrayOf(
+      "https://dev.w3.org/SVG/tools/svgweb/samples/svg-files/android.svg",
       BASE + "CqmBjo5" + EXT, BASE + "zkaAooq" + EXT, BASE + "0gqnEaY" + EXT,
       BASE + "9gbQ7YR" + EXT, BASE + "aFhEEby" + EXT, BASE + "0E2tgV7" + EXT,
       BASE + "P5JLfjk" + EXT, BASE + "nz67a4F" + EXT, BASE + "dFH34N5" + EXT,

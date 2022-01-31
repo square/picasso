@@ -18,9 +18,10 @@ package com.squareup.picasso3
 import android.content.ContentResolver
 import android.content.Context
 import android.content.res.AssetManager
-import com.squareup.picasso3.BitmapUtils.decodeStream
 import com.squareup.picasso3.Picasso.LoadedFrom.DISK
 import okio.source
+import okio.buffer
+import java.lang.IllegalStateException
 
 internal class AssetRequestHandler(private val context: Context) : RequestHandler() {
   private val lock = Any()
@@ -45,9 +46,27 @@ internal class AssetRequestHandler(private val context: Context) : RequestHandle
       assetManager!!.open(getFilePath(request))
           .source()
           .use { source ->
-            val bitmap = decodeStream(source, request)
-            signaledCallback = true
-            callback.onSuccess(Result.Bitmap(bitmap, DISK))
+            val imageDecoder = request.decoderFactory!!.getImageDecoderForSource(source.buffer())
+            if (imageDecoder == null) {
+              callback.onError(
+                IllegalStateException("No image decoder for source: " + getFilePath(request))
+              )
+              return
+            }
+            val image = imageDecoder.decodeImage(source.buffer(), request)!!
+            image.bitmap?.let {
+              callback.onSuccess(Result.Bitmap(it, DISK, image.exifOrientation))
+              signaledCallback = true
+              return@use
+            }
+
+            image.drawable?.let {
+              callback.onSuccess(Result.Drawable(it, DISK, image.exifOrientation))
+              signaledCallback = true
+              return@use
+            }
+
+            throw RuntimeException("Unable to decode request")
           }
     } catch (e: Exception) {
       if (!signaledCallback) {

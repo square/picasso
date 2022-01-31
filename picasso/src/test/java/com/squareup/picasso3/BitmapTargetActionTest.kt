@@ -79,7 +79,7 @@ class BitmapTargetActionTest {
     val cache = PlatformLruCache(0)
     val picasso = Picasso(
       context, dispatcher, UNUSED_CALL_FACTORY, null, cache, null,
-      NO_TRANSFORMERS, NO_HANDLERS, NO_EVENT_LISTENERS, ARGB_8888, false, false
+      TestUtils.DEFAULT_DECODERS, NO_TRANSFORMERS, NO_HANDLERS, NO_EVENT_LISTENERS, ARGB_8888, false, false
     )
     val res = mock(Resources::class.java)
     val request = BitmapTargetAction(

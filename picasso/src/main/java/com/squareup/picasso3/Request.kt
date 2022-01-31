@@ -20,10 +20,11 @@ import android.net.Uri
 import android.os.Looper
 import android.view.Gravity
 import androidx.annotation.DrawableRes
+import androidx.annotation.NonNull
 import androidx.annotation.Px
 import com.squareup.picasso3.Picasso.Priority
 import com.squareup.picasso3.Picasso.Priority.NORMAL
-import java.util.ArrayList
+import java.util.*
 import java.util.concurrent.TimeUnit.NANOSECONDS
 import java.util.concurrent.TimeUnit.SECONDS
 
@@ -60,6 +61,9 @@ class Request internal constructor(builder: Builder) {
    * caching. Two requests with the same value are considered to be for the same resource.
    */
   val stableKey: String? = builder.stableKey
+
+  /** The image decoder factory to use to decode the image.  */
+  @JvmField val decoderFactory: ImageDecoderFactory? = builder.decoderFactory
 
   /** List of custom transformations to be applied after the built-in transformations. */
   @JvmField var transformations: List<Transformation> =
@@ -285,6 +289,7 @@ class Request internal constructor(builder: Builder) {
     var rotationPivotY = 0f
     var hasRotationPivot = false
     var purgeable = false
+    var decoderFactory: ImageDecoderFactory? = null
     var transformations: MutableList<Transformation>? = null
     var config: Config? = null
     var priority: Priority? = null
@@ -306,10 +311,12 @@ class Request internal constructor(builder: Builder) {
     internal constructor(
       uri: Uri?,
       resourceId: Int,
+      decoderFactory: ImageDecoderFactory?,
       bitmapConfig: Config?
     ) {
       this.uri = uri
       this.resourceId = resourceId
+      this.decoderFactory = decoderFactory
       config = bitmapConfig
     }
 
@@ -328,6 +335,7 @@ class Request internal constructor(builder: Builder) {
       hasRotationPivot = request.hasRotationPivot
       purgeable = request.purgeable
       onlyScaleDown = request.onlyScaleDown
+      decoderFactory = request.decoderFactory
       transformations = request.transformations.toMutableList()
       config = request.config
       priority = request.priority
@@ -497,6 +505,27 @@ class Request internal constructor(builder: Builder) {
     fun priority(priority: Priority) = apply {
       check(this.priority == null) { "Priority already set." }
       this.priority = priority
+    }
+
+    fun asBitmap(): Builder {
+      return imageDecoderFactory(
+        ImageDecoderFactory(
+          emptyList()
+        )
+      )
+    }
+
+    fun asSvg(): Builder {
+      return imageDecoderFactory(
+        ImageDecoderFactory(
+          emptyList()
+        )
+      )
+    }
+
+    fun imageDecoderFactory(factory: ImageDecoderFactory): Builder {
+      decoderFactory = factory
+      return this
     }
 
     /**

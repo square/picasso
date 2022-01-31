@@ -14,6 +14,7 @@ buildscript {
 
   ext.deps = [
     androidPlugin: 'com.android.tools.build:gradle:7.0.4',
+    androidSvg: 'com.caverock:androidsvg:1.2.2-beta-1@aar',
     kotlinPlugin: "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}",
     okhttp: "com.squareup.okhttp3:okhttp:${versions.okhttp}",
     okio: "com.squareup.okio:okio:${versions.okio}",

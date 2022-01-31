@@ -163,7 +163,7 @@ class TestUtils {
 
   static FakeAction mockAction(String key, Uri uri, Object target, int resourceId,
       Priority priority, String tag) {
-    Request.Builder builder = new Request.Builder(uri, resourceId, DEFAULT_CONFIG).stableKey(key);
+    Request.Builder builder = new Request.Builder(uri, resourceId, DEFAULT_DECODERS, DEFAULT_CONFIG).stableKey(key);
     if (priority != null) {
       builder.priority(priority);
     }
@@ -337,6 +337,8 @@ class TestUtils {
 
   static final Picasso.Listener NOOP_LISTENER = (picasso, uri, exception) -> { };
 
+  static final ImageDecoderFactory DEFAULT_DECODERS = new ImageDecoderFactory(
+          java.util.Arrays.asList(new BitmapImageDecoder(), new SvgImageDecoder()));
   static final List<RequestTransformer> NO_TRANSFORMERS = Collections.emptyList();
   static final List<RequestHandler> NO_HANDLERS = Collections.emptyList();
   static final List<EventListener> NO_EVENT_LISTENERS = Collections.emptyList();

@@ -32,6 +32,7 @@ dependencies {
   api deps.okhttp
   api deps.okio
   api deps.androidxLifecycle
+  implementation deps.androidSvg
   implementation deps.androidxAnnotations
   implementation deps.androidxCore
   implementation deps.androidxExifInterface

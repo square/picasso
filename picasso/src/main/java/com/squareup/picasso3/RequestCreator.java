@@ -75,13 +75,13 @@ public class RequestCreator {
           "Picasso instance already shut down. Cannot submit new requests.");
     }
     this.picasso = picasso;
-    this.data = new Request.Builder(uri, resourceId, picasso.defaultBitmapConfig);
+    this.data = new Request.Builder(uri, resourceId, picasso.imageDecoderFactory, picasso.defaultBitmapConfig);
   }
 
   @SuppressWarnings("NullAway")
   @VisibleForTesting RequestCreator() {
     this.picasso = null;
-    this.data = new Request.Builder(null, 0, null);
+    this.data = new Request.Builder(null, 0, null, null);
   }
 
   /**
@@ -332,6 +332,27 @@ public class RequestCreator {
   @NonNull
   public RequestCreator priority(@NonNull Priority priority) {
     data.priority(priority);
+    return this;
+  }
+
+  /**
+   * Specify that the image should be decoded as a bitmap.
+   */
+  @NonNull
+  public RequestCreator asBitmap() {
+    return imageDecoderFactory(new ImageDecoderFactory(
+            java.util.Collections.<ImageDecoder>singletonList(new BitmapImageDecoder())));
+  }
+
+  @NonNull
+  public RequestCreator asSvg() {
+    return imageDecoderFactory(new ImageDecoderFactory(
+            java.util.Collections.<ImageDecoder>singletonList(new SvgImageDecoder())));
+  }
+
+  @NonNull
+  public RequestCreator imageDecoderFactory(ImageDecoderFactory imageDecoderFactory) {
+    this.data.imageDecoderFactory(imageDecoderFactory);
     return this;
   }
 

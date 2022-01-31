@@ -19,14 +19,16 @@ import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
-import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.MediaStore
 import android.provider.MediaStore.Video
 import com.squareup.picasso3.BitmapUtils.calculateInSampleSize
 import com.squareup.picasso3.BitmapUtils.createBitmapOptions
-import com.squareup.picasso3.BitmapUtils.decodeStream
 import com.squareup.picasso3.Picasso.LoadedFrom
+import okio.BufferedSource
+import okio.buffer
+import java.lang.IllegalStateException
+
 
 internal class MediaStoreRequestHandler(context: Context) : ContentStreamRequestHandler(context) {
   override fun canHandleRequest(data: Request): Boolean {
@@ -48,10 +50,22 @@ internal class MediaStoreRequestHandler(context: Context) : ContentStreamRequest
       if (request.hasSize()) {
         val picassoKind = getPicassoKind(request.targetWidth, request.targetHeight)
         if (!isVideo && picassoKind == PicassoKind.FULL) {
-          val source = getSource(requestUri)
-          val bitmap = decodeStream(source, request)
-          signaledCallback = true
-          callback.onSuccess(Result.Bitmap(bitmap, LoadedFrom.DISK, exifOrientation))
+          val source: BufferedSource = getSource(requestUri).buffer()
+          val imageDecoder = request.decoderFactory!!.getImageDecoderForSource(source)
+          if (imageDecoder == null) {
+            callback.onError(IllegalStateException("No image decoder for request: $request"))
+            return
+          }
+          val image = imageDecoder.decodeImage(source.buffer(), request)!!
+          image.bitmap?.let {
+            callback.onSuccess(Result.Bitmap(it, LoadedFrom.DISK, image.exifOrientation))
+            signaledCallback = true
+          }
+
+          image.drawable?.let {
+            callback.onSuccess(Result.Drawable(it, LoadedFrom.DISK, image.exifOrientation))
+            signaledCallback = true
+          }
           return
         }
 
@@ -87,10 +101,22 @@ internal class MediaStoreRequestHandler(context: Context) : ContentStreamRequest
         }
       }
 
-      val source = getSource(requestUri)
-      val bitmap = decodeStream(source, request)
-      signaledCallback = true
-      callback.onSuccess(Result.Bitmap(bitmap, LoadedFrom.DISK, exifOrientation))
+      val source: BufferedSource = getSource(requestUri).buffer()
+      val imageDecoder = request.decoderFactory?.getImageDecoderForSource(source)
+      if (imageDecoder == null) {
+        callback.onError(IllegalStateException("No image decoder for request: $request"))
+        return
+      }
+      val image = imageDecoder.decodeImage(source.buffer, request)!!
+      image.bitmap?.let {
+        callback.onSuccess(Result.Bitmap(it, LoadedFrom.DISK, image.exifOrientation))
+        signaledCallback = true
+      }
+
+      image.drawable?.let {
+        callback.onSuccess(Result.Drawable(it, LoadedFrom.DISK, image.exifOrientation))
+        signaledCallback = true
+      }
     } catch (e: Exception) {
       if (!signaledCallback) {
         callback.onError(e)
