@@ -25,7 +25,6 @@ import android.os.Looper;
 import androidx.annotation.NonNull;
 import com.squareup.picasso3.NetworkRequestHandler.ContentLengthException;
 import com.squareup.picasso3.TestUtils.TestDelegatingService;
-import com.squareup.picasso3.Utils.PicassoThreadFactory;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.FutureTask;
 import org.junit.Before;
@@ -71,8 +70,7 @@ public class DispatcherTest {
   @Mock ConnectivityManager connectivityManager;
   @Mock ExecutorService serviceMock;
   final PlatformLruCache cache = new PlatformLruCache(2048);
-  final TestDelegatingService service =
-      new TestDelegatingService(new PicassoExecutorService(new PicassoThreadFactory()));
+  final TestDelegatingService service = new TestDelegatingService(new PicassoExecutorService());
   private Dispatcher dispatcher;
 
   final Bitmap bitmap1 = makeBitmap();
@@ -84,7 +82,7 @@ public class DispatcherTest {
   }
 
   @Test public void shutdownStopsService() {
-    PicassoExecutorService service = new PicassoExecutorService(new PicassoThreadFactory());
+    PicassoExecutorService service = new PicassoExecutorService();
     dispatcher = createDispatcher(service);
     dispatcher.shutdown();
     assertThat(service.isShutdown()).isEqualTo(true);

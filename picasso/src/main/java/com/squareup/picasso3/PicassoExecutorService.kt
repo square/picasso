@@ -15,6 +15,8 @@
  */
 package com.squareup.picasso3
 
+import android.os.Process
+import android.os.Process.THREAD_PRIORITY_BACKGROUND
 import java.util.concurrent.Future
 import java.util.concurrent.FutureTask
 import java.util.concurrent.PriorityBlockingQueue
@@ -24,20 +26,28 @@ import java.util.concurrent.TimeUnit.MILLISECONDS
 
 /**
  * The default [java.util.concurrent.ExecutorService] used for new [Picasso] instances.
- *
- * Exists as a custom type so that we can differentiate the use of defaults versus a user-supplied
- * instance.
  */
-internal class PicassoExecutorService(
-  threadFactory: ThreadFactory
+class PicassoExecutorService(
+  threadCount: Int = DEFAULT_THREAD_COUNT,
+  threadFactory: ThreadFactory = PicassoThreadFactory()
 ) : ThreadPoolExecutor(
-  DEFAULT_THREAD_COUNT, DEFAULT_THREAD_COUNT, 0, MILLISECONDS,
-  PriorityBlockingQueue(), threadFactory
+  threadCount, threadCount, 0, MILLISECONDS, PriorityBlockingQueue(), threadFactory
 ) {
   override fun submit(task: Runnable): Future<*> {
     val ftask = PicassoFutureTask(task as BitmapHunter)
     execute(ftask)
     return ftask
+  }
+
+  private class PicassoThreadFactory : ThreadFactory {
+    override fun newThread(r: Runnable): Thread = PicassoThread(r)
+
+    private class PicassoThread(r: Runnable) : Thread(r) {
+      override fun run() {
+        Process.setThreadPriority(THREAD_PRIORITY_BACKGROUND)
+        super.run()
+      }
+    }
   }
 
   private class PicassoFutureTask(private val hunter: BitmapHunter) :
@@ -52,7 +62,7 @@ internal class PicassoExecutorService(
     }
   }
 
-  companion object {
+  private companion object {
     private const val DEFAULT_THREAD_COUNT = 3
   }
 }

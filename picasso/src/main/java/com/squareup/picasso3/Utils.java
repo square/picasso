@@ -23,7 +23,6 @@ import android.content.res.Resources;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.os.Process;
 import android.os.StatFs;
 import android.provider.Settings;
 import android.util.Log;
@@ -34,7 +33,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.ThreadFactory;
 import okio.BufferedSource;
 import okio.ByteString;
 
@@ -42,7 +40,6 @@ import static android.content.pm.ApplicationInfo.FLAG_LARGE_HEAP;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static com.squareup.picasso3.Picasso.TAG;
 import static java.lang.String.format;
 
@@ -272,22 +269,5 @@ final class Utils {
       }
     };
     handler.sendMessageDelayed(handler.obtainMessage(), THREAD_LEAK_CLEANING_MS);
-  }
-
-  static class PicassoThreadFactory implements ThreadFactory {
-    @Override public Thread newThread(@NonNull Runnable r) {
-      return new PicassoThread(r);
-    }
-  }
-
-  private static class PicassoThread extends Thread {
-    PicassoThread(Runnable r) {
-      super(r);
-    }
-
-    @Override public void run() {
-      Process.setThreadPriority(THREAD_PRIORITY_BACKGROUND);
-      super.run();
-    }
   }
 }
