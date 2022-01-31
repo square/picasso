@@ -23,9 +23,9 @@ import com.squareup.picasso3.RequestHandler.Result.Bitmap
 
 internal class BitmapTargetAction(
   picasso: Picasso,
-  val target: BitmapTarget,
+  private val target: BitmapTarget,
   data: Request,
-  val errorDrawable: Drawable?,
+  private val errorDrawable: Drawable?,
   @DrawableRes val errorResId: Int
 ) : Action(picasso, data) {
   override fun complete(result: Result) {
