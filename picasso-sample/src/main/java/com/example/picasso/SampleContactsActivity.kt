@@ -41,7 +41,7 @@ class SampleContactsActivity : PicassoSampleActivity(), LoaderCallbacks<Cursor> 
     adapter = SampleContactsAdapter(this)
 
     findViewById<ListView>(android.R.id.list).apply {
-      adapter = adapter
+      adapter = this@SampleContactsActivity.adapter
       setOnScrollListener(SampleScrollListener(this@SampleContactsActivity))
     }
 
