@@ -23,17 +23,16 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.Px
 import com.squareup.picasso3.Picasso.Priority
 import com.squareup.picasso3.Picasso.Priority.NORMAL
-import java.util.ArrayList
 import java.util.concurrent.TimeUnit.NANOSECONDS
 import java.util.concurrent.TimeUnit.SECONDS
 
 /** Immutable data about an image and the transformations that will be applied to it. */
 class Request internal constructor(builder: Builder) {
   /** A unique ID for the request.  */
-  @JvmField var id = 0
+  internal var id = 0
 
   /** The time that the request was first submitted (in nanos). */
-  @JvmField var started: Long = 0
+  internal var started: Long = 0
 
   /** The [MemoryPolicy] to use for this request. */
   @JvmField val memoryPolicy: Int = builder.memoryPolicy
@@ -62,12 +61,13 @@ class Request internal constructor(builder: Builder) {
   val stableKey: String? = builder.stableKey
 
   /** List of custom transformations to be applied after the built-in transformations. */
-  @JvmField var transformations: List<Transformation> =
+  var transformations: List<Transformation> =
     if (builder.transformations == null) {
       emptyList()
     } else {
       builder.transformations!!.toList()
     }
+    internal set
 
   /** Target image width for resizing. */
   @JvmField val targetWidth: Int = builder.targetWidth

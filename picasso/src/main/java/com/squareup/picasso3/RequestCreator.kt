@@ -46,7 +46,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 /** Fluent API for building an image download request.  */
 open class RequestCreator {
-  private val picasso: Picasso?
+  val picasso: Picasso?
   private val data: Request.Builder
   private var noFade = false
   private var deferred = false
@@ -606,6 +606,13 @@ open class RequestCreator {
     )
 
     picasso.enqueueAndSubmit(action)
+  }
+
+  /**
+   * Build an immutable representation of this request. Does not execute the request.
+   */
+  fun buildRequest(): Request {
+    return data.build()
   }
 
   private fun getPlaceholderDrawable(): Drawable? {
