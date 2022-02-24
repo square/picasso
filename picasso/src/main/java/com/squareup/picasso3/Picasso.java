@@ -620,11 +620,10 @@ public class Picasso implements LifecycleObserver {
       if (loggingEnabled) {
         log(OWNER_MAIN, VERB_COMPLETED, action.request.logId(), "from " + result.loadedFrom);
       }
-    } else {
-      Exception exception = checkNotNull(e, "e == null");
-      action.error(exception);
+    } else if (e != null) {
+      action.error(e);
       if (loggingEnabled) {
-        log(OWNER_MAIN, VERB_ERRORED, action.request.logId(), exception.getMessage());
+        log(OWNER_MAIN, VERB_ERRORED, action.request.logId(), e.getMessage());
       }
     }
   }
