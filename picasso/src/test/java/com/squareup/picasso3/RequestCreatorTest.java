@@ -163,15 +163,6 @@ public class RequestCreatorTest {
   }
 
   @Test
-  public void intoTargetWithNullThrows() {
-    try {
-      new RequestCreator(picasso, URI_1, 0).into((BitmapTarget) null);
-      fail("Calling into() with null Target should throw exception");
-    } catch (IllegalArgumentException ignored) {
-    }
-  }
-
-  @Test
   public void intoTargetWithFitThrows() {
     try {
       BitmapTarget target = mockTarget();
@@ -247,15 +238,6 @@ public class RequestCreatorTest {
     new RequestCreator(picasso, URI_1, 0).tag("tag").into(mockTarget());
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().getTag()).isEqualTo("tag");
-  }
-
-  @Test
-  public void intoImageViewWithNullThrows() {
-    try {
-      new RequestCreator(picasso, URI_1, 0).into((ImageView) null);
-      fail("Calling into() with null ImageView should throw exception");
-    } catch (IllegalArgumentException ignored) {
-    }
   }
 
   @Test
@@ -445,15 +427,6 @@ public class RequestCreatorTest {
   }
 
   @Test
-  public void intoRemoteViewsNotificationWithNullRemoteViewsThrows() {
-    try {
-      new RequestCreator(picasso, URI_1, 0).into(null, 0, 0, mockNotification());
-      fail("Calling into() with null RemoteViews should throw exception");
-    } catch (IllegalArgumentException ignored) {
-    }
-  }
-
-  @Test
   public void intoRemoteViewsWidgetWithPlaceholderDrawableThrows() {
     try {
       new RequestCreator(picasso, URI_1, 0).placeholder(new ColorDrawable(0))
@@ -489,33 +462,6 @@ public class RequestCreatorTest {
       new RequestCreator(picasso, URI_1, 0).error(new ColorDrawable(0))
           .into(mockRemoteViews(), 0, 0, mockNotification());
       fail("Calling into() with error drawable should throw exception");
-    } catch (IllegalArgumentException ignored) {
-    }
-  }
-
-  @Test
-  public void intoRemoteViewsWidgetWithNullRemoteViewsThrows() {
-    try {
-      new RequestCreator(picasso, URI_1, 0).into(null, 0, new int[] { 1, 2, 3 });
-      fail("Calling into() with null RemoteViews should throw exception");
-    } catch (IllegalArgumentException ignored) {
-    }
-  }
-
-  @Test
-  public void intoRemoteViewsWidgetWithNullAppWidgetIdsThrows() {
-    try {
-      new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, null);
-      fail("Calling into() with null appWidgetIds should throw exception");
-    } catch (IllegalArgumentException ignored) {
-    }
-  }
-
-  @Test
-  public void intoRemoteViewsNotificationWithNullNotificationThrows() {
-    try {
-      new RequestCreator(picasso, URI_1, 0).into(mockRemoteViews(), 0, 0, (Notification) null);
-      fail("Calling into() with null Notification should throw exception");
     } catch (IllegalArgumentException ignored) {
     }
   }
@@ -704,11 +650,6 @@ public class RequestCreatorTest {
     } catch (IllegalArgumentException ignored) {
     }
     try {
-      new RequestCreator().error(null);
-      fail("Null drawable should throw exception.");
-    } catch (IllegalArgumentException ignored) {
-    }
-    try {
       new RequestCreator().error(1).error(new ColorDrawable(0));
       fail("Two placeholders should throw exception.");
     } catch (IllegalStateException ignored) {
@@ -772,29 +713,10 @@ public class RequestCreatorTest {
     // TODO verify something!
   }
 
-  @Test public void nullTargetsInvalid() {
-    try {
-      new RequestCreator().into((ImageView) null);
-      fail("Null ImageView should throw exception.");
-    } catch (IllegalArgumentException ignored) {
-    }
-    try {
-      new RequestCreator().into((BitmapTarget) null);
-      fail("Null Target should throw exception.");
-    } catch (IllegalArgumentException ignored) {
-    }
-  }
-
   @Test public void imageViewActionWithStableKey() {
     new RequestCreator(picasso, URI_1, 0).stableKey(STABLE_1).into(mockImageViewTarget());
     verify(picasso).enqueueAndSubmit(actionCaptor.capture());
     assertThat(actionCaptor.getValue().request.key).isEqualTo(STABLE_URI_KEY_1);
-  }
-
-  @Test public void imageViewActionWithStableKeyNull() {
-    new RequestCreator(picasso, URI_1, 0).stableKey(null).into(mockImageViewTarget());
-    verify(picasso).enqueueAndSubmit(actionCaptor.capture());
-    assertThat(actionCaptor.getValue().request.key).isEqualTo(URI_KEY_1);
   }
 
   @Test public void notPurgeable() {

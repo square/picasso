@@ -268,43 +268,47 @@ public final class com/squareup/picasso3/Request$Companion {
 }
 
 public class com/squareup/picasso3/RequestCreator {
-	public fun centerCrop ()Lcom/squareup/picasso3/RequestCreator;
-	public fun centerCrop (I)Lcom/squareup/picasso3/RequestCreator;
-	public fun centerInside ()Lcom/squareup/picasso3/RequestCreator;
-	public fun config (Landroid/graphics/Bitmap$Config;)Lcom/squareup/picasso3/RequestCreator;
-	public fun error (I)Lcom/squareup/picasso3/RequestCreator;
-	public fun error (Landroid/graphics/drawable/Drawable;)Lcom/squareup/picasso3/RequestCreator;
-	public fun fetch ()V
-	public fun fetch (Lcom/squareup/picasso3/Callback;)V
-	public fun fit ()Lcom/squareup/picasso3/RequestCreator;
-	public fun get ()Landroid/graphics/Bitmap;
-	public fun into (Landroid/widget/ImageView;)V
-	public fun into (Landroid/widget/ImageView;Lcom/squareup/picasso3/Callback;)V
-	public fun into (Landroid/widget/RemoteViews;II)V
-	public fun into (Landroid/widget/RemoteViews;IILandroid/app/Notification;)V
-	public fun into (Landroid/widget/RemoteViews;IILandroid/app/Notification;Ljava/lang/String;)V
-	public fun into (Landroid/widget/RemoteViews;IILandroid/app/Notification;Ljava/lang/String;Lcom/squareup/picasso3/Callback;)V
-	public fun into (Landroid/widget/RemoteViews;IILcom/squareup/picasso3/Callback;)V
-	public fun into (Landroid/widget/RemoteViews;I[I)V
-	public fun into (Landroid/widget/RemoteViews;I[ILcom/squareup/picasso3/Callback;)V
-	public fun into (Lcom/squareup/picasso3/BitmapTarget;)V
-	public fun memoryPolicy (Lcom/squareup/picasso3/MemoryPolicy;[Lcom/squareup/picasso3/MemoryPolicy;)Lcom/squareup/picasso3/RequestCreator;
-	public fun networkPolicy (Lcom/squareup/picasso3/NetworkPolicy;[Lcom/squareup/picasso3/NetworkPolicy;)Lcom/squareup/picasso3/RequestCreator;
-	public fun noFade ()Lcom/squareup/picasso3/RequestCreator;
-	public fun noPlaceholder ()Lcom/squareup/picasso3/RequestCreator;
-	public fun onlyScaleDown ()Lcom/squareup/picasso3/RequestCreator;
-	public fun placeholder (I)Lcom/squareup/picasso3/RequestCreator;
-	public fun placeholder (Landroid/graphics/drawable/Drawable;)Lcom/squareup/picasso3/RequestCreator;
-	public fun priority (Lcom/squareup/picasso3/Picasso$Priority;)Lcom/squareup/picasso3/RequestCreator;
-	public fun purgeable ()Lcom/squareup/picasso3/RequestCreator;
-	public fun resize (II)Lcom/squareup/picasso3/RequestCreator;
-	public fun resizeDimen (II)Lcom/squareup/picasso3/RequestCreator;
-	public fun rotate (F)Lcom/squareup/picasso3/RequestCreator;
-	public fun rotate (FFF)Lcom/squareup/picasso3/RequestCreator;
-	public fun stableKey (Ljava/lang/String;)Lcom/squareup/picasso3/RequestCreator;
-	public fun tag (Ljava/lang/Object;)Lcom/squareup/picasso3/RequestCreator;
-	public fun transform (Lcom/squareup/picasso3/Transformation;)Lcom/squareup/picasso3/RequestCreator;
-	public fun transform (Ljava/util/List;)Lcom/squareup/picasso3/RequestCreator;
+	public final fun centerCrop ()Lcom/squareup/picasso3/RequestCreator;
+	public final fun centerCrop (I)Lcom/squareup/picasso3/RequestCreator;
+	public final fun centerInside ()Lcom/squareup/picasso3/RequestCreator;
+	public final fun config (Landroid/graphics/Bitmap$Config;)Lcom/squareup/picasso3/RequestCreator;
+	public final fun error (I)Lcom/squareup/picasso3/RequestCreator;
+	public final fun error (Landroid/graphics/drawable/Drawable;)Lcom/squareup/picasso3/RequestCreator;
+	public final fun fetch ()V
+	public final fun fetch (Lcom/squareup/picasso3/Callback;)V
+	public static synthetic fun fetch$default (Lcom/squareup/picasso3/RequestCreator;Lcom/squareup/picasso3/Callback;ILjava/lang/Object;)V
+	public final fun fit ()Lcom/squareup/picasso3/RequestCreator;
+	public final fun get ()Landroid/graphics/Bitmap;
+	public final fun into (Landroid/widget/ImageView;)V
+	public final fun into (Landroid/widget/ImageView;Lcom/squareup/picasso3/Callback;)V
+	public final fun into (Landroid/widget/RemoteViews;IILandroid/app/Notification;)V
+	public final fun into (Landroid/widget/RemoteViews;IILandroid/app/Notification;Ljava/lang/String;)V
+	public final fun into (Landroid/widget/RemoteViews;IILandroid/app/Notification;Ljava/lang/String;Lcom/squareup/picasso3/Callback;)V
+	public final fun into (Landroid/widget/RemoteViews;IILcom/squareup/picasso3/Callback;)V
+	public final fun into (Landroid/widget/RemoteViews;I[I)V
+	public final fun into (Landroid/widget/RemoteViews;I[ILcom/squareup/picasso3/Callback;)V
+	public final fun into (Lcom/squareup/picasso3/BitmapTarget;)V
+	public static synthetic fun into$default (Lcom/squareup/picasso3/RequestCreator;Landroid/widget/ImageView;Lcom/squareup/picasso3/Callback;ILjava/lang/Object;)V
+	public static synthetic fun into$default (Lcom/squareup/picasso3/RequestCreator;Landroid/widget/RemoteViews;IILandroid/app/Notification;Ljava/lang/String;Lcom/squareup/picasso3/Callback;ILjava/lang/Object;)V
+	public static synthetic fun into$default (Lcom/squareup/picasso3/RequestCreator;Landroid/widget/RemoteViews;IILcom/squareup/picasso3/Callback;ILjava/lang/Object;)V
+	public static synthetic fun into$default (Lcom/squareup/picasso3/RequestCreator;Landroid/widget/RemoteViews;I[ILcom/squareup/picasso3/Callback;ILjava/lang/Object;)V
+	public final fun memoryPolicy (Lcom/squareup/picasso3/MemoryPolicy;[Lcom/squareup/picasso3/MemoryPolicy;)Lcom/squareup/picasso3/RequestCreator;
+	public final fun networkPolicy (Lcom/squareup/picasso3/NetworkPolicy;[Lcom/squareup/picasso3/NetworkPolicy;)Lcom/squareup/picasso3/RequestCreator;
+	public final fun noFade ()Lcom/squareup/picasso3/RequestCreator;
+	public final fun noPlaceholder ()Lcom/squareup/picasso3/RequestCreator;
+	public final fun onlyScaleDown ()Lcom/squareup/picasso3/RequestCreator;
+	public final fun placeholder (I)Lcom/squareup/picasso3/RequestCreator;
+	public final fun placeholder (Landroid/graphics/drawable/Drawable;)Lcom/squareup/picasso3/RequestCreator;
+	public final fun priority (Lcom/squareup/picasso3/Picasso$Priority;)Lcom/squareup/picasso3/RequestCreator;
+	public final fun purgeable ()Lcom/squareup/picasso3/RequestCreator;
+	public final fun resize (II)Lcom/squareup/picasso3/RequestCreator;
+	public final fun resizeDimen (II)Lcom/squareup/picasso3/RequestCreator;
+	public final fun rotate (F)Lcom/squareup/picasso3/RequestCreator;
+	public final fun rotate (FFF)Lcom/squareup/picasso3/RequestCreator;
+	public final fun stableKey (Ljava/lang/String;)Lcom/squareup/picasso3/RequestCreator;
+	public final fun tag (Ljava/lang/Object;)Lcom/squareup/picasso3/RequestCreator;
+	public final fun transform (Lcom/squareup/picasso3/Transformation;)Lcom/squareup/picasso3/RequestCreator;
+	public final fun transform (Ljava/util/List;)Lcom/squareup/picasso3/RequestCreator;
 }
 
 public abstract class com/squareup/picasso3/RequestHandler {
