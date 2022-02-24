@@ -15,7 +15,6 @@
  */
 package com.squareup.picasso3;
 
-import android.app.Notification;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -57,6 +56,7 @@ import static com.squareup.picasso3.TestUtils.mockFitImageViewTarget;
 import static com.squareup.picasso3.TestUtils.mockImageViewTarget;
 import static com.squareup.picasso3.TestUtils.mockNotification;
 import static com.squareup.picasso3.TestUtils.mockRemoteViews;
+import static com.squareup.picasso3.TestUtils.mockRequestCreator;
 import static com.squareup.picasso3.TestUtils.mockTarget;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -554,7 +554,7 @@ public class RequestCreatorTest {
 
   @Test public void nullMemoryPolicyAssholeStyle() {
     try {
-      new RequestCreator().memoryPolicy(MemoryPolicy.NO_CACHE, new MemoryPolicy[] { null });
+      mockRequestCreator().memoryPolicy(MemoryPolicy.NO_CACHE, new MemoryPolicy[] { null });
       fail("Null additional memory policy should throw exception.");
     } catch (NullPointerException ignored) {
     }
@@ -562,7 +562,7 @@ public class RequestCreatorTest {
 
   @Test public void nullNetworkPolicyAssholeStyle() {
     try {
-      new RequestCreator().networkPolicy(NetworkPolicy.NO_CACHE, new NetworkPolicy[] { null });
+      mockRequestCreator().networkPolicy(NetworkPolicy.NO_CACHE, new NetworkPolicy[] { null });
       fail("Null additional network policy should throw exception.");
     } catch (NullPointerException ignored) {
     }
@@ -570,17 +570,17 @@ public class RequestCreatorTest {
 
   @Test public void invalidResize() {
     try {
-      new RequestCreator().resize(-1, 10);
+      mockRequestCreator().resize(-1, 10);
       fail("Negative width should throw exception.");
     } catch (IllegalArgumentException ignored) {
     }
     try {
-      new RequestCreator().resize(10, -1);
+      mockRequestCreator().resize(10, -1);
       fail("Negative height should throw exception.");
     } catch (IllegalArgumentException ignored) {
     }
     try {
-      new RequestCreator().resize(0, 0);
+      mockRequestCreator().resize(0, 0);
       fail("Zero dimensions should throw exception.");
     } catch (IllegalArgumentException ignored) {
     }
@@ -588,7 +588,7 @@ public class RequestCreatorTest {
 
   @Test public void invalidCenterCrop() {
     try {
-      new RequestCreator().resize(10, 10).centerInside().centerCrop();
+      mockRequestCreator().resize(10, 10).centerInside().centerCrop();
       fail("Calling center crop after center inside should throw exception.");
     } catch (IllegalStateException ignored) {
     }
@@ -596,7 +596,7 @@ public class RequestCreatorTest {
 
   @Test public void invalidCenterInside() {
     try {
-      new RequestCreator().resize(10, 10).centerInside().centerCrop();
+      mockRequestCreator().resize(10, 10).centerInside().centerCrop();
       fail("Calling center inside after center crop should throw exception.");
     } catch (IllegalStateException ignored) {
     }
@@ -604,17 +604,17 @@ public class RequestCreatorTest {
 
   @Test public void invalidPlaceholderImage() {
     try {
-      new RequestCreator().placeholder(0);
+      mockRequestCreator().placeholder(0);
       fail("Resource ID of zero should throw exception.");
     } catch (IllegalArgumentException ignored) {
     }
     try {
-      new RequestCreator().placeholder(1).placeholder(new ColorDrawable(0));
+      mockRequestCreator().placeholder(1).placeholder(new ColorDrawable(0));
       fail("Two placeholders should throw exception.");
     } catch (IllegalStateException ignored) {
     }
     try {
-      new RequestCreator().placeholder(new ColorDrawable(0)).placeholder(1);
+      mockRequestCreator().placeholder(new ColorDrawable(0)).placeholder(1);
       fail("Two placeholders should throw exception.");
     } catch (IllegalStateException ignored) {
     }
@@ -622,22 +622,22 @@ public class RequestCreatorTest {
 
   @Test public void invalidNoPlaceholder() {
     try {
-      new RequestCreator().noPlaceholder().placeholder(new ColorDrawable(0));
+      mockRequestCreator().noPlaceholder().placeholder(new ColorDrawable(0));
       fail("Placeholder after no placeholder should throw exception.");
     } catch (IllegalStateException ignored) {
     }
     try {
-      new RequestCreator().noPlaceholder().placeholder(1);
+      mockRequestCreator().noPlaceholder().placeholder(1);
       fail("Placeholder after no placeholder should throw exception.");
     } catch (IllegalStateException ignored) {
     }
     try {
-      new RequestCreator().placeholder(1).noPlaceholder();
+      mockRequestCreator().placeholder(1).noPlaceholder();
       fail("No placeholder after placeholder should throw exception.");
     } catch (IllegalStateException ignored) {
     }
     try {
-      new RequestCreator().placeholder(new ColorDrawable(0)).noPlaceholder();
+      mockRequestCreator().placeholder(new ColorDrawable(0)).noPlaceholder();
       fail("No placeholder after placeholder should throw exception.");
     } catch (IllegalStateException ignored) {
     }
@@ -645,17 +645,17 @@ public class RequestCreatorTest {
 
   @Test public void invalidErrorImage() {
     try {
-      new RequestCreator().error(0);
+      mockRequestCreator().error(0);
       fail("Resource ID of zero should throw exception.");
     } catch (IllegalArgumentException ignored) {
     }
     try {
-      new RequestCreator().error(1).error(new ColorDrawable(0));
+      mockRequestCreator().error(1).error(new ColorDrawable(0));
       fail("Two placeholders should throw exception.");
     } catch (IllegalStateException ignored) {
     }
     try {
-      new RequestCreator().error(new ColorDrawable(0)).error(1);
+      mockRequestCreator().error(new ColorDrawable(0)).error(1);
       fail("Two placeholders should throw exception.");
     } catch (IllegalStateException ignored) {
     }
@@ -663,7 +663,7 @@ public class RequestCreatorTest {
 
   @Test public void invalidPriority() {
     try {
-      new RequestCreator().priority(LOW).priority(HIGH);
+      mockRequestCreator().priority(LOW).priority(HIGH);
       fail("Two priorities should throw exception.");
     } catch (IllegalStateException ignored) {
     }
@@ -672,7 +672,7 @@ public class RequestCreatorTest {
 
   @Test public void alreadySetTagThrows() {
     try {
-      new RequestCreator().tag("tag1").tag("tag2");
+      mockRequestCreator().tag("tag1").tag("tag2");
       fail("Two tags should throw exception.");
     } catch (IllegalStateException ignored) {
     }
@@ -680,7 +680,7 @@ public class RequestCreatorTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void nullKeyTransformationInvalid() {
-    new RequestCreator().transform(new Transformation() {
+    mockRequestCreator().transform(new Transformation() {
       @Override public RequestHandler.Result.Bitmap transform(RequestHandler.Result.Bitmap source) {
         return source;
       }
@@ -703,13 +703,13 @@ public class RequestCreatorTest {
             return null;
           }
         });
-    new RequestCreator().transform(transformations);
+    mockRequestCreator().transform(transformations);
   }
 
   @Test public void transformationListImplementationValid() {
     List<TestTransformation> transformations =
         Collections.singletonList(new TestTransformation("test"));
-    new RequestCreator().transform(transformations);
+    mockRequestCreator().transform(transformations);
     // TODO verify something!
   }
 

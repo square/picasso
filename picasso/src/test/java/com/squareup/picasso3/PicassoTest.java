@@ -58,13 +58,13 @@ import static com.squareup.picasso3.TestUtils.mockDeferredRequestCreator;
 import static com.squareup.picasso3.TestUtils.mockHunter;
 import static com.squareup.picasso3.TestUtils.mockImageViewTarget;
 import static com.squareup.picasso3.TestUtils.mockPicasso;
+import static com.squareup.picasso3.TestUtils.mockRequestCreator;
 import static com.squareup.picasso3.TestUtils.mockTarget;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(RobolectricTestRunner.class)
@@ -280,7 +280,8 @@ public final class PicassoTest {
 
   @Test public void cancelExistingRequestWithDeferredImageViewTarget() {
     ImageView target = mockImageViewTarget();
-    DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator(target);
+    RequestCreator creator = mockRequestCreator();
+    DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator(creator, target);
     picasso.targetToDeferredRequestCreator.put(target, deferredRequestCreator);
     picasso.cancelRequest(target);
     verify(target).removeOnAttachStateChangeListener(deferredRequestCreator);
@@ -289,11 +290,12 @@ public final class PicassoTest {
 
   @Test public void enqueueingDeferredRequestCancelsThePreviousOne() {
     ImageView target = mockImageViewTarget();
-    DeferredRequestCreator firstRequestCreator = mockDeferredRequestCreator(target);
+    RequestCreator creator = mockRequestCreator();
+    DeferredRequestCreator firstRequestCreator = mockDeferredRequestCreator(creator, target);
     picasso.defer(target, firstRequestCreator);
     assertThat(picasso.targetToDeferredRequestCreator).containsKey(target);
 
-    DeferredRequestCreator secondRequestCreator = mockDeferredRequestCreator(target);
+    DeferredRequestCreator secondRequestCreator = mockDeferredRequestCreator(creator, target);
     picasso.defer(target, secondRequestCreator);
     verify(target).removeOnAttachStateChangeListener(firstRequestCreator);
     assertThat(picasso.targetToDeferredRequestCreator).containsKey(target);
@@ -356,8 +358,8 @@ public final class PicassoTest {
 
   @Test public void cancelTagAllDeferredRequests() {
     ImageView target = mockImageViewTarget();
-    DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator(target);
-    when(deferredRequestCreator.getTag()).thenReturn("TAG");
+    RequestCreator creator = mockRequestCreator().tag("TAG");
+    DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator(creator, target);
     picasso.defer(target, deferredRequestCreator);
     picasso.cancelTag("TAG");
     verify(target).removeOnAttachStateChangeListener(deferredRequestCreator);
@@ -365,7 +367,8 @@ public final class PicassoTest {
 
   @Test public void deferAddsToMap() {
     ImageView target = mockImageViewTarget();
-    DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator(target);
+    RequestCreator creator = mockRequestCreator();
+    DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator(creator, target);
     assertThat(picasso.targetToDeferredRequestCreator).isEmpty();
     picasso.defer(target, deferredRequestCreator);
     assertThat(picasso.targetToDeferredRequestCreator).hasSize(1);
@@ -404,7 +407,8 @@ public final class PicassoTest {
 
   @Test public void shutdownClearsDeferredRequests() {
     ImageView target = mockImageViewTarget();
-    DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator(target);
+    RequestCreator creator = mockRequestCreator();
+    DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator(creator, target);
     picasso.targetToDeferredRequestCreator.put(target, deferredRequestCreator);
     picasso.shutdown();
     verify(target).removeOnAttachStateChangeListener(deferredRequestCreator);

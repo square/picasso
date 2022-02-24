@@ -57,7 +57,6 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.withSettings;
 
 class TestUtils {
   static final Answer<Object> TRANSFORM_REQUEST_ANSWER = invocation -> invocation.getArguments()[0];
@@ -212,10 +211,14 @@ class TestUtils {
     return mock(Callback.class);
   }
 
-  static DeferredRequestCreator mockDeferredRequestCreator(ImageView target) {
+  static DeferredRequestCreator mockDeferredRequestCreator(RequestCreator creator, ImageView target) {
     ViewTreeObserver observer = mock(ViewTreeObserver.class);
     when(target.getViewTreeObserver()).thenReturn(observer);
-    return new DeferredRequestCreator(mock(RequestCreator.class, withSettings().useConstructor()), target, null);
+    return new DeferredRequestCreator(creator, target, null);
+  }
+
+  static RequestCreator mockRequestCreator() {
+    return new RequestCreator(mock(Picasso.class), null, 0);
   }
 
   static NetworkInfo mockNetworkInfo() {
