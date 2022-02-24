@@ -19,6 +19,7 @@ import com.google.common.truth.Truth.assertThat
 import com.squareup.picasso3.TestUtils.TRANSFORM_REQUEST_ANSWER
 import com.squareup.picasso3.TestUtils.mockCallback
 import com.squareup.picasso3.TestUtils.mockFitImageViewTarget
+import com.squareup.picasso3.TestUtils.mockRequestCreator
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -30,8 +31,6 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoMoreInteractions
-import org.mockito.Mockito.verifyZeroInteractions
-import org.mockito.Mockito.withSettings
 import org.mockito.MockitoAnnotations.initMocks
 import org.robolectric.RobolectricTestRunner
 
@@ -47,7 +46,7 @@ class DeferredRequestCreatorTest {
   @Test fun initWhileAttachedAddsAttachAndPreDrawListener() {
     val target = mockFitImageViewTarget(true)
     val observer = target.viewTreeObserver
-    val request = DeferredRequestCreator(mock(RequestCreator::class.java), target, null)
+    val request = DeferredRequestCreator(mockRequestCreator(), target, null)
     verify(observer).addOnPreDrawListener(request)
   }
 
@@ -55,7 +54,7 @@ class DeferredRequestCreatorTest {
     val target = mockFitImageViewTarget(true)
     `when`(target.windowToken).thenReturn(null)
     val observer = target.viewTreeObserver
-    val request = DeferredRequestCreator(mock(RequestCreator::class.java), target, null)
+    val request = DeferredRequestCreator(mockRequestCreator(), target, null)
     verify(target).addOnAttachStateChangeListener(request)
     verifyNoMoreInteractions(observer)
 
@@ -70,11 +69,7 @@ class DeferredRequestCreatorTest {
 
   @Test fun cancelWhileAttachedRemovesAttachListener() {
     val target = mockFitImageViewTarget(true)
-    val request = DeferredRequestCreator(
-      mock(RequestCreator::class.java, withSettings().useConstructor()),
-      target,
-      null
-    )
+    val request = DeferredRequestCreator(mockRequestCreator(), target, null)
     verify(target).addOnAttachStateChangeListener(request)
     request.cancel()
     verify(target).removeOnAttachStateChangeListener(request)
@@ -83,11 +78,7 @@ class DeferredRequestCreatorTest {
   @Test fun cancelClearsCallback() {
     val target = mockFitImageViewTarget(true)
     val callback = mockCallback()
-    val request = DeferredRequestCreator(
-      mock(RequestCreator::class.java, withSettings().useConstructor()),
-      target,
-      callback
-    )
+    val request = DeferredRequestCreator(mockRequestCreator(), target, callback)
     assertThat(request.callback).isNotNull()
     request.cancel()
     assertThat(request.callback).isNull()
@@ -95,39 +86,38 @@ class DeferredRequestCreatorTest {
 
   @Test fun cancelClearsTag() {
     val target = mockFitImageViewTarget(true)
-    val creator = mock(RequestCreator::class.java, withSettings().useConstructor())
-    `when`(creator.tag).thenReturn("TAG")
+    val creator = mockRequestCreator().tag("TAG")
     val request = DeferredRequestCreator(creator, target, null)
+
+    assertThat(creator.tag).isNotNull()
     request.cancel()
-    verify(creator).clearTag()
+    assertThat(creator.tag).isNull()
   }
 
   @Test fun onLayoutSkipsIfViewIsAttachedAndViewTreeObserverIsDead() {
     val target = mockFitImageViewTarget(false)
-    val creator = mock(RequestCreator::class.java)
+    val creator = mockRequestCreator()
     val request = DeferredRequestCreator(creator, target, null)
     val viewTreeObserver = target.viewTreeObserver
     request.onPreDraw()
     verify(viewTreeObserver).addOnPreDrawListener(request)
     verify(viewTreeObserver).isAlive
     verifyNoMoreInteractions(viewTreeObserver)
-    verifyZeroInteractions(creator)
   }
 
   @Test fun waitsForAnotherLayoutIfWidthOrHeightIsZero() {
     val target = mockFitImageViewTarget(true)
     `when`(target.width).thenReturn(0)
     `when`(target.height).thenReturn(0)
-    val creator = mock(RequestCreator::class.java)
+    val creator = mockRequestCreator()
     val request = DeferredRequestCreator(creator, target, null)
     request.onPreDraw()
     verify(target.viewTreeObserver, never()).removeOnPreDrawListener(request)
-    verifyZeroInteractions(creator)
   }
 
   @Test fun cancelSkipsIfViewTreeObserverIsDead() {
     val target = mockFitImageViewTarget(false)
-    val creator = mock(RequestCreator::class.java, withSettings().useConstructor())
+    val creator = mockRequestCreator()
     val request = DeferredRequestCreator(creator, target, null)
     request.cancel()
     verify(target.viewTreeObserver, never()).removeOnPreDrawListener(request)

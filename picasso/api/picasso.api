@@ -267,7 +267,7 @@ public final class com/squareup/picasso3/Request$Builder {
 public final class com/squareup/picasso3/Request$Companion {
 }
 
-public class com/squareup/picasso3/RequestCreator {
+public final class com/squareup/picasso3/RequestCreator {
 	public final fun centerCrop ()Lcom/squareup/picasso3/RequestCreator;
 	public final fun centerCrop (I)Lcom/squareup/picasso3/RequestCreator;
 	public final fun centerInside ()Lcom/squareup/picasso3/RequestCreator;
