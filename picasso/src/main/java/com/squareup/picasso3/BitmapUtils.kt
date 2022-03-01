@@ -195,6 +195,7 @@ object BitmapUtils {
   @Throws(IOException::class)
   private fun decodeImageSource(imageSource: ImageDecoder.Source, request: Request): Bitmap {
     return ImageDecoder.decodeBitmap(imageSource) { imageDecoder, imageInfo, source ->
+      imageDecoder.isMutableRequired = true
       if (request.hasSize()) {
         val size = imageInfo.size
         if (shouldResize(
