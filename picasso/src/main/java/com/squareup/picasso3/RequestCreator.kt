@@ -30,8 +30,8 @@ import com.squareup.picasso3.BitmapHunter.Companion.forRequest
 import com.squareup.picasso3.MemoryPolicy.Companion.shouldReadFromMemoryCache
 import com.squareup.picasso3.MemoryPolicy.Companion.shouldWriteToMemoryCache
 import com.squareup.picasso3.Picasso.LoadedFrom
-import com.squareup.picasso3.PicassoDrawable.setPlaceholder
-import com.squareup.picasso3.PicassoDrawable.setResult
+import com.squareup.picasso3.PicassoDrawable.Companion.setPlaceholder
+import com.squareup.picasso3.PicassoDrawable.Companion.setResult
 import com.squareup.picasso3.RemoteViewsAction.AppWidgetAction
 import com.squareup.picasso3.RemoteViewsAction.NotificationAction
 import com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget
