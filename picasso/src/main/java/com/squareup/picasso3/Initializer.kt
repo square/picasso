@@ -13,15 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.squareup.picasso3;
+package com.squareup.picasso3
 
-import androidx.annotation.RestrictTo;
-import java.lang.annotation.Retention;
-
-import static androidx.annotation.RestrictTo.Scope.LIBRARY;
-import static java.lang.annotation.RetentionPolicy.SOURCE;
+import androidx.annotation.RestrictTo
+import androidx.annotation.RestrictTo.Scope.LIBRARY
+import kotlin.annotation.AnnotationRetention.SOURCE
 
 @Retention(SOURCE)
 @RestrictTo(LIBRARY)
-public @interface Initializer {
-}
+annotation class Initializer 
