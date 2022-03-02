@@ -45,7 +45,7 @@ internal class MatrixTransformation(private val data: Request) : Transformation 
   override fun key() = "matrixTransformation()"
 
   internal companion object {
-    @JvmStatic @VisibleForTesting
+    @VisibleForTesting
     fun transformResult(
       data: Request,
       result: android.graphics.Bitmap,
