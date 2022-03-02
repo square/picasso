@@ -297,7 +297,7 @@ class BitmapHunterTest {
   @Test fun forAndroidBitmapResourceRequest() {
     val resources = mockResources(BITMAP_RESOURCE_VALUE)
     `when`(context.resources).thenReturn(resources)
-    val action = mockAction(RESOURCE_ID_KEY_1, null, null, RESOURCE_ID_1)
+    val action = mockAction(key = RESOURCE_ID_KEY_1, resourceId = RESOURCE_ID_1)
     val hunter = forRequest(
       mockPicasso(ResourceRequestHandler(context)), dispatcher, cache, action
     )
@@ -323,7 +323,7 @@ class BitmapHunterTest {
   @Test fun forAndroidXmlResourceRequest() {
     val resources = mockResources(XML_RESOURCE_VALUE)
     `when`(context.resources).thenReturn(resources)
-    val action = mockAction(RESOURCE_ID_KEY_1, null, null, RESOURCE_ID_1)
+    val action = mockAction(key = RESOURCE_ID_KEY_1, resourceId = RESOURCE_ID_1)
     val requestHandler =
       ResourceDrawableRequestHandler.create(context, makeLoaderWithDrawable(null))
     val hunter = forRequest(mockPicasso(requestHandler), dispatcher, cache, action)
@@ -381,7 +381,7 @@ class BitmapHunterTest {
   }
 
   @Test fun getPriorityWithSingleRequest() {
-    val action = mockAction(URI_KEY_1, URI_1, HIGH)
+    val action = mockAction(key = URI_KEY_1, uri = URI_1, priority = HIGH)
     val requestHandler = NetworkRequestHandler(UNUSED_CALL_FACTORY)
     val hunter = forRequest(mockPicasso(requestHandler), dispatcher, cache, action)
     assertThat(hunter.action).isEqualTo(action)
@@ -390,8 +390,8 @@ class BitmapHunterTest {
   }
 
   @Test fun getPriorityWithMultipleRequests() {
-    val action1 = mockAction(URI_KEY_1, URI_1, NORMAL)
-    val action2 = mockAction(URI_KEY_1, URI_1, HIGH)
+    val action1 = mockAction(key = URI_KEY_1, uri = URI_1, priority = NORMAL)
+    val action2 = mockAction(key = URI_KEY_1, uri = URI_1, priority = HIGH)
     val requestHandler = NetworkRequestHandler(UNUSED_CALL_FACTORY)
     val hunter = forRequest(mockPicasso(requestHandler), dispatcher, cache, action1)
     hunter.attach(action2)
@@ -401,8 +401,8 @@ class BitmapHunterTest {
   }
 
   @Test fun getPriorityAfterDetach() {
-    val action1 = mockAction(URI_KEY_1, URI_1, NORMAL)
-    val action2 = mockAction(URI_KEY_1, URI_1, HIGH)
+    val action1 = mockAction(key = URI_KEY_1, uri = URI_1, priority = NORMAL)
+    val action2 = mockAction(key = URI_KEY_1, uri = URI_1, priority = HIGH)
     val requestHandler = NetworkRequestHandler(UNUSED_CALL_FACTORY)
     val hunter = forRequest(mockPicasso(requestHandler), dispatcher, cache, action1)
     hunter.attach(action2)

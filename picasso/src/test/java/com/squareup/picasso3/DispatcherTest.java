@@ -305,7 +305,7 @@ public class DispatcherTest {
 
   @Test public void performRetryDoesNotMarkForReplayIfNoNetworkScanning() {
     BitmapHunter hunter = mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY),
-        mockAction(URI_KEY_1, URI_1), false, true);
+        mockAction(URI_KEY_1, URI_1), null, false, true);
     Dispatcher dispatcher = createDispatcher(false);
     dispatcher.performRetry(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
@@ -317,7 +317,7 @@ public class DispatcherTest {
     NetworkInfo networkInfo = mockNetworkInfo(true);
     Action action = mockAction(URI_KEY_1, URI_1, mockTarget());
     BitmapHunter hunter =
-        mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action, false, true);
+        mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action, null, false, true);
     when(connectivityManager.getActiveNetworkInfo()).thenReturn(networkInfo);
     dispatcher.performRetry(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
@@ -327,7 +327,7 @@ public class DispatcherTest {
 
   @Test public void performRetryRetriesIfNoNetworkScanning() {
     BitmapHunter hunter = mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY),
-        mockAction(URI_KEY_1, URI_1), true);
+        mockAction(URI_KEY_1, URI_1), null, true);
     Dispatcher dispatcher = createDispatcher(false);
     dispatcher.performRetry(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
@@ -338,7 +338,7 @@ public class DispatcherTest {
   @Test public void performRetryMarksForReplayIfSupportsReplayAndShouldNotRetry() {
     Action action = mockAction(URI_KEY_1, URI_1, mockTarget());
     BitmapHunter hunter =
-        mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action, false, true);
+        mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action, null, false, true);
     dispatcher.performRetry(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.failedActions).hasSize(1);
@@ -348,7 +348,7 @@ public class DispatcherTest {
   @Test public void performRetryRetriesIfShouldRetry() {
     Action action = mockAction(URI_KEY_1, URI_1, mockTarget());
     BitmapHunter hunter =
-        mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action, true);
+        mockHunter(new RequestHandler.Result.Bitmap(bitmap1, MEMORY), action, null, true);
     dispatcher.performRetry(hunter);
     assertThat(dispatcher.hunterMap).isEmpty();
     assertThat(dispatcher.failedActions).isEmpty();
