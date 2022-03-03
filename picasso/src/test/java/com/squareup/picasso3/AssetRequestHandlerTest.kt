@@ -9,10 +9,7 @@ import java.io.IOException
 
 @RunWith(RobolectricTestRunner::class)
 class AssetRequestHandlerTest {
-
-  @Test
-  @Throws(IOException::class)
-  fun truncatesFilePrefix() {
+  @Test fun truncatesFilePrefix() {
     val uri = Uri.parse("file:///android_asset/foo/bar.png")
     val request = Request.Builder(uri).build()
 

@@ -18,7 +18,7 @@ package com.squareup.picasso3
 import android.graphics.Bitmap
 import android.graphics.Bitmap.Config.ARGB_8888
 
-internal class TestTransformation @JvmOverloads constructor(
+internal class TestTransformation(
   private val key: String,
   private val result: Bitmap? = Bitmap.createBitmap(10, 10, ARGB_8888)
 ) : Transformation {

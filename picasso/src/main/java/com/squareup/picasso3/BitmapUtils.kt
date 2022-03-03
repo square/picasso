@@ -37,12 +37,11 @@ import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 
-object BitmapUtils {
+internal object BitmapUtils {
   /**
    * Lazily create [BitmapFactory.Options] based in given
    * [Request], only instantiating them if needed.
    */
-  @JvmStatic
   fun createBitmapOptions(data: Request): BitmapFactory.Options? {
     val justBounds = data.hasSize()
     return if (justBounds || data.config != null || data.purgeable) {
@@ -57,12 +56,10 @@ object BitmapUtils {
     } else null
   }
 
-  @JvmStatic
   fun requiresInSampleSize(options: BitmapFactory.Options?): Boolean {
     return options != null && options.inJustDecodeBounds
   }
 
-  @JvmStatic
   fun calculateInSampleSize(
     reqWidth: Int, reqHeight: Int, options: BitmapFactory.Options, request: Request
   ) {
@@ -71,7 +68,6 @@ object BitmapUtils {
     )
   }
 
-  @JvmStatic
   fun shouldResize(
     onlyScaleDown: Boolean, inWidth: Int, inHeight: Int, targetWidth: Int, targetHeight: Int
   ): Boolean {
@@ -79,7 +75,6 @@ object BitmapUtils {
         || targetHeight != 0 && inHeight > targetHeight)
   }
 
-  @JvmStatic
   fun calculateInSampleSize(
     reqWidth: Int, reqHeight: Int, width: Int, height: Int, options: BitmapFactory.Options,
     request: Request
@@ -113,8 +108,6 @@ object BitmapUtils {
    * about the supplied request in order to do the decoding efficiently (such as through leveraging
    * `inSampleSize`).
    */
-  @Throws(IOException::class)
-  @JvmStatic
   fun decodeStream(source: Source, request: Request): Bitmap {
     val exceptionCatchingSource = ExceptionCatchingSource(source)
     val bufferedSource = exceptionCatchingSource.buffer()
@@ -129,13 +122,11 @@ object BitmapUtils {
 
   @RequiresApi(28)
   @SuppressLint("Override")
-  @Throws(IOException::class)
   private fun decodeStreamP(request: Request, bufferedSource: BufferedSource): Bitmap {
     val imageSource = ImageDecoder.createSource(ByteBuffer.wrap(bufferedSource.readByteArray()))
     return decodeImageSource(imageSource, request)
   }
 
-  @Throws(IOException::class)
   private fun decodeStreamPreP(request: Request, bufferedSource: BufferedSource): Bitmap {
     val isWebPFile = Utils.isWebPFile(bufferedSource)
     val isPurgeable = request.purgeable && VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP
@@ -165,7 +156,6 @@ object BitmapUtils {
     return bitmap
   }
 
-  @Throws(IOException::class)
   fun decodeResource(context: Context, request: Request): Bitmap {
     if (VERSION.SDK_INT >= 28) {
       return decodeResourceP(context, request)
@@ -176,7 +166,6 @@ object BitmapUtils {
   }
 
   @RequiresApi(28)
-  @Throws(IOException::class)
   private fun decodeResourceP(context: Context, request: Request): Bitmap {
     val imageSource = ImageDecoder.createSource(context.resources, request.resourceId)
     return decodeImageSource(imageSource, request)
@@ -192,7 +181,6 @@ object BitmapUtils {
   }
 
   @RequiresApi(28)
-  @Throws(IOException::class)
   private fun decodeImageSource(imageSource: ImageDecoder.Source, request: Request): Bitmap {
     return ImageDecoder.decodeBitmap(imageSource) { imageDecoder, imageInfo, source ->
       imageDecoder.isMutableRequired = true
@@ -219,7 +207,6 @@ object BitmapUtils {
   internal class ExceptionCatchingSource(delegate: Source) : ForwardingSource(delegate) {
     var thrownException: IOException? = null
 
-    @Throws(IOException::class)
     override fun read(sink: Buffer, byteCount: Long): Long {
       return try {
         super.read(sink, byteCount)
@@ -229,7 +216,6 @@ object BitmapUtils {
       }
     }
 
-    @Throws(IOException::class)
     fun throwIfCaught() {
       if (thrownException is IOException) {
         // TODO: Log when Android returns a non-null Bitmap after swallowing an IOException.

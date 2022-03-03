@@ -136,8 +136,7 @@ class BitmapHunterTest {
     verify(dispatcher).dispatchRetry(hunter)
   }
 
-  @Test @Throws(Exception::class)
-  fun huntDecodesWhenNotInCache() {
+  @Test fun huntDecodesWhenNotInCache() {
     val eventRecorder = EventRecorder()
     val picasso = picasso.newBuilder().addEventListener(eventRecorder).build()
     val action = mockAction(picasso, URI_KEY_1, URI_1, mockImageViewTarget())
@@ -151,8 +150,7 @@ class BitmapHunterTest {
     assertThat(eventRecorder.decodedBitmap).isEqualTo(bitmap)
   }
 
-  @Test @Throws(Exception::class)
-  fun huntReturnsWhenResultInCache() {
+  @Test fun huntReturnsWhenResultInCache() {
     cache[URI_KEY_1 + KEY_SEPARATOR] = bitmap
     val eventRecorder = EventRecorder()
     val picasso = picasso.newBuilder().addEventListener(eventRecorder).build()
@@ -167,8 +165,7 @@ class BitmapHunterTest {
     assertThat(eventRecorder.decodedBitmap).isNull()
   }
 
-  @Test @Throws(Exception::class)
-  fun huntUnrecognizedUri() {
+  @Test fun huntUnrecognizedUri() {
     val action = mockAction(picasso, CUSTOM_URI_KEY, CUSTOM_URI)
     val hunter = forRequest(picasso, dispatcher, cache, action)
     try {
@@ -178,8 +175,7 @@ class BitmapHunterTest {
     }
   }
 
-  @Test @Throws(Exception::class)
-  fun huntDecodesWithRequestHandler() {
+  @Test fun huntDecodesWithRequestHandler() {
     val picasso = mockPicasso(context, CustomRequestHandler())
     val action = mockAction(picasso, CUSTOM_URI_KEY, CUSTOM_URI)
     val hunter = forRequest(picasso, dispatcher, cache, action)
@@ -1033,7 +1029,7 @@ class BitmapHunterTest {
   //  assertThat(transformationCount.get()).isEqualTo(3);
   //}
 
-  internal class TestableBitmapHunter @JvmOverloads constructor(
+  internal class TestableBitmapHunter(
     picasso: Picasso,
     dispatcher: Dispatcher,
     cache: PlatformLruCache,

@@ -16,7 +16,7 @@
 package com.squareup.picasso3
 
 /** Designates the policy to use for network requests.  */
-enum class NetworkPolicy(@JvmField val index: Int) {
+enum class NetworkPolicy(val index: Int) {
   /**
    * Skips checking the disk cache and forces loading through the network.
    */

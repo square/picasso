@@ -499,8 +499,8 @@ class RequestCreator internal constructor(
    * Asynchronously fulfills the request into the specified [RemoteViews] object with the
    * given [viewId]. This is used for loading bitmaps into all instances of a widget.
    */
-  @JvmOverloads fun
-    into(
+  @JvmOverloads
+  fun into(
     remoteViews: RemoteViews,
     @IdRes viewId: Int,
     appWidgetIds: IntArray,

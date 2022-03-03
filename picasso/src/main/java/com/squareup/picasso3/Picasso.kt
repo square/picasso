@@ -65,14 +65,14 @@ import java.util.concurrent.ExecutorService
 class Picasso internal constructor(
   internal val context: Context,
   internal val dispatcher: Dispatcher,
-  @JvmField internal val callFactory: Call.Factory,
+  internal val callFactory: Call.Factory,
   private val closeableCache: Cache?,
-  @JvmField internal val cache: PlatformLruCache,
-  @JvmField internal val listener: Listener?,
+  internal val cache: PlatformLruCache,
+  internal val listener: Listener?,
   requestTransformers: List<RequestTransformer>,
   extraRequestHandlers: List<RequestHandler>,
   eventListeners: List<EventListener>,
-  @JvmField internal val defaultBitmapConfig: Config?,
+  internal val defaultBitmapConfig: Config?,
   /** Toggle whether to display debug indicators on images.  */
   var indicatorsEnabled: Boolean,
   /**
@@ -83,14 +83,10 @@ class Picasso internal constructor(
    */
   @Volatile var isLoggingEnabled: Boolean
 ) : LifecycleObserver {
-  @JvmField internal val requestTransformers: List<RequestTransformer> = requestTransformers.toList()
-  @JvmField internal val requestHandlers: List<RequestHandler>
+  internal val requestTransformers: List<RequestTransformer> = requestTransformers.toList()
+  internal val requestHandlers: List<RequestHandler>
   internal val eventListeners: List<EventListener> = eventListeners.toList()
-
-  @JvmField
   internal val targetToAction = mutableMapOf<Any, Action>()
-
-  @JvmField
   internal val targetToDeferredRequestCreator = mutableMapOf<ImageView, DeferredRequestCreator>()
 
   internal var shutdown = false
@@ -759,7 +755,7 @@ class Picasso internal constructor(
   }
 
   internal companion object {
-    @JvmField internal val HANDLER: Handler = object : Handler(Looper.getMainLooper()) {
+    internal val HANDLER: Handler = object : Handler(Looper.getMainLooper()) {
       override fun handleMessage(msg: Message) {
         when (msg.what) {
           HUNTER_COMPLETE -> {

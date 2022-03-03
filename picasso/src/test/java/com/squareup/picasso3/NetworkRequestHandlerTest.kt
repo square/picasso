@@ -67,8 +67,7 @@ class NetworkRequestHandlerTest {
     }
   }
 
-  @Test @Throws(Exception::class)
-  fun doesNotForceLocalCacheOnlyWithAirplaneModeOffAndRetryCount() {
+  @Test fun doesNotForceLocalCacheOnlyWithAirplaneModeOffAndRetryCount() {
     responses.add(responseOf(ByteArray(10).toResponseBody(null)))
     val action = TestUtils.mockAction(picasso, URI_KEY_1, URI_1)
     val latch = CountDownLatch(1)
@@ -87,8 +86,7 @@ class NetworkRequestHandlerTest {
     assertThat(latch.await(10, SECONDS)).isTrue()
   }
 
-  @Test @Throws(Exception::class)
-  fun withZeroRetryCountForcesLocalCacheOnly() {
+  @Test fun withZeroRetryCountForcesLocalCacheOnly() {
     responses.add(responseOf(ByteArray(10).toResponseBody(null)))
     val action = TestUtils.mockAction(picasso, URI_KEY_1, URI_1)
     val cache = PlatformLruCache(0)
@@ -127,8 +125,7 @@ class NetworkRequestHandlerTest {
     assertThat(networkHandler.shouldRetry(airplaneMode = true, info = info)).isFalse()
   }
 
-  @Test @Throws(Exception::class)
-  fun noCacheAndKnownContentLengthDispatchToStats() {
+  @Test fun noCacheAndKnownContentLengthDispatchToStats() {
     val eventRecorder = EventRecorder()
     val picasso = picasso.newBuilder().addEventListener(eventRecorder).build()
     val knownContentLengthSize = 10
@@ -146,8 +143,7 @@ class NetworkRequestHandlerTest {
     assertThat(latch.await(10, SECONDS)).isTrue()
   }
 
-  @Test @Throws(Exception::class)
-  fun unknownContentLengthFromDiskThrows() {
+  @Test fun unknownContentLengthFromDiskThrows() {
     val eventRecorder = EventRecorder()
     val picasso = picasso.newBuilder().addEventListener(eventRecorder).build()
     val closed = AtomicBoolean()
@@ -178,8 +174,7 @@ class NetworkRequestHandlerTest {
     assertThat(latch.await(10, SECONDS)).isTrue()
   }
 
-  @Test @Throws(Exception::class)
-  fun cachedResponseDoesNotDispatchToStats() {
+  @Test fun cachedResponseDoesNotDispatchToStats() {
     val eventRecorder = EventRecorder()
     val picasso = picasso.newBuilder().addEventListener(eventRecorder).build()
     responses += responseOf(ByteArray(10).toResponseBody(null))

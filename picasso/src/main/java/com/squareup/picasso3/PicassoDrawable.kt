@@ -41,9 +41,9 @@ internal class PicassoDrawable(
   private val debugging: Boolean
 ) : BitmapDrawable(context.resources, bitmap) {
   private val density: Float = context.resources.displayMetrics.density
-  @JvmField var placeholder: Drawable? = null
+  var placeholder: Drawable? = null
   var startTimeMillis: Long = 0
-  @JvmField var animating = false
+  var animating = false
   private var _alpha = 0xFF
 
   init {

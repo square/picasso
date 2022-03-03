@@ -16,7 +16,7 @@
 package com.squareup.picasso3
 
 /** Designates the policy to use when dealing with memory cache.  */
-enum class MemoryPolicy(@JvmField val index: Int) {
+enum class MemoryPolicy(val index: Int) {
   /** Skips memory cache lookup when processing a request.  */
   NO_CACHE(1 shl 0),
 

@@ -27,7 +27,7 @@ import okio.source
 import java.io.FileNotFoundException
 import java.io.IOException
 
-internal open class ContentStreamRequestHandler(@JvmField val context: Context) : RequestHandler() {
+internal open class ContentStreamRequestHandler(val context: Context) : RequestHandler() {
   override fun canHandleRequest(data: Request): Boolean =
     ContentResolver.SCHEME_CONTENT == data.uri?.scheme ?: false
 
@@ -52,14 +52,13 @@ internal open class ContentStreamRequestHandler(@JvmField val context: Context) 
     }
   }
 
-  @Throws(FileNotFoundException::class) fun getSource(uri: Uri): Source {
+  fun getSource(uri: Uri): Source {
     val contentResolver = context.contentResolver
     val inputStream = contentResolver.openInputStream(uri)
         ?: throw FileNotFoundException("can't open input stream, uri: $uri")
     return inputStream.source()
   }
 
-  @Throws(IOException::class)
   protected open fun getExifOrientation(uri: Uri): Int {
     val contentResolver = context.contentResolver
     contentResolver.openInputStream(uri)?.use { input ->

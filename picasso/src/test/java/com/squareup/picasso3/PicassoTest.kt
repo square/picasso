@@ -306,7 +306,7 @@ class PicassoTest {
 
   @Test fun cancelTagAllActions() {
     val target = mockImageViewTarget()
-    val action = mockAction(picasso, URI_KEY_1, URI_1, target, "TAG")
+    val action = mockAction(picasso, URI_KEY_1, URI_1, target, tag = "TAG")
     picasso.enqueueAndSubmit(action)
     assertThat(picasso.targetToAction).hasSize(1)
     assertThat(action.cancelled).isFalse()
