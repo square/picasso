@@ -42,9 +42,10 @@ import com.squareup.picasso3.RequestHandler.Result.Bitmap
 import okhttp3.Call
 import okhttp3.Response
 import okio.Timeout
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.Mockito
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.doAnswer
 import org.mockito.Mockito.doReturn
@@ -407,5 +408,22 @@ internal object TestUtils {
       throw AssertionError("Not implemented.")
 
     override fun execute(command: Runnable) = delegate.execute(command)
+  }
+
+  fun <T> any(type: Class<T>): T = Mockito.any(type)
+
+  fun <T : Any> eq(value: T): T = Mockito.eq(value) ?: value
+
+  inline fun <reified T : Any> argumentCaptor(): KArgumentCaptor<T> {
+    return KArgumentCaptor(ArgumentCaptor.forClass(T::class.java))
+  }
+
+  class KArgumentCaptor<T>(
+    private val captor: ArgumentCaptor<T>,
+  ) {
+    val value: T
+      get() = captor.value
+
+    fun capture(): T = captor.capture()
   }
 }

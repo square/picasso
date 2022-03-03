@@ -16,13 +16,13 @@
 package com.squareup.picasso3
 
 import com.google.common.truth.Truth.assertThat
+import com.squareup.picasso3.TestUtils.argumentCaptor
 import com.squareup.picasso3.TestUtils.mockCallback
 import com.squareup.picasso3.TestUtils.mockFitImageViewTarget
 import com.squareup.picasso3.TestUtils.mockPicasso
 import com.squareup.picasso3.TestUtils.mockRequestCreator
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentCaptor
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.never
 import org.mockito.Mockito.spy
@@ -129,7 +129,7 @@ class DeferredRequestCreatorTest {
     request.onPreDraw()
 
     verify(observer).removeOnPreDrawListener(request)
-    val actionCaptor = ArgumentCaptor.forClass(Action::class.java)
+    val actionCaptor = argumentCaptor<ImageViewAction>()
     verify(spyPicasso).enqueueAndSubmit(actionCaptor.capture())
 
     val value = actionCaptor.value

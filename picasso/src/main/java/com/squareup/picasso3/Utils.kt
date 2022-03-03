@@ -128,7 +128,7 @@ internal object Utils {
   }
 
   @JvmStatic @JvmOverloads fun log(owner: String, verb: String, logId: String, extras: String? = "") {
-    Log.d(Picasso.TAG, String.format("%1$-11s %2$-12s %3\$s %4\$s", owner, verb, logId, extras ?: ""))
+    Log.d(TAG, String.format("%1$-11s %2$-12s %3\$s %4\$s", owner, verb, logId, extras ?: ""))
   }
 
   @JvmStatic fun createDefaultCacheDir(context: Context): File {

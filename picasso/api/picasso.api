@@ -84,44 +84,43 @@ public final class com/squareup/picasso3/NetworkPolicy$Companion {
 	public final fun shouldWriteToDiskCache (I)Z
 }
 
-public class com/squareup/picasso3/Picasso : androidx/lifecycle/LifecycleObserver {
-	public static final field TAG Ljava/lang/String;
-	public fun cancelRequest (Landroid/widget/ImageView;)V
-	public fun cancelRequest (Landroid/widget/RemoteViews;I)V
-	public fun cancelRequest (Lcom/squareup/picasso3/BitmapTarget;)V
-	public fun cancelTag (Ljava/lang/Object;)V
-	public fun evictAll ()V
-	public fun getIndicatorsEnabled ()Z
-	public fun invalidate (Landroid/net/Uri;)V
-	public fun invalidate (Ljava/io/File;)V
-	public fun invalidate (Ljava/lang/String;)V
-	public fun isLoggingEnabled ()Z
-	public fun load (I)Lcom/squareup/picasso3/RequestCreator;
-	public fun load (Landroid/net/Uri;)Lcom/squareup/picasso3/RequestCreator;
-	public fun load (Ljava/io/File;)Lcom/squareup/picasso3/RequestCreator;
-	public fun load (Ljava/lang/String;)Lcom/squareup/picasso3/RequestCreator;
-	public fun newBuilder ()Lcom/squareup/picasso3/Picasso$Builder;
-	public fun pauseTag (Ljava/lang/Object;)V
-	public fun resumeTag (Ljava/lang/Object;)V
-	public fun setIndicatorsEnabled (Z)V
-	public fun setLoggingEnabled (Z)V
-	public fun shutdown ()V
+public final class com/squareup/picasso3/Picasso : androidx/lifecycle/LifecycleObserver {
+	public final fun cancelRequest (Landroid/widget/ImageView;)V
+	public final fun cancelRequest (Landroid/widget/RemoteViews;I)V
+	public final fun cancelRequest (Lcom/squareup/picasso3/BitmapTarget;)V
+	public final fun cancelTag (Ljava/lang/Object;)V
+	public final fun evictAll ()V
+	public final fun getIndicatorsEnabled ()Z
+	public final fun invalidate (Landroid/net/Uri;)V
+	public final fun invalidate (Ljava/io/File;)V
+	public final fun invalidate (Ljava/lang/String;)V
+	public final fun isLoggingEnabled ()Z
+	public final fun load (I)Lcom/squareup/picasso3/RequestCreator;
+	public final fun load (Landroid/net/Uri;)Lcom/squareup/picasso3/RequestCreator;
+	public final fun load (Ljava/io/File;)Lcom/squareup/picasso3/RequestCreator;
+	public final fun load (Ljava/lang/String;)Lcom/squareup/picasso3/RequestCreator;
+	public final fun newBuilder ()Lcom/squareup/picasso3/Picasso$Builder;
+	public final fun pauseTag (Ljava/lang/Object;)V
+	public final fun resumeTag (Ljava/lang/Object;)V
+	public final fun setIndicatorsEnabled (Z)V
+	public final fun setLoggingEnabled (Z)V
+	public final fun shutdown ()V
 }
 
-public class com/squareup/picasso3/Picasso$Builder {
+public final class com/squareup/picasso3/Picasso$Builder {
 	public fun <init> (Landroid/content/Context;)V
-	public fun addEventListener (Lcom/squareup/picasso3/EventListener;)Lcom/squareup/picasso3/Picasso$Builder;
-	public fun addRequestHandler (Lcom/squareup/picasso3/RequestHandler;)Lcom/squareup/picasso3/Picasso$Builder;
-	public fun addRequestTransformer (Lcom/squareup/picasso3/Picasso$RequestTransformer;)Lcom/squareup/picasso3/Picasso$Builder;
-	public fun build ()Lcom/squareup/picasso3/Picasso;
-	public fun callFactory (Lokhttp3/Call$Factory;)Lcom/squareup/picasso3/Picasso$Builder;
-	public fun client (Lokhttp3/OkHttpClient;)Lcom/squareup/picasso3/Picasso$Builder;
-	public fun defaultBitmapConfig (Landroid/graphics/Bitmap$Config;)Lcom/squareup/picasso3/Picasso$Builder;
-	public fun executor (Ljava/util/concurrent/ExecutorService;)Lcom/squareup/picasso3/Picasso$Builder;
-	public fun indicatorsEnabled (Z)Lcom/squareup/picasso3/Picasso$Builder;
-	public fun listener (Lcom/squareup/picasso3/Picasso$Listener;)Lcom/squareup/picasso3/Picasso$Builder;
-	public fun loggingEnabled (Z)Lcom/squareup/picasso3/Picasso$Builder;
-	public fun withCacheSize (I)Lcom/squareup/picasso3/Picasso$Builder;
+	public final fun addEventListener (Lcom/squareup/picasso3/EventListener;)Lcom/squareup/picasso3/Picasso$Builder;
+	public final fun addRequestHandler (Lcom/squareup/picasso3/RequestHandler;)Lcom/squareup/picasso3/Picasso$Builder;
+	public final fun addRequestTransformer (Lcom/squareup/picasso3/Picasso$RequestTransformer;)Lcom/squareup/picasso3/Picasso$Builder;
+	public final fun build ()Lcom/squareup/picasso3/Picasso;
+	public final fun callFactory (Lokhttp3/Call$Factory;)Lcom/squareup/picasso3/Picasso$Builder;
+	public final fun client (Lokhttp3/OkHttpClient;)Lcom/squareup/picasso3/Picasso$Builder;
+	public final fun defaultBitmapConfig (Landroid/graphics/Bitmap$Config;)Lcom/squareup/picasso3/Picasso$Builder;
+	public final fun executor (Ljava/util/concurrent/ExecutorService;)Lcom/squareup/picasso3/Picasso$Builder;
+	public final fun indicatorsEnabled (Z)Lcom/squareup/picasso3/Picasso$Builder;
+	public final fun listener (Lcom/squareup/picasso3/Picasso$Listener;)Lcom/squareup/picasso3/Picasso$Builder;
+	public final fun loggingEnabled (Z)Lcom/squareup/picasso3/Picasso$Builder;
+	public final fun withCacheSize (I)Lcom/squareup/picasso3/Picasso$Builder;
 }
 
 public abstract interface class com/squareup/picasso3/Picasso$Listener {
@@ -153,6 +152,10 @@ public final class com/squareup/picasso3/PicassoExecutorService : java/util/conc
 	public fun <init> (ILjava/util/concurrent/ThreadFactory;)V
 	public synthetic fun <init> (ILjava/util/concurrent/ThreadFactory;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun submit (Ljava/lang/Runnable;)Ljava/util/concurrent/Future;
+}
+
+public final class com/squareup/picasso3/PicassoKt {
+	public static final field TAG Ljava/lang/String;
 }
 
 public final class com/squareup/picasso3/Request {

@@ -388,7 +388,7 @@ class RequestCreator internal constructor(
       if (shouldReadFromMemoryCache(request.memoryPolicy)) {
         val bitmap = picasso.quickMemoryCacheCheck(request.key)
         if (bitmap != null) {
-          if (picasso.loggingEnabled) {
+          if (picasso.isLoggingEnabled) {
             log(OWNER_MAIN, VERB_COMPLETED, request.plainId(), "from " + LoadedFrom.MEMORY)
           }
           callback?.onSuccess()
@@ -570,7 +570,7 @@ class RequestCreator internal constructor(
         picasso.cancelRequest(target)
         val result: RequestHandler.Result = RequestHandler.Result.Bitmap(bitmap, LoadedFrom.MEMORY)
         setResult(target, picasso.context, result, noFade, picasso.indicatorsEnabled)
-        if (picasso.loggingEnabled) {
+        if (picasso.isLoggingEnabled) {
           log(OWNER_MAIN, VERB_COMPLETED, request.plainId(), "from " + LoadedFrom.MEMORY)
         }
         callback?.onSuccess()
@@ -610,7 +610,7 @@ class RequestCreator internal constructor(
     request.id = id
     request.started = started
 
-    val loggingEnabled = picasso.loggingEnabled
+    val loggingEnabled = picasso.isLoggingEnabled
     if (loggingEnabled) {
       log(OWNER_MAIN, Utils.VERB_CREATED, request.plainId(), request.toString())
     }

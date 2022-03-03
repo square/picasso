@@ -19,7 +19,7 @@ import android.graphics.Bitmap
 import android.util.Log
 import androidx.core.graphics.BitmapCompat
 import com.squareup.picasso3.EventListener
-import com.squareup.picasso3.Picasso
+import com.squareup.picasso3.TAG
 import okio.Buffer
 import okio.BufferedSink
 import java.io.IOException
@@ -118,7 +118,7 @@ class StatsEventListener : EventListener {
         throw AssertionError(e)
       }
 
-      Log.i(Picasso.TAG, buffer.readUtf8())
+      Log.i(TAG, buffer.readUtf8())
     }
 
     /** Writes this [Snapshot] to the provided [BufferedSink].  */
