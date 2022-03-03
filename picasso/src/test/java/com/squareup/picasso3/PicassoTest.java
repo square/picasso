@@ -57,7 +57,6 @@ import static com.squareup.picasso3.TestUtils.mockAction;
 import static com.squareup.picasso3.TestUtils.mockDeferredRequestCreator;
 import static com.squareup.picasso3.TestUtils.mockHunter;
 import static com.squareup.picasso3.TestUtils.mockImageViewTarget;
-import static com.squareup.picasso3.TestUtils.mockPicasso;
 import static com.squareup.picasso3.TestUtils.mockRequestCreator;
 import static com.squareup.picasso3.TestUtils.mockTarget;
 import static org.junit.Assert.fail;
@@ -286,7 +285,7 @@ public final class PicassoTest {
 
   @Test public void cancelExistingRequestWithDeferredImageViewTarget() {
     ImageView target = mockImageViewTarget();
-    RequestCreator creator = mockRequestCreator();
+    RequestCreator creator = mockRequestCreator(picasso);
     DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator(creator, target);
     picasso.targetToDeferredRequestCreator.put(target, deferredRequestCreator);
     picasso.cancelRequest(target);
@@ -296,7 +295,7 @@ public final class PicassoTest {
 
   @Test public void enqueueingDeferredRequestCancelsThePreviousOne() {
     ImageView target = mockImageViewTarget();
-    RequestCreator creator = mockRequestCreator();
+    RequestCreator creator = mockRequestCreator(picasso);
     DeferredRequestCreator firstRequestCreator = mockDeferredRequestCreator(creator, target);
     picasso.defer(target, firstRequestCreator);
     assertThat(picasso.targetToDeferredRequestCreator).containsKey(target);
@@ -364,7 +363,7 @@ public final class PicassoTest {
 
   @Test public void cancelTagAllDeferredRequests() {
     ImageView target = mockImageViewTarget();
-    RequestCreator creator = mockRequestCreator().tag("TAG");
+    RequestCreator creator = mockRequestCreator(picasso).tag("TAG");
     DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator(creator, target);
     picasso.defer(target, deferredRequestCreator);
     picasso.cancelTag("TAG");
@@ -373,7 +372,7 @@ public final class PicassoTest {
 
   @Test public void deferAddsToMap() {
     ImageView target = mockImageViewTarget();
-    RequestCreator creator = mockRequestCreator();
+    RequestCreator creator = mockRequestCreator(picasso);
     DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator(creator, target);
     assertThat(picasso.targetToDeferredRequestCreator).isEmpty();
     picasso.defer(target, deferredRequestCreator);
@@ -413,7 +412,7 @@ public final class PicassoTest {
 
   @Test public void shutdownClearsDeferredRequests() {
     ImageView target = mockImageViewTarget();
-    RequestCreator creator = mockRequestCreator();
+    RequestCreator creator = mockRequestCreator(picasso);
     DeferredRequestCreator deferredRequestCreator = mockDeferredRequestCreator(creator, target);
     picasso.targetToDeferredRequestCreator.put(target, deferredRequestCreator);
     picasso.shutdown();

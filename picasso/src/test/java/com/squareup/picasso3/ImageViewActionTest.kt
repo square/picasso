@@ -30,6 +30,7 @@ import com.squareup.picasso3.TestUtils.UNUSED_CALL_FACTORY
 import com.squareup.picasso3.TestUtils.makeBitmap
 import com.squareup.picasso3.TestUtils.mockCallback
 import com.squareup.picasso3.TestUtils.mockImageViewTarget
+import com.squareup.picasso3.TestUtils.mockPicasso
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.any
@@ -72,7 +73,7 @@ class ImageViewActionTest {
     val target = mockImageViewTarget()
     val callback = mockCallback()
     val request = ImageViewAction(
-      picasso = mock(Picasso::class.java),
+      picasso = mockPicasso(RuntimeEnvironment.application),
       target = target,
       data = SIMPLE_REQUEST,
       errorDrawable = null,
@@ -92,7 +93,7 @@ class ImageViewActionTest {
     val target = mockImageViewTarget()
     val callback = mockCallback()
     val request = ImageViewAction(
-      picasso = mock(Picasso::class.java),
+      picasso = mockPicasso(RuntimeEnvironment.application),
       target = target,
       data = SIMPLE_REQUEST,
       errorDrawable = null,
@@ -112,7 +113,7 @@ class ImageViewActionTest {
     val target = mockImageViewTarget()
     val callback = mockCallback()
     val request = ImageViewAction(
-      picasso = mock(Picasso::class.java),
+      picasso = mockPicasso(RuntimeEnvironment.application),
       target = target,
       data = SIMPLE_REQUEST,
       errorDrawable = errorDrawable,
@@ -129,7 +130,7 @@ class ImageViewActionTest {
   }
 
   @Test fun clearsCallbackOnCancel() {
-    val picasso = mock(Picasso::class.java)
+    val picasso = mockPicasso(RuntimeEnvironment.application)
     val target = mockImageViewTarget()
     val callback = mockCallback()
     val request = ImageViewAction(
@@ -146,7 +147,7 @@ class ImageViewActionTest {
   }
 
   @Test fun stopPlaceholderAnimationOnError() {
-    val picasso = mock(Picasso::class.java)
+    val picasso = mockPicasso(RuntimeEnvironment.application)
     val placeholder = mock(AnimationDrawable::class.java)
     val target = mockImageViewTarget()
     `when`(target.drawable).thenReturn(placeholder)

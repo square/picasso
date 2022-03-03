@@ -28,6 +28,7 @@ import com.squareup.picasso3.TestUtils.RESOURCE_ID_1
 import com.squareup.picasso3.TestUtils.SIMPLE_REQUEST
 import com.squareup.picasso3.TestUtils.UNUSED_CALL_FACTORY
 import com.squareup.picasso3.TestUtils.makeBitmap
+import com.squareup.picasso3.TestUtils.mockPicasso
 import com.squareup.picasso3.TestUtils.mockTarget
 import org.junit.Assert.fail
 import org.junit.Test
@@ -36,6 +37,7 @@ import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 
 @RunWith(RobolectricTestRunner::class)
 class BitmapTargetActionTest {
@@ -44,7 +46,7 @@ class BitmapTargetActionTest {
     val bitmap = makeBitmap()
     val target = mockTarget()
     val request = BitmapTargetAction(
-      picasso = mock(Picasso::class.java),
+      picasso = mockPicasso(RuntimeEnvironment.application),
       target = target,
       data = SIMPLE_REQUEST,
       errorDrawable = null,
@@ -58,7 +60,7 @@ class BitmapTargetActionTest {
     val errorDrawable = mock(Drawable::class.java)
     val target = mockTarget()
     val request = BitmapTargetAction(
-      picasso = mock(Picasso::class.java),
+      picasso = mockPicasso(RuntimeEnvironment.application),
       target = target,
       data = SIMPLE_REQUEST,
       errorDrawable = errorDrawable,
@@ -99,7 +101,7 @@ class BitmapTargetActionTest {
   }
 
   @Test fun recyclingInSuccessThrowsException() {
-    val picasso = mock(Picasso::class.java)
+    val picasso = mockPicasso(RuntimeEnvironment.application)
     val bitmap = makeBitmap()
     val tr = BitmapTargetAction(
       picasso = picasso,

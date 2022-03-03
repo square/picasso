@@ -32,7 +32,6 @@ import com.squareup.picasso3.TestUtils.NO_HANDLERS
 import com.squareup.picasso3.TestUtils.NO_TRANSFORMERS
 import com.squareup.picasso3.TestUtils.STABLE_1
 import com.squareup.picasso3.TestUtils.STABLE_URI_KEY_1
-import com.squareup.picasso3.TestUtils.TRANSFORM_REQUEST_ANSWER
 import com.squareup.picasso3.TestUtils.UNUSED_CALL_FACTORY
 import com.squareup.picasso3.TestUtils.URI_1
 import com.squareup.picasso3.TestUtils.URI_KEY_1
@@ -41,19 +40,17 @@ import com.squareup.picasso3.TestUtils.mockCallback
 import com.squareup.picasso3.TestUtils.mockFitImageViewTarget
 import com.squareup.picasso3.TestUtils.mockImageViewTarget
 import com.squareup.picasso3.TestUtils.mockNotification
+import com.squareup.picasso3.TestUtils.mockPicasso
 import com.squareup.picasso3.TestUtils.mockRemoteViews
 import com.squareup.picasso3.TestUtils.mockRequestCreator
 import com.squareup.picasso3.TestUtils.mockTarget
 import org.junit.Assert.fail
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.ArgumentMatchers.eq
-import org.mockito.Captor
-import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.doCallRealMethod
 import org.mockito.Mockito.doReturn
@@ -63,7 +60,6 @@ import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.verifyZeroInteractions
-import org.mockito.MockitoAnnotations.initMocks
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
@@ -72,15 +68,9 @@ import java.util.concurrent.CountDownLatch
 
 @RunWith(RobolectricTestRunner::class)
 class RequestCreatorTest {
-  @Mock private lateinit var picasso: Picasso
-  @Captor private lateinit var actionCaptor: ArgumentCaptor<Action>
-
+  private val actionCaptor = ArgumentCaptor.forClass(Action::class.java)
+  private val picasso = spy(mockPicasso(RuntimeEnvironment.application))
   private val bitmap = makeBitmap()
-
-  @Before fun shutUp() {
-    initMocks(this)
-    `when`(picasso.transformRequest(any(Request::class.java))).thenAnswer(TRANSFORM_REQUEST_ANSWER)
-  }
 
   @Throws(IOException::class)
   @Test fun getOnMainCrashes() {
@@ -541,17 +531,17 @@ class RequestCreatorTest {
 
   @Test fun invalidResize() {
     try {
-      mockRequestCreator().resize(-1, 10)
+      mockRequestCreator(picasso).resize(-1, 10)
       fail("Negative width should throw exception.")
     } catch (ignored: IllegalArgumentException) {
     }
     try {
-      mockRequestCreator().resize(10, -1)
+      mockRequestCreator(picasso).resize(10, -1)
       fail("Negative height should throw exception.")
     } catch (ignored: IllegalArgumentException) {
     }
     try {
-      mockRequestCreator().resize(0, 0)
+      mockRequestCreator(picasso).resize(0, 0)
       fail("Zero dimensions should throw exception.")
     } catch (ignored: IllegalArgumentException) {
     }
@@ -559,7 +549,7 @@ class RequestCreatorTest {
 
   @Test fun invalidCenterCrop() {
     try {
-      mockRequestCreator().resize(10, 10).centerInside().centerCrop()
+      mockRequestCreator(picasso).resize(10, 10).centerInside().centerCrop()
       fail("Calling center crop after center inside should throw exception.")
     } catch (ignored: IllegalStateException) {
     }
@@ -567,7 +557,7 @@ class RequestCreatorTest {
 
   @Test fun invalidCenterInside() {
     try {
-      mockRequestCreator().resize(10, 10).centerInside().centerCrop()
+      mockRequestCreator(picasso).resize(10, 10).centerInside().centerCrop()
       fail("Calling center inside after center crop should throw exception.")
     } catch (ignored: IllegalStateException) {
     }
@@ -575,17 +565,17 @@ class RequestCreatorTest {
 
   @Test fun invalidPlaceholderImage() {
     try {
-      mockRequestCreator().placeholder(0)
+      mockRequestCreator(picasso).placeholder(0)
       fail("Resource ID of zero should throw exception.")
     } catch (ignored: IllegalArgumentException) {
     }
     try {
-      mockRequestCreator().placeholder(1).placeholder(ColorDrawable(0))
+      mockRequestCreator(picasso).placeholder(1).placeholder(ColorDrawable(0))
       fail("Two placeholders should throw exception.")
     } catch (ignored: IllegalStateException) {
     }
     try {
-      mockRequestCreator().placeholder(ColorDrawable(0)).placeholder(1)
+      mockRequestCreator(picasso).placeholder(ColorDrawable(0)).placeholder(1)
       fail("Two placeholders should throw exception.")
     } catch (ignored: IllegalStateException) {
     }
@@ -593,22 +583,22 @@ class RequestCreatorTest {
 
   @Test fun invalidNoPlaceholder() {
     try {
-      mockRequestCreator().noPlaceholder().placeholder(ColorDrawable(0))
+      mockRequestCreator(picasso).noPlaceholder().placeholder(ColorDrawable(0))
       fail("Placeholder after no placeholder should throw exception.")
     } catch (ignored: IllegalStateException) {
     }
     try {
-      mockRequestCreator().noPlaceholder().placeholder(1)
+      mockRequestCreator(picasso).noPlaceholder().placeholder(1)
       fail("Placeholder after no placeholder should throw exception.")
     } catch (ignored: IllegalStateException) {
     }
     try {
-      mockRequestCreator().placeholder(1).noPlaceholder()
+      mockRequestCreator(picasso).placeholder(1).noPlaceholder()
       fail("No placeholder after placeholder should throw exception.")
     } catch (ignored: IllegalStateException) {
     }
     try {
-      mockRequestCreator().placeholder(ColorDrawable(0)).noPlaceholder()
+      mockRequestCreator(picasso).placeholder(ColorDrawable(0)).noPlaceholder()
       fail("No placeholder after placeholder should throw exception.")
     } catch (ignored: IllegalStateException) {
     }
@@ -616,17 +606,17 @@ class RequestCreatorTest {
 
   @Test fun invalidErrorImage() {
     try {
-      mockRequestCreator().error(0)
+      mockRequestCreator(picasso).error(0)
       fail("Resource ID of zero should throw exception.")
     } catch (ignored: IllegalArgumentException) {
     }
     try {
-      mockRequestCreator().error(1).error(ColorDrawable(0))
+      mockRequestCreator(picasso).error(1).error(ColorDrawable(0))
       fail("Two placeholders should throw exception.")
     } catch (ignored: IllegalStateException) {
     }
     try {
-      mockRequestCreator().error(ColorDrawable(0)).error(1)
+      mockRequestCreator(picasso).error(ColorDrawable(0)).error(1)
       fail("Two placeholders should throw exception.")
     } catch (ignored: IllegalStateException) {
     }
@@ -634,7 +624,7 @@ class RequestCreatorTest {
 
   @Test fun invalidPriority() {
     try {
-      mockRequestCreator().priority(LOW).priority(HIGH)
+      mockRequestCreator(picasso).priority(LOW).priority(HIGH)
       fail("Two priorities should throw exception.")
     } catch (ignored: IllegalStateException) {
     }
@@ -642,7 +632,7 @@ class RequestCreatorTest {
 
   @Test fun alreadySetTagThrows() {
     try {
-      mockRequestCreator().tag("tag1").tag("tag2")
+      mockRequestCreator(picasso).tag("tag1").tag("tag2")
       fail("Two tags should throw exception.")
     } catch (ignored: IllegalStateException) {
     }
@@ -650,7 +640,7 @@ class RequestCreatorTest {
 
   @Test fun transformationListImplementationValid() {
     val transformations = listOf(TestTransformation("test"))
-    mockRequestCreator().transform(transformations)
+    mockRequestCreator(picasso).transform(transformations)
     // TODO verify something!
   }
 

@@ -50,7 +50,6 @@ import org.mockito.Mockito.doAnswer
 import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.mock
 import org.mockito.invocation.InvocationOnMock
-import org.mockito.stubbing.Answer
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.Callable
@@ -59,7 +58,6 @@ import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
 internal object TestUtils {
-  val TRANSFORM_REQUEST_ANSWER = Answer { invocation: InvocationOnMock -> invocation.arguments[0] }
   @JvmField val URI_1: Uri = Uri.parse("http://example.com/1.png")
   @JvmField val URI_2: Uri = Uri.parse("http://example.com/2.png")
   const val STABLE_1 = "stableExampleKey1"
@@ -195,8 +193,7 @@ internal object TestUtils {
     return DeferredRequestCreator(creator!!, target, null)
   }
 
-  @JvmStatic fun mockRequestCreator(): RequestCreator =
-    RequestCreator(mock(Picasso::class.java), null, 0)
+  @JvmStatic fun mockRequestCreator(picasso: Picasso) = RequestCreator(picasso, null, 0)
 
   @JvmStatic @JvmOverloads fun mockNetworkInfo(isConnected: Boolean = false): NetworkInfo {
     val mock = mock(NetworkInfo::class.java)

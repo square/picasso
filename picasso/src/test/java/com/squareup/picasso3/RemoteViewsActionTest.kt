@@ -83,7 +83,7 @@ class RemoteViewsActionTest {
 
   @Test fun clearsCallbackOnCancel() {
     val request = ImageViewAction(
-      picasso = mock(Picasso::class.java),
+      picasso = picasso,
       target = mockImageViewTarget(),
       data = SIMPLE_REQUEST,
       errorDrawable = null,
