@@ -46,10 +46,12 @@ import com.squareup.picasso3.TestUtils.CONTENT_1_URL
 import com.squareup.picasso3.TestUtils.CONTENT_KEY_1
 import com.squareup.picasso3.TestUtils.CUSTOM_URI
 import com.squareup.picasso3.TestUtils.CUSTOM_URI_KEY
+import com.squareup.picasso3.TestUtils.EventRecorder
 import com.squareup.picasso3.TestUtils.FILE_1_URL
 import com.squareup.picasso3.TestUtils.FILE_KEY_1
 import com.squareup.picasso3.TestUtils.MEDIA_STORE_CONTENT_1_URL
 import com.squareup.picasso3.TestUtils.MEDIA_STORE_CONTENT_KEY_1
+import com.squareup.picasso3.TestUtils.NOOP_REQUEST_HANDLER
 import com.squareup.picasso3.TestUtils.NO_TRANSFORMERS
 import com.squareup.picasso3.TestUtils.RESOURCE_ID_1
 import com.squareup.picasso3.TestUtils.RESOURCE_ID_KEY_1
@@ -74,7 +76,6 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations.initMocks
 import org.robolectric.RobolectricTestRunner
@@ -86,39 +87,41 @@ import java.util.concurrent.FutureTask
 @RunWith(RobolectricTestRunner::class)
 class BitmapHunterTest {
   @Mock internal lateinit var context: Context
-  @Mock internal lateinit var picasso: Picasso
   @Mock internal lateinit var dispatcher: Dispatcher
+  private lateinit var picasso: Picasso
 
   private val cache = PlatformLruCache(2048)
   private val bitmap = makeBitmap()
 
   @Before fun setUp() {
     initMocks(this)
+    `when`(context.applicationContext).thenReturn(context)
+    picasso = mockPicasso(context, NOOP_REQUEST_HANDLER)
   }
 
   @Test fun nullDecodeResponseIsError() {
-    val action = mockAction(URI_KEY_1, URI_1)
+    val action = mockAction(picasso, URI_KEY_1, URI_1)
     val hunter = TestableBitmapHunter(picasso, dispatcher, cache, action, null)
     hunter.run()
     verify(dispatcher).dispatchFailed(hunter)
   }
 
   @Test fun runWithResultDispatchComplete() {
-    val action = mockAction(URI_KEY_1, URI_1)
+    val action = mockAction(picasso, URI_KEY_1, URI_1)
     val hunter = TestableBitmapHunter(picasso, dispatcher, cache, action, bitmap)
     hunter.run()
     verify(dispatcher).dispatchComplete(hunter)
   }
 
   @Test fun runWithNoResultDispatchFailed() {
-    val action = mockAction(URI_KEY_1, URI_1)
+    val action = mockAction(picasso, URI_KEY_1, URI_1)
     val hunter = TestableBitmapHunter(picasso, dispatcher, cache, action)
     hunter.run()
     verify(dispatcher).dispatchFailed(hunter)
   }
 
   @Test fun responseExceptionDispatchFailed() {
-    val action = mockAction(URI_KEY_1, URI_1)
+    val action = mockAction(picasso, URI_KEY_1, URI_1)
     val hunter = TestableBitmapHunter(
       picasso, dispatcher, cache, action, null, ResponseException(504, 0)
     )
@@ -127,7 +130,7 @@ class BitmapHunterTest {
   }
 
   @Test fun runWithIoExceptionDispatchRetry() {
-    val action = mockAction(URI_KEY_1, URI_1)
+    val action = mockAction(picasso, URI_KEY_1, URI_1)
     val hunter = TestableBitmapHunter(picasso, dispatcher, cache, action, null, IOException())
     hunter.run()
     verify(dispatcher).dispatchRetry(hunter)
@@ -135,7 +138,9 @@ class BitmapHunterTest {
 
   @Test @Throws(Exception::class)
   fun huntDecodesWhenNotInCache() {
-    val action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget())
+    val eventRecorder = EventRecorder()
+    val picasso = picasso.newBuilder().addEventListener(eventRecorder).build()
+    val action = mockAction(picasso, URI_KEY_1, URI_1, mockImageViewTarget())
     val hunter = TestableBitmapHunter(picasso, dispatcher, cache, action, bitmap)
 
     val result = hunter.hunt()
@@ -143,13 +148,15 @@ class BitmapHunterTest {
     assertThat(result).isNotNull()
     assertThat(result!!.bitmap).isEqualTo(bitmap)
     assertThat(result.loadedFrom).isEqualTo(NETWORK)
-    verify(picasso).bitmapDecoded(bitmap)
+    assertThat(eventRecorder.decodedBitmap).isEqualTo(bitmap)
   }
 
   @Test @Throws(Exception::class)
   fun huntReturnsWhenResultInCache() {
     cache[URI_KEY_1 + KEY_SEPARATOR] = bitmap
-    val action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget())
+    val eventRecorder = EventRecorder()
+    val picasso = picasso.newBuilder().addEventListener(eventRecorder).build()
+    val action = mockAction(picasso, URI_KEY_1, URI_1, mockImageViewTarget())
     val hunter = TestableBitmapHunter(picasso, dispatcher, cache, action, bitmap)
 
     val result = hunter.hunt()
@@ -157,12 +164,12 @@ class BitmapHunterTest {
     assertThat(result).isNotNull()
     assertThat(result!!.bitmap).isEqualTo(bitmap)
     assertThat(result.loadedFrom).isEqualTo(MEMORY)
-    verify(picasso, never()).bitmapDecoded(bitmap)
+    assertThat(eventRecorder.decodedBitmap).isNull()
   }
 
   @Test @Throws(Exception::class)
   fun huntUnrecognizedUri() {
-    val action = mockAction(CUSTOM_URI_KEY, CUSTOM_URI)
+    val action = mockAction(picasso, CUSTOM_URI_KEY, CUSTOM_URI)
     val hunter = forRequest(picasso, dispatcher, cache, action)
     try {
       hunter.hunt()
@@ -173,14 +180,15 @@ class BitmapHunterTest {
 
   @Test @Throws(Exception::class)
   fun huntDecodesWithRequestHandler() {
-    val action = mockAction(CUSTOM_URI_KEY, CUSTOM_URI)
-    val hunter = forRequest(mockPicasso(CustomRequestHandler()), dispatcher, cache, action)
+    val picasso = mockPicasso(context, CustomRequestHandler())
+    val action = mockAction(picasso, CUSTOM_URI_KEY, CUSTOM_URI)
+    val hunter = forRequest(picasso, dispatcher, cache, action)
     val result = hunter.hunt()
     assertThat(result!!.bitmap).isEqualTo(bitmap)
   }
 
   @Test fun attachSingleRequest() {
-    val action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget())
+    val action1 = mockAction(picasso, URI_KEY_1, URI_1, mockImageViewTarget())
     val hunter = TestableBitmapHunter(picasso, dispatcher, cache, action1)
     assertThat(hunter.action).isEqualTo(action1)
     hunter.detach(action1)
@@ -190,8 +198,8 @@ class BitmapHunterTest {
   }
 
   @Test fun attachMultipleRequests() {
-    val action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget())
-    val action2 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget())
+    val action1 = mockAction(picasso, URI_KEY_1, URI_1, mockImageViewTarget())
+    val action2 = mockAction(picasso, URI_KEY_1, URI_1, mockImageViewTarget())
     val hunter = TestableBitmapHunter(picasso, dispatcher, cache, action1)
     assertThat(hunter.actions).isNull()
     hunter.attach(action2)
@@ -200,7 +208,7 @@ class BitmapHunterTest {
   }
 
   @Test fun detachSingleRequest() {
-    val action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget())
+    val action = mockAction(picasso, URI_KEY_1, URI_1, mockImageViewTarget())
     val hunter = TestableBitmapHunter(picasso, dispatcher, cache, action)
     assertThat(hunter.action).isNotNull()
     hunter.detach(action)
@@ -208,8 +216,8 @@ class BitmapHunterTest {
   }
 
   @Test fun detachMultipleRequests() {
-    val action = mockAction(URI_KEY_1, URI_1, mockImageViewTarget())
-    val action2 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget())
+    val action = mockAction(picasso, URI_KEY_1, URI_1, mockImageViewTarget())
+    val action2 = mockAction(picasso, URI_KEY_1, URI_1, mockImageViewTarget())
     val hunter = TestableBitmapHunter(picasso, dispatcher, cache, action)
     hunter.attach(action2)
     hunter.detach(action2)
@@ -221,7 +229,7 @@ class BitmapHunterTest {
   }
 
   @Test fun cancelSingleRequest() {
-    val action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget())
+    val action1 = mockAction(picasso, URI_KEY_1, URI_1, mockImageViewTarget())
     val hunter = TestableBitmapHunter(picasso, dispatcher, cache, action1)
     hunter.future = FutureTask(mock(Runnable::class.java), mock(Any::class.java))
     assertThat(hunter.isCancelled).isFalse()
@@ -232,8 +240,8 @@ class BitmapHunterTest {
   }
 
   @Test fun cancelMultipleRequests() {
-    val action1 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget())
-    val action2 = mockAction(URI_KEY_1, URI_1, mockImageViewTarget())
+    val action1 = mockAction(picasso, URI_KEY_1, URI_1, mockImageViewTarget())
+    val action2 = mockAction(picasso, URI_KEY_1, URI_1, mockImageViewTarget())
     val hunter = TestableBitmapHunter(picasso, dispatcher, cache, action1)
     hunter.future = FutureTask(mock(Runnable::class.java), mock(Any::class.java))
     hunter.attach(action2)
@@ -248,132 +256,128 @@ class BitmapHunterTest {
   // ---------------------------------------
 
   @Test fun forContentProviderRequest() {
-    val action = mockAction(CONTENT_KEY_1, CONTENT_1_URL)
-    val hunter = forRequest(
-      mockPicasso(ContentStreamRequestHandler(context)), dispatcher, cache, action
-    )
+    val picasso = mockPicasso(context, ContentStreamRequestHandler(context))
+    val action = mockAction(picasso, CONTENT_KEY_1, CONTENT_1_URL)
+    val hunter = forRequest(picasso, dispatcher, cache, action)
     assertThat(hunter.requestHandler).isInstanceOf(ContentStreamRequestHandler::class.java)
   }
 
   @Test fun forMediaStoreRequest() {
-    val action = mockAction(MEDIA_STORE_CONTENT_KEY_1, MEDIA_STORE_CONTENT_1_URL)
-    val hunter = forRequest(
-      mockPicasso(MediaStoreRequestHandler(context)), dispatcher, cache, action
-    )
+    val picasso = mockPicasso(context, MediaStoreRequestHandler(context))
+    val action = mockAction(picasso, MEDIA_STORE_CONTENT_KEY_1, MEDIA_STORE_CONTENT_1_URL)
+    val hunter = forRequest(picasso, dispatcher, cache, action)
     assertThat(hunter.requestHandler).isInstanceOf(MediaStoreRequestHandler::class.java)
   }
 
   @Test fun forContactsPhotoRequest() {
-    val action = mockAction(CONTACT_KEY_1, CONTACT_URI_1)
-    val hunter = forRequest(
-      mockPicasso(ContactsPhotoRequestHandler(context)), dispatcher, cache, action
-    )
+    val picasso = mockPicasso(context, ContactsPhotoRequestHandler(context))
+    val action = mockAction(picasso, CONTACT_KEY_1, CONTACT_URI_1)
+    val hunter = forRequest(picasso, dispatcher, cache, action)
     assertThat(hunter.requestHandler).isInstanceOf(ContactsPhotoRequestHandler::class.java)
   }
 
   @Test fun forContactsThumbnailPhotoRequest() {
-    val action = mockAction(CONTACT_PHOTO_KEY_1, CONTACT_PHOTO_URI_1)
-    val hunter = forRequest(
-      mockPicasso(ContactsPhotoRequestHandler(context)), dispatcher, cache, action
-    )
+    val picasso = mockPicasso(context, ContactsPhotoRequestHandler(context))
+    val action = mockAction(picasso, CONTACT_PHOTO_KEY_1, CONTACT_PHOTO_URI_1)
+    val hunter = forRequest(picasso, dispatcher, cache, action)
     assertThat(hunter.requestHandler).isInstanceOf(ContactsPhotoRequestHandler::class.java)
   }
 
   @Test fun forNetworkRequest() {
-    val action = mockAction(URI_KEY_1, URI_1)
     val requestHandler = NetworkRequestHandler(UNUSED_CALL_FACTORY)
-    val hunter = forRequest(mockPicasso(requestHandler), dispatcher, cache, action)
+    val picasso = mockPicasso(context, requestHandler)
+    val action = mockAction(picasso, URI_KEY_1, URI_1)
+    val hunter = forRequest(picasso, dispatcher, cache, action)
     assertThat(hunter.requestHandler).isSameInstanceAs(requestHandler)
   }
 
   @Test fun forFileWithAuthorityRequest() {
-    val action = mockAction(FILE_KEY_1, FILE_1_URL)
-    val hunter = forRequest(
-      mockPicasso(FileRequestHandler(context)), dispatcher, cache, action
-    )
+    val picasso = mockPicasso(context, FileRequestHandler(context))
+    val action = mockAction(picasso, FILE_KEY_1, FILE_1_URL)
+    val hunter = forRequest(picasso, dispatcher, cache, action)
     assertThat(hunter.requestHandler).isInstanceOf(FileRequestHandler::class.java)
   }
 
   @Test fun forAndroidBitmapResourceRequest() {
     val resources = mockResources(BITMAP_RESOURCE_VALUE)
     `when`(context.resources).thenReturn(resources)
-    val action = mockAction(key = RESOURCE_ID_KEY_1, resourceId = RESOURCE_ID_1)
-    val hunter = forRequest(
-      mockPicasso(ResourceRequestHandler(context)), dispatcher, cache, action
-    )
+    val picasso = mockPicasso(context, ResourceRequestHandler(context))
+    val action = mockAction(picasso = picasso, key = RESOURCE_ID_KEY_1, resourceId = RESOURCE_ID_1)
+    val hunter = forRequest(picasso, dispatcher, cache, action)
     assertThat(hunter.requestHandler).isInstanceOf(ResourceRequestHandler::class.java)
   }
 
   @Test fun forAndroidBitmapResourceUriWithId() {
-    val action = mockAction(RESOURCE_ID_URI_KEY, RESOURCE_ID_URI)
-    val hunter = forRequest(
-      mockPicasso(ResourceRequestHandler(context)), dispatcher, cache, action
-    )
+    val picasso = mockPicasso(context, ResourceRequestHandler(context))
+    val action = mockAction(picasso, RESOURCE_ID_URI_KEY, RESOURCE_ID_URI)
+    val hunter = forRequest(picasso, dispatcher, cache, action)
     assertThat(hunter.requestHandler).isInstanceOf(ResourceRequestHandler::class.java)
   }
 
   @Test fun forAndroidBitmapResourceUriWithType() {
-    val action = mockAction(RESOURCE_TYPE_URI_KEY, RESOURCE_TYPE_URI)
-    val hunter = forRequest(
-      mockPicasso(ResourceRequestHandler(context)), dispatcher, cache, action
-    )
+    val picasso = mockPicasso(context, ResourceRequestHandler(context))
+    val action = mockAction(picasso, RESOURCE_TYPE_URI_KEY, RESOURCE_TYPE_URI)
+    val hunter = forRequest(picasso, dispatcher, cache, action)
     assertThat(hunter.requestHandler).isInstanceOf(ResourceRequestHandler::class.java)
   }
 
   @Test fun forAndroidXmlResourceRequest() {
     val resources = mockResources(XML_RESOURCE_VALUE)
     `when`(context.resources).thenReturn(resources)
-    val action = mockAction(key = RESOURCE_ID_KEY_1, resourceId = RESOURCE_ID_1)
     val requestHandler =
       ResourceDrawableRequestHandler.create(context, makeLoaderWithDrawable(null))
-    val hunter = forRequest(mockPicasso(requestHandler), dispatcher, cache, action)
+    val picasso = mockPicasso(context, requestHandler)
+    val action = mockAction(picasso = picasso, key = RESOURCE_ID_KEY_1, resourceId = RESOURCE_ID_1)
+    val hunter = forRequest(picasso, dispatcher, cache, action)
     assertThat(hunter.requestHandler).isInstanceOf(ResourceDrawableRequestHandler::class.java)
   }
 
   @Test fun forAssetRequest() {
-    val action = mockAction(ASSET_KEY_1, ASSET_URI_1)
-    val hunter = forRequest(mockPicasso(AssetRequestHandler(context)), dispatcher, cache, action)
+    val picasso = mockPicasso(context, AssetRequestHandler(context))
+    val action = mockAction(picasso, ASSET_KEY_1, ASSET_URI_1)
+    val hunter = forRequest(picasso, dispatcher, cache, action)
     assertThat(hunter.requestHandler).isInstanceOf(AssetRequestHandler::class.java)
   }
 
   @Test fun forFileWithNoPathSegments() {
-    val action = mockAction("keykeykey", Uri.fromFile(File("/")))
-    val hunter = forRequest(mockPicasso(FileRequestHandler(context)), dispatcher, cache, action)
+    val picasso = mockPicasso(context, FileRequestHandler(context))
+    val action = mockAction(picasso, "keykeykey", Uri.fromFile(File("/")))
+    val hunter = forRequest(picasso, dispatcher, cache, action)
     assertThat(hunter.requestHandler).isInstanceOf(FileRequestHandler::class.java)
   }
 
   @Test fun forCustomRequest() {
-    val action = mockAction(CUSTOM_URI_KEY, CUSTOM_URI)
-    val hunter = forRequest(mockPicasso(CustomRequestHandler()), dispatcher, cache, action)
+    val picasso = mockPicasso(context, CustomRequestHandler())
+    val action = mockAction(picasso, CUSTOM_URI_KEY, CUSTOM_URI)
+    val hunter = forRequest(picasso, dispatcher, cache, action)
     assertThat(hunter.requestHandler).isInstanceOf(CustomRequestHandler::class.java)
   }
 
   @Test fun forOverrideRequest() {
-    val action = mockAction(ASSET_KEY_1, ASSET_URI_1)
     val handler = AssetRequestHandler(context)
-    val handlers = listOf(handler)
-    val eventListeners = emptyList<EventListener>()
     // Must use non-mock constructor because that is where Picasso's list of handlers is created.
     val picasso = Picasso(
       context, dispatcher, UNUSED_CALL_FACTORY, null, cache, null, NO_TRANSFORMERS,
-      handlers, eventListeners, ARGB_8888, false, false
+      listOf(handler), emptyList(), ARGB_8888, false, false
     )
+    val action = mockAction(picasso, ASSET_KEY_1, ASSET_URI_1)
     val hunter = forRequest(picasso, dispatcher, cache, action)
     assertThat(hunter.requestHandler).isEqualTo(handler)
   }
 
   @Test fun sequenceIsIncremented() {
-    val action = mockAction(URI_KEY_1, URI_1)
-    val picasso = mockPicasso()
+    val picasso = mockPicasso(context)
+    val action = mockAction(picasso, URI_KEY_1, URI_1)
     val hunter1 = forRequest(picasso, dispatcher, cache, action)
     val hunter2 = forRequest(picasso, dispatcher, cache, action)
     assertThat(hunter2.sequence).isGreaterThan(hunter1.sequence)
   }
 
   @Test fun getPriorityWithNoRequests() {
-    val action = mockAction(URI_KEY_1, URI_1)
     val requestHandler = NetworkRequestHandler(UNUSED_CALL_FACTORY)
-    val hunter = forRequest(mockPicasso(requestHandler), dispatcher, cache, action)
+    val picasso = mockPicasso(context, requestHandler)
+    val action = mockAction(picasso, URI_KEY_1, URI_1)
+    val hunter = forRequest(picasso, dispatcher, cache, action)
     hunter.detach(action)
     assertThat(hunter.action).isNull()
     assertThat(hunter.actions).isNull()
@@ -381,19 +385,21 @@ class BitmapHunterTest {
   }
 
   @Test fun getPriorityWithSingleRequest() {
-    val action = mockAction(key = URI_KEY_1, uri = URI_1, priority = HIGH)
     val requestHandler = NetworkRequestHandler(UNUSED_CALL_FACTORY)
-    val hunter = forRequest(mockPicasso(requestHandler), dispatcher, cache, action)
+    val picasso = mockPicasso(context, requestHandler)
+    val action = mockAction(picasso = picasso, key = URI_KEY_1, uri = URI_1, priority = HIGH)
+    val hunter = forRequest(picasso, dispatcher, cache, action)
     assertThat(hunter.action).isEqualTo(action)
     assertThat(hunter.actions).isNull()
     assertThat(hunter.priority).isEqualTo(HIGH)
   }
 
   @Test fun getPriorityWithMultipleRequests() {
-    val action1 = mockAction(key = URI_KEY_1, uri = URI_1, priority = NORMAL)
-    val action2 = mockAction(key = URI_KEY_1, uri = URI_1, priority = HIGH)
     val requestHandler = NetworkRequestHandler(UNUSED_CALL_FACTORY)
-    val hunter = forRequest(mockPicasso(requestHandler), dispatcher, cache, action1)
+    val picasso = mockPicasso(context, requestHandler)
+    val action1 = mockAction(picasso = picasso, key = URI_KEY_1, uri = URI_1, priority = NORMAL)
+    val action2 = mockAction(picasso = picasso, key = URI_KEY_1, uri = URI_1, priority = HIGH)
+    val hunter = forRequest(picasso, dispatcher, cache, action1)
     hunter.attach(action2)
     assertThat(hunter.action).isEqualTo(action1)
     assertThat(hunter.actions).containsExactly(action2)
@@ -401,10 +407,11 @@ class BitmapHunterTest {
   }
 
   @Test fun getPriorityAfterDetach() {
-    val action1 = mockAction(key = URI_KEY_1, uri = URI_1, priority = NORMAL)
-    val action2 = mockAction(key = URI_KEY_1, uri = URI_1, priority = HIGH)
     val requestHandler = NetworkRequestHandler(UNUSED_CALL_FACTORY)
-    val hunter = forRequest(mockPicasso(requestHandler), dispatcher, cache, action1)
+    val picasso = mockPicasso(context, requestHandler)
+    val action1 = mockAction(picasso = picasso, key = URI_KEY_1, uri = URI_1, priority = NORMAL)
+    val action2 = mockAction(picasso = picasso, key = URI_KEY_1, uri = URI_1, priority = HIGH)
+    val hunter = forRequest(picasso, dispatcher, cache, action1)
     hunter.attach(action2)
     assertThat(hunter.action).isEqualTo(action1)
     assertThat(hunter.actions).containsExactly(action2)

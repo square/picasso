@@ -17,6 +17,7 @@ import com.squareup.picasso3.TestUtils.MEDIA_STORE_CONTENT_1_URL
 import com.squareup.picasso3.TestUtils.MEDIA_STORE_CONTENT_KEY_1
 import com.squareup.picasso3.TestUtils.makeBitmap
 import com.squareup.picasso3.TestUtils.mockAction
+import com.squareup.picasso3.TestUtils.mockPicasso
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
@@ -34,10 +35,12 @@ import org.robolectric.annotation.Config
 @Config(shadows = [ShadowVideoThumbnails::class, ShadowImageThumbnails::class])
 class MediaStoreRequestHandlerTest {
   @Mock lateinit var context: Context
-  @Mock lateinit var picasso: Picasso
+  private lateinit var picasso: Picasso
 
   @Before fun setUp() {
     initMocks(this)
+    `when`(context.applicationContext).thenReturn(context)
+    picasso = mockPicasso(context)
   }
 
   @Test fun decodesVideoThumbnailWithVideoMimeType() {
@@ -50,7 +53,7 @@ class MediaStoreRequestHandlerTest {
       .stableKey(MEDIA_STORE_CONTENT_KEY_1)
       .resize(100, 100)
       .build()
-    val action = mockAction(request)
+    val action = mockAction(picasso, request)
     val requestHandler = create("video/")
     requestHandler.load(picasso, action.request, object : Callback {
       override fun onSuccess(result: RequestHandler.Result?) =
@@ -70,7 +73,7 @@ class MediaStoreRequestHandlerTest {
       .stableKey(MEDIA_STORE_CONTENT_KEY_1)
       .resize(100, 100)
       .build()
-    val action = mockAction(request)
+    val action = mockAction(picasso, request)
     val requestHandler = create("image/png")
     requestHandler.load(picasso, action.request, object : Callback {
       override fun onSuccess(result: RequestHandler.Result?) =
