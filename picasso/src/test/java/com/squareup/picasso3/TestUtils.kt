@@ -137,13 +137,15 @@ internal object TestUtils {
   @JvmStatic fun mockRequest(uri: Uri): Request = Request.Builder(uri).build()
 
   @JvmStatic @JvmOverloads fun mockAction(
+    picasso: Picasso,
     key: String,
     uri: Uri? = null,
     target: Any = mockTarget(),
     tag: String
-  ): FakeAction = mockAction(key, uri, target, 0, null, tag)
+  ): FakeAction = mockAction(picasso, key, uri, target, 0, null, tag)
 
   @JvmStatic @JvmOverloads fun mockAction(
+    picasso: Picasso,
     key: String,
     uri: Uri? = null,
     target: Any = mockTarget(),
@@ -159,11 +161,11 @@ internal object TestUtils {
       builder.tag(tag)
     }
     val request = builder.build()
-    return mockAction(request, target)
+    return mockAction(picasso, request, target)
   }
 
-  @JvmStatic fun mockAction(request: Request, target: Any = mockTarget()): FakeAction =
-    FakeAction(mockPicasso(), request, target)
+  @JvmStatic fun mockAction(picasso: Picasso, request: Request, target: Any = mockTarget()) =
+    FakeAction(picasso, request, target)
 
   @JvmStatic fun mockImageViewTarget(): ImageView = mock(ImageView::class.java)
 
@@ -204,6 +206,7 @@ internal object TestUtils {
   }
 
   @JvmStatic @JvmOverloads fun mockHunter(
+    picasso: Picasso,
     result: Result,
     action: Action,
     e: Exception? = null,
@@ -211,7 +214,7 @@ internal object TestUtils {
     supportsReplay: Boolean = false
   ): BitmapHunter =
     TestableBitmapHunter(
-      picasso = mockPicasso(),
+      picasso = picasso,
       dispatcher = mock(Dispatcher::class.java),
       cache = PlatformLruCache(0),
       action = action,
@@ -221,7 +224,7 @@ internal object TestUtils {
       supportsReplay = supportsReplay
     )
 
-  @JvmStatic fun mockPicasso(): Picasso {
+  @JvmStatic fun mockPicasso(context: Context): Picasso {
     // Inject a RequestHandler that can handle any request.
     val requestHandler: RequestHandler = object : RequestHandler() {
       override fun canHandleRequest(data: Request): Boolean {
@@ -235,13 +238,15 @@ internal object TestUtils {
       }
     }
 
-    return mockPicasso(requestHandler)
+    return mockPicasso(context, requestHandler)
   }
 
-  @JvmStatic fun mockPicasso(requestHandler: RequestHandler): Picasso {
-    val picasso = mock(Picasso::class.java)
-    `when`(picasso.getRequestHandlers()).thenReturn(listOf(requestHandler))
-    return picasso
+  @JvmStatic fun mockPicasso(context: Context, requestHandler: RequestHandler): Picasso {
+    return Picasso.Builder(context)
+      .callFactory(UNUSED_CALL_FACTORY)
+      .withCacheSize(0)
+      .addRequestHandler(requestHandler)
+      .build()
   }
 
   @JvmStatic @JvmOverloads
