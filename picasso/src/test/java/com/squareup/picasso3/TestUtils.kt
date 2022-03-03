@@ -182,7 +182,7 @@ internal object TestUtils {
 
   @JvmStatic fun mockTarget(): BitmapTarget = mock(BitmapTarget::class.java)
 
-  @JvmStatic fun mockCallback(): Callback = mock(Callback::class.java)
+  fun mockCallback(): Callback = mock(Callback::class.java)
 
   @JvmStatic fun mockDeferredRequestCreator(
     creator: RequestCreator?,
@@ -195,7 +195,7 @@ internal object TestUtils {
 
   @JvmStatic fun mockRequestCreator(picasso: Picasso) = RequestCreator(picasso, null, 0)
 
-  @JvmStatic @JvmOverloads fun mockNetworkInfo(isConnected: Boolean = false): NetworkInfo {
+  fun mockNetworkInfo(isConnected: Boolean = false): NetworkInfo {
     val mock = mock(NetworkInfo::class.java)
     `when`(mock.isConnected).thenReturn(isConnected)
     `when`(mock.isConnectedOrConnecting).thenReturn(isConnected)
@@ -208,11 +208,12 @@ internal object TestUtils {
     action: Action,
     e: Exception? = null,
     shouldRetry: Boolean = false,
-    supportsReplay: Boolean = false
+    supportsReplay: Boolean = false,
+    dispatcher: Dispatcher = mock(Dispatcher::class.java),
   ): BitmapHunter =
     TestableBitmapHunter(
       picasso = picasso,
-      dispatcher = mock(Dispatcher::class.java),
+      dispatcher = dispatcher,
       cache = PlatformLruCache(0),
       action = action,
       result = (result as Bitmap).bitmap,
@@ -221,7 +222,7 @@ internal object TestUtils {
       supportsReplay = supportsReplay
     )
 
-  @JvmStatic fun mockPicasso(context: Context): Picasso {
+  fun mockPicasso(context: Context): Picasso {
     // Inject a RequestHandler that can handle any request.
     val requestHandler: RequestHandler = object : RequestHandler() {
       override fun canHandleRequest(data: Request): Boolean {
@@ -238,7 +239,7 @@ internal object TestUtils {
     return mockPicasso(context, requestHandler)
   }
 
-  @JvmStatic fun mockPicasso(context: Context, requestHandler: RequestHandler): Picasso {
+  fun mockPicasso(context: Context, requestHandler: RequestHandler): Picasso {
     return Picasso.Builder(context)
       .callFactory(UNUSED_CALL_FACTORY)
       .withCacheSize(0)
@@ -369,7 +370,7 @@ internal object TestUtils {
     override fun timeout(): Timeout = throw AssertionError()
   }
 
-  internal class TestDelegatingService(private val delegate: ExecutorService) : ExecutorService {
+  class TestDelegatingService(private val delegate: ExecutorService) : ExecutorService {
     @JvmField var submissions = 0
 
     override fun shutdown() = delegate.shutdown()
