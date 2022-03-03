@@ -628,7 +628,7 @@ public class Picasso implements LifecycleObserver {
     }
   }
 
-  void cancelExistingRequest(Object target) {
+  private void cancelExistingRequest(Object target) {
     checkMain();
     Action action = targetToAction.remove(target);
     if (action != null) {
