@@ -35,6 +35,9 @@ import com.squareup.picasso3.TestUtils.STABLE_URI_KEY_1
 import com.squareup.picasso3.TestUtils.UNUSED_CALL_FACTORY
 import com.squareup.picasso3.TestUtils.URI_1
 import com.squareup.picasso3.TestUtils.URI_KEY_1
+import com.squareup.picasso3.TestUtils.any
+import com.squareup.picasso3.TestUtils.argumentCaptor
+import com.squareup.picasso3.TestUtils.eq
 import com.squareup.picasso3.TestUtils.makeBitmap
 import com.squareup.picasso3.TestUtils.mockCallback
 import com.squareup.picasso3.TestUtils.mockFitImageViewTarget
@@ -48,9 +51,7 @@ import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
-import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.doCallRealMethod
 import org.mockito.Mockito.doReturn
@@ -59,7 +60,6 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoMoreInteractions
-import org.mockito.Mockito.verifyZeroInteractions
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
@@ -68,7 +68,7 @@ import java.util.concurrent.CountDownLatch
 
 @RunWith(RobolectricTestRunner::class)
 class RequestCreatorTest {
-  private val actionCaptor = ArgumentCaptor.forClass(Action::class.java)
+  private val actionCaptor = argumentCaptor<Action>()
   private val picasso = spy(mockPicasso(RuntimeEnvironment.application))
   private val bitmap = makeBitmap()
 
@@ -106,7 +106,8 @@ class RequestCreatorTest {
     latch.await()
     
     assertThat(result[0]).isNull()
-    verifyZeroInteractions(picasso)
+    verify(picasso).shutdown
+    verifyNoMoreInteractions(picasso)
   }
 
   @Test fun fetchSubmitsFetchRequest() {
@@ -165,6 +166,7 @@ class RequestCreatorTest {
     val target = mockTarget()
     val placeHolderDrawable = mock(Drawable::class.java)
     RequestCreator(picasso, null, 0).placeholder(placeHolderDrawable).into(target)
+    verify(picasso).shutdown
     verify(picasso).cancelRequest(target)
     verify(target).onPrepareLoad(placeHolderDrawable)
     verifyNoMoreInteractions(picasso)
@@ -232,7 +234,7 @@ class RequestCreatorTest {
       Picasso(
         RuntimeEnvironment.application, mock(Dispatcher::class.java), UNUSED_CALL_FACTORY,
         null, cache, null, NO_TRANSFORMERS, NO_HANDLERS, NO_EVENT_LISTENERS, ARGB_8888,
-        false, false
+        indicatorsEnabled = false, isLoggingEnabled = false
       )
     )
     doReturn(bitmap).`when`(picasso).quickMemoryCacheCheck(URI_KEY_1)
@@ -268,7 +270,7 @@ class RequestCreatorTest {
       Picasso(
         RuntimeEnvironment.application, mock(Dispatcher::class.java), UNUSED_CALL_FACTORY,
         null, cache, null, NO_TRANSFORMERS, NO_HANDLERS, NO_EVENT_LISTENERS, ARGB_8888,
-        false, false
+        indicatorsEnabled = false, isLoggingEnabled = false
       )
     )
     val target = mockImageViewTarget()
@@ -284,7 +286,7 @@ class RequestCreatorTest {
       Picasso(
         RuntimeEnvironment.application, mock(Dispatcher::class.java), UNUSED_CALL_FACTORY,
         null, cache, null, NO_TRANSFORMERS, NO_HANDLERS, NO_EVENT_LISTENERS, ARGB_8888,
-        false, false
+        indicatorsEnabled = false, isLoggingEnabled = false
       )
     )
     val target = mockImageViewTarget()

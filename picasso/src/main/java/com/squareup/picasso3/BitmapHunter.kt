@@ -67,7 +67,7 @@ internal open class BitmapHunter(
     try {
       updateThreadName(data)
 
-      if (picasso.loggingEnabled) {
+      if (picasso.isLoggingEnabled) {
         log(OWNER_HUNTER, VERB_EXECUTING, getLogIdsForHunter(this))
       }
 
@@ -93,7 +93,7 @@ internal open class BitmapHunter(
     if (shouldReadFromMemoryCache(data.memoryPolicy)) {
       cache[key]?.let { bitmap ->
         picasso.cacheHit()
-        if (picasso.loggingEnabled) {
+        if (picasso.isLoggingEnabled) {
           log(OWNER_HUNTER, VERB_DECODED, data.logId(), "from cache")
         }
 
@@ -138,7 +138,7 @@ internal open class BitmapHunter(
 
     val result = resultReference.get() as? Bitmap ?: return null
     val bitmap = result.bitmap
-    if (picasso.loggingEnabled) {
+    if (picasso.isLoggingEnabled) {
       log(OWNER_HUNTER, VERB_DECODED, data.logId())
     }
     picasso.bitmapDecoded(bitmap)
@@ -158,7 +158,7 @@ internal open class BitmapHunter(
   }
 
   fun attach(action: Action) {
-    val loggingEnabled = picasso.loggingEnabled
+    val loggingEnabled = picasso.isLoggingEnabled
     val request = action.request
     if (this.action == null) {
       this.action = action
@@ -203,7 +203,7 @@ internal open class BitmapHunter(
       priority = computeNewPriority()
     }
 
-    if (picasso.loggingEnabled) {
+    if (picasso.isLoggingEnabled) {
       log(OWNER_HUNTER, VERB_REMOVED, action.request.logId(), getLogIdsForHunter(this, "from "))
     }
   }
@@ -267,7 +267,7 @@ internal open class BitmapHunter(
       action: Action
     ): BitmapHunter {
       val request = action.request
-      val requestHandlers = picasso.getRequestHandlers()
+      val requestHandlers = picasso.requestHandlers
 
       // Index-based loop to avoid allocating an iterator.
       for (i in requestHandlers.indices) {
@@ -302,7 +302,7 @@ internal open class BitmapHunter(
         val transformation = transformations[i]
         val newResult = try {
           val transformedResult = transformation.transform(res)
-          if (picasso.loggingEnabled) {
+          if (picasso.isLoggingEnabled) {
             log(OWNER_HUNTER, VERB_TRANSFORMED, data.logId(), "from transformations")
           }
 

@@ -37,7 +37,6 @@ import com.squareup.picasso3.MemoryPolicy.Companion.shouldWriteToMemoryCache
 import com.squareup.picasso3.NetworkPolicy.NO_CACHE
 import com.squareup.picasso3.NetworkRequestHandler.ContentLengthException
 import com.squareup.picasso3.Picasso.Priority.HIGH
-import com.squareup.picasso3.Picasso.TAG
 import com.squareup.picasso3.RequestHandler.Result.Bitmap
 import com.squareup.picasso3.Utils.OWNER_DISPATCHER
 import com.squareup.picasso3.Utils.VERB_CANCELED
@@ -136,7 +135,7 @@ internal class Dispatcher internal constructor(
   fun performSubmit(action: Action, dismissFailed: Boolean = true) {
     if (action.tag in pausedTags) {
       pausedActions[action.getTarget()] = action
-      if (action.picasso.loggingEnabled) {
+      if (action.picasso.isLoggingEnabled) {
         log(
           owner = OWNER_DISPATCHER,
           verb = VERB_PAUSED,
@@ -154,7 +153,7 @@ internal class Dispatcher internal constructor(
     }
 
     if (service.isShutdown) {
-      if (action.picasso.loggingEnabled) {
+      if (action.picasso.isLoggingEnabled) {
         log(
           owner = OWNER_DISPATCHER,
           verb = VERB_IGNORED,
@@ -172,7 +171,7 @@ internal class Dispatcher internal constructor(
       failedActions.remove(action.getTarget())
     }
 
-    if (action.picasso.loggingEnabled) {
+    if (action.picasso.isLoggingEnabled) {
       log(owner = OWNER_DISPATCHER, verb = VERB_ENQUEUED, logId = action.request.logId())
     }
   }
@@ -184,7 +183,7 @@ internal class Dispatcher internal constructor(
       hunter.detach(action)
       if (hunter.cancel()) {
         hunterMap.remove(key)
-        if (action.picasso.loggingEnabled) {
+        if (action.picasso.isLoggingEnabled) {
           log(OWNER_DISPATCHER, VERB_CANCELED, action.request.logId())
         }
       }
@@ -192,7 +191,7 @@ internal class Dispatcher internal constructor(
 
     if (action.tag in pausedTags) {
       pausedActions.remove(action.getTarget())
-      if (action.picasso.loggingEnabled) {
+      if (action.picasso.isLoggingEnabled) {
         log(
           owner = OWNER_DISPATCHER,
           verb = VERB_CANCELED,
@@ -203,7 +202,7 @@ internal class Dispatcher internal constructor(
     }
 
     val remove = failedActions.remove(action.getTarget())
-    if (remove != null && remove.picasso.loggingEnabled) {
+    if (remove != null && remove.picasso.isLoggingEnabled) {
       log(OWNER_DISPATCHER, VERB_CANCELED, remove.request.logId(), "from replaying")
     }
   }
@@ -219,7 +218,7 @@ internal class Dispatcher internal constructor(
     val iterator = hunterMap.values.iterator()
     while(iterator.hasNext()) {
       val hunter = iterator.next()
-      val loggingEnabled = hunter.picasso.loggingEnabled
+      val loggingEnabled = hunter.picasso.isLoggingEnabled
 
       val single = hunter.action
       val joined = hunter.actions
@@ -318,7 +317,7 @@ internal class Dispatcher internal constructor(
     }
 
     if (hunter.shouldRetry(airplaneMode, networkInfo)) {
-      if (hunter.picasso.loggingEnabled) {
+      if (hunter.picasso.isLoggingEnabled) {
         log(
           owner = OWNER_DISPATCHER,
           verb = VERB_RETRYING,
@@ -374,7 +373,7 @@ internal class Dispatcher internal constructor(
       while (iterator.hasNext()) {
         val action = iterator.next()
         iterator.remove()
-        if (action.picasso.loggingEnabled) {
+        if (action.picasso.isLoggingEnabled) {
           log(
             owner = OWNER_DISPATCHER,
             verb = VERB_REPLAYING,
@@ -426,7 +425,7 @@ internal class Dispatcher internal constructor(
 
   private fun logDelivery(bitmapHunter: BitmapHunter) {
     val picasso = bitmapHunter.picasso
-    if (picasso.loggingEnabled) {
+    if (picasso.isLoggingEnabled) {
       log(
         owner = OWNER_DISPATCHER,
         verb = VERB_DELIVERED,

@@ -46,9 +46,18 @@ class RemoteViewsActionTest {
 
   @Before fun setUp() {
     picasso = Picasso(
-      RuntimeEnvironment.application, mock(Dispatcher::class.java), UNUSED_CALL_FACTORY, null,
-      PlatformLruCache(0), null, NO_TRANSFORMERS, NO_HANDLERS, NO_EVENT_LISTENERS, ARGB_8888,
-      false, false
+      context = RuntimeEnvironment.application,
+      dispatcher = mock(Dispatcher::class.java),
+      callFactory = UNUSED_CALL_FACTORY,
+      closeableCache = null,
+      cache = PlatformLruCache(0),
+      listener = null,
+      requestTransformers = NO_TRANSFORMERS,
+      extraRequestHandlers = NO_HANDLERS,
+      eventListeners = NO_EVENT_LISTENERS,
+      defaultBitmapConfig = ARGB_8888,
+      indicatorsEnabled = false,
+      isLoggingEnabled = false
     )
     remoteViews = mock(RemoteViews::class.java)
     `when`(remoteViews.layoutId).thenReturn(android.R.layout.list_content)
