@@ -18,6 +18,6 @@ package com.squareup.picasso3
 import android.graphics.drawable.Drawable
 import androidx.annotation.DrawableRes
 
-interface DrawableLoader {
+fun interface DrawableLoader {
   fun load(@DrawableRes resId: Int): Drawable?
 }
