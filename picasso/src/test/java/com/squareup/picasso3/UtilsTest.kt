@@ -54,7 +54,7 @@ class UtilsTest {
     assertThat(requestTransform5.key).isNotEqualTo(requestTransform6.key)
   }
 
-  @Test @Throws(Exception::class) fun detectedWebPFile() {
+  @Test fun detectedWebPFile() {
     assertThat(isWebPFile(Buffer().writeUtf8("RIFFxxxxWEBP"))).isTrue()
     assertThat(isWebPFile(Buffer().writeUtf8("RIFFxxxxxWEBP"))).isFalse()
     assertThat(isWebPFile(Buffer().writeUtf8("ABCDxxxxWEBP"))).isFalse()
@@ -69,14 +69,14 @@ class UtilsTest {
     assertThat(Utils.MAIN_THREAD_KEY_BUILDER.length).isEqualTo(0)
   }
 
-  @Test @Throws(IOException::class) fun getResourceById() {
+  @Test fun getResourceById() {
     val request = Request.Builder(RESOURCE_ID_URI).build()
     val res = Utils.getResources(mockPackageResourceContext(), request)
     val id = Utils.getResourceId(res, request)
     assertThat(id).isEqualTo(RESOURCE_ID_1)
   }
 
-  @Test @Throws(IOException::class) fun getResourceByTypeAndName() {
+  @Test fun getResourceByTypeAndName() {
     val request = Request.Builder(RESOURCE_TYPE_URI).build()
     val res = Utils.getResources(mockPackageResourceContext(), request)
     val id = Utils.getResourceId(res, request)

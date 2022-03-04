@@ -125,7 +125,6 @@ internal class MediaStoreRequestHandler(context: Context) : ContentStreamRequest
   companion object {
     private val CONTENT_ORIENTATION = arrayOf(MediaStore.Images.ImageColumns.ORIENTATION)
 
-    @JvmStatic
     fun getPicassoKind(targetWidth: Int, targetHeight: Int): PicassoKind {
       return if (targetWidth <= PicassoKind.MICRO.width && targetHeight <= PicassoKind.MICRO.height) {
         PicassoKind.MICRO

@@ -27,6 +27,5 @@ object PicassoProvider {
         .build()
   }
 
-  @JvmStatic
-  fun get() = instance
+    fun get() = instance
 }

@@ -50,7 +50,6 @@ internal class FileRequestHandler(context: Context) : ContentStreamRequestHandle
     }
   }
 
-  @Throws(IOException::class)
   override fun getExifOrientation(uri: Uri): Int {
     val path = uri.path ?: throw FileNotFoundException("path == null, uri: $uri")
     return ExifInterface(path).getAttributeInt(

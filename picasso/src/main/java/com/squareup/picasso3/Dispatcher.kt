@@ -55,7 +55,7 @@ import java.util.concurrent.ExecutorService
 
 internal class Dispatcher internal constructor(
   private val context: Context,
-  @JvmField internal val service: ExecutorService,
+  internal val service: ExecutorService,
   private val mainThreadHandler: Handler,
   private val cache: PlatformLruCache
 ) {
@@ -68,7 +68,7 @@ internal class Dispatcher internal constructor(
   internal val receiver: NetworkBroadcastReceiver
   private val scansNetworkChanges: Boolean
 
-  @JvmField internal var airplaneMode = isAirplaneModeOn(context)
+  internal var airplaneMode = isAirplaneModeOn(context)
 
   init {
     dispatcherThread = DispatcherThread()
@@ -131,7 +131,6 @@ internal class Dispatcher internal constructor(
     )
   }
 
-  @JvmOverloads
   fun performSubmit(action: Action, dismissFailed: Boolean = true) {
     if (action.tag in pausedTags) {
       pausedActions[action.getTarget()] = action

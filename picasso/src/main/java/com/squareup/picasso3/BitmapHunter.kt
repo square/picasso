@@ -37,24 +37,24 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
 internal open class BitmapHunter(
-  @JvmField val picasso: Picasso,
+  val picasso: Picasso,
   private val dispatcher: Dispatcher,
   private val cache: PlatformLruCache,
   action: Action,
-  @JvmField val requestHandler: RequestHandler
+  val requestHandler: RequestHandler
 ) : Runnable {
-  @JvmField val sequence: Int = SEQUENCE_GENERATOR.incrementAndGet()
-  @JvmField var priority: Picasso.Priority = action.request.priority
-  @JvmField var data: Request = action.request
+  val sequence: Int = SEQUENCE_GENERATOR.incrementAndGet()
+  var priority: Picasso.Priority = action.request.priority
+  var data: Request = action.request
   val key: String = action.request.key
-  @JvmField var retryCount: Int = requestHandler.retryCount
+  var retryCount: Int = requestHandler.retryCount
 
   var action: Action? = action
     private set
   var actions: MutableList<Action>? = null
     private set
 
-  @JvmField var future: Future<*>? = null
+  var future: Future<*>? = null
   var result: RequestHandler.Result? = null
     private set
   var exception: Exception? = null
@@ -88,7 +88,6 @@ internal open class BitmapHunter(
     }
   }
 
-  @Throws(IOException::class)
   fun hunt(): Bitmap? {
     if (shouldReadFromMemoryCache(data.memoryPolicy)) {
       cache[key]?.let { bitmap ->
@@ -260,7 +259,7 @@ internal open class BitmapHunter(
       }
     }
 
-    @JvmStatic fun forRequest(
+    fun forRequest(
       picasso: Picasso,
       dispatcher: Dispatcher,
       cache: PlatformLruCache,
@@ -290,7 +289,7 @@ internal open class BitmapHunter(
       Thread.currentThread().name = builder.toString()
     }
 
-    @JvmStatic fun applyTransformations(
+    fun applyTransformations(
       picasso: Picasso,
       data: Request,
       transformations: List<Transformation>,

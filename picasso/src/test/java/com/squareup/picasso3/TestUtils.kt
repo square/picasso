@@ -59,12 +59,12 @@ import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
 internal object TestUtils {
-  @JvmField val URI_1: Uri = Uri.parse("http://example.com/1.png")
-  @JvmField val URI_2: Uri = Uri.parse("http://example.com/2.png")
+  val URI_1: Uri = Uri.parse("http://example.com/1.png")
+  val URI_2: Uri = Uri.parse("http://example.com/2.png")
   const val STABLE_1 = "stableExampleKey1"
   val SIMPLE_REQUEST: Request = Request.Builder(URI_1).build()
-  @JvmField val URI_KEY_1: String = SIMPLE_REQUEST.key
-  @JvmField val URI_KEY_2: String = Request.Builder(URI_2).build().key
+  val URI_KEY_1: String = SIMPLE_REQUEST.key
+  val URI_KEY_2: String = Request.Builder(URI_2).build().key
   val STABLE_URI_KEY_1: String = Request.Builder(URI_1).stableKey(STABLE_1).build().key
   private val FILE_1 = File("C:\\windows\\system32\\logo.exe")
   val FILE_KEY_1: String = Request.Builder(Uri.fromFile(FILE_1)).build().key
@@ -133,17 +133,9 @@ internal object TestUtils {
     return resources
   }
 
-  @JvmStatic fun mockRequest(uri: Uri): Request = Request.Builder(uri).build()
+  fun mockRequest(uri: Uri): Request = Request.Builder(uri).build()
 
-  @JvmStatic @JvmOverloads fun mockAction(
-    picasso: Picasso,
-    key: String,
-    uri: Uri? = null,
-    target: Any = mockTarget(),
-    tag: String
-  ): FakeAction = mockAction(picasso, key, uri, target, 0, null, tag)
-
-  @JvmStatic @JvmOverloads fun mockAction(
+  fun mockAction(
     picasso: Picasso,
     key: String,
     uri: Uri? = null,
@@ -163,10 +155,10 @@ internal object TestUtils {
     return mockAction(picasso, request, target)
   }
 
-  @JvmStatic fun mockAction(picasso: Picasso, request: Request, target: Any = mockTarget()) =
+  fun mockAction(picasso: Picasso, request: Request, target: Any = mockTarget()) =
     FakeAction(picasso, request, target)
 
-  @JvmStatic fun mockImageViewTarget(): ImageView = mock(ImageView::class.java)
+  fun mockImageViewTarget(): ImageView = mock(ImageView::class.java)
 
   fun mockRemoteViews(): RemoteViews = mock(RemoteViews::class.java)
 
@@ -181,11 +173,11 @@ internal object TestUtils {
     return mock
   }
 
-  @JvmStatic fun mockTarget(): BitmapTarget = mock(BitmapTarget::class.java)
+  fun mockTarget(): BitmapTarget = mock(BitmapTarget::class.java)
 
   fun mockCallback(): Callback = mock(Callback::class.java)
 
-  @JvmStatic fun mockDeferredRequestCreator(
+  fun mockDeferredRequestCreator(
     creator: RequestCreator?,
     target: ImageView
   ): DeferredRequestCreator {
@@ -194,7 +186,7 @@ internal object TestUtils {
     return DeferredRequestCreator(creator!!, target, null)
   }
 
-  @JvmStatic fun mockRequestCreator(picasso: Picasso) = RequestCreator(picasso, null, 0)
+  fun mockRequestCreator(picasso: Picasso) = RequestCreator(picasso, null, 0)
 
   fun mockNetworkInfo(isConnected: Boolean = false): NetworkInfo {
     val mock = mock(NetworkInfo::class.java)
@@ -203,7 +195,7 @@ internal object TestUtils {
     return mock
   }
 
-  @JvmStatic @JvmOverloads fun mockHunter(
+  fun mockHunter(
     picasso: Picasso,
     result: Result,
     action: Action,
@@ -248,7 +240,6 @@ internal object TestUtils {
       .build()
   }
 
-  @JvmStatic @JvmOverloads
   fun makeBitmap(
     width: Int = 10,
     height: Int = 10
@@ -259,8 +250,8 @@ internal object TestUtils {
   internal class FakeAction(
     picasso: Picasso, request: Request, private val target: Any
   ) : Action(picasso, request) {
-    @JvmField var completedResult: Result? = null
-    @JvmField var errorException: Exception? = null
+    var completedResult: Result? = null
+    var errorException: Exception? = null
 
     override fun complete(result: Result) {
       completedResult = result
@@ -273,18 +264,18 @@ internal object TestUtils {
     override fun getTarget(): Any = target
   }
 
-  @JvmField val UNUSED_CALL_FACTORY = Call.Factory { throw AssertionError() }
-  @JvmField val NOOP_REQUEST_HANDLER: RequestHandler = object : RequestHandler() {
+  val UNUSED_CALL_FACTORY = Call.Factory { throw AssertionError() }
+  val NOOP_REQUEST_HANDLER: RequestHandler = object : RequestHandler() {
     override fun canHandleRequest(data: Request): Boolean = false
     override fun load(picasso: Picasso, request: Request, callback: Callback) = Unit
   }
-  @JvmField val NOOP_TRANSFORMER = RequestTransformer { Request.Builder(0).build() }
+  val NOOP_TRANSFORMER = RequestTransformer { Request.Builder(0).build() }
   private val NOOP_LISTENER = Picasso.Listener { _: Picasso, _: Uri, _: Exception -> }
-  @JvmField val NO_TRANSFORMERS: List<RequestTransformer> = emptyList()
-  @JvmField val NO_HANDLERS: List<RequestHandler> = emptyList()
-  @JvmField val NO_EVENT_LISTENERS: List<EventListener> = emptyList()
+  val NO_TRANSFORMERS: List<RequestTransformer> = emptyList()
+  val NO_HANDLERS: List<RequestHandler> = emptyList()
+  val NO_EVENT_LISTENERS: List<EventListener> = emptyList()
 
-  @JvmStatic fun defaultPicasso(
+  fun defaultPicasso(
     context: Context,
     hasRequestHandlers: Boolean,
     hasTransformers: Boolean
@@ -311,12 +302,12 @@ internal object TestUtils {
   internal class EventRecorder : EventListener {
     var maxCacheSize = 0
     var cacheSize = 0
-    @JvmField var cacheHits = 0
-    @JvmField var cacheMisses = 0
+    var cacheHits = 0
+    var cacheMisses = 0
     var downloadSize: Long = 0
     var decodedBitmap: android.graphics.Bitmap? = null
     var transformedBitmap: android.graphics.Bitmap? = null
-    @JvmField var closed = false
+    var closed = false
 
     override fun cacheMaxSize(maxSize: Int) {
       maxCacheSize = maxSize
@@ -372,14 +363,13 @@ internal object TestUtils {
   }
 
   class TestDelegatingService(private val delegate: ExecutorService) : ExecutorService {
-    @JvmField var submissions = 0
+    var submissions = 0
 
     override fun shutdown() = delegate.shutdown()
     override fun shutdownNow(): List<Runnable> = throw AssertionError("Not implemented.")
     override fun isShutdown(): Boolean = delegate.isShutdown
     override fun isTerminated(): Boolean = throw AssertionError("Not implemented.")
 
-    @Throws(InterruptedException::class)
     override fun awaitTermination(timeout: Long, unit: TimeUnit): Boolean =
       delegate.awaitTermination(timeout, unit)
 

@@ -572,7 +572,7 @@ class Request internal constructor(builder: Builder) {
     }
   }
 
-  companion object {
+  internal companion object {
     private val TOO_LONG_LOG = SECONDS.toNanos(5)
     private const val KEY_PADDING = 50 // Determined by exact science.
     const val KEY_SEPARATOR = '\n'

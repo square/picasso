@@ -53,7 +53,7 @@ internal object Utils {
   const val THREAD_LEAK_CLEANING_MS = 1000
 
   /** Thread confined to main thread for key creation.  */
-  @JvmField val MAIN_THREAD_KEY_BUILDER = StringBuilder()
+  val MAIN_THREAD_KEY_BUILDER = StringBuilder()
 
   /** Logging  */
   const val OWNER_MAIN = "Main"
@@ -91,7 +91,7 @@ internal object Utils {
   private val WEBP_FILE_HEADER_RIFF: ByteString = "RIFF".encodeUtf8()
   private val WEBP_FILE_HEADER_WEBP: ByteString = "WEBP".encodeUtf8()
 
-  @JvmStatic fun <T> checkNotNull(value: T?, message: String?): T {
+  fun <T> checkNotNull(value: T?, message: String?): T {
     if (value == null) {
       throw NullPointerException(message)
     }
@@ -102,14 +102,13 @@ internal object Utils {
     check(!isMain) { "Method call should not happen from the main thread." }
   }
 
-  @JvmStatic fun checkMain() {
+  fun checkMain() {
     check(isMain) { "Method call should happen from the main thread." }
   }
 
   private val isMain: Boolean
     get() = Looper.getMainLooper().thread === Thread.currentThread()
 
-  @JvmStatic @JvmOverloads
   fun getLogIdsForHunter(hunter: BitmapHunter, prefix: String = ""): String {
     return buildString {
       append(prefix)
@@ -127,11 +126,11 @@ internal object Utils {
     }
   }
 
-  @JvmStatic @JvmOverloads fun log(owner: String, verb: String, logId: String, extras: String? = "") {
+  fun log(owner: String, verb: String, logId: String, extras: String? = "") {
     Log.d(TAG, String.format("%1$-11s %2$-12s %3\$s %4\$s", owner, verb, logId, extras ?: ""))
   }
 
-  @JvmStatic fun createDefaultCacheDir(context: Context): File {
+  fun createDefaultCacheDir(context: Context): File {
     val cache = File(context.applicationContext.cacheDir, PICASSO_CACHE)
     if (!cache.exists()) {
       cache.mkdirs()
@@ -139,7 +138,7 @@ internal object Utils {
     return cache
   }
 
-  @JvmStatic fun calculateDiskCacheSize(dir: File): Long {
+  fun calculateDiskCacheSize(dir: File): Long {
     var size = MIN_DISK_CACHE_SIZE.toLong()
 
     try {
@@ -164,7 +163,7 @@ internal object Utils {
     return max(min(size, MAX_DISK_CACHE_SIZE.toLong()), MIN_DISK_CACHE_SIZE.toLong())
   }
 
-  @JvmStatic fun calculateMemoryCacheSize(context: Context): Int {
+  fun calculateMemoryCacheSize(context: Context): Int {
     val am = ContextCompat.getSystemService(context, ActivityManager::class.java)
     val largeHeap = context.applicationInfo.flags and ApplicationInfo.FLAG_LARGE_HEAP != 0
     val memoryClass = if (largeHeap) am!!.largeMemoryClass else am!!.memoryClass
@@ -172,7 +171,7 @@ internal object Utils {
     return (1024L * 1024L * memoryClass / 7).toInt()
   }
 
-  @JvmStatic fun isAirplaneModeOn(context: Context): Boolean {
+  fun isAirplaneModeOn(context: Context): Boolean {
     return try {
       val contentResolver = context.contentResolver
       if (VERSION.SDK_INT < VERSION_CODES.JELLY_BEAN_MR1) {
@@ -190,17 +189,15 @@ internal object Utils {
     }
   }
 
-  @JvmStatic fun hasPermission(context: Context, permission: String): Boolean {
+  fun hasPermission(context: Context, permission: String): Boolean {
     return context.checkCallingOrSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
   }
 
-  @JvmStatic @Throws(IOException::class)
   fun isWebPFile(source: BufferedSource): Boolean {
     return (source.rangeEquals(0, WEBP_FILE_HEADER_RIFF)
         && source.rangeEquals(8, WEBP_FILE_HEADER_WEBP))
   }
 
-  @JvmStatic @Throws(FileNotFoundException::class)
   fun getResourceId(resources: Resources, data: Request): Int {
     if (data.resourceId != 0 || data.uri == null) {
       return data.resourceId
@@ -227,7 +224,7 @@ internal object Utils {
     }
   }
 
-  @JvmStatic @Throws(FileNotFoundException::class) fun getResources(
+  fun getResources(
     context: Context,
     data: Request
   ): Resources {
@@ -248,7 +245,7 @@ internal object Utils {
    * that was sent to it. This method makes sure that stack local reference never stays there
    * for too long by sending new messages to it every second.
    */
-  @JvmStatic fun flushStackLocalLeaks(looper: Looper) {
+  fun flushStackLocalLeaks(looper: Looper) {
     val handler: Handler = object : Handler(looper) {
       override fun handleMessage(msg: Message) {
         sendMessageDelayed(obtainMessage(), THREAD_LEAK_CLEANING_MS.toLong())

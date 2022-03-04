@@ -78,7 +78,6 @@ internal class ContactsPhotoRequestHandler(private val context: Context) : Reque
     }
   }
 
-  @Throws(IOException::class)
   private fun getSource(uri: Uri): Source {
     val contentResolver = context.contentResolver
     val input = when (matcher.match(uri)) {

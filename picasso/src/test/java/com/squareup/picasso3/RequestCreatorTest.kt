@@ -72,7 +72,6 @@ class RequestCreatorTest {
   private val picasso = spy(mockPicasso(RuntimeEnvironment.application))
   private val bitmap = makeBitmap()
 
-  @Throws(IOException::class)
   @Test fun getOnMainCrashes() {
     try {
       RequestCreator(picasso, URI_1, 0).get()
@@ -90,7 +89,6 @@ class RequestCreatorTest {
     }
   }
 
-  @Throws(InterruptedException::class)
   @Test fun getReturnsNullIfNullUriAndResourceId() {
     val latch = CountDownLatch(1)
     val result = arrayOfNulls<Bitmap>(1)
@@ -106,6 +104,7 @@ class RequestCreatorTest {
     latch.await()
     
     assertThat(result[0]).isNull()
+    verify(picasso).defaultBitmapConfig
     verify(picasso).shutdown
     verifyNoMoreInteractions(picasso)
   }
@@ -166,6 +165,7 @@ class RequestCreatorTest {
     val target = mockTarget()
     val placeHolderDrawable = mock(Drawable::class.java)
     RequestCreator(picasso, null, 0).placeholder(placeHolderDrawable).into(target)
+    verify(picasso).defaultBitmapConfig
     verify(picasso).shutdown
     verify(picasso).cancelRequest(target)
     verify(target).onPrepareLoad(placeHolderDrawable)
@@ -299,7 +299,6 @@ class RequestCreatorTest {
     assertThat(actionCaptor.value).isInstanceOf(ImageViewAction::class.java)
   }
 
-  @Throws(InterruptedException::class)
   @Test fun cancelNotOnMainThreadCrashes() {
     doCallRealMethod().`when`(picasso).cancelRequest(any(BitmapTarget::class.java))
     val latch = CountDownLatch(1)
@@ -315,7 +314,6 @@ class RequestCreatorTest {
     latch.await()
   }
 
-  @Throws(InterruptedException::class)
   @Test fun intoNotOnMainThreadCrashes() {
     doCallRealMethod().`when`(picasso).enqueueAndSubmit(any(Action::class.java))
     val latch = CountDownLatch(1)

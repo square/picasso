@@ -16,12 +16,11 @@
 package com.squareup.picasso3
 
 import android.content.Context
-import android.graphics.drawable.Drawable
 import androidx.core.content.ContextCompat
 import com.squareup.picasso3.BitmapUtils.isXmlResource
 import com.squareup.picasso3.Picasso.LoadedFrom.DISK
 
-class ResourceDrawableRequestHandler private constructor(
+internal class ResourceDrawableRequestHandler private constructor(
   private val context: Context,
   private val loader: DrawableLoader
 ) : RequestHandler() {
@@ -37,25 +36,17 @@ class ResourceDrawableRequestHandler private constructor(
     val drawable = loader.load(request.resourceId)
     if (drawable == null) {
       callback.onError(
-          IllegalArgumentException("invalid resId: ${Integer.toHexString(request.resourceId)}")
+        IllegalArgumentException("invalid resId: ${Integer.toHexString(request.resourceId)}")
       )
     } else {
       callback.onSuccess(Result.Drawable(drawable, DISK))
     }
   }
 
-  companion object {
-    @JvmStatic
+  internal companion object {
     fun create(
       context: Context,
-      loader: DrawableLoader
+      loader: DrawableLoader = DrawableLoader { resId -> ContextCompat.getDrawable(context, resId) }
     ) = ResourceDrawableRequestHandler(context, loader)
-
-    @JvmStatic
-    fun create(context: Context): ResourceDrawableRequestHandler {
-      return create(context, object : DrawableLoader {
-        override fun load(resId: Int): Drawable? = ContextCompat.getDrawable(context, resId)
-      })
-    }
   }
 }
