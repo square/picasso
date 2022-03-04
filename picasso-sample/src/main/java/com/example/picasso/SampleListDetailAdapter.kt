@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2022 Square, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.example.picasso
 
 import android.content.Context
@@ -38,13 +53,13 @@ internal class SampleListDetailAdapter(private val context: Context) : BaseAdapt
 
     // Trigger the download of the URL asynchronously into the image view.
     PicassoProvider.get()
-        .load(url)
-        .placeholder(R.drawable.placeholder)
-        .error(R.drawable.error)
-        .resizeDimen(R.dimen.list_detail_image_size, R.dimen.list_detail_image_size)
-        .centerInside()
-        .tag(context)
-        .into(holder.image)
+      .load(url)
+      .placeholder(R.drawable.placeholder)
+      .error(R.drawable.error)
+      .resizeDimen(R.dimen.list_detail_image_size, R.dimen.list_detail_image_size)
+      .centerInside()
+      .tag(context)
+      .into(holder.image)
 
     return newView
   }

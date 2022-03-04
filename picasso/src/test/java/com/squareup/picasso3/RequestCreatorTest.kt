@@ -102,7 +102,7 @@ class RequestCreatorTest {
       }
     }.start()
     latch.await()
-    
+
     assertThat(result[0]).isNull()
     verify(picasso).defaultBitmapConfig
     verify(picasso).shutdown

@@ -117,7 +117,7 @@ internal class PicassoDrawable(
   companion object {
     // Only accessed from main thread.
     private val DEBUG_PAINT = Paint()
-    private const val FADE_DURATION = 200f //ms
+    private const val FADE_DURATION = 200f // ms
 
     /**
      * Create or update the drawable on the target [ImageView] to display the supplied bitmap

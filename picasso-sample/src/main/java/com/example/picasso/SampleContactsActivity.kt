@@ -1,5 +1,4 @@
 /*
- * Copyright (C) 2013 The Android Open Source Project
  * Copyright (C) 2013 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -66,8 +65,8 @@ class SampleContactsActivity : PicassoSampleActivity(), LoaderCallbacks<Cursor> 
         loadContacts()
       } else {
         Toast
-            .makeText(this, "Read contacts permission denied", Toast.LENGTH_LONG)
-            .show()
+          .makeText(this, "Read contacts permission denied", Toast.LENGTH_LONG)
+          .show()
         finish()
       }
     } else {
@@ -81,12 +80,12 @@ class SampleContactsActivity : PicassoSampleActivity(), LoaderCallbacks<Cursor> 
   ): Loader<Cursor> {
     return if (id == ContactsQuery.QUERY_ID) {
       CursorLoader(
-          this,
-          ContactsQuery.CONTENT_URI,
-          ContactsQuery.PROJECTION,
-          ContactsQuery.SELECTION,
-          null,
-          ContactsQuery.SORT_ORDER
+        this,
+        ContactsQuery.CONTENT_URI,
+        ContactsQuery.PROJECTION,
+        ContactsQuery.SELECTION,
+        null,
+        ContactsQuery.SORT_ORDER
       )
     } else throw RuntimeException("this shouldn't happen")
   }
@@ -114,11 +113,11 @@ class SampleContactsActivity : PicassoSampleActivity(), LoaderCallbacks<Cursor> 
       const val SORT_ORDER = Contacts.SORT_KEY_PRIMARY
 
       val PROJECTION = arrayOf(
-          Contacts._ID,
-          Contacts.LOOKUP_KEY,
-          Contacts.DISPLAY_NAME_PRIMARY,
-          Contacts.PHOTO_THUMBNAIL_URI,
-          SORT_ORDER
+        Contacts._ID,
+        Contacts.LOOKUP_KEY,
+        Contacts.DISPLAY_NAME_PRIMARY,
+        Contacts.PHOTO_THUMBNAIL_URI,
+        SORT_ORDER
       )
 
       const val ID = 0

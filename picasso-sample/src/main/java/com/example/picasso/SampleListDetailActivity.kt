@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2022 Square, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.example.picasso
 
 import android.os.Bundle
@@ -17,18 +32,18 @@ class SampleListDetailActivity : PicassoSampleActivity() {
 
     if (savedInstanceState == null) {
       supportFragmentManager
-          .beginTransaction()
-          .add(R.id.sample_content, ListFragment.newInstance())
-          .commit()
+        .beginTransaction()
+        .add(R.id.sample_content, ListFragment.newInstance())
+        .commit()
     }
   }
 
   fun showDetails(url: String) {
     supportFragmentManager
-        .beginTransaction()
-        .replace(R.id.sample_content, DetailFragment.newInstance(url))
-        .addToBackStack(null)
-        .commit()
+      .beginTransaction()
+      .replace(R.id.sample_content, DetailFragment.newInstance(url))
+      .addToBackStack(null)
+      .commit()
   }
 
   class ListFragment : Fragment() {
@@ -40,7 +55,7 @@ class SampleListDetailActivity : PicassoSampleActivity() {
       val activity = activity as SampleListDetailActivity
       val adapter = SampleListDetailAdapter(activity)
       val listView = LayoutInflater.from(activity)
-          .inflate(R.layout.sample_list_detail_list, container, false) as ListView
+        .inflate(R.layout.sample_list_detail_list, container, false) as ListView
 
       listView.adapter = adapter
       listView.setOnScrollListener(SampleScrollListener(activity))
@@ -67,7 +82,7 @@ class SampleListDetailActivity : PicassoSampleActivity() {
     ): View? {
       val activity = activity as SampleListDetailActivity
       val view = LayoutInflater.from(activity)
-          .inflate(R.layout.sample_list_detail_detail, container, false)
+        .inflate(R.layout.sample_list_detail_detail, container, false)
 
       val urlView = view.findViewById<TextView>(R.id.url)
       val imageView = view.findViewById<ImageView>(R.id.photo)
@@ -75,10 +90,10 @@ class SampleListDetailActivity : PicassoSampleActivity() {
       val url = arguments!!.getString(KEY_URL)
       urlView.text = url
       PicassoProvider.get()
-          .load(url)
-          .fit()
-          .tag(activity)
-          .into(imageView)
+        .load(url)
+        .fit()
+        .tag(activity)
+        .into(imageView)
 
       return view
     }

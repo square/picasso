@@ -45,8 +45,8 @@ import java.util.concurrent.atomic.AtomicInteger
 
 /** Fluent API for building an image download request.  */
 class RequestCreator internal constructor(
-  private val picasso: Picasso, 
-  uri: Uri?, 
+  private val picasso: Picasso,
+  uri: Uri?,
   resourceId: Int
 ) {
   private val data = Request.Builder(uri, resourceId, picasso.defaultBitmapConfig)
@@ -342,7 +342,7 @@ class RequestCreator internal constructor(
   /**
    * Synchronously fulfill this request. Must not be called from the main thread.
    */
-  @Throws(IOException::class)  // TODO make non-null and always throw?
+  @Throws(IOException::class) // TODO make non-null and always throw?
   fun get(): Bitmap? {
     val started = System.nanoTime()
     checkNotMain()

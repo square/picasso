@@ -25,7 +25,6 @@ import com.squareup.picasso3.Picasso.LoadedFrom.DISK
 import okio.Source
 import okio.source
 import java.io.FileNotFoundException
-import java.io.IOException
 
 internal open class ContentStreamRequestHandler(val context: Context) : RequestHandler() {
   override fun canHandleRequest(data: Request): Boolean =
@@ -55,7 +54,7 @@ internal open class ContentStreamRequestHandler(val context: Context) : RequestH
   fun getSource(uri: Uri): Source {
     val contentResolver = context.contentResolver
     val inputStream = contentResolver.openInputStream(uri)
-        ?: throw FileNotFoundException("can't open input stream, uri: $uri")
+      ?: throw FileNotFoundException("can't open input stream, uri: $uri")
     return inputStream.source()
   }
 

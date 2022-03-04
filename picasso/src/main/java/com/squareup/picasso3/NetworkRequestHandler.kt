@@ -34,7 +34,7 @@ internal class NetworkRequestHandler(
     val uri = data.uri ?: return false
     val scheme = uri.scheme
     return SCHEME_HTTP.equals(scheme, ignoreCase = true) ||
-        SCHEME_HTTPS.equals(scheme, ignoreCase = true)
+      SCHEME_HTTPS.equals(scheme, ignoreCase = true)
   }
 
   override fun load(picasso: Picasso, request: Request, callback: Callback) {

@@ -26,7 +26,6 @@ import okio.Buffer
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import java.io.IOException
 
 @RunWith(RobolectricTestRunner::class)
 class UtilsTest {

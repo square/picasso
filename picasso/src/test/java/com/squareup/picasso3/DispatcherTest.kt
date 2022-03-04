@@ -27,35 +27,35 @@ import android.net.NetworkInfo
 import android.os.Handler
 import android.os.Looper.getMainLooper
 import com.google.common.truth.Truth.assertThat
-import com.squareup.picasso3.TestUtils.makeBitmap
-import com.squareup.picasso3.TestUtils.mockPicasso
-import com.squareup.picasso3.TestUtils.mockAction
-import com.squareup.picasso3.TestUtils.mockCallback
-import com.squareup.picasso3.TestUtils.mockTarget
-import com.squareup.picasso3.TestUtils.mockHunter
-import com.squareup.picasso3.TestUtils.mockNetworkInfo
-import org.robolectric.RobolectricTestRunner
-import org.mockito.Mock
-import com.squareup.picasso3.TestUtils.TestDelegatingService
-import com.squareup.picasso3.NetworkRequestHandler.ContentLengthException
 import com.squareup.picasso3.Dispatcher.NetworkBroadcastReceiver
 import com.squareup.picasso3.Dispatcher.NetworkBroadcastReceiver.Companion.EXTRA_AIRPLANE_STATE
 import com.squareup.picasso3.MemoryPolicy.NO_STORE
+import com.squareup.picasso3.NetworkRequestHandler.ContentLengthException
 import com.squareup.picasso3.Picasso.LoadedFrom.MEMORY
 import com.squareup.picasso3.Picasso.LoadedFrom.NETWORK
+import com.squareup.picasso3.TestUtils.TestDelegatingService
 import com.squareup.picasso3.TestUtils.URI_1
 import com.squareup.picasso3.TestUtils.URI_2
 import com.squareup.picasso3.TestUtils.URI_KEY_1
 import com.squareup.picasso3.TestUtils.URI_KEY_2
+import com.squareup.picasso3.TestUtils.makeBitmap
+import com.squareup.picasso3.TestUtils.mockAction
+import com.squareup.picasso3.TestUtils.mockCallback
+import com.squareup.picasso3.TestUtils.mockHunter
+import com.squareup.picasso3.TestUtils.mockNetworkInfo
+import com.squareup.picasso3.TestUtils.mockPicasso
+import com.squareup.picasso3.TestUtils.mockTarget
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyString
+import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyZeroInteractions
 import org.mockito.MockitoAnnotations.initMocks
+import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import java.lang.AssertionError
 import java.lang.Exception
@@ -134,7 +134,7 @@ class DispatcherTest {
     val pausedTag = "pausedTag"
     dispatcher.pausedTags.add(pausedTag)
     assertThat(dispatcher.pausedActions).isEmpty()
-    
+
     val fetchAction1 = FetchAction(picasso, Request.Builder(URI_1).tag(pausedTag).build(), null)
     val fetchAction2 = FetchAction(picasso, Request.Builder(URI_1).tag(pausedTag).build(), null)
     dispatcher.performSubmit(fetchAction1)

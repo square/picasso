@@ -34,9 +34,9 @@ class SampleWidgetProvider : AppWidgetProvider() {
     // Load image for all appWidgetIds.
     val picasso = PicassoProvider.get()
     picasso.load(Data.URLS[Random().nextInt(Data.URLS.size)])
-        .placeholder(R.drawable.placeholder)
-        .error(R.drawable.error)
-        .transform(GrayscaleTransformation(picasso))
-        .into(updateViews, R.id.image, appWidgetIds)
+      .placeholder(R.drawable.placeholder)
+      .error(R.drawable.error)
+      .transform(GrayscaleTransformation(picasso))
+      .into(updateViews, R.id.image, appWidgetIds)
   }
 }

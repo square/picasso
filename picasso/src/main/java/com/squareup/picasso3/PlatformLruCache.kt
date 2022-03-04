@@ -59,8 +59,8 @@ internal class PlatformLruCache(maxByteCount: Int) {
     // Keys are prefixed with a URI followed by '\n'.
     for (key in cache.snapshot().keys) {
       if (key.startsWith(uri) &&
-          key.length > uri.length &&
-          key[uri.length] == Request.KEY_SEPARATOR
+        key.length > uri.length &&
+        key[uri.length] == Request.KEY_SEPARATOR
       ) {
         cache.remove(key)
       }

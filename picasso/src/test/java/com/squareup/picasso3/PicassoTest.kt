@@ -70,13 +70,13 @@ class PicassoTest {
   @Mock internal lateinit var dispatcher: Dispatcher
   @Mock internal lateinit var requestHandler: RequestHandler
   @Mock internal lateinit var listener: Listener
-  
+
   private val cache = PlatformLruCache(2048)
   private val eventRecorder = EventRecorder()
   private val bitmap = makeBitmap()
-  
+
   private lateinit var picasso: Picasso
-  
+
   @Before fun setUp() {
     initMocks(this)
     picasso = Picasso(

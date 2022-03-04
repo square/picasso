@@ -365,7 +365,7 @@ class Picasso internal constructor(
 
   internal fun transformRequest(request: Request): Request {
     var nextRequest = request
-    for(i in requestTransformers.indices) {
+    for (i in requestTransformers.indices) {
       val transformer = requestTransformers[i]
       nextRequest = transformer.transformRequest(nextRequest)
     }
@@ -422,7 +422,7 @@ class Picasso internal constructor(
     single?.let { deliverAction(result, it, exception) }
 
     if (joined != null) {
-      for(i in joined.indices) {
+      for (i in joined.indices) {
         deliverAction(result, joined[i], exception)
       }
     }

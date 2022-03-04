@@ -31,8 +31,9 @@ import com.squareup.picasso3.Picasso.LoadedFrom
 internal class MediaStoreRequestHandler(context: Context) : ContentStreamRequestHandler(context) {
   override fun canHandleRequest(data: Request): Boolean {
     val uri = data.uri
-    return uri != null
-        && ContentResolver.SCHEME_CONTENT == uri.scheme && MediaStore.AUTHORITY == uri.authority
+    return uri != null &&
+      ContentResolver.SCHEME_CONTENT == uri.scheme &&
+      MediaStore.AUTHORITY == uri.authority
   }
 
   override fun load(picasso: Picasso, request: Request, callback: Callback) {

@@ -109,17 +109,21 @@ internal open class BitmapHunter(
 
     val latch = CountDownLatch(1)
     try {
-      requestHandler.load(picasso, data, object : RequestHandler.Callback {
-        override fun onSuccess(result: RequestHandler.Result?) {
-          resultReference.set(result)
-          latch.countDown()
-        }
+      requestHandler.load(
+        picasso = picasso,
+        request = data,
+        callback = object : RequestHandler.Callback {
+          override fun onSuccess(result: RequestHandler.Result?) {
+            resultReference.set(result)
+            latch.countDown()
+          }
 
-        override fun onError(t: Throwable) {
-          exceptionReference.set(t)
-          latch.countDown()
+          override fun onError(t: Throwable) {
+            exceptionReference.set(t)
+            latch.countDown()
+          }
         }
-      })
+      )
 
       latch.await()
     } catch (ie: InterruptedException) {
@@ -309,7 +313,7 @@ internal open class BitmapHunter(
         } catch (e: RuntimeException) {
           Picasso.HANDLER.post {
             throw RuntimeException(
-                "Transformation ${transformation.key()} crashed with exception.", e
+              "Transformation ${transformation.key()} crashed with exception.", e
             )
           }
 
@@ -320,7 +324,7 @@ internal open class BitmapHunter(
         if (bitmap.isRecycled) {
           Picasso.HANDLER.post {
             throw IllegalStateException(
-                "Transformation ${transformation.key()} returned a recycled Bitmap."
+              "Transformation ${transformation.key()} returned a recycled Bitmap."
             )
           }
 

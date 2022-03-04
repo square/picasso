@@ -71,18 +71,22 @@ class NetworkRequestHandlerTest {
     responses.add(responseOf(ByteArray(10).toResponseBody(null)))
     val action = TestUtils.mockAction(picasso, URI_KEY_1, URI_1)
     val latch = CountDownLatch(1)
-    networkHandler.load(picasso, action.request, object : RequestHandler.Callback {
-      override fun onSuccess(result: Result?) {
-        try {
-          assertThat(requests.takeFirst().cacheControl.toString()).isEmpty()
-          latch.countDown()
-        } catch (e: InterruptedException) {
-          throw AssertionError(e)
+    networkHandler.load(
+      picasso = picasso,
+      request = action.request,
+      callback = object : RequestHandler.Callback {
+        override fun onSuccess(result: Result?) {
+          try {
+            assertThat(requests.takeFirst().cacheControl.toString()).isEmpty()
+            latch.countDown()
+          } catch (e: InterruptedException) {
+            throw AssertionError(e)
+          }
         }
-      }
 
-      override fun onError(t: Throwable): Unit = throw AssertionError(t)
-    })
+        override fun onError(t: Throwable): Unit = throw AssertionError(t)
+      }
+    )
     assertThat(latch.await(10, SECONDS)).isTrue()
   }
 
@@ -132,14 +136,18 @@ class NetworkRequestHandlerTest {
     responses.add(responseOf(ByteArray(knownContentLengthSize).toResponseBody(null)))
     val action = TestUtils.mockAction(picasso, URI_KEY_1, URI_1)
     val latch = CountDownLatch(1)
-    networkHandler.load(picasso, action.request, object : RequestHandler.Callback {
-      override fun onSuccess(result: Result?) {
-        assertThat(eventRecorder.downloadSize).isEqualTo(knownContentLengthSize)
-        latch.countDown()
-      }
+    networkHandler.load(
+      picasso = picasso,
+      request = action.request,
+      callback = object : RequestHandler.Callback {
+        override fun onSuccess(result: Result?) {
+          assertThat(eventRecorder.downloadSize).isEqualTo(knownContentLengthSize)
+          latch.countDown()
+        }
 
-      override fun onError(t: Throwable): Unit = throw AssertionError(t)
-    })
+        override fun onError(t: Throwable): Unit = throw AssertionError(t)
+      }
+    )
     assertThat(latch.await(10, SECONDS)).isTrue()
   }
 
@@ -162,15 +170,19 @@ class NetworkRequestHandlerTest {
       .build()
     val action = TestUtils.mockAction(picasso, URI_KEY_1, URI_1)
     val latch = CountDownLatch(1)
-    networkHandler.load(picasso, action.request, object : RequestHandler.Callback {
-      override fun onSuccess(result: Result?): Unit = throw AssertionError()
+    networkHandler.load(
+      picasso = picasso,
+      request = action.request,
+      callback = object : RequestHandler.Callback {
+        override fun onSuccess(result: Result?): Unit = throw AssertionError()
 
-      override fun onError(t: Throwable) {
-        assertThat(eventRecorder.downloadSize).isEqualTo(0)
-        assertTrue(closed.get())
-        latch.countDown()
+        override fun onError(t: Throwable) {
+          assertThat(eventRecorder.downloadSize).isEqualTo(0)
+          assertTrue(closed.get())
+          latch.countDown()
+        }
       }
-    })
+    )
     assertThat(latch.await(10, SECONDS)).isTrue()
   }
 
@@ -183,14 +195,18 @@ class NetworkRequestHandlerTest {
       .build()
     val action = TestUtils.mockAction(picasso, URI_KEY_1, URI_1)
     val latch = CountDownLatch(1)
-    networkHandler.load(picasso, action.request, object : RequestHandler.Callback {
-      override fun onSuccess(result: Result?) {
-        assertThat(eventRecorder.downloadSize).isEqualTo(0)
-        latch.countDown()
-      }
+    networkHandler.load(
+      picasso = picasso,
+      request = action.request,
+      callback = object : RequestHandler.Callback {
+        override fun onSuccess(result: Result?) {
+          assertThat(eventRecorder.downloadSize).isEqualTo(0)
+          latch.countDown()
+        }
 
-      override fun onError(t: Throwable): Unit = throw AssertionError(t)
-    })
+        override fun onError(t: Throwable): Unit = throw AssertionError(t)
+      }
+    )
     assertThat(latch.await(10, SECONDS)).isTrue()
   }
 

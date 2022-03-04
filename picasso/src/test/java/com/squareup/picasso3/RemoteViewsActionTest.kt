@@ -115,8 +115,11 @@ class RemoteViewsActionTest {
   }
 
   private class TestableRemoteViewsAction(
-    picasso: Picasso, data: Request, @DrawableRes errorResId: Int,
-    target: RemoteViewsTarget, callback: Callback?
+    picasso: Picasso,
+    data: Request,
+    @DrawableRes errorResId: Int,
+    target: RemoteViewsTarget,
+    callback: Callback?
   ) : RemoteViewsAction(picasso, data, errorResId, target, callback) {
     override fun update() {}
     override fun getTarget(): Any = target

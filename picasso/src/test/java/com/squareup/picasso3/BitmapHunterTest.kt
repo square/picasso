@@ -1009,7 +1009,7 @@ class BitmapHunterTest {
   }
 
   // TODO: fix regression from https://github.com/square/picasso/pull/2137
-  //@Test public void transformDrawables() {
+  // @Test public void transformDrawables() {
   //  final AtomicInteger transformationCount = new AtomicInteger();
   //  Transformation identity = new Transformation() {
   //    @Override public RequestHandler.Result.Bitmap transform(RequestHandler.Result.Bitmap source) {
@@ -1027,7 +1027,7 @@ class BitmapHunterTest {
   //  Request data = new Request.Builder(URI_1).build();
   //  BitmapHunter.applyTransformations(picasso, data, transformations, result);
   //  assertThat(transformationCount.get()).isEqualTo(3);
-  //}
+  // }
 
   internal class TestableBitmapHunter(
     picasso: Picasso,
