@@ -44,7 +44,8 @@ internal class ResourceDrawableRequestHandler private constructor(
   }
 
   internal companion object {
-    fun create(
+    @JvmName("-create")
+    internal fun create(
       context: Context,
       loader: DrawableLoader = DrawableLoader { resId -> ContextCompat.getDrawable(context, resId) }
     ) = ResourceDrawableRequestHandler(context, loader)

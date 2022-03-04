@@ -60,6 +60,7 @@ class RequestCreator internal constructor(
   private var errorDrawable: Drawable? = null
 
   /** Internal use only. Used by [DeferredRequestCreator].  */
+  @get:JvmName("-tag")
   internal val tag: Any?
     get() = data.tag
 
@@ -159,12 +160,14 @@ class RequestCreator internal constructor(
   }
 
   /** Internal use only. Used by [DeferredRequestCreator].  */
+  @JvmName("-unfit")
   internal fun unfit(): RequestCreator {
     deferred = false
     return this
   }
 
   /** Internal use only. Used by [DeferredRequestCreator].  */
+  @JvmName("-clearTag")
   internal fun clearTag(): RequestCreator {
     data.clearTag()
     return this
