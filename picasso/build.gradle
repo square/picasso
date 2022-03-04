@@ -41,6 +41,13 @@ dependencies {
   testImplementation deps.robolectric
   testImplementation deps.mockito
   testImplementation deps.mockWebServer
+}
 
-  annotationProcessor deps.nullaway
+spotless {
+  kotlin {
+    targetExclude(
+      // Non-Square licensed files
+      "src/test/java/com/squareup/picasso3/PlatformLruCacheTest.kt",
+    )
+  }
 }

@@ -185,8 +185,8 @@ internal class MatrixTransformation(private val data: Request) : Transformation 
           if (shouldResize(onlyScaleDown, inWidth, inHeight, targetWidth, targetHeight)) {
             matrix.preScale(scale, scale)
           }
-        } else if ((targetWidth != 0 || targetHeight != 0) //
-          && (targetWidth != inWidth || targetHeight != inHeight)
+        } else if ((targetWidth != 0 || targetHeight != 0) && //
+          (targetWidth != inWidth || targetHeight != inHeight)
         ) {
           // If an explicit target size has been specified and they do not match the results bounds,
           // pre-scale the existing matrix appropriately.

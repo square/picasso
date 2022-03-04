@@ -67,7 +67,7 @@ internal abstract class RemoteViewsAction(
       if (other == null || javaClass != other.javaClass) return false
       val remoteViewsTarget = other as RemoteViewsTarget
       return viewId == remoteViewsTarget.viewId && remoteViews ==
-          remoteViewsTarget.remoteViews
+        remoteViewsTarget.remoteViews
     }
 
     override fun hashCode(): Int {
@@ -105,7 +105,7 @@ internal abstract class RemoteViewsAction(
   ) : RemoteViewsAction(picasso, data, errorResId, target, callback) {
     override fun update() {
       val manager = ContextCompat.getSystemService(
-          picasso.context, NotificationManager::class.java
+        picasso.context, NotificationManager::class.java
       )
       manager?.notify(notificationTag, notificationId, notification)
     }

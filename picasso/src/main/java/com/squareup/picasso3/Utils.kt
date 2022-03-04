@@ -36,11 +36,6 @@ import okio.ByteString
 import okio.ByteString.Companion.encodeUtf8
 import java.io.File
 import java.io.FileNotFoundException
-import java.io.IOException
-import java.lang.IllegalArgumentException
-import java.lang.NullPointerException
-import java.lang.NumberFormatException
-import java.lang.StringBuilder
 import kotlin.math.max
 import kotlin.math.min
 
@@ -184,7 +179,7 @@ internal object Utils {
       // airplane mode is off.
       false
     } catch (e: SecurityException) {
-      //https://github.com/square/picasso/issues/1197
+      // https://github.com/square/picasso/issues/1197
       false
     }
   }
@@ -194,8 +189,8 @@ internal object Utils {
   }
 
   fun isWebPFile(source: BufferedSource): Boolean {
-    return (source.rangeEquals(0, WEBP_FILE_HEADER_RIFF)
-        && source.rangeEquals(8, WEBP_FILE_HEADER_WEBP))
+    return source.rangeEquals(0, WEBP_FILE_HEADER_RIFF) &&
+      source.rangeEquals(8, WEBP_FILE_HEADER_WEBP)
   }
 
   fun getResourceId(resources: Resources, data: Request): Int {
@@ -233,7 +228,8 @@ internal object Utils {
     }
 
     return try {
-      val pkg = data.uri.authority ?: throw FileNotFoundException("No package provided: " + data.uri)
+      val pkg =
+        data.uri.authority ?: throw FileNotFoundException("No package provided: " + data.uri)
       context.packageManager.getResourcesForApplication(pkg)
     } catch (e: NameNotFoundException) {
       throw FileNotFoundException("Unable to obtain resources for package: " + data.uri)

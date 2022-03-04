@@ -20,13 +20,13 @@ import android.graphics.Color.RED
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import com.google.common.truth.Truth.assertThat
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import com.squareup.picasso3.Picasso.LoadedFrom.DISK
 import com.squareup.picasso3.Picasso.LoadedFrom.MEMORY
 import com.squareup.picasso3.TestUtils.makeBitmap
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 
 @RunWith(RobolectricTestRunner::class)
 class PicassoDrawableTest {
@@ -35,7 +35,8 @@ class PicassoDrawableTest {
   private val bitmap = makeBitmap()
 
   @Test fun createWithNoPlaceholderAnimation() {
-    val pd = PicassoDrawable(context, bitmap,
+    val pd = PicassoDrawable(
+      context, bitmap,
       placeholder = null,
       loadedFrom = DISK,
       noFade = false,
@@ -47,7 +48,8 @@ class PicassoDrawableTest {
   }
 
   @Test fun createWithPlaceholderAnimation() {
-    val pd = PicassoDrawable(context, bitmap, placeholder,
+    val pd = PicassoDrawable(
+      context, bitmap, placeholder,
       loadedFrom = DISK,
       noFade = false,
       debugging = false
@@ -58,7 +60,8 @@ class PicassoDrawableTest {
   }
 
   @Test fun createWithBitmapCacheHit() {
-    val pd = PicassoDrawable(context, bitmap, placeholder,
+    val pd = PicassoDrawable(
+      context, bitmap, placeholder,
       loadedFrom = MEMORY,
       noFade = false,
       debugging = false

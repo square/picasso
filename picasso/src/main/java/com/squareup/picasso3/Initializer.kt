@@ -21,4 +21,4 @@ import kotlin.annotation.AnnotationRetention.SOURCE
 
 @Retention(SOURCE)
 @RestrictTo(LIBRARY)
-annotation class Initializer 
+annotation class Initializer

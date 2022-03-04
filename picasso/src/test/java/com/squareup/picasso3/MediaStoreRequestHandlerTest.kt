@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2022 Square, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.squareup.picasso3
 
 import android.content.ContentResolver
@@ -55,12 +70,16 @@ class MediaStoreRequestHandlerTest {
       .build()
     val action = mockAction(picasso, request)
     val requestHandler = create("video/")
-    requestHandler.load(picasso, action.request, object : Callback {
-      override fun onSuccess(result: RequestHandler.Result?) =
-        assertBitmapsEqual((result as RequestHandler.Result.Bitmap?)!!.bitmap, bitmap)
+    requestHandler.load(
+      picasso = picasso,
+      request = action.request,
+      callback = object : Callback {
+        override fun onSuccess(result: RequestHandler.Result?) =
+          assertBitmapsEqual((result as RequestHandler.Result.Bitmap?)!!.bitmap, bitmap)
 
-      override fun onError(t: Throwable) = fail(t.message)
-    })
+        override fun onError(t: Throwable) = fail(t.message)
+      }
+    )
   }
 
   @Test fun decodesImageThumbnailWithImageMimeType() {
@@ -75,12 +94,16 @@ class MediaStoreRequestHandlerTest {
       .build()
     val action = mockAction(picasso, request)
     val requestHandler = create("image/png")
-    requestHandler.load(picasso, action.request, object : Callback {
-      override fun onSuccess(result: RequestHandler.Result?) =
-        assertBitmapsEqual((result as RequestHandler.Result.Bitmap?)!!.bitmap, bitmap)
+    requestHandler.load(
+      picasso = picasso,
+      request = action.request,
+      callback = object : Callback {
+        override fun onSuccess(result: RequestHandler.Result?) =
+          assertBitmapsEqual((result as RequestHandler.Result.Bitmap?)!!.bitmap, bitmap)
 
-      override fun onError(t: Throwable) = fail(t.message)
-    })
+        override fun onError(t: Throwable) = fail(t.message)
+      }
+    )
   }
 
   @Test fun getPicassoKindMicro() {

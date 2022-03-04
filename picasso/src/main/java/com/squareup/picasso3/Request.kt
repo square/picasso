@@ -226,15 +226,15 @@ class Request internal constructor(builder: Builder) {
 
     if (data.rotationDegrees != 0f) {
       builder
-          .append("rotation:")
-          .append(data.rotationDegrees)
+        .append("rotation:")
+        .append(data.rotationDegrees)
 
       if (data.hasRotationPivot) {
         builder
-            .append('@')
-            .append(data.rotationPivotX)
-            .append('x')
-            .append(data.rotationPivotY)
+          .append('@')
+          .append(data.rotationPivotX)
+          .append('x')
+          .append(data.rotationPivotY)
       }
 
       builder.append(KEY_SEPARATOR)
@@ -242,23 +242,23 @@ class Request internal constructor(builder: Builder) {
 
     if (data.hasSize()) {
       builder
-          .append("resize:")
-          .append(data.targetWidth)
-          .append('x')
-          .append(data.targetHeight)
+        .append("resize:")
+        .append(data.targetWidth)
+        .append('x')
+        .append(data.targetHeight)
 
       builder.append(KEY_SEPARATOR)
     }
 
     if (data.centerCrop) {
       builder
-          .append("centerCrop:")
-          .append(data.centerCropGravity)
-          .append(KEY_SEPARATOR)
+        .append("centerCrop:")
+        .append(data.centerCropGravity)
+        .append(KEY_SEPARATOR)
     } else if (data.centerInside) {
       builder
-          .append("centerInside")
-          .append(KEY_SEPARATOR)
+        .append("centerInside")
+        .append(KEY_SEPARATOR)
     }
 
     for (i in data.transformations.indices) {
@@ -397,7 +397,7 @@ class Request internal constructor(builder: Builder) {
       require(targetWidth >= 0) { "Width must be positive number or 0." }
       require(targetHeight >= 0) { "Height must be positive number or 0." }
       require(
-          !(targetHeight == 0 && targetWidth == 0)
+        !(targetHeight == 0 && targetWidth == 0)
       ) { "At least one dimension has to be positive number." }
       this.targetWidth = targetWidth
       this.targetHeight = targetHeight

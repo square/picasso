@@ -29,6 +29,4 @@ dependencies {
   testImplementation deps.robolectric
   testImplementation deps.truth
   testImplementation deps.pollexor
-
-  annotationProcessor deps.nullaway
 }

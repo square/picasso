@@ -1,5 +1,3 @@
-import net.ltgt.gradle.errorprone.CheckSeverity
-
 buildscript {
   ext.versions = [
     'compileSdk': 31,
@@ -25,28 +23,26 @@ buildscript {
     androidxExifInterface: 'androidx.exifinterface:exifinterface:1.3.3',
     androidxFragment: 'androidx.fragment:fragment:1.4.0',
     androidxLifecycle: 'androidx.lifecycle:lifecycle-common:2.4.0',
-    errorProne: 'com.google.errorprone:error_prone_core:2.10.0',
-    errorProneJavac: 'com.google.errorprone:javac:9+181-r4173-1',
     junit: 'junit:junit:4.13.2',
     truth: 'com.google.truth:truth:1.1.3',
     robolectric: 'org.robolectric:robolectric:4.6.1',
     mockito: 'org.mockito:mockito-core:3.0.0',
-    nullaway: 'com.uber.nullaway:nullaway:0.9.4',
   ]
 
   ext.isCi = "true" == System.getenv('CI')
 
   repositories {
+    mavenCentral()
     google()
-    maven { url 'https://plugins.gradle.org/m2/' }
+    gradlePluginPortal()
   }
 
   dependencies {
     classpath deps.androidPlugin
     classpath deps.kotlinPlugin
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.40.0'
-    classpath 'net.ltgt.gradle:gradle-errorprone-plugin:2.0.2'
     classpath 'com.vanniktech:gradle-maven-publish-plugin:0.18.0'
+    classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.3.0'
     classpath 'org.jetbrains.kotlinx:binary-compatibility-validator:0.8.0'
   }
 }
@@ -58,36 +54,10 @@ apiValidation {
   ignoredProjects += ['picasso-sample']
 }
 
-allprojects {
+subprojects {
   repositories {
     mavenCentral()
     google()
-  }
-}
-
-subprojects {
-  apply plugin: 'net.ltgt.errorprone'
-
-  tasks.withType(JavaCompile).configureEach {
-    options.errorprone {
-      excludedPaths = ".*/build/.*"
-      check("UnnecessaryDefaultInEnumSwitch", CheckSeverity.ERROR)
-      check("TypeParameterUnusedInFormals", CheckSeverity.ERROR)
-      check("OperatorPrecedence", CheckSeverity.ERROR)
-      check("ReferenceEquality", CheckSeverity.ERROR)
-      check("FloatingPointLiteralPrecision", CheckSeverity.ERROR)
-      check("DateFormatConstant", CheckSeverity.ERROR)
-      check("PrivateConstructorForUtilityClass", CheckSeverity.ERROR)
-      check("DateFormatConstant", CheckSeverity.ERROR)
-    }
-
-    if (!name.toLowerCase().contains("test")) {
-      // NullAway args
-      options.errorprone {
-        check("NullAway", CheckSeverity.ERROR)
-        option("NullAway:AnnotatedPackages", "com.squareup.picasso3")
-      }
-    }
   }
 
   tasks.withType(Test) {
@@ -123,29 +93,23 @@ subprojects {
     }
   }
 
-  plugins.apply('checkstyle')
-
-  task('checkstyle', type: Checkstyle) {
-    configFile rootProject.file('checkstyle.xml')
-    source 'src/main/java'
-    ignoreFailures false
-    showViolations true
-    include '**/*.java'
-
-    classpath = files()
+  apply plugin: 'com.diffplug.spotless'
+  spotless {
+    kotlin {
+      target('**/*.kt')
+      licenseHeaderFile(rootProject.file('gradle/license-header.txt'))
+      // Spotless doesn't read .editorconfig yet: https://github.com/diffplug/spotless/issues/142
+      ktlint('0.41.0').userData([
+          'insert_final_newline': 'true',
+          'end_of_line': 'lf',
+          'charset': 'utf-8',
+          'indent_size': '2',
+      ])
+    }
   }
 
   group = GROUP
   version = VERSION_NAME
-
-  afterEvaluate {
-    tasks.findByName('check').dependsOn('checkstyle')
-  }
-
-  dependencies {
-    errorprone deps.errorProne
-    errorproneJavac deps.errorProneJavac
-  }
 }
 
 tasks.wrapper {

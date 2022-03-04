@@ -215,7 +215,7 @@ internal class Dispatcher internal constructor(
     // Go through all active hunters and detach/pause the requests
     // that have the paused tag.
     val iterator = hunterMap.values.iterator()
-    while(iterator.hasNext()) {
+    while (iterator.hasNext()) {
       val hunter = iterator.next()
       val loggingEnabled = hunter.picasso.isLoggingEnabled
 
@@ -514,7 +514,7 @@ internal class Dispatcher internal constructor(
       when (intent.action) {
         ACTION_AIRPLANE_MODE_CHANGED -> {
           if (!intent.hasExtra(EXTRA_AIRPLANE_STATE)) {
-            return  // No airplane state, ignore it. Should we query Utils.isAirplaneModeOn?
+            return // No airplane state, ignore it. Should we query Utils.isAirplaneModeOn?
           }
           dispatcher.dispatchAirplaneModeChange(intent.getBooleanExtra(EXTRA_AIRPLANE_STATE, false))
         }

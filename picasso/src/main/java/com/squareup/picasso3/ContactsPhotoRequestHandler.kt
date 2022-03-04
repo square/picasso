@@ -53,10 +53,10 @@ internal class ContactsPhotoRequestHandler(private val context: Context) : Reque
 
   override fun canHandleRequest(data: Request): Boolean {
     val uri = data.uri
-    return uri != null
-        && ContentResolver.SCHEME_CONTENT == uri.scheme
-        && Contacts.CONTENT_URI.host == uri.host
-        && matcher.match(data.uri) != UriMatcher.NO_MATCH
+    return uri != null &&
+      ContentResolver.SCHEME_CONTENT == uri.scheme &&
+      Contacts.CONTENT_URI.host == uri.host &&
+      matcher.match(data.uri) != UriMatcher.NO_MATCH
   }
 
   override fun load(

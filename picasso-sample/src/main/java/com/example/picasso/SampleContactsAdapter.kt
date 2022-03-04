@@ -1,5 +1,4 @@
 /*
- * Copyright (C) 2013 The Android Open Source Project
  * Copyright (C) 2013 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,8 +37,8 @@ internal class SampleContactsAdapter(context: Context) : CursorAdapter(context, 
   ): View {
     val itemLayout = inflater.inflate(R.layout.sample_contacts_activity_item, viewGroup, false)
     itemLayout.tag = ViewHolder(
-        text1 = itemLayout.findViewById(android.R.id.text1),
-        icon = itemLayout.findViewById(android.R.id.icon)
+      text1 = itemLayout.findViewById(android.R.id.text1),
+      icon = itemLayout.findViewById(android.R.id.icon)
     )
     return itemLayout
   }
@@ -50,8 +49,8 @@ internal class SampleContactsAdapter(context: Context) : CursorAdapter(context, 
     cursor: Cursor
   ) {
     val contactUri = Contacts.getLookupUri(
-        cursor.getLong(ContactsQuery.ID),
-        cursor.getString(ContactsQuery.LOOKUP_KEY)
+      cursor.getLong(ContactsQuery.ID),
+      cursor.getString(ContactsQuery.LOOKUP_KEY)
     )
     val holder = (view.tag as ViewHolder).apply {
       text1.text = cursor.getString(ContactsQuery.DISPLAY_NAME)
@@ -59,10 +58,10 @@ internal class SampleContactsAdapter(context: Context) : CursorAdapter(context, 
     }
 
     PicassoProvider.get()
-        .load(contactUri)
-        .placeholder(R.drawable.contact_picture_placeholder)
-        .tag(context)
-        .into(holder.icon)
+      .load(contactUri)
+      .placeholder(R.drawable.contact_picture_placeholder)
+      .tag(context)
+      .into(holder.icon)
   }
 
   override fun getCount(): Int {

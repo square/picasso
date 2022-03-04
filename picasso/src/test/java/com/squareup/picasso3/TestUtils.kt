@@ -248,7 +248,9 @@ internal object TestUtils {
   fun makeLoaderWithDrawable(drawable: Drawable?): DrawableLoader = DrawableLoader { drawable }
 
   internal class FakeAction(
-    picasso: Picasso, request: Request, private val target: Any
+    picasso: Picasso,
+    request: Request,
+    private val target: Any
   ) : Action(picasso, request) {
     var completedResult: Result? = null
     var errorException: Exception? = null
@@ -388,7 +390,9 @@ internal object TestUtils {
       throw AssertionError("Not implemented.")
 
     override fun <T> invokeAll(
-      tasks: Collection<Callable<T>?>, timeout: Long, unit: TimeUnit
+      tasks: Collection<Callable<T>?>,
+      timeout: Long,
+      unit: TimeUnit
     ): List<Future<T>> = throw AssertionError("Not implemented.")
 
     override fun <T> invokeAny(tasks: Collection<Callable<T>?>): T =

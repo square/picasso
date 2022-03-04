@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2022 Square, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.example.picasso
 
 import android.app.Activity
@@ -35,20 +50,20 @@ internal class PicassoSampleAdapter(context: Context?) : BaseAdapter() {
 
         val notification =
           NotificationCompat.Builder(activity, CHANNEL_ID)
-              .setSmallIcon(R.drawable.icon)
-              .setContentIntent(PendingIntent.getActivity(activity, -1, intent, 0))
-              .setContent(remoteViews)
-              .setAutoCancel(true)
-              .setChannelId(CHANNEL_ID)
-              .build()
+            .setSmallIcon(R.drawable.icon)
+            .setContentIntent(PendingIntent.getActivity(activity, -1, intent, 0))
+            .setContent(remoteViews)
+            .setAutoCancel(true)
+            .setChannelId(CHANNEL_ID)
+            .build()
 
         val notificationManager =
           activity.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         if (VERSION.SDK_INT >= VERSION_CODES.O) {
           val channel = NotificationChannel(
-              CHANNEL_ID, "Picasso Notification Channel",
-              NotificationManager.IMPORTANCE_DEFAULT
+            CHANNEL_ID, "Picasso Notification Channel",
+            NotificationManager.IMPORTANCE_DEFAULT
           )
           notificationManager.createNotificationChannel(channel)
         }
@@ -57,12 +72,12 @@ internal class PicassoSampleAdapter(context: Context?) : BaseAdapter() {
 
         // Now load an image for this notification.
         PicassoProvider.get()
-            .load(Data.URLS[Random().nextInt(Data.URLS.size)])
-            .resizeDimen(
-                R.dimen.notification_icon_width_height,
-                R.dimen.notification_icon_width_height
-            )
-            .into(remoteViews, R.id.photo, NOTIFICATION_ID, notification)
+          .load(Data.URLS[Random().nextInt(Data.URLS.size)])
+          .resizeDimen(
+            R.dimen.notification_icon_width_height,
+            R.dimen.notification_icon_width_height
+          )
+          .into(remoteViews, R.id.photo, NOTIFICATION_ID, notification)
       }
     };
 
@@ -70,7 +85,6 @@ internal class PicassoSampleAdapter(context: Context?) : BaseAdapter() {
       activity.startActivity(Intent(activity, activityClass))
       activity.finish()
     }
-
   }
 
   private val inflater: LayoutInflater = LayoutInflater.from(context)

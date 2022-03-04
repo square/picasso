@@ -61,7 +61,10 @@ internal object BitmapUtils {
   }
 
   fun calculateInSampleSize(
-    reqWidth: Int, reqHeight: Int, options: BitmapFactory.Options, request: Request
+    reqWidth: Int,
+    reqHeight: Int,
+    options: BitmapFactory.Options,
+    request: Request
   ) {
     calculateInSampleSize(
       reqWidth, reqHeight, options.outWidth, options.outHeight, options, request
@@ -69,14 +72,24 @@ internal object BitmapUtils {
   }
 
   fun shouldResize(
-    onlyScaleDown: Boolean, inWidth: Int, inHeight: Int, targetWidth: Int, targetHeight: Int
+    onlyScaleDown: Boolean,
+    inWidth: Int,
+    inHeight: Int,
+    targetWidth: Int,
+    targetHeight: Int
   ): Boolean {
-    return (!onlyScaleDown || targetWidth != 0 && inWidth > targetWidth
-        || targetHeight != 0 && inHeight > targetHeight)
+    return (
+      !onlyScaleDown || targetWidth != 0 && inWidth > targetWidth ||
+        targetHeight != 0 && inHeight > targetHeight
+      )
   }
 
   fun calculateInSampleSize(
-    reqWidth: Int, reqHeight: Int, width: Int, height: Int, options: BitmapFactory.Options,
+    reqWidth: Int,
+    reqHeight: Int,
+    width: Int,
+    height: Int,
+    options: BitmapFactory.Options,
     request: Request
   ) {
     val sampleSize =
