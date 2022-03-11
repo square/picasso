@@ -46,7 +46,8 @@ internal class MatrixTransformation(private val data: Request) : Transformation 
 
   internal companion object {
     @VisibleForTesting
-    fun transformResult(
+    @JvmName("-transformResult")
+    internal fun transformResult(
       data: Request,
       result: android.graphics.Bitmap,
       exifOrientation: Int
@@ -209,6 +210,7 @@ internal class MatrixTransformation(private val data: Request) : Transformation 
     }
 
     @Suppress("MemberVisibilityCanBePrivate")
+    @JvmName("-getExifRotation")
     internal fun getExifRotation(orientation: Int) =
       when (orientation) {
         ORIENTATION_ROTATE_90, ORIENTATION_TRANSPOSE -> 90
@@ -218,6 +220,7 @@ internal class MatrixTransformation(private val data: Request) : Transformation 
       }
 
     @Suppress("MemberVisibilityCanBePrivate")
+    @JvmName("-getExifTranslation")
     internal fun getExifTranslation(orientation: Int) =
       when (orientation) {
         ORIENTATION_FLIP_HORIZONTAL, ORIENTATION_FLIP_VERTICAL,

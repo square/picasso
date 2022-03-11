@@ -55,20 +55,32 @@ import java.util.concurrent.ExecutorService
 
 internal class Dispatcher internal constructor(
   private val context: Context,
-  internal val service: ExecutorService,
+  @get:JvmName("-service") internal val service: ExecutorService,
   private val mainThreadHandler: Handler,
   private val cache: PlatformLruCache
 ) {
-  private val dispatcherThread: DispatcherThread
+  @get:JvmName("-hunterMap")
   internal val hunterMap = mutableMapOf<String, BitmapHunter>()
-  internal val failedActions = mutableMapOf<Any, Action>()
-  internal val pausedActions = mutableMapOf<Any, Action>()
-  internal val pausedTags = mutableSetOf<Any>()
-  private val handler: Handler
-  internal val receiver: NetworkBroadcastReceiver
-  private val scansNetworkChanges: Boolean
 
+  @get:JvmName("-failedActions")
+  internal val failedActions = mutableMapOf<Any, Action>()
+
+  @get:JvmName("-pausedActions")
+  internal val pausedActions = mutableMapOf<Any, Action>()
+
+  @get:JvmName("-pausedTags")
+  internal val pausedTags = mutableSetOf<Any>()
+
+  @get:JvmName("-receiver")
+  internal val receiver: NetworkBroadcastReceiver
+
+  @get:JvmName("-airplaneMode")
+  @set:JvmName("-airplaneMode")
   internal var airplaneMode = isAirplaneModeOn(context)
+
+  private val dispatcherThread: DispatcherThread
+  private val handler: Handler
+  private val scansNetworkChanges: Boolean
 
   init {
     dispatcherThread = DispatcherThread()
