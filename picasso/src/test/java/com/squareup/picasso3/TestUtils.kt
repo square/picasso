@@ -272,7 +272,7 @@ internal object TestUtils {
     override fun load(picasso: Picasso, request: Request, callback: Callback) = Unit
   }
   val NOOP_TRANSFORMER = RequestTransformer { Request.Builder(0).build() }
-  private val NOOP_LISTENER = Picasso.Listener { _: Picasso, _: Uri, _: Exception -> }
+  private val NOOP_LISTENER = Picasso.Listener { _: Picasso, _: Uri?, _: Exception -> }
   val NO_TRANSFORMERS: List<RequestTransformer> = emptyList()
   val NO_HANDLERS: List<RequestHandler> = emptyList()
   val NO_EVENT_LISTENERS: List<EventListener> = emptyList()
