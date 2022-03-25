@@ -17,6 +17,7 @@ package com.squareup.picasso3
 
 import android.graphics.Bitmap.createBitmap
 import android.graphics.Matrix
+import android.os.Build.VERSION
 import android.view.Gravity
 import androidx.annotation.VisibleForTesting
 import androidx.exifinterface.media.ExifInterface.ORIENTATION_FLIP_HORIZONTAL
@@ -111,8 +112,8 @@ internal class MatrixTransformation(private val data: Request) : Transformation 
         }
 
         // EXIf interpretation should be done before cropping in case the dimensions need to
-        // be recalculated
-        if (exifOrientation != 0) {
+        // be recalculated; SDK 28+ uses ImageDecoder which handles EXIF orientation
+        if (exifOrientation != 0 && VERSION.SDK_INT < 28) {
           val exifRotation = getExifRotation(exifOrientation)
           val exifTranslation = getExifTranslation(exifOrientation)
           if (exifRotation != 0) {
