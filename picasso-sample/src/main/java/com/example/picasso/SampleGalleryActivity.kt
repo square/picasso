@@ -20,14 +20,16 @@ import android.content.Intent
 import android.os.Bundle
 import android.provider.MediaStore.Images.Media
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.widget.ImageView
-import android.widget.ViewAnimator
+import android.widget.ProgressBar
 import com.example.picasso.provider.PicassoProvider
 import com.squareup.picasso3.Callback.EmptyCallback
 
 class SampleGalleryActivity : PicassoSampleActivity() {
   private lateinit var imageView: ImageView
-  lateinit var animator: ViewAnimator
+  private lateinit var progressBar: ProgressBar
 
   private var image: String? = null
 
@@ -35,8 +37,8 @@ class SampleGalleryActivity : PicassoSampleActivity() {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.sample_gallery_activity)
 
-    animator = findViewById(R.id.animator)
     imageView = findViewById(R.id.image)
+    progressBar = findViewById(R.id.progress)
 
     findViewById<View>(R.id.go).setOnClickListener {
       val gallery = Intent(Intent.ACTION_PICK, Media.EXTERNAL_CONTENT_URI)
@@ -70,9 +72,7 @@ class SampleGalleryActivity : PicassoSampleActivity() {
   }
 
   private fun loadImage() {
-    // Index 1 is the progress bar. Show it while we're loading the image.
-    animator.displayedChild = 1
-
+    progressBar.visibility = VISIBLE
     PicassoProvider.get()
       .load(image)
       .fit()
@@ -81,8 +81,7 @@ class SampleGalleryActivity : PicassoSampleActivity() {
         imageView,
         object : EmptyCallback() {
           override fun onSuccess() {
-            // Index 0 is the image view.
-            animator.displayedChild = 0
+            progressBar.visibility = GONE
           }
         }
       )
