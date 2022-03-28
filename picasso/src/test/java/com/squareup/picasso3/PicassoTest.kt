@@ -156,6 +156,23 @@ class PicassoTest {
     verify(listener).onImageLoadFailed(picasso, URI_1, action1.errorException!!)
   }
 
+  @Test fun completeInvokesErrorOnFailedResourceRequests() {
+    val action = mockAction(
+      picasso = picasso,
+      key = URI_KEY_1,
+      uri = null,
+      resourceId = 123,
+      target = mockImageViewTarget()
+    )
+    val exception = mock(Exception::class.java)
+    val hunter = mockHunter(picasso, RequestHandler.Result.Bitmap(bitmap, MEMORY), action, exception)
+    hunter.run()
+    picasso.complete(hunter)
+
+    assertThat(action.errorException).hasCauseThat().isEqualTo(exception)
+    verify(listener).onImageLoadFailed(picasso, null, action.errorException!!)
+  }
+
   @Test fun completeDeliversToSingle() {
     val action = mockAction(picasso, URI_KEY_1, URI_1, mockImageViewTarget())
     val hunter = mockHunter(picasso, RequestHandler.Result.Bitmap(bitmap, MEMORY), action)

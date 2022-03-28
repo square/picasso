@@ -45,7 +45,6 @@ import com.squareup.picasso3.Utils.VERB_RESUMED
 import com.squareup.picasso3.Utils.calculateDiskCacheSize
 import com.squareup.picasso3.Utils.calculateMemoryCacheSize
 import com.squareup.picasso3.Utils.checkMain
-import com.squareup.picasso3.Utils.checkNotNull
 import com.squareup.picasso3.Utils.createDefaultCacheDir
 import com.squareup.picasso3.Utils.log
 import okhttp3.Cache
@@ -435,7 +434,6 @@ class Picasso internal constructor(
       return
     }
 
-    val uri = checkNotNull(hunter.data.uri, "uri == null")
     val exception = hunter.exception
     val result = hunter.result
 
@@ -448,7 +446,7 @@ class Picasso internal constructor(
     }
 
     if (listener != null && exception != null) {
-      listener.onImageLoadFailed(this, uri, exception)
+      listener.onImageLoadFailed(this, hunter.data.uri, exception)
     }
   }
 
@@ -742,7 +740,7 @@ class Picasso internal constructor(
      * Invoked when an image has failed to load. This is useful for reporting image failures to a
      * remote analytics service, for example.
      */
-    fun onImageLoadFailed(picasso: Picasso, uri: Uri, exception: Exception)
+    fun onImageLoadFailed(picasso: Picasso, uri: Uri?, exception: Exception)
   }
 
   /**
