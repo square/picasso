@@ -30,6 +30,7 @@ dependencies {
   implementation deps.androidxCore
   implementation deps.androidxCursorAdapter
   implementation deps.androidxFragment
+  implementation deps.androidxStartup
 
   implementation project(':picasso')
   implementation project(':picasso-stats')

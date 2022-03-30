@@ -19,7 +19,6 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.widget.RemoteViews
-import com.example.picasso.provider.PicassoProvider
 import java.util.Random
 
 class SampleWidgetProvider : AppWidgetProvider() {
@@ -32,7 +31,7 @@ class SampleWidgetProvider : AppWidgetProvider() {
     val updateViews = RemoteViews(context.packageName, R.layout.sample_widget)
 
     // Load image for all appWidgetIds.
-    val picasso = PicassoProvider.get()
+    val picasso = PicassoInitializer.get()
     picasso.load(Data.URLS[Random().nextInt(Data.URLS.size)])
       .placeholder(R.drawable.placeholder)
       .error(R.drawable.error)
