@@ -122,9 +122,8 @@ class MediaStoreRequestHandlerTest {
   }
 
   private fun assertBitmapsEqual(a: Bitmap, b: Bitmap) {
-    if (a.height != b.height) fail()
-    if (a.width != b.width) fail()
-
-    if (shadowOf(a).description != shadowOf(b).description) fail()
+    assertThat(a.height).isEqualTo(b.height)
+    assertThat(a.width).isEqualTo(b.width)
+    assertThat(shadowOf(a).description).isEqualTo(shadowOf(b).description)
   }
 }

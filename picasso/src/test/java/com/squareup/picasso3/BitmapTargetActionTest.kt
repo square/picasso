@@ -107,8 +107,8 @@ class BitmapTargetActionTest {
       picasso = picasso,
       target = object : BitmapTarget {
         override fun onBitmapLoaded(bitmap: Bitmap, from: Picasso.LoadedFrom) = bitmap.recycle()
-        override fun onBitmapFailed(e: Exception, errorDrawable: Drawable?) = throw AssertionError()
-        override fun onPrepareLoad(placeHolderDrawable: Drawable?) = throw AssertionError()
+        override fun onBitmapFailed(e: Exception, errorDrawable: Drawable?) = fail()
+        override fun onPrepareLoad(placeHolderDrawable: Drawable?) = fail()
       },
       data = SIMPLE_REQUEST,
       errorDrawable = null,
