@@ -24,7 +24,6 @@ import android.widget.ImageView
 import android.widget.ListView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import com.example.picasso.provider.PicassoProvider
 
 class SampleListDetailActivity : PicassoSampleActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -89,7 +88,7 @@ class SampleListDetailActivity : PicassoSampleActivity() {
 
       val url = arguments!!.getString(KEY_URL)
       urlView.text = url
-      PicassoProvider.get()
+      PicassoInitializer.get()
         .load(url)
         .fit()
         .tag(activity)

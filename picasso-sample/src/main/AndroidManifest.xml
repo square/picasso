@@ -49,9 +49,15 @@
     </receiver>
 
     <provider
-        android:name=".provider.PicassoContentProvider"
-        android:authorities="${applicationId}.provider"
-        android:exported="false"/>
+      android:name="androidx.startup.InitializationProvider"
+      android:authorities="${applicationId}.androidx-startup"
+      android:exported="false"
+      tools:node="merge">
+
+      <meta-data
+        android:name="com.example.picasso.PicassoInitializer"
+        android:value="androidx.startup" />
+    </provider>
 
   </application>
 </manifest>

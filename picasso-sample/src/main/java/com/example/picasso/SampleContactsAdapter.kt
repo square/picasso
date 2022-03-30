@@ -25,7 +25,6 @@ import android.widget.QuickContactBadge
 import android.widget.TextView
 import androidx.cursoradapter.widget.CursorAdapter
 import com.example.picasso.SampleContactsActivity.ContactsQuery
-import com.example.picasso.provider.PicassoProvider
 
 internal class SampleContactsAdapter(context: Context) : CursorAdapter(context, null, 0) {
   private val inflater = LayoutInflater.from(context)
@@ -57,7 +56,7 @@ internal class SampleContactsAdapter(context: Context) : CursorAdapter(context, 
       icon.assignContactUri(contactUri)
     }
 
-    PicassoProvider.get()
+    PicassoInitializer.get()
       .load(contactUri)
       .placeholder(R.drawable.contact_picture_placeholder)
       .tag(context)

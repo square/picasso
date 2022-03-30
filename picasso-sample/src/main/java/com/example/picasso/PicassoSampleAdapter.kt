@@ -30,7 +30,6 @@ import android.widget.BaseAdapter
 import android.widget.RemoteViews
 import android.widget.TextView
 import androidx.core.app.NotificationCompat
-import com.example.picasso.provider.PicassoProvider
 import java.util.Random
 
 internal class PicassoSampleAdapter(context: Context?) : BaseAdapter() {
@@ -71,7 +70,7 @@ internal class PicassoSampleAdapter(context: Context?) : BaseAdapter() {
         notificationManager.notify(NOTIFICATION_ID, notification)
 
         // Now load an image for this notification.
-        PicassoProvider.get()
+        PicassoInitializer.get()
           .load(Data.URLS[Random().nextInt(Data.URLS.size)])
           .resizeDimen(
             R.dimen.notification_icon_width_height,

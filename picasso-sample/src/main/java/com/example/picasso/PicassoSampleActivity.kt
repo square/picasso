@@ -23,7 +23,6 @@ import android.widget.FrameLayout
 import android.widget.ListView
 import android.widget.ToggleButton
 import androidx.fragment.app.FragmentActivity
-import com.example.picasso.provider.PicassoProvider
 
 abstract class PicassoSampleActivity : FragmentActivity() {
   private lateinit var sampleContent: FrameLayout
@@ -47,7 +46,7 @@ abstract class PicassoSampleActivity : FragmentActivity() {
       activityList.visibility = if (checked) View.VISIBLE else View.GONE
     }
 
-    lifecycle.addObserver(PicassoProvider.get())
+    lifecycle.addObserver(PicassoInitializer.get())
   }
 
   override fun onBackPressed() {

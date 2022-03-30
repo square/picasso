@@ -22,7 +22,6 @@ import android.provider.MediaStore.Images.Media
 import android.view.View
 import android.widget.ImageView
 import android.widget.ViewAnimator
-import com.example.picasso.provider.PicassoProvider
 import com.squareup.picasso3.Callback.EmptyCallback
 
 class SampleGalleryActivity : PicassoSampleActivity() {
@@ -73,7 +72,7 @@ class SampleGalleryActivity : PicassoSampleActivity() {
     // Index 1 is the progress bar. Show it while we're loading the image.
     animator.displayedChild = 1
 
-    PicassoProvider.get()
+    PicassoInitializer.get()
       .load(image)
       .fit()
       .centerInside()

@@ -22,7 +22,6 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
-import com.example.picasso.provider.PicassoProvider
 
 internal class SampleListDetailAdapter(private val context: Context) : BaseAdapter() {
   private val layoutInflater = LayoutInflater.from(context)
@@ -52,7 +51,7 @@ internal class SampleListDetailAdapter(private val context: Context) : BaseAdapt
     holder.text.text = url
 
     // Trigger the download of the URL asynchronously into the image view.
-    PicassoProvider.get()
+    PicassoInitializer.get()
       .load(url)
       .placeholder(R.drawable.placeholder)
       .error(R.drawable.error)
