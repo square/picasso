@@ -557,7 +557,7 @@ class RequestCreatorTest {
 
   @Test fun invalidCenterInside() {
     try {
-      mockRequestCreator(picasso).resize(10, 10).centerInside().centerCrop()
+      mockRequestCreator(picasso).resize(10, 10).centerCrop().centerInside()
       fail("Calling center inside after center crop should throw exception.")
     } catch (ignored: IllegalStateException) {
     }
@@ -612,12 +612,12 @@ class RequestCreatorTest {
     }
     try {
       mockRequestCreator(picasso).error(1).error(ColorDrawable(0))
-      fail("Two placeholders should throw exception.")
+      fail("Two error placeholders should throw exception.")
     } catch (ignored: IllegalStateException) {
     }
     try {
       mockRequestCreator(picasso).error(ColorDrawable(0)).error(1)
-      fail("Two placeholders should throw exception.")
+      fail("Two error placeholders should throw exception.")
     } catch (ignored: IllegalStateException) {
     }
   }
