@@ -18,9 +18,6 @@ package com.squareup.picasso3
 import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.Context
-import android.database.Cursor
-import android.graphics.Bitmap
-import android.net.Uri
 import android.provider.MediaStore
 import android.provider.MediaStore.Video
 import com.squareup.picasso3.BitmapUtils.calculateInSampleSize
@@ -99,24 +96,6 @@ internal class MediaStoreRequestHandler(context: Context) : ContentStreamRequest
     }
   }
 
-  override fun getExifOrientation(uri: Uri): Int {
-    var cursor: Cursor? = null
-    return try {
-      val contentResolver = context.contentResolver
-      cursor = contentResolver.query(uri, CONTENT_ORIENTATION, null, null, null)
-      if (cursor == null || !cursor.moveToFirst()) {
-        0
-      } else {
-        cursor.getInt(0)
-      }
-    } catch (ignored: RuntimeException) {
-      // If the orientation column doesn't exist, assume no rotation.
-      0
-    } finally {
-      cursor?.close()
-    }
-  }
-
   internal enum class PicassoKind(val androidKind: Int, val width: Int, val height: Int) {
     MICRO(MediaStore.Images.Thumbnails.MICRO_KIND, 96, 96),
     MINI(MediaStore.Images.Thumbnails.MINI_KIND, 512, 384),
@@ -124,8 +103,6 @@ internal class MediaStoreRequestHandler(context: Context) : ContentStreamRequest
   }
 
   companion object {
-    private val CONTENT_ORIENTATION = arrayOf(MediaStore.Images.ImageColumns.ORIENTATION)
-
     fun getPicassoKind(targetWidth: Int, targetHeight: Int): PicassoKind {
       return if (targetWidth <= PicassoKind.MICRO.width && targetHeight <= PicassoKind.MICRO.height) {
         PicassoKind.MICRO

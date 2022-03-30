@@ -15,11 +15,9 @@
  */
 package com.squareup.picasso3
 
-import android.content.ContentResolver
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Bitmap.Config.ARGB_8888
-import android.net.Uri
 import com.google.common.truth.Truth.assertThat
 import com.squareup.picasso3.MediaStoreRequestHandler.Companion.getPicassoKind
 import com.squareup.picasso3.MediaStoreRequestHandler.PicassoKind.FULL
@@ -29,7 +27,9 @@ import com.squareup.picasso3.RequestHandler.Callback
 import com.squareup.picasso3.Shadows.ShadowImageThumbnails
 import com.squareup.picasso3.Shadows.ShadowVideoThumbnails
 import com.squareup.picasso3.TestUtils.MEDIA_STORE_CONTENT_1_URL
+import com.squareup.picasso3.TestUtils.MEDIA_STORE_CONTENT_2_URL
 import com.squareup.picasso3.TestUtils.MEDIA_STORE_CONTENT_KEY_1
+import com.squareup.picasso3.TestUtils.MEDIA_STORE_CONTENT_KEY_2
 import com.squareup.picasso3.TestUtils.makeBitmap
 import com.squareup.picasso3.TestUtils.mockAction
 import com.squareup.picasso3.TestUtils.mockPicasso
@@ -37,39 +37,36 @@ import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mock
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.mock
-import org.mockito.MockitoAnnotations.initMocks
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 @Config(shadows = [ShadowVideoThumbnails::class, ShadowImageThumbnails::class])
 class MediaStoreRequestHandlerTest {
-  @Mock lateinit var context: Context
+  private lateinit var context: Context
   private lateinit var picasso: Picasso
 
   @Before fun setUp() {
-    initMocks(this)
-    `when`(context.applicationContext).thenReturn(context)
+    context = RuntimeEnvironment.getApplication().applicationContext
     picasso = mockPicasso(context)
+    Robolectric.setupContentProvider(TestContentProvider::class.java, "media")
   }
 
   @Test fun decodesVideoThumbnailWithVideoMimeType() {
     val bitmap = makeBitmap()
     val request = Request.Builder(
-      uri = MEDIA_STORE_CONTENT_1_URL,
+      uri = MEDIA_STORE_CONTENT_2_URL,
       resourceId = 0,
       bitmapConfig = ARGB_8888
     )
-      .stableKey(MEDIA_STORE_CONTENT_KEY_1)
+      .stableKey(MEDIA_STORE_CONTENT_KEY_2)
       .resize(100, 100)
       .build()
     val action = mockAction(picasso, request)
-    val requestHandler = create("video/")
+    val requestHandler = MediaStoreRequestHandler(context)
     requestHandler.load(
       picasso = picasso,
       request = action.request,
@@ -93,7 +90,7 @@ class MediaStoreRequestHandlerTest {
       .resize(100, 100)
       .build()
     val action = mockAction(picasso, request)
-    val requestHandler = create("image/png")
+    val requestHandler = MediaStoreRequestHandler(context)
     requestHandler.load(
       picasso = picasso,
       request = action.request,
@@ -122,17 +119,6 @@ class MediaStoreRequestHandlerTest {
     assertThat(getPicassoKind(1000, 384)).isEqualTo(FULL)
     assertThat(getPicassoKind(1000, 96)).isEqualTo(FULL)
     assertThat(getPicassoKind(96, 1000)).isEqualTo(FULL)
-  }
-
-  private fun create(mimeType: String): MediaStoreRequestHandler {
-    val contentResolver = mock(ContentResolver::class.java)
-    `when`(contentResolver.getType(any(Uri::class.java))).thenReturn(mimeType)
-    return create(contentResolver)
-  }
-
-  private fun create(contentResolver: ContentResolver): MediaStoreRequestHandler {
-    `when`(context.contentResolver).thenReturn(contentResolver)
-    return MediaStoreRequestHandler(context)
   }
 
   private fun assertBitmapsEqual(a: Bitmap, b: Bitmap) {
