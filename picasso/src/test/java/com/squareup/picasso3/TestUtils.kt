@@ -29,6 +29,8 @@ import android.net.Uri
 import android.os.IBinder
 import android.provider.ContactsContract.Contacts.CONTENT_URI
 import android.provider.ContactsContract.Contacts.Photo
+import android.provider.MediaStore.Images
+import android.provider.MediaStore.Video
 import android.util.TypedValue
 import android.view.ViewTreeObserver
 import android.widget.ImageView
@@ -70,8 +72,10 @@ internal object TestUtils {
   val FILE_KEY_1: String = Request.Builder(Uri.fromFile(FILE_1)).build().key
   val FILE_1_URL: Uri = Uri.parse("file:///" + FILE_1.path)
   val FILE_1_URL_NO_AUTHORITY: Uri = Uri.parse("file:/" + FILE_1.parent)
-  val MEDIA_STORE_CONTENT_1_URL: Uri = Uri.parse("content://media/external/images/media/1")
+  val MEDIA_STORE_CONTENT_1_URL: Uri = Images.Media.EXTERNAL_CONTENT_URI.buildUpon().appendPath("1").build()
+  val MEDIA_STORE_CONTENT_2_URL: Uri = Video.Media.EXTERNAL_CONTENT_URI.buildUpon().appendPath("1").build()
   val MEDIA_STORE_CONTENT_KEY_1: String = Request.Builder(MEDIA_STORE_CONTENT_1_URL).build().key
+  val MEDIA_STORE_CONTENT_KEY_2: String = Request.Builder(MEDIA_STORE_CONTENT_2_URL).build().key
   val CONTENT_1_URL: Uri = Uri.parse("content://zip/zap/zoop.jpg")
   val CONTENT_KEY_1: String = Request.Builder(CONTENT_1_URL).build().key
   val CONTACT_URI_1: Uri = CONTENT_URI.buildUpon().appendPath("1234").build()
