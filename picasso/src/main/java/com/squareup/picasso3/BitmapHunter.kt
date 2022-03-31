@@ -35,6 +35,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
+import kotlinx.coroutines.runBlocking
 
 internal open class BitmapHunter(
   val picasso: Picasso,
@@ -101,7 +102,7 @@ internal open class BitmapHunter(
     }
 
     if (retryCount == 0) {
-      data = data.newBuilder().networkPolicy(NetworkPolicy.OFFLINE).build()
+      data = runBlocking { data.newBuilder().networkPolicy(NetworkPolicy.OFFLINE).build() }
     }
 
     val resultReference = AtomicReference<RequestHandler.Result?>()

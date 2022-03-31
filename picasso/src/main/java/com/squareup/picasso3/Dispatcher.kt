@@ -52,6 +52,7 @@ import com.squareup.picasso3.Utils.hasPermission
 import com.squareup.picasso3.Utils.isAirplaneModeOn
 import com.squareup.picasso3.Utils.log
 import java.util.concurrent.ExecutorService
+import kotlinx.coroutines.launch
 
 internal class Dispatcher internal constructor(
   private val context: Context,
@@ -335,10 +336,12 @@ internal class Dispatcher internal constructor(
           logId = getLogIdsForHunter(hunter)
         )
       }
-      if (hunter.exception is ContentLengthException) {
-        hunter.data = hunter.data.newBuilder().networkPolicy(NO_CACHE).build()
+      hunter.picasso.scope.launch {
+        if (hunter.exception is ContentLengthException) {
+          hunter.data = hunter.data.newBuilder().networkPolicy(NO_CACHE).build()
+        }
+        hunter.future = service.submit(hunter)
       }
-      hunter.future = service.submit(hunter)
     } else {
       performError(hunter)
       // Mark for replay only if we observe network info changes and support replay.

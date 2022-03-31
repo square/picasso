@@ -276,6 +276,7 @@ class Request internal constructor(builder: Builder) {
     var stableKey: String? = null
     var targetWidth = 0
     var targetHeight = 0
+    var sizeSpec: SizeSpec = SizeSpec.Unspecified
     var centerCrop = false
     var centerCropGravity = 0
     var centerInside = false
@@ -387,6 +388,10 @@ class Request internal constructor(builder: Builder) {
     /** Internal use only. Used by [DeferredRequestCreator].  */
     fun clearTag() = apply {
       tag = null
+    }
+
+    fun sizeSpec(spec: SizeSpec) {
+      sizeSpec = spec
     }
 
     /**
@@ -555,7 +560,13 @@ class Request internal constructor(builder: Builder) {
     }
 
     /** Create the immutable [Request] object.  */
-    fun build(): Request {
+    suspend fun build(): Request {
+      val size = sizeSpec.resolve()
+      if (size is SizeSpec.Size.Exact) {
+        targetWidth = size.width
+        targetHeight = size.height
+      }
+
       check(!(centerInside && centerCrop)) {
         "Center crop and center inside can not be used together."
       }

@@ -35,6 +35,7 @@ dependencies {
   implementation deps.androidxAnnotations
   implementation deps.androidxCore
   implementation deps.androidxExifInterface
+  implementation deps.coroutines
 
   testImplementation deps.junit
   testImplementation deps.truth

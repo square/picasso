@@ -24,6 +24,7 @@ buildscript {
     androidxFragment: 'androidx.fragment:fragment:1.4.0',
     androidxLifecycle: 'androidx.lifecycle:lifecycle-common:2.4.0',
     androidxStartup: 'androidx.startup:startup-runtime:1.1.0',
+    coroutines: 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0',
     junit: 'junit:junit:4.13.2',
     truth: 'com.google.truth:truth:1.1.3',
     robolectric: 'org.robolectric:robolectric:4.6.1',
