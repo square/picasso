@@ -112,6 +112,10 @@ internal class NetworkRequestHandler(
     if (cacheControl != null) {
       builder.cacheControl(cacheControl)
     }
+    val requestHeaders = request.headers
+    if (requestHeaders != null) {
+      builder.headers(requestHeaders)
+    }
     return builder.build()
   }
 

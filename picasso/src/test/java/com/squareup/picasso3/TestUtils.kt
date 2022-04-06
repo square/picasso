@@ -109,6 +109,8 @@ internal object TestUtils {
   const val XML_RESOURCE_VALUE = "foo.xml"
   private val DEFAULT_CONFIG = ARGB_8888
   private const val DEFAULT_CACHE_SIZE = 123
+  const val CUSTOM_HEADER_NAME = "Cache-Control"
+  const val CUSTOM_HEADER_VALUE = "no-cache"
 
   fun mockPackageResourceContext(): Context {
     val context = mock(Context::class.java)
@@ -146,7 +148,8 @@ internal object TestUtils {
     target: Any = mockTarget(),
     resourceId: Int = 0,
     priority: Priority? = null,
-    tag: String? = null
+    tag: String? = null,
+    headers: Map<String, String> = emptyMap(),
   ): FakeAction {
     val builder = Request.Builder(uri, resourceId, DEFAULT_CONFIG).stableKey(key)
     if (priority != null) {
@@ -154,6 +157,9 @@ internal object TestUtils {
     }
     if (tag != null) {
       builder.tag(tag)
+    }
+    headers.forEach { (key, value) ->
+      builder.addHeader(key, value)
     }
     val request = builder.build()
     return mockAction(picasso, request, target)
