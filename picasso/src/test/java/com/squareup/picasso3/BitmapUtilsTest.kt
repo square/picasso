@@ -85,7 +85,7 @@ class BitmapUtilsTest {
     assertThat(options.inSampleSize).isEqualTo(2)
   }
 
-  @Test fun nullBitmapOptionsIfNoResizingOrPurgeable() {
+  @Test fun nullBitmapOptionsIfNoResizing() {
     // No resize must return no bitmap options
     val noResize = Request.Builder(URI_1).build()
     val noResizeOptions = createBitmapOptions(noResize)
@@ -98,26 +98,13 @@ class BitmapUtilsTest {
     val resizeOptions = createBitmapOptions(requiresResize)
     assertThat(resizeOptions).isNotNull()
     assertThat(resizeOptions!!.inJustDecodeBounds).isTrue()
-    assertThat(resizeOptions.inPurgeable).isFalse()
-    assertThat(resizeOptions.inInputShareable).isFalse()
   }
 
-  @Test fun inPurgeableIfInPurgeable() {
-    val request = Request.Builder(URI_1).purgeable().build()
-    val options = createBitmapOptions(request)
-    assertThat(options).isNotNull()
-    assertThat(options!!.inPurgeable).isTrue()
-    assertThat(options.inInputShareable).isTrue()
-    assertThat(options.inJustDecodeBounds).isFalse()
-  }
-
-  @Test fun createWithConfigAndNotInJustDecodeBoundsOrInPurgeable() {
-    // Given a config, must return bitmap options and false inJustDecodeBounds/inPurgeable
+  @Test fun createWithConfigAndNotInJustDecodeBounds() {
+    // Given a config, must return bitmap options and false inJustDecodeBounds
     val config = Request.Builder(URI_1).config(RGB_565).build()
     val configOptions = createBitmapOptions(config)
     assertThat(configOptions).isNotNull()
     assertThat(configOptions!!.inJustDecodeBounds).isFalse()
-    assertThat(configOptions.inPurgeable).isFalse()
-    assertThat(configOptions.inInputShareable).isFalse()
   }
 }

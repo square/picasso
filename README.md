@@ -27,6 +27,7 @@ or Maven:
 
 Snapshots of the development version are available in [Sonatype's `snapshots` repository][snap].
 
+Picasso requires at minimum Java 8 and API 21.
 
 
 ProGuard

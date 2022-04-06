@@ -24,10 +24,8 @@ import com.squareup.pollexor.ThumborUrlBuilder.ImageFormat.WEBP
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [17], manifest = Config.NONE)
 class PollexorRequestTransformerTest {
   private val transformer = PollexorRequestTransformer(Thumbor.create(HOST))
   private val secureTransformer = PollexorRequestTransformer(Thumbor.create(HOST, KEY))
@@ -67,22 +65,15 @@ class PollexorRequestTransformerTest {
     val output = alwaysResizeTransformer.transformRequest(input)
     assertThat(output).isNotSameInstanceAs(input)
     assertThat(output.hasSize()).isFalse()
-    val expected = Thumbor.create(HOST).buildImage(IMAGE).toUrl()
+
+    val expected = Thumbor.create(HOST)
+      .buildImage(IMAGE)
+      .filter(ThumborUrlBuilder.format(WEBP))
+      .toUrl()
     assertThat(output.uri.toString()).isEqualTo(expected)
   }
 
   @Test fun simpleResize() {
-    val input = Builder(IMAGE_URI).resize(50, 50).build()
-    val output = transformer.transformRequest(input)
-    assertThat(output).isNotSameInstanceAs(input)
-    assertThat(output.hasSize()).isFalse()
-
-    val expected = Thumbor.create(HOST).buildImage(IMAGE).resize(50, 50).toUrl()
-    assertThat(output.uri.toString()).isEqualTo(expected)
-  }
-
-  @Config(sdk = [18])
-  @Test fun simpleResizeOnJbMr2UsesWebP() {
     val input = Builder(IMAGE_URI).resize(50, 50).build()
     val output = transformer.transformRequest(input)
     assertThat(output).isNotSameInstanceAs(input)
@@ -103,7 +94,11 @@ class PollexorRequestTransformerTest {
     assertThat(output.hasSize()).isFalse()
     assertThat(output.centerCrop).isFalse()
 
-    val expected = Thumbor.create(HOST).buildImage(IMAGE).resize(50, 50).toUrl()
+    val expected = Thumbor.create(HOST)
+      .buildImage(IMAGE)
+      .resize(50, 50)
+      .filter(ThumborUrlBuilder.format(WEBP))
+      .toUrl()
     assertThat(output.uri.toString()).isEqualTo(expected)
   }
 
@@ -114,7 +109,12 @@ class PollexorRequestTransformerTest {
     assertThat(output.hasSize()).isFalse()
     assertThat(output.centerInside).isFalse()
 
-    val expected = Thumbor.create(HOST).buildImage(IMAGE).resize(50, 50).fitIn().toUrl()
+    val expected = Thumbor.create(HOST)
+      .buildImage(IMAGE)
+      .resize(50, 50)
+      .filter(ThumborUrlBuilder.format(WEBP))
+      .fitIn()
+      .toUrl()
     assertThat(output.uri.toString()).isEqualTo(expected)
   }
 
@@ -124,7 +124,11 @@ class PollexorRequestTransformerTest {
     assertThat(output).isNotSameInstanceAs(input)
     assertThat(output.hasSize()).isFalse()
 
-    val expected = Thumbor.create(HOST, KEY).buildImage(IMAGE).resize(50, 50).toUrl()
+    val expected = Thumbor.create(HOST, KEY)
+      .buildImage(IMAGE)
+      .resize(50, 50)
+      .filter(ThumborUrlBuilder.format(WEBP))
+      .toUrl()
     assertThat(output.uri.toString()).isEqualTo(expected)
   }
 
@@ -135,7 +139,12 @@ class PollexorRequestTransformerTest {
     assertThat(output.hasSize()).isFalse()
     assertThat(output.centerInside).isFalse()
 
-    val expected = Thumbor.create(HOST, KEY).buildImage(IMAGE).resize(50, 50).fitIn().toUrl()
+    val expected = Thumbor.create(HOST, KEY)
+      .buildImage(IMAGE)
+      .resize(50, 50)
+      .filter(ThumborUrlBuilder.format(WEBP))
+      .fitIn()
+      .toUrl()
     assertThat(output.uri.toString()).isEqualTo(expected)
   }
 
@@ -148,6 +157,7 @@ class PollexorRequestTransformerTest {
       .buildImage(IMAGE)
       .resize(50, 50)
       .filter("custom")
+      .filter(ThumborUrlBuilder.format(WEBP))
       .toUrl()
     assertThat(output.uri.toString()).isEqualTo(expected)
   }

@@ -21,7 +21,6 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
-import android.os.Build
 import android.os.Build.VERSION
 import android.util.TypedValue
 import androidx.annotation.DrawableRes
@@ -43,11 +42,9 @@ internal object BitmapUtils {
    */
   fun createBitmapOptions(data: Request): BitmapFactory.Options? {
     val justBounds = data.hasSize()
-    return if (justBounds || data.config != null || data.purgeable) {
+    return if (justBounds || data.config != null) {
       BitmapFactory.Options().apply {
         inJustDecodeBounds = justBounds
-        inInputShareable = data.purgeable
-        inPurgeable = data.purgeable
         if (data.config != null) {
           inPreferredConfig = data.config
         }
@@ -121,13 +118,11 @@ internal object BitmapUtils {
 
   private fun decodeStreamPreP(request: Request, bufferedSource: BufferedSource): Bitmap {
     val isWebPFile = Utils.isWebPFile(bufferedSource)
-    val isPurgeable = request.purgeable && VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP
     val options = createBitmapOptions(request)
     val calculateSize = requiresInSampleSize(options)
-    // We decode from a byte array because, a) when decoding a WebP network stream, BitmapFactory
-    // throws a JNI Exception, so we workaround by decoding a byte array, or b) user requested
-    // purgeable, which only affects bitmaps decoded from byte arrays.
-    val bitmap = if (isWebPFile || isPurgeable) {
+    // We decode from a byte array because, when decoding a WebP network stream, BitmapFactory
+    // throws a JNI Exception, so we workaround by decoding a byte array.
+    val bitmap = if (isWebPFile) {
       val bytes = bufferedSource.readByteArray()
       if (calculateSize) {
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)

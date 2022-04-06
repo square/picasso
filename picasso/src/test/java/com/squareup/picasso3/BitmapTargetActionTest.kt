@@ -16,7 +16,6 @@
 package com.squareup.picasso3
 
 import android.content.Context
-import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Bitmap.Config.ARGB_8888
 import android.graphics.drawable.Drawable
@@ -83,7 +82,6 @@ class BitmapTargetActionTest {
       context, dispatcher, UNUSED_CALL_FACTORY, null, cache, null,
       NO_TRANSFORMERS, NO_HANDLERS, NO_EVENT_LISTENERS, ARGB_8888, false, false
     )
-    val res = mock(Resources::class.java)
     val request = BitmapTargetAction(
       picasso = picasso,
       target = target,
@@ -92,8 +90,7 @@ class BitmapTargetActionTest {
       errorResId = RESOURCE_ID_1
     )
 
-    `when`(context.resources).thenReturn(res)
-    `when`(res.getDrawable(RESOURCE_ID_1)).thenReturn(errorDrawable)
+    `when`(context.getDrawable(RESOURCE_ID_1)).thenReturn(errorDrawable)
     val e = RuntimeException()
 
     request.error(e)

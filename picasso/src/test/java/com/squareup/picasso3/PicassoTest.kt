@@ -57,11 +57,9 @@ import org.mockito.Mockito.verifyZeroInteractions
 import org.mockito.MockitoAnnotations.initMocks
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
-import org.robolectric.annotation.Config
 import java.io.File
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [23]) // Works around https://github.com/robolectric/robolectric/issues/2566.
 class PicassoTest {
   @get:Rule
   val temporaryFolder = TemporaryFolder()
@@ -305,11 +303,10 @@ class PicassoTest {
     verify(dispatcher).dispatchCancel(action)
   }
 
-  @Config(sdk = [16]) // This test fails on 23 so restore the default level.
   @Test fun cancelExistingRequestWithRemoteViewTarget() {
     val layoutId = 0
     val viewId = 1
-    val remoteViews = RemoteViews("packageName", layoutId)
+    val remoteViews = RemoteViews("com.squareup.picasso3.test", layoutId)
     val target = RemoteViewsTarget(remoteViews, viewId)
     val action = mockAction(picasso, URI_KEY_1, URI_1, target)
     picasso.enqueueAndSubmit(action)

@@ -21,14 +21,11 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.NameNotFoundException
 import android.content.res.Resources
-import android.os.Build.VERSION
-import android.os.Build.VERSION_CODES
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.os.StatFs
 import android.provider.Settings.Global
-import android.provider.Settings.System
 import android.util.Log
 import androidx.core.content.ContextCompat
 import okio.BufferedSource
@@ -138,16 +135,8 @@ internal object Utils {
 
     try {
       val statFs = StatFs(dir.absolutePath)
-      val blockCount = if (VERSION.SDK_INT < VERSION_CODES.JELLY_BEAN_MR2) {
-        statFs.blockCount.toLong()
-      } else {
-        statFs.blockCountLong
-      }
-      val blockSize = if (VERSION.SDK_INT < VERSION_CODES.JELLY_BEAN_MR2) {
-        statFs.blockSize.toLong()
-      } else {
-        statFs.blockSizeLong
-      }
+      val blockCount = statFs.blockCountLong
+      val blockSize = statFs.blockSizeLong
       val available = blockCount * blockSize
       // Target 2% of the total space.
       size = available / 50
@@ -169,11 +158,7 @@ internal object Utils {
   fun isAirplaneModeOn(context: Context): Boolean {
     return try {
       val contentResolver = context.contentResolver
-      if (VERSION.SDK_INT < VERSION_CODES.JELLY_BEAN_MR1) {
-        System.getInt(contentResolver, System.AIRPLANE_MODE_ON, 0) != 0
-      } else {
-        Global.getInt(contentResolver, Global.AIRPLANE_MODE_ON, 0) != 0
-      }
+      Global.getInt(contentResolver, Global.AIRPLANE_MODE_ON, 0) != 0
     } catch (e: NullPointerException) {
       // https://github.com/square/picasso/issues/761, some devices might crash here, assume that
       // airplane mode is off.
