@@ -23,7 +23,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.Px
 import com.squareup.picasso3.Picasso.Priority
 import com.squareup.picasso3.Picasso.Priority.NORMAL
-import java.util.ArrayList
+import okhttp3.Headers
 import java.util.concurrent.TimeUnit.NANOSECONDS
 import java.util.concurrent.TimeUnit.SECONDS
 
@@ -40,6 +40,9 @@ class Request internal constructor(builder: Builder) {
 
   /** The [NetworkPolicy] to use for this request. */
   @JvmField val networkPolicy: Int = builder.networkPolicy
+
+  /** HTTP headers for the request  */
+  @JvmField val headers: Headers? = builder.headers
 
   /**
    * The image URI.
@@ -285,6 +288,7 @@ class Request internal constructor(builder: Builder) {
     var tag: Any? = null
     var memoryPolicy = 0
     var networkPolicy = 0
+    var headers: Headers? = null
 
     /** Start building a request using the specified [Uri]. */
     constructor(uri: Uri) {
@@ -540,6 +544,15 @@ class Request internal constructor(builder: Builder) {
       for (i in additional.indices) {
         this.networkPolicy = this.networkPolicy or additional[i].index
       }
+    }
+
+    fun addHeader(
+      name: String,
+      value: String
+    ) = apply {
+      this.headers = (headers?.newBuilder() ?: Headers.Builder())
+        .add(name, value)
+        .build()
     }
 
     /** Create the immutable [Request] object.  */

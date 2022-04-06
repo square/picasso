@@ -149,6 +149,7 @@ public final class com/squareup/picasso3/Request {
 	public final field centerInside Z
 	public final field config Landroid/graphics/Bitmap$Config;
 	public final field hasRotationPivot Z
+	public final field headers Lokhttp3/Headers;
 	public field id I
 	public field key Ljava/lang/String;
 	public final field memoryPolicy I
@@ -178,6 +179,7 @@ public final class com/squareup/picasso3/Request {
 public final class com/squareup/picasso3/Request$Builder {
 	public fun <init> (I)V
 	public fun <init> (Landroid/net/Uri;)V
+	public final fun addHeader (Ljava/lang/String;Ljava/lang/String;)Lcom/squareup/picasso3/Request$Builder;
 	public final fun build ()Lcom/squareup/picasso3/Request;
 	public final fun centerCrop ()Lcom/squareup/picasso3/Request$Builder;
 	public final fun centerCrop (I)Lcom/squareup/picasso3/Request$Builder;
@@ -195,6 +197,7 @@ public final class com/squareup/picasso3/Request$Builder {
 	public final fun getCenterInside ()Z
 	public final fun getConfig ()Landroid/graphics/Bitmap$Config;
 	public final fun getHasRotationPivot ()Z
+	public final fun getHeaders ()Lokhttp3/Headers;
 	public final fun getMemoryPolicy ()I
 	public final fun getNetworkPolicy ()I
 	public final fun getOnlyScaleDown ()Z
@@ -224,6 +227,7 @@ public final class com/squareup/picasso3/Request$Builder {
 	public final fun setCenterInside (Z)V
 	public final fun setConfig (Landroid/graphics/Bitmap$Config;)V
 	public final fun setHasRotationPivot (Z)V
+	public final fun setHeaders (Lokhttp3/Headers;)V
 	public final fun setMemoryPolicy (I)V
 	public final fun setNetworkPolicy (I)V
 	public final fun setOnlyScaleDown (Z)V
@@ -247,6 +251,7 @@ public final class com/squareup/picasso3/Request$Builder {
 }
 
 public final class com/squareup/picasso3/RequestCreator {
+	public final fun addHeader (Ljava/lang/String;Ljava/lang/String;)Lcom/squareup/picasso3/RequestCreator;
 	public final fun centerCrop ()Lcom/squareup/picasso3/RequestCreator;
 	public final fun centerCrop (I)Lcom/squareup/picasso3/RequestCreator;
 	public final fun centerInside ()Lcom/squareup/picasso3/RequestCreator;

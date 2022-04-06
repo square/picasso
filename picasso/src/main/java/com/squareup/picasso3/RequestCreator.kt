@@ -324,6 +324,14 @@ class RequestCreator internal constructor(
     return this
   }
 
+  /**
+   * Add custom HTTP headers to the image network request, if desired
+   */
+  fun addHeader(key: String, value: String): RequestCreator {
+    data.addHeader(key, value)
+    return this
+  }
+
   /** Disable brief fade in of images loaded from the disk cache or network.  */
   fun noFade(): RequestCreator {
     noFade = true

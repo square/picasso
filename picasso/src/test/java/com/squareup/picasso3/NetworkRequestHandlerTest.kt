@@ -17,6 +17,8 @@ package com.squareup.picasso3
 
 import com.google.common.truth.Truth.assertThat
 import com.squareup.picasso3.RequestHandler.Result
+import com.squareup.picasso3.TestUtils.CUSTOM_HEADER_NAME
+import com.squareup.picasso3.TestUtils.CUSTOM_HEADER_VALUE
 import com.squareup.picasso3.TestUtils.EventRecorder
 import com.squareup.picasso3.TestUtils.PremadeCall
 import com.squareup.picasso3.TestUtils.URI_1
@@ -201,6 +203,36 @@ class NetworkRequestHandlerTest {
       callback = object : RequestHandler.Callback {
         override fun onSuccess(result: Result?) {
           assertThat(eventRecorder.downloadSize).isEqualTo(0)
+          latch.countDown()
+        }
+
+        override fun onError(t: Throwable): Unit = throw AssertionError(t)
+      }
+    )
+    assertThat(latch.await(10, SECONDS)).isTrue()
+  }
+
+  @Test fun customHeaders() {
+    responses += responseOf(ByteArray(10).toResponseBody(null))
+      .newBuilder()
+      .cacheResponse(responseOf(null))
+      .build()
+    val action = TestUtils.mockAction(
+      picasso,
+      key = URI_KEY_1,
+      uri = URI_1,
+      headers = mapOf(CUSTOM_HEADER_NAME to CUSTOM_HEADER_VALUE)
+    )
+    val latch = CountDownLatch(1)
+    networkHandler.load(
+      picasso = picasso,
+      request = action.request,
+      callback = object : RequestHandler.Callback {
+        override fun onSuccess(result: Result?) {
+          with(requests.first.headers) {
+            assertThat(names()).containsExactly(CUSTOM_HEADER_NAME)
+            assertThat(values(CUSTOM_HEADER_NAME)).containsExactly(CUSTOM_HEADER_VALUE)
+          }
           latch.countDown()
         }
 
