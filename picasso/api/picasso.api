@@ -155,7 +155,6 @@ public final class com/squareup/picasso3/Request {
 	public final field networkPolicy I
 	public final field onlyScaleDown Z
 	public final field priority Lcom/squareup/picasso3/Picasso$Priority;
-	public final field purgeable Z
 	public final field resourceId I
 	public final field rotationDegrees F
 	public final field rotationPivotX F
@@ -200,7 +199,6 @@ public final class com/squareup/picasso3/Request$Builder {
 	public final fun getNetworkPolicy ()I
 	public final fun getOnlyScaleDown ()Z
 	public final fun getPriority ()Lcom/squareup/picasso3/Picasso$Priority;
-	public final fun getPurgeable ()Z
 	public final fun getResourceId ()I
 	public final fun getRotationDegrees ()F
 	public final fun getRotationPivotX ()F
@@ -218,7 +216,6 @@ public final class com/squareup/picasso3/Request$Builder {
 	public final fun networkPolicy (Lcom/squareup/picasso3/NetworkPolicy;[Lcom/squareup/picasso3/NetworkPolicy;)Lcom/squareup/picasso3/Request$Builder;
 	public final fun onlyScaleDown ()Lcom/squareup/picasso3/Request$Builder;
 	public final fun priority (Lcom/squareup/picasso3/Picasso$Priority;)Lcom/squareup/picasso3/Request$Builder;
-	public final fun purgeable ()Lcom/squareup/picasso3/Request$Builder;
 	public final fun resize (II)Lcom/squareup/picasso3/Request$Builder;
 	public final fun rotate (F)Lcom/squareup/picasso3/Request$Builder;
 	public final fun rotate (FFF)Lcom/squareup/picasso3/Request$Builder;
@@ -231,7 +228,6 @@ public final class com/squareup/picasso3/Request$Builder {
 	public final fun setNetworkPolicy (I)V
 	public final fun setOnlyScaleDown (Z)V
 	public final fun setPriority (Lcom/squareup/picasso3/Picasso$Priority;)V
-	public final fun setPurgeable (Z)V
 	public final fun setResourceId (I)Lcom/squareup/picasso3/Request$Builder;
 	public final fun setResourceId (I)V
 	public final fun setRotationDegrees (F)V
@@ -283,7 +279,6 @@ public final class com/squareup/picasso3/RequestCreator {
 	public final fun placeholder (I)Lcom/squareup/picasso3/RequestCreator;
 	public final fun placeholder (Landroid/graphics/drawable/Drawable;)Lcom/squareup/picasso3/RequestCreator;
 	public final fun priority (Lcom/squareup/picasso3/Picasso$Priority;)Lcom/squareup/picasso3/RequestCreator;
-	public final fun purgeable ()Lcom/squareup/picasso3/RequestCreator;
 	public final fun resize (II)Lcom/squareup/picasso3/RequestCreator;
 	public final fun resizeDimen (II)Lcom/squareup/picasso3/RequestCreator;
 	public final fun rotate (F)Lcom/squareup/picasso3/RequestCreator;

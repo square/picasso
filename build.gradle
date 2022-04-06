@@ -1,7 +1,7 @@
 buildscript {
   ext.versions = [
     'compileSdk': 31,
-    'minSdk': 14,
+    'minSdk': 21,
     'targetSdk': 31,
     'sourceCompatibility': JavaVersion.VERSION_1_8,
     'targetCompatibility': JavaVersion.VERSION_1_8,

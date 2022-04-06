@@ -649,16 +649,4 @@ class RequestCreatorTest {
     verify(picasso).enqueueAndSubmit(actionCaptor.capture())
     assertThat(actionCaptor.value.request.key).isEqualTo(STABLE_URI_KEY_1)
   }
-
-  @Test fun notPurgeable() {
-    RequestCreator(picasso, URI_1, 0).into(mockImageViewTarget())
-    verify(picasso).enqueueAndSubmit(actionCaptor.capture())
-    assertThat(actionCaptor.value.request.purgeable).isFalse()
-  }
-
-  @Test fun purgeable() {
-    RequestCreator(picasso, URI_1, 0).purgeable().into(mockImageViewTarget())
-    verify(picasso).enqueueAndSubmit(actionCaptor.capture())
-    assertThat(actionCaptor.value.request.purgeable).isTrue()
-  }
 }

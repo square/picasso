@@ -16,8 +16,6 @@
 package com.squareup.picasso3.pollexor
 
 import android.net.Uri
-import android.os.Build.VERSION
-import android.os.Build.VERSION_CODES
 import com.squareup.picasso3.Picasso.RequestTransformer
 import com.squareup.picasso3.Request
 import com.squareup.picasso3.pollexor.PollexorRequestTransformer.Callback
@@ -73,10 +71,8 @@ class PollexorRequestTransformer @JvmOverloads constructor(
       newRequest.clearCenterInside()
     }
 
-    // If the Android version is modern enough use WebP for downloading.
-    if (VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN_MR2) {
-      urlBuilder.filter(ThumborUrlBuilder.format(WEBP))
-    }
+    // Use WebP for downloading.
+    urlBuilder.filter(ThumborUrlBuilder.format(WEBP))
 
     // Update the request with the completed Thumbor URL.
     newRequest.setUri(Uri.parse(urlBuilder.toUrl()))

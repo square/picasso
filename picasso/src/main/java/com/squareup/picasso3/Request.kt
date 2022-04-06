@@ -106,9 +106,6 @@ class Request internal constructor(builder: Builder) {
   /** Whether or not [.rotationPivotX] and [.rotationPivotY] are set. */
   @JvmField val hasRotationPivot: Boolean = builder.hasRotationPivot
 
-  /** True if image should be decoded with inPurgeable and inInputShareable. */
-  @JvmField val purgeable: Boolean = builder.purgeable
-
   /** Target image config for decoding. */
   @JvmField val config: Config? = builder.config
 
@@ -166,9 +163,6 @@ class Request internal constructor(builder: Builder) {
           append(rotationPivotY)
         }
         append(')')
-      }
-      if (purgeable) {
-        append(" purgeable")
       }
       if (config != null) {
         append(' ')
@@ -284,7 +278,6 @@ class Request internal constructor(builder: Builder) {
     var rotationPivotX = 0f
     var rotationPivotY = 0f
     var hasRotationPivot = false
-    var purgeable = false
     var transformations: MutableList<Transformation>? = null
     var config: Config? = null
     var priority: Priority? = null
@@ -326,7 +319,6 @@ class Request internal constructor(builder: Builder) {
       rotationPivotX = request.rotationPivotX
       rotationPivotY = request.rotationPivotY
       hasRotationPivot = request.hasRotationPivot
-      purgeable = request.purgeable
       onlyScaleDown = request.onlyScaleDown
       transformations = request.transformations.toMutableList()
       config = request.config
@@ -482,10 +474,6 @@ class Request internal constructor(builder: Builder) {
       rotationPivotX = 0f
       rotationPivotY = 0f
       hasRotationPivot = false
-    }
-
-    fun purgeable() = apply {
-      purgeable = true
     }
 
     /** Decode the image using the specified config.  */
