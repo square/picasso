@@ -58,6 +58,7 @@ class RequestCreator internal constructor(
   @DrawableRes private var errorResId = 0
   private var placeholderDrawable: Drawable? = null
   private var errorDrawable: Drawable? = null
+  private var sizeResolver: SizeResolver? = null
 
   /** Internal use only. Used by [DeferredRequestCreator].  */
   @get:JvmName("-tag")
@@ -66,6 +67,12 @@ class RequestCreator internal constructor(
 
   init {
     check(!picasso.shutdown) { "Picasso instance already shut down. Cannot submit new requests." }
+  }
+
+  fun sizeResolver(sizeResolver: SizeResolver): RequestCreator {
+    check(!deferred) { "Use only one of fit() or sizeResolver()." }
+    this.sizeResolver = sizeResolver
+    return this
   }
 
   /**
@@ -433,6 +440,17 @@ class RequestCreator internal constructor(
       return
     }
 
+    if (sizeResolver != null) {
+      picasso.resolveSize(sizeResolver!!, target) { (width, height) ->
+        resize(width, height)
+        loadIntoTarget(target, started)
+      }
+    } else {
+      loadIntoTarget(target, started)
+    }
+  }
+
+  private fun loadIntoTarget(target: BitmapTarget, started: Long) {
     val request = createRequest(started)
     if (shouldReadFromMemoryCache(request.memoryPolicy)) {
       val bitmap = picasso.quickMemoryCacheCheck(request.key)
@@ -556,11 +574,18 @@ class RequestCreator internal constructor(
           setPlaceholder(target, getPlaceholderDrawable())
         }
         picasso.defer(target, DeferredRequestCreator(this, target, callback))
+        picasso.resolveSize(ViewSizeResolver(target), target) { (width, height) ->
+          data.resize(width, height)
+          loadIntoImageView(target, started, callback)
+        }
         return
       }
-      data.resize(width, height)
     }
 
+    loadIntoImageView(target, started, callback)
+  }
+
+  private fun loadIntoImageView(target: ImageView, started: Long, callback: Callback? = null) {
     val request = createRequest(started)
 
     if (shouldReadFromMemoryCache(request.memoryPolicy)) {

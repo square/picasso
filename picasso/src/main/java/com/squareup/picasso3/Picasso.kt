@@ -97,6 +97,8 @@ class Picasso internal constructor(
   @get:JvmName("-targetToDeferredRequestCreator")
   internal val targetToDeferredRequestCreator = mutableMapOf<ImageView, DeferredRequestCreator>()
 
+  private val targetToSizeResolver = mutableMapOf<Any, SizeResolver>()
+
   @get:JvmName("-shutdown")
   @set:JvmName("-shutdown")
   internal var shutdown = false
@@ -134,6 +136,11 @@ class Picasso internal constructor(
     val deferredRequestCreators = targetToDeferredRequestCreator.values.toList()
     for (i in deferredRequestCreators.indices) {
       deferredRequestCreators[i].cancel()
+    }
+
+    val sizeResolvers = targetToSizeResolver.values.toList()
+    for (i in sizeResolvers.indices) {
+      sizeResolvers[i].onCancel()
     }
   }
 
@@ -181,6 +188,10 @@ class Picasso internal constructor(
         deferredRequestCreator.cancel()
       }
     }
+
+    targetToSizeResolver.values.forEach { sizeResolver ->
+      // TODO: Work out how to cancel size resolvers by tag.
+    }
   }
 
   @OnLifecycleEvent(ON_STOP)
@@ -200,6 +211,8 @@ class Picasso internal constructor(
         dispatcher.dispatchPauseTag(tag)
       }
     }
+
+    // TODO: Work how to to pause size resolvers.
   }
 
   /**
@@ -230,6 +243,8 @@ class Picasso internal constructor(
         dispatcher.dispatchResumeTag(tag)
       }
     }
+
+    // TODO: Work out how to resume size resolvers.
   }
 
   /**
@@ -386,6 +401,14 @@ class Picasso internal constructor(
     return nextRequest
   }
 
+  internal fun resolveSize(sizeResolver: SizeResolver, target: Any, callback: (Size) -> Unit) {
+    if (targetToSizeResolver.containsKey(target)) {
+      cancelExistingRequest(target)
+    }
+    targetToSizeResolver[target] = sizeResolver
+    sizeResolver.resolve(callback)
+  }
+
   @JvmName("-defer")
   internal fun defer(view: ImageView, request: DeferredRequestCreator) {
     // If there is already a deferred request, cancel it.
@@ -517,6 +540,7 @@ class Picasso internal constructor(
       action.cancel()
       dispatcher.dispatchCancel(action)
     }
+    targetToSizeResolver.remove(target)
     if (target is ImageView) {
       val deferredRequestCreator = targetToDeferredRequestCreator.remove(target)
       deferredRequestCreator?.cancel()
