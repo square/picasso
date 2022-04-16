@@ -38,6 +38,7 @@ internal class PicassoSampleAdapter(context: Context?) : BaseAdapter() {
     private val activityClass: Class<out Activity>?
   ) {
     GRID_VIEW("Image Grid View", SampleGridViewActivity::class.java),
+    COMPOSE_UI("Compose UI", SampleComposeActivity::class.java),
     GALLERY("Load from Gallery", SampleGalleryActivity::class.java),
     CONTACTS("Contact Photos", SampleContactsActivity::class.java),
     LIST_DETAIL("List / Detail View", SampleListDetailActivity::class.java),

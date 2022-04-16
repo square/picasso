@@ -15,6 +15,12 @@ public class com/squareup/picasso3/Callback$EmptyCallback : com/squareup/picasso
 	public fun onSuccess ()V
 }
 
+public abstract interface class com/squareup/picasso3/DrawableTarget {
+	public abstract fun onDrawableFailed (Ljava/lang/Exception;Landroid/graphics/drawable/Drawable;)V
+	public abstract fun onDrawableLoaded (Landroid/graphics/drawable/Drawable;Lcom/squareup/picasso3/Picasso$LoadedFrom;)V
+	public abstract fun onPrepareLoad (Landroid/graphics/drawable/Drawable;)V
+}
+
 public abstract interface class com/squareup/picasso3/EventListener : java/io/Closeable {
 	public abstract fun bitmapDecoded (Landroid/graphics/Bitmap;)V
 	public abstract fun bitmapTransformed (Landroid/graphics/Bitmap;)V
@@ -72,6 +78,7 @@ public final class com/squareup/picasso3/Picasso : androidx/lifecycle/LifecycleO
 	public final fun cancelRequest (Landroid/widget/ImageView;)V
 	public final fun cancelRequest (Landroid/widget/RemoteViews;I)V
 	public final fun cancelRequest (Lcom/squareup/picasso3/BitmapTarget;)V
+	public final fun cancelRequest (Lcom/squareup/picasso3/DrawableTarget;)V
 	public final fun cancelTag (Ljava/lang/Object;)V
 	public final fun evictAll ()V
 	public final fun getIndicatorsEnabled ()Z
@@ -272,6 +279,7 @@ public final class com/squareup/picasso3/RequestCreator {
 	public final fun into (Landroid/widget/RemoteViews;I[I)V
 	public final fun into (Landroid/widget/RemoteViews;I[ILcom/squareup/picasso3/Callback;)V
 	public final fun into (Lcom/squareup/picasso3/BitmapTarget;)V
+	public final fun into (Lcom/squareup/picasso3/DrawableTarget;)V
 	public static synthetic fun into$default (Lcom/squareup/picasso3/RequestCreator;Landroid/widget/ImageView;Lcom/squareup/picasso3/Callback;ILjava/lang/Object;)V
 	public static synthetic fun into$default (Lcom/squareup/picasso3/RequestCreator;Landroid/widget/RemoteViews;IILandroid/app/Notification;Ljava/lang/String;Lcom/squareup/picasso3/Callback;ILjava/lang/Object;)V
 	public static synthetic fun into$default (Lcom/squareup/picasso3/RequestCreator;Landroid/widget/RemoteViews;IILcom/squareup/picasso3/Callback;ILjava/lang/Object;)V

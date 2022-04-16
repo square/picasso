@@ -449,6 +449,48 @@ class RequestCreator internal constructor(
   }
 
   /**
+   * Asynchronously fulfills the request into the specified [DrawableTarget]. In most cases, you
+   * should use this when you are dealing with a custom [View][android.view.View] or view
+   * holder which should implement the [DrawableTarget] interface.
+   */
+  fun into(target: DrawableTarget) {
+    val started = System.nanoTime()
+    checkMain()
+    check(!deferred) { "Fit cannot be used with a Target." }
+
+    val placeHolderDrawable = if (setPlaceholder) getPlaceholderDrawable() else null
+    if (!data.hasImage()) {
+      picasso.cancelRequest(target)
+      target.onPrepareLoad(placeHolderDrawable)
+      return
+    }
+
+    val request = createRequest(started)
+    if (shouldReadFromMemoryCache(request.memoryPolicy)) {
+      val bitmap = picasso.quickMemoryCacheCheck(request.key)
+      if (bitmap != null) {
+        picasso.cancelRequest(target)
+        target.onDrawableLoaded(
+          PicassoDrawable(
+            context = picasso.context,
+            bitmap = bitmap,
+            placeholder = null,
+            loadedFrom = LoadedFrom.MEMORY,
+            noFade = noFade,
+            debugging = picasso.indicatorsEnabled
+          ),
+          LoadedFrom.MEMORY
+        )
+        return
+      }
+    }
+
+    target.onPrepareLoad(placeHolderDrawable)
+    val action = DrawableTargetAction(picasso, target, request, noFade, placeHolderDrawable, errorDrawable, errorResId)
+    picasso.enqueueAndSubmit(action)
+  }
+
+  /**
    * Asynchronously fulfills the request into the specified [RemoteViews] object with the
    * given [viewId]. This is used for loading bitmaps into a [Notification].
    */

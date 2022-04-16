@@ -41,14 +41,15 @@ import com.squareup.picasso3.TestUtils.any
 import com.squareup.picasso3.TestUtils.argumentCaptor
 import com.squareup.picasso3.TestUtils.eq
 import com.squareup.picasso3.TestUtils.makeBitmap
+import com.squareup.picasso3.TestUtils.mockBitmapTarget
 import com.squareup.picasso3.TestUtils.mockCallback
+import com.squareup.picasso3.TestUtils.mockDrawableTarget
 import com.squareup.picasso3.TestUtils.mockFitImageViewTarget
 import com.squareup.picasso3.TestUtils.mockImageViewTarget
 import com.squareup.picasso3.TestUtils.mockNotification
 import com.squareup.picasso3.TestUtils.mockPicasso
 import com.squareup.picasso3.TestUtils.mockRemoteViews
 import com.squareup.picasso3.TestUtils.mockRequestCreator
-import com.squareup.picasso3.TestUtils.mockTarget
 import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -151,20 +152,20 @@ class RequestCreatorTest {
 
   @Test fun intoTargetWithFitThrows() {
     try {
-      RequestCreator(picasso, URI_1, 0).fit().into(mockTarget())
+      RequestCreator(picasso, URI_1, 0).fit().into(mockBitmapTarget())
       fail("Calling into() target with fit() should throw exception")
     } catch (ignored: IllegalStateException) {
     }
   }
 
   @Test fun intoTargetNoPlaceholderCallsWithNull() {
-    val target = mockTarget()
+    val target = mockBitmapTarget()
     RequestCreator(picasso, URI_1, 0).noPlaceholder().into(target)
     verify(target).onPrepareLoad(null)
   }
 
   @Test fun intoTargetWithNullUriAndResourceIdSkipsAndCancels() {
-    val target = mockTarget()
+    val target = mockBitmapTarget()
     val placeHolderDrawable = mock(Drawable::class.java)
     RequestCreator(picasso, null, 0).placeholder(placeHolderDrawable).into(target)
     verify(picasso).defaultBitmapConfig
@@ -176,7 +177,7 @@ class RequestCreatorTest {
 
   @Test fun intoTargetWithQuickMemoryCacheCheckDoesNotSubmit() {
     `when`(picasso.quickMemoryCacheCheck(URI_KEY_1)).thenReturn(bitmap)
-    val target = mockTarget()
+    val target = mockBitmapTarget()
     RequestCreator(picasso, URI_1, 0).into(target)
     verify(target).onBitmapLoaded(bitmap, MEMORY)
     verify(picasso).cancelRequest(target)
@@ -184,13 +185,13 @@ class RequestCreatorTest {
   }
 
   @Test fun intoTargetWithSkipMemoryPolicy() {
-    val target = mockTarget()
+    val target = mockBitmapTarget()
     RequestCreator(picasso, URI_1, 0).memoryPolicy(NO_CACHE).into(target)
     verify(picasso, never()).quickMemoryCacheCheck(URI_KEY_1)
   }
 
   @Test fun intoTargetAndNotInCacheSubmitsTargetRequest() {
-    val target = mockTarget()
+    val target = mockBitmapTarget()
     val placeHolderDrawable = mock(Drawable::class.java)
     RequestCreator(picasso, URI_1, 0).placeholder(placeHolderDrawable).into(target)
     verify(target).onPrepareLoad(placeHolderDrawable)
@@ -199,27 +200,76 @@ class RequestCreatorTest {
   }
 
   @Test fun targetActionWithDefaultPriority() {
-    RequestCreator(picasso, URI_1, 0).into(mockTarget())
+    RequestCreator(picasso, URI_1, 0).into(mockBitmapTarget())
     verify(picasso).enqueueAndSubmit(actionCaptor.capture())
     assertThat(actionCaptor.value.request.priority).isEqualTo(NORMAL)
   }
 
   @Test fun targetActionWithCustomPriority() {
-    RequestCreator(picasso, URI_1, 0).priority(HIGH).into(mockTarget())
+    RequestCreator(picasso, URI_1, 0).priority(HIGH).into(mockBitmapTarget())
     verify(picasso).enqueueAndSubmit(actionCaptor.capture())
     assertThat(actionCaptor.value.request.priority).isEqualTo(HIGH)
   }
 
   @Test fun targetActionWithDefaultTag() {
-    RequestCreator(picasso, URI_1, 0).into(mockTarget())
+    RequestCreator(picasso, URI_1, 0).into(mockBitmapTarget())
     verify(picasso).enqueueAndSubmit(actionCaptor.capture())
     assertThat(actionCaptor.value.tag).isEqualTo(actionCaptor.value)
   }
 
   @Test fun targetActionWithCustomTag() {
-    RequestCreator(picasso, URI_1, 0).tag("tag").into(mockTarget())
+    RequestCreator(picasso, URI_1, 0).tag("tag").into(mockBitmapTarget())
     verify(picasso).enqueueAndSubmit(actionCaptor.capture())
     assertThat(actionCaptor.value.tag).isEqualTo("tag")
+  }
+
+  @Test fun intoDrawableTargetWithFitThrows() {
+    try {
+      RequestCreator(picasso, URI_1, 0).fit().into(mockDrawableTarget())
+      fail("Calling into() drawable target with fit() should throw exception")
+    } catch (ignored: IllegalStateException) {
+    }
+  }
+
+  @Test fun intoDrawableTargetNoPlaceholderCallsWithNull() {
+    val target = mockDrawableTarget()
+    RequestCreator(picasso, URI_1, 0).noPlaceholder().into(target)
+    verify(target).onPrepareLoad(null)
+  }
+
+  @Test fun intoDrawableTargetWithNullUriAndResourceIdSkipsAndCancels() {
+    val target = mockDrawableTarget()
+    val placeHolderDrawable = mock(Drawable::class.java)
+    RequestCreator(picasso, null, 0).placeholder(placeHolderDrawable).into(target)
+    verify(picasso).defaultBitmapConfig
+    verify(picasso).shutdown
+    verify(picasso).cancelRequest(target)
+    verify(target).onPrepareLoad(placeHolderDrawable)
+    verifyNoMoreInteractions(picasso)
+  }
+
+  @Test fun intoDrawableTargetWithQuickMemoryCacheCheckDoesNotSubmit() {
+    `when`(picasso.quickMemoryCacheCheck(URI_KEY_1)).thenReturn(bitmap)
+    val target = mockDrawableTarget()
+    RequestCreator(picasso, URI_1, 0).into(target)
+    verify(target).onDrawableLoaded(any(PicassoDrawable::class.java), eq(MEMORY))
+    verify(picasso).cancelRequest(target)
+    verify(picasso, never()).enqueueAndSubmit(any(Action::class.java))
+  }
+
+  @Test fun intoDrawableTargetWithSkipMemoryPolicy() {
+    val target = mockDrawableTarget()
+    RequestCreator(picasso, URI_1, 0).memoryPolicy(NO_CACHE).into(target)
+    verify(picasso, never()).quickMemoryCacheCheck(URI_KEY_1)
+  }
+
+  @Test fun intoDrawableTargetAndNotInCacheSubmitsTargetRequest() {
+    val target = mockDrawableTarget()
+    val placeHolderDrawable = mock(Drawable::class.java)
+    RequestCreator(picasso, URI_1, 0).placeholder(placeHolderDrawable).into(target)
+    verify(target).onPrepareLoad(placeHolderDrawable)
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture())
+    assertThat(actionCaptor.value).isInstanceOf(DrawableTargetAction::class.java)
   }
 
   @Test fun intoImageViewWithNullUriAndResourceIdSkipsAndCancels() {
@@ -306,7 +356,7 @@ class RequestCreatorTest {
     val latch = CountDownLatch(1)
     Thread {
       try {
-        RequestCreator(picasso, null, 0).into(mockTarget())
+        RequestCreator(picasso, null, 0).into(mockBitmapTarget())
         fail("Should have thrown IllegalStateException")
       } catch (ignored: IllegalStateException) {
       } finally {
@@ -463,12 +513,12 @@ class RequestCreatorTest {
 
   @Test fun intoTargetNoResizeWithCenterInsideOrCenterCropThrows() {
     try {
-      RequestCreator(picasso, URI_1, 0).centerInside().into(mockTarget())
+      RequestCreator(picasso, URI_1, 0).centerInside().into(mockBitmapTarget())
       fail("Center inside with unknown width should throw exception.")
     } catch (ignored: IllegalStateException) {
     }
     try {
-      RequestCreator(picasso, URI_1, 0).centerCrop().into(mockTarget())
+      RequestCreator(picasso, URI_1, 0).centerCrop().into(mockBitmapTarget())
       fail("Center inside with unknown height should throw exception.")
     } catch (ignored: IllegalStateException) {
     }

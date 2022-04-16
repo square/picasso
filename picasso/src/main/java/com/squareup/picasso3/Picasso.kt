@@ -149,6 +149,12 @@ class Picasso internal constructor(
     cancelExistingRequest(target)
   }
 
+  /** Cancel any existing requests for the specified [DrawableTarget] instance. */
+  fun cancelRequest(target: DrawableTarget) {
+    // checkMain() is called from cancelExistingRequest()
+    cancelExistingRequest(target)
+  }
+
   /**
    * Cancel any existing requests for the specified [RemoteViews] target with the given [viewId].
    */

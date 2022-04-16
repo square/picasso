@@ -145,7 +145,7 @@ internal object TestUtils {
     picasso: Picasso,
     key: String,
     uri: Uri? = null,
-    target: Any = mockTarget(),
+    target: Any = mockBitmapTarget(),
     resourceId: Int = 0,
     priority: Priority? = null,
     tag: String? = null,
@@ -165,7 +165,7 @@ internal object TestUtils {
     return mockAction(picasso, request, target)
   }
 
-  fun mockAction(picasso: Picasso, request: Request, target: Any = mockTarget()) =
+  fun mockAction(picasso: Picasso, request: Request, target: Any = mockBitmapTarget()) =
     FakeAction(picasso, request, target)
 
   fun mockImageViewTarget(): ImageView = mock(ImageView::class.java)
@@ -183,7 +183,9 @@ internal object TestUtils {
     return mock
   }
 
-  fun mockTarget(): BitmapTarget = mock(BitmapTarget::class.java)
+  fun mockBitmapTarget(): BitmapTarget = mock(BitmapTarget::class.java)
+
+  fun mockDrawableTarget(): DrawableTarget = mock(DrawableTarget::class.java)
 
   fun mockCallback(): Callback = mock(Callback::class.java)
 
