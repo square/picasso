@@ -21,7 +21,7 @@ or Maven:
 <dependency>
   <groupId>com.squareup.picasso</groupId>
   <artifactId>picasso</artifactId>
-  <version>2.71828</version>
+  <version>2.8</version>
 </dependency>
 ```
 
