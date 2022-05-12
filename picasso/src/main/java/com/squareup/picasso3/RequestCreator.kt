@@ -103,7 +103,7 @@ class RequestCreator internal constructor(
    * If you are not using a placeholder image but want to clear an existing image (such as when
    * used in an [adapter][android.widget.Adapter]), pass in `null`.
    */
-  fun placeholder(placeholderDrawable: Drawable): RequestCreator {
+  fun placeholder(placeholderDrawable: Drawable?): RequestCreator {
     check(setPlaceholder) { "Already explicitly declared as no placeholder." }
     check(placeholderResId == 0) { "Placeholder image already set." }
     this.placeholderDrawable = placeholderDrawable
