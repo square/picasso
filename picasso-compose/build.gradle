@@ -1,13 +1,12 @@
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.library'
 apply plugin: 'org.jetbrains.kotlin.android'
+apply plugin: 'com.vanniktech.maven.publish'
 
 android {
   compileSdkVersion versions.compileSdk
 
   defaultConfig {
     minSdkVersion versions.minSdk
-    targetSdkVersion versions.targetSdk
-    applicationId 'com.example.picasso'
   }
 
   buildFeatures {
@@ -24,27 +23,18 @@ android {
   }
 
   lintOptions {
-    lintConfig file('lint.xml')
     textOutput 'stdout'
     textReport true
-
-    // https://github.com/square/okhttp/issues/896
-    ignore 'InvalidPackage'
+    lintConfig rootProject.file('lint.xml')
   }
 }
 
 dependencies {
-  compileOnly deps.androidxAnnotations
-  implementation deps.androidxCore
-  implementation deps.androidxCursorAdapter
-  implementation deps.androidxFragment
-  implementation deps.androidxStartup
+  api project(':picasso')
 
   implementation deps.drawablePainter
   implementation deps.composeUi
   implementation deps.foundation
 
-  implementation project(':picasso')
-  implementation project(':picasso-stats')
-  implementation project(':picasso-compose')
+  compileOnly deps.androidxAnnotations
 }

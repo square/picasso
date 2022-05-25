@@ -1,0 +1,4 @@
+public final class com/squareup/picasso3/compose/PicassoPainterKt {
+	public static final fun rememberPainter (Lcom/squareup/picasso3/Picasso;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)Landroidx/compose/ui/graphics/painter/Painter;
+}
+

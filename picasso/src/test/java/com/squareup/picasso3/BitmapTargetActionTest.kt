@@ -27,8 +27,8 @@ import com.squareup.picasso3.TestUtils.RESOURCE_ID_1
 import com.squareup.picasso3.TestUtils.SIMPLE_REQUEST
 import com.squareup.picasso3.TestUtils.UNUSED_CALL_FACTORY
 import com.squareup.picasso3.TestUtils.makeBitmap
+import com.squareup.picasso3.TestUtils.mockBitmapTarget
 import com.squareup.picasso3.TestUtils.mockPicasso
-import com.squareup.picasso3.TestUtils.mockTarget
 import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -43,7 +43,7 @@ class BitmapTargetActionTest {
 
   @Test fun invokesSuccessIfTargetIsNotNull() {
     val bitmap = makeBitmap()
-    val target = mockTarget()
+    val target = mockBitmapTarget()
     val request = BitmapTargetAction(
       picasso = mockPicasso(RuntimeEnvironment.application),
       target = target,
@@ -57,7 +57,7 @@ class BitmapTargetActionTest {
 
   @Test fun invokesOnBitmapFailedIfTargetIsNotNullWithErrorDrawable() {
     val errorDrawable = mock(Drawable::class.java)
-    val target = mockTarget()
+    val target = mockBitmapTarget()
     val request = BitmapTargetAction(
       picasso = mockPicasso(RuntimeEnvironment.application),
       target = target,
@@ -74,7 +74,7 @@ class BitmapTargetActionTest {
 
   @Test fun invokesOnBitmapFailedIfTargetIsNotNullWithErrorResourceId() {
     val errorDrawable = mock(Drawable::class.java)
-    val target = mockTarget()
+    val target = mockBitmapTarget()
     val context = mock(Context::class.java)
     val dispatcher = mock(Dispatcher::class.java)
     val cache = PlatformLruCache(0)

@@ -37,12 +37,13 @@ import com.squareup.picasso3.TestUtils.URI_KEY_1
 import com.squareup.picasso3.TestUtils.defaultPicasso
 import com.squareup.picasso3.TestUtils.makeBitmap
 import com.squareup.picasso3.TestUtils.mockAction
+import com.squareup.picasso3.TestUtils.mockBitmapTarget
 import com.squareup.picasso3.TestUtils.mockDeferredRequestCreator
+import com.squareup.picasso3.TestUtils.mockDrawableTarget
 import com.squareup.picasso3.TestUtils.mockHunter
 import com.squareup.picasso3.TestUtils.mockImageViewTarget
 import com.squareup.picasso3.TestUtils.mockPicasso
 import com.squareup.picasso3.TestUtils.mockRequestCreator
-import com.squareup.picasso3.TestUtils.mockTarget
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Rule
@@ -291,8 +292,20 @@ class PicassoTest {
     assertThat(picasso.targetToDeferredRequestCreator).containsKey(target)
   }
 
-  @Test fun cancelExistingRequestWithTarget() {
-    val target = mockTarget()
+  @Test fun cancelExistingRequestWithBitmapTarget() {
+    val target = mockBitmapTarget()
+    val action = mockAction(picasso, URI_KEY_1, URI_1, target)
+    picasso.enqueueAndSubmit(action)
+    assertThat(picasso.targetToAction).hasSize(1)
+    assertThat(action.cancelled).isFalse()
+    picasso.cancelRequest(target)
+    assertThat(picasso.targetToAction).isEmpty()
+    assertThat(action.cancelled).isTrue()
+    verify(dispatcher).dispatchCancel(action)
+  }
+
+  @Test fun cancelExistingRequestWithDrawableTarget() {
+    val target = mockDrawableTarget()
     val action = mockAction(picasso, URI_KEY_1, URI_1, target)
     picasso.enqueueAndSubmit(action)
     assertThat(picasso.targetToAction).hasSize(1)
