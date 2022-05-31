@@ -53,6 +53,11 @@ import okhttp3.OkHttpClient
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.ExecutorService
+import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 
 /**
  * Image downloading, transformation, and caching manager.
@@ -80,7 +85,8 @@ class Picasso internal constructor(
    * **WARNING:** Enabling this will result in excessive object allocation. This should be only
    * be used for debugging purposes. Do NOT pass `BuildConfig.DEBUG`.
    */
-  @Volatile var isLoggingEnabled: Boolean
+  @Volatile var isLoggingEnabled: Boolean,
+  coroutineContext: CoroutineContext = Dispatchers.Main.immediate,
 ) : LifecycleObserver {
   @get:JvmName("-requestTransformers")
   internal val requestTransformers: List<RequestTransformer> = requestTransformers.toList()
@@ -100,6 +106,8 @@ class Picasso internal constructor(
   @get:JvmName("-shutdown")
   @set:JvmName("-shutdown")
   internal var shutdown = false
+
+  internal val scope = CoroutineScope(SupervisorJob() + coroutineContext)
 
   init {
     // Adjust this and Builder(Picasso) as internal handlers are added or removed.
@@ -367,6 +375,7 @@ class Picasso internal constructor(
       return
     }
     cache.clear()
+    scope.cancel()
 
     close()
 

@@ -42,6 +42,8 @@ import com.squareup.picasso3.Utils.checkNotMain
 import com.squareup.picasso3.Utils.log
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 /** Fluent API for building an image download request.  */
 class RequestCreator internal constructor(
@@ -58,6 +60,7 @@ class RequestCreator internal constructor(
   @DrawableRes private var errorResId = 0
   private var placeholderDrawable: Drawable? = null
   private var errorDrawable: Drawable? = null
+  private var sizeSpec: SizeSpec = SizeSpec.Unspecified
 
   /** Internal use only. Used by [DeferredRequestCreator].  */
   @get:JvmName("-tag")
@@ -155,6 +158,7 @@ class RequestCreator internal constructor(
    * *Note:* This method works only when your target is an [ImageView].
    */
   fun fit(): RequestCreator {
+    check(sizeSpec == SizeSpec.Unspecified) { "Use only one of fit() or sizeSpec()." }
     deferred = true
     return this
   }
@@ -171,6 +175,11 @@ class RequestCreator internal constructor(
   internal fun clearTag(): RequestCreator {
     data.clearTag()
     return this
+  }
+
+  fun sizeSpec(spec: SizeSpec) {
+    check(!deferred) { "Use only one of fit() or sizeSpec()." }
+    sizeSpec = spec
   }
 
   /**
@@ -350,7 +359,7 @@ class RequestCreator internal constructor(
       return null
     }
 
-    val request = createRequest(started)
+    val request = runBlocking { createRequest(started) }
     val action = GetAction(picasso, request)
     val result =
       forRequest(picasso, picasso.dispatcher, picasso.cache, action).hunt() ?: return null
@@ -383,20 +392,22 @@ class RequestCreator internal constructor(
         data.priority(Picasso.Priority.LOW)
       }
 
-      val request = createRequest(started)
-      if (shouldReadFromMemoryCache(request.memoryPolicy)) {
-        val bitmap = picasso.quickMemoryCacheCheck(request.key)
-        if (bitmap != null) {
-          if (picasso.isLoggingEnabled) {
-            log(OWNER_MAIN, VERB_COMPLETED, request.plainId(), "from " + LoadedFrom.MEMORY)
+      picasso.scope.launch {
+        val request = createRequest(started)
+        if (shouldReadFromMemoryCache(request.memoryPolicy)) {
+          val bitmap = picasso.quickMemoryCacheCheck(request.key)
+          if (bitmap != null) {
+            if (picasso.isLoggingEnabled) {
+              log(OWNER_MAIN, VERB_COMPLETED, request.plainId(), "from " + LoadedFrom.MEMORY)
+            }
+            callback?.onSuccess()
+            return@launch
           }
-          callback?.onSuccess()
-          return
         }
-      }
 
-      val action = FetchAction(picasso, request, callback)
-      picasso.submit(action)
+        val action = FetchAction(picasso, request, callback)
+        picasso.submit(action)
+      }
     }
   }
 
@@ -433,19 +444,21 @@ class RequestCreator internal constructor(
       return
     }
 
-    val request = createRequest(started)
-    if (shouldReadFromMemoryCache(request.memoryPolicy)) {
-      val bitmap = picasso.quickMemoryCacheCheck(request.key)
-      if (bitmap != null) {
-        picasso.cancelRequest(target)
-        target.onBitmapLoaded(bitmap, LoadedFrom.MEMORY)
-        return
+    picasso.scope.launch {
+      val request = createRequest(started)
+      if (shouldReadFromMemoryCache(request.memoryPolicy)) {
+        val bitmap = picasso.quickMemoryCacheCheck(request.key)
+        if (bitmap != null) {
+          picasso.cancelRequest(target)
+          target.onBitmapLoaded(bitmap, LoadedFrom.MEMORY)
+          return@launch
+        }
       }
-    }
 
-    target.onPrepareLoad(if (setPlaceholder) getPlaceholderDrawable() else null)
-    val action = BitmapTargetAction(picasso, target, request, errorDrawable, errorResId)
-    picasso.enqueueAndSubmit(action)
+      target.onPrepareLoad(if (setPlaceholder) getPlaceholderDrawable() else null)
+      val action = BitmapTargetAction(picasso, target, request, errorDrawable, errorResId)
+      picasso.enqueueAndSubmit(action)
+    }
   }
 
   /**
@@ -509,18 +522,20 @@ class RequestCreator internal constructor(
       "Cannot use placeholder or error drawables with remote views."
     }
 
-    val request = createRequest(started)
-    val action = NotificationAction(
-      picasso,
-      request,
-      errorResId,
-      RemoteViewsTarget(remoteViews, viewId),
-      notificationId,
-      notification,
-      notificationTag,
-      callback
-    )
-    performRemoteViewInto(request, action)
+    picasso.scope.launch {
+      val request = createRequest(started)
+      val action = NotificationAction(
+        picasso,
+        request,
+        errorResId,
+        RemoteViewsTarget(remoteViews, viewId),
+        notificationId,
+        notification,
+        notificationTag,
+        callback
+      )
+      performRemoteViewInto(request, action)
+    }
   }
 
   /**
@@ -553,17 +568,19 @@ class RequestCreator internal constructor(
       "Cannot use placeholder or error drawables with remote views."
     }
 
-    val request = createRequest(started)
-    val action = AppWidgetAction(
-      picasso,
-      request,
-      errorResId,
-      RemoteViewsTarget(remoteViews, viewId),
-      appWidgetIds,
-      callback
-    )
+    picasso.scope.launch {
+      val request = createRequest(started)
+      val action = AppWidgetAction(
+        picasso,
+        request,
+        errorResId,
+        RemoteViewsTarget(remoteViews, viewId),
+        appWidgetIds,
+        callback
+      )
 
-    performRemoteViewInto(request, action)
+      performRemoteViewInto(request, action)
+    }
   }
 
   /**
@@ -590,50 +607,43 @@ class RequestCreator internal constructor(
     }
 
     if (deferred) {
-      check(!data.hasSize()) { "Fit cannot be used with resize." }
-      val width = target.width
-      val height = target.height
-      if (width == 0 || height == 0) {
-        if (setPlaceholder) {
-          setPlaceholder(target, getPlaceholderDrawable())
+      sizeSpec = ImageViewSizeSpec(target)
+    }
+
+    picasso.scope.launch {
+      val request = createRequest(started)
+
+      if (shouldReadFromMemoryCache(request.memoryPolicy)) {
+        val bitmap = picasso.quickMemoryCacheCheck(request.key)
+        if (bitmap != null) {
+          picasso.cancelRequest(target)
+          val result: RequestHandler.Result =
+            RequestHandler.Result.Bitmap(bitmap, LoadedFrom.MEMORY)
+          setResult(target, picasso.context, result, noFade, picasso.indicatorsEnabled)
+          if (picasso.isLoggingEnabled) {
+            log(OWNER_MAIN, VERB_COMPLETED, request.plainId(), "from " + LoadedFrom.MEMORY)
+          }
+          callback?.onSuccess()
+          return@launch
         }
-        picasso.defer(target, DeferredRequestCreator(this, target, callback))
-        return
       }
-      data.resize(width, height)
-    }
 
-    val request = createRequest(started)
-
-    if (shouldReadFromMemoryCache(request.memoryPolicy)) {
-      val bitmap = picasso.quickMemoryCacheCheck(request.key)
-      if (bitmap != null) {
-        picasso.cancelRequest(target)
-        val result: RequestHandler.Result = RequestHandler.Result.Bitmap(bitmap, LoadedFrom.MEMORY)
-        setResult(target, picasso.context, result, noFade, picasso.indicatorsEnabled)
-        if (picasso.isLoggingEnabled) {
-          log(OWNER_MAIN, VERB_COMPLETED, request.plainId(), "from " + LoadedFrom.MEMORY)
-        }
-        callback?.onSuccess()
-        return
+      if (setPlaceholder) {
+        setPlaceholder(target, getPlaceholderDrawable())
       }
+
+      val action = ImageViewAction(
+        picasso,
+        target,
+        request,
+        errorDrawable,
+        errorResId,
+        noFade,
+        callback
+      )
+
+      picasso.enqueueAndSubmit(action)
     }
-
-    if (setPlaceholder) {
-      setPlaceholder(target, getPlaceholderDrawable())
-    }
-
-    val action = ImageViewAction(
-      picasso,
-      target,
-      request,
-      errorDrawable,
-      errorResId,
-      noFade,
-      callback
-    )
-
-    picasso.enqueueAndSubmit(action)
   }
 
   private fun getPlaceholderDrawable(): Drawable? {
@@ -645,7 +655,7 @@ class RequestCreator internal constructor(
   }
 
   /** Create the request optionally passing it through the request transformer.  */
-  private fun createRequest(started: Long): Request {
+  private suspend fun createRequest(started: Long): Request {
     val id = nextId.getAndIncrement()
     val request = data.build()
     request.id = id
