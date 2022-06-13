@@ -17,7 +17,6 @@ package com.example.picasso
 
 import android.os.Bundle
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.GridCells.Adaptive
@@ -28,7 +27,7 @@ import androidx.compose.ui.layout.ContentScale.Companion.Crop
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
 import com.squareup.picasso3.Picasso
-import com.squareup.picasso3.compose.rememberPainter
+import com.squareup.picasso3.compose.PicassoImage
 
 class SampleComposeActivity : PicassoSampleActivity() {
 
@@ -61,15 +60,15 @@ fun ImageGrid(
   ) {
     items(urls.size) {
       val url = urls[it]
-      Image(
-        painter = picasso.rememberPainter(key = url, optimizeCanvasSize = true) {
-          it.load(url).placeholder(R.drawable.placeholder).error(R.drawable.error)
-        },
-        contentDescription = null,
-        contentScale = Crop,
+      PicassoImage(
         modifier = Modifier
           .fillMaxWidth()
-          .aspectRatio(1f)
+          .aspectRatio(1f),
+        picasso = picasso,
+        url = url,
+        placeholderId = R.drawable.placeholder,
+        errorId = R.drawable.error,
+        contentScale = Crop
       )
     }
   }

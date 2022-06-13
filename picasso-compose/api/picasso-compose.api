@@ -1,3 +1,10 @@
+public final class com/squareup/picasso3/compose/PicassoImageKt {
+	public static final fun PicassoImage-tuiNduA (Lcom/squareup/picasso3/Picasso;ILkotlin/jvm/functions/Function1;Ljava/lang/String;Landroidx/compose/ui/Modifier;JLandroidx/compose/ui/Alignment;Landroidx/compose/ui/layout/ContentScale;FLandroidx/compose/ui/graphics/ColorFilter;Lkotlin/jvm/functions/Function1;Ljava/lang/Integer;Ljava/lang/Integer;Landroidx/compose/runtime/Composer;III)V
+	public static final fun PicassoImage-tuiNduA (Lcom/squareup/picasso3/Picasso;Landroid/net/Uri;Lkotlin/jvm/functions/Function1;Ljava/lang/String;Landroidx/compose/ui/Modifier;JLandroidx/compose/ui/Alignment;Landroidx/compose/ui/layout/ContentScale;FLandroidx/compose/ui/graphics/ColorFilter;Lkotlin/jvm/functions/Function1;Ljava/lang/Integer;Ljava/lang/Integer;Landroidx/compose/runtime/Composer;III)V
+	public static final fun PicassoImage-tuiNduA (Lcom/squareup/picasso3/Picasso;Ljava/io/File;Lkotlin/jvm/functions/Function1;Ljava/lang/String;Landroidx/compose/ui/Modifier;JLandroidx/compose/ui/Alignment;Landroidx/compose/ui/layout/ContentScale;FLandroidx/compose/ui/graphics/ColorFilter;Lkotlin/jvm/functions/Function1;Ljava/lang/Integer;Ljava/lang/Integer;Landroidx/compose/runtime/Composer;III)V
+	public static final fun PicassoImage-tuiNduA (Lcom/squareup/picasso3/Picasso;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Ljava/lang/String;Landroidx/compose/ui/Modifier;JLandroidx/compose/ui/Alignment;Landroidx/compose/ui/layout/ContentScale;FLandroidx/compose/ui/graphics/ColorFilter;Lkotlin/jvm/functions/Function1;Ljava/lang/Integer;Ljava/lang/Integer;Landroidx/compose/runtime/Composer;III)V
+}
+
 public final class com/squareup/picasso3/compose/PicassoPainterKt {
 	public static final fun rememberPainter (Lcom/squareup/picasso3/Picasso;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;ZLkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)Landroidx/compose/ui/graphics/painter/Painter;
 }
