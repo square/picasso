@@ -154,7 +154,9 @@ internal object BitmapUtils {
 
   @RequiresApi(28)
   private fun decodeResourceP(context: Context, request: Request): Bitmap {
-    val imageSource = ImageDecoder.createSource(context.resources, request.resourceId)
+    val resourceId = request.resourceId.takeIf { it != 0 }
+      ?: Utils.getResourceId(context.resources, request)
+    val imageSource = ImageDecoder.createSource(context.resources, resourceId)
     return decodeImageSource(imageSource, request)
   }
 
