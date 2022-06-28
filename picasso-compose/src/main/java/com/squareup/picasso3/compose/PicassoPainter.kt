@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.isSpecified
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.DefaultAlpha
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -37,20 +38,32 @@ import com.squareup.picasso3.RequestCreator
 fun Picasso.rememberPainter(
   key: Any? = null,
   onError: ((Exception) -> Unit)? = null,
+  optimizeCanvasSize: Boolean = false,
   request: (Picasso) -> RequestCreator,
 ): Painter {
-  return remember(key) { PicassoPainter(this, request, onError) }
+  return remember(key) {
+    PicassoPainter(
+      picasso = this,
+      request = request,
+      optimizeCanvasSize = optimizeCanvasSize,
+      onError = onError
+    ).apply { onRemembered() }
+  }
 }
 
 internal class PicassoPainter(
   private val picasso: Picasso,
   private val request: (Picasso) -> RequestCreator,
+  private val optimizeCanvasSize: Boolean,
   private val onError: ((Exception) -> Unit)? = null
 ) : Painter(), RememberObserver, DrawableTarget {
 
   private var painter: Painter by mutableStateOf(EmptyPainter)
   private var alpha: Float by mutableStateOf(DefaultAlpha)
   private var colorFilter: ColorFilter? by mutableStateOf(null)
+
+  private var attachedPicasso = false
+  private var canvasSize = Size.Unspecified
 
   override val intrinsicSize: Size
     get() = painter.intrinsicSize
@@ -66,25 +79,51 @@ internal class PicassoPainter(
   }
 
   override fun DrawScope.onDraw() {
+    if (!attachedPicasso && optimizeCanvasSize) {
+      canvasSize = size
+      loadInternal()
+    }
+
     with(painter) {
       draw(size, alpha, colorFilter)
     }
   }
 
   override fun onRemembered() {
-    request.invoke(picasso).into(this)
+    loadInternal()
+  }
+
+  private fun loadInternal() {
+    if (!attachedPicasso && (!optimizeCanvasSize || canvasSize.isSpecified)) {
+      request.invoke(picasso).apply {
+        if (optimizeCanvasSize) {
+          if (canvasSize.width > canvasSize.height) {
+            resize(canvasSize.width.toInt(), 0)
+          } else {
+            resize(0, canvasSize.height.toInt())
+          }
+          onlyScaleDown()
+        }
+      }.into(this)
+
+      attachedPicasso = true
+    }
   }
 
   override fun onAbandoned() {
     (painter as? RememberObserver)?.onAbandoned()
     painter = EmptyPainter
     picasso.cancelRequest(this)
+    canvasSize = Size.Unspecified
+    attachedPicasso = false
   }
 
   override fun onForgotten() {
     (painter as? RememberObserver)?.onForgotten()
     painter = EmptyPainter
     picasso.cancelRequest(this)
+    canvasSize = Size.Unspecified
+    attachedPicasso = false
   }
 
   override fun onPrepareLoad(placeHolderDrawable: Drawable?) {
@@ -107,6 +146,6 @@ internal class PicassoPainter(
 }
 
 private object EmptyPainter : Painter() {
-  override val intrinsicSize = Size.Zero
+  override val intrinsicSize = Size.Unspecified
   override fun DrawScope.onDraw() = Unit
 }

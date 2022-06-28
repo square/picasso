@@ -62,7 +62,7 @@ fun ImageGrid(
     items(urls.size) {
       val url = urls[it]
       Image(
-        painter = picasso.rememberPainter(key = url) {
+        painter = picasso.rememberPainter(key = url, optimizeCanvasSize = true) {
           it.load(url).placeholder(R.drawable.placeholder).error(R.drawable.error)
         },
         contentDescription = null,
