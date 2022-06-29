@@ -17,19 +17,35 @@ package com.squareup.picasso3.compose
 
 import android.net.Uri
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.isSpecified
 import androidx.compose.ui.geometry.isUnspecified
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.DefaultAlpha
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import com.squareup.picasso3.Picasso
 import com.squareup.picasso3.RequestCreator
+import kotlinx.coroutines.launch
 import java.io.File
 
 @Composable
@@ -44,9 +60,12 @@ fun PicassoImage(
   contentScale: ContentScale = ContentScale.Fit,
   alpha: Float = DefaultAlpha,
   colorFilter: ColorFilter? = null,
+  crossfadeSpec: FiniteAnimationSpec<Float> = tween(200),
   onError: ((Exception) -> Unit)? = null,
   @DrawableRes placeholderId: Int? = null,
-  @DrawableRes errorId: Int? = null
+  @DrawableRes errorId: Int? = null,
+  placeholder: @Composable (() -> Unit)? = null,
+  error: @Composable ((Exception) -> Unit)? = null
 ) {
   PicassoImage(
     picasso = StablePicasso(picasso),
@@ -59,9 +78,12 @@ fun PicassoImage(
     contentScale = contentScale,
     alpha = alpha,
     colorFilter = colorFilter,
+    crossfadeSpec = crossfadeSpec,
     onError = onError,
     placeholderId = placeholderId,
-    errorId = errorId
+    errorId = errorId,
+    placeholder = placeholder,
+    error = error
   )
 }
 
@@ -77,9 +99,12 @@ fun PicassoImage(
   contentScale: ContentScale = ContentScale.Fit,
   alpha: Float = DefaultAlpha,
   colorFilter: ColorFilter? = null,
+  crossfadeSpec: FiniteAnimationSpec<Float> = tween(200),
   onError: ((Exception) -> Unit)? = null,
   @DrawableRes placeholderId: Int? = null,
-  @DrawableRes errorId: Int? = null
+  @DrawableRes errorId: Int? = null,
+  placeholder: @Composable (() -> Unit)? = null,
+  error: @Composable ((Exception) -> Unit)? = null
 ) {
   PicassoImage(
     picasso = StablePicasso(picasso),
@@ -92,9 +117,12 @@ fun PicassoImage(
     contentScale = contentScale,
     alpha = alpha,
     colorFilter = colorFilter,
+    crossfadeSpec = crossfadeSpec,
     onError = onError,
     placeholderId = placeholderId,
-    errorId = errorId
+    errorId = errorId,
+    placeholder = placeholder,
+    error = error
   )
 }
 
@@ -110,9 +138,12 @@ fun PicassoImage(
   contentScale: ContentScale = ContentScale.Fit,
   alpha: Float = DefaultAlpha,
   colorFilter: ColorFilter? = null,
+  crossfadeSpec: FiniteAnimationSpec<Float> = tween(200),
   onError: ((Exception) -> Unit)? = null,
   @DrawableRes placeholderId: Int? = null,
-  @DrawableRes errorId: Int? = null
+  @DrawableRes errorId: Int? = null,
+  placeholder: @Composable (() -> Unit)? = null,
+  error: @Composable ((Exception) -> Unit)? = null
 ) {
   PicassoImage(
     picasso = StablePicasso(picasso),
@@ -125,9 +156,12 @@ fun PicassoImage(
     contentScale = contentScale,
     alpha = alpha,
     colorFilter = colorFilter,
+    crossfadeSpec = crossfadeSpec,
     onError = onError,
     placeholderId = placeholderId,
-    errorId = errorId
+    errorId = errorId,
+    placeholder = placeholder,
+    error = error
   )
 }
 
@@ -143,9 +177,12 @@ fun PicassoImage(
   contentScale: ContentScale = ContentScale.Fit,
   alpha: Float = DefaultAlpha,
   colorFilter: ColorFilter? = null,
+  crossfadeSpec: FiniteAnimationSpec<Float> = tween(200),
   onError: ((Exception) -> Unit)? = null,
   @DrawableRes placeholderId: Int? = null,
-  @DrawableRes errorId: Int? = null
+  @DrawableRes errorId: Int? = null,
+  placeholder: @Composable (() -> Unit)? = null,
+  error: @Composable ((Exception) -> Unit)? = null
 ) {
   PicassoImage(
     picasso = StablePicasso(picasso),
@@ -158,14 +195,16 @@ fun PicassoImage(
     contentScale = contentScale,
     alpha = alpha,
     colorFilter = colorFilter,
+    crossfadeSpec = crossfadeSpec,
     onError = onError,
     placeholderId = placeholderId,
-    errorId = errorId
+    errorId = errorId,
+    placeholder = placeholder,
+    error = error
   )
 }
 
-@Composable
-private fun PicassoImage(
+@Composable private fun PicassoImage(
   picasso: StablePicasso,
   key: Any?,
   request: ((Picasso) -> RequestCreator),
@@ -178,33 +217,110 @@ private fun PicassoImage(
   colorFilter: ColorFilter? = null,
   onError: ((Exception) -> Unit)? = null,
   @DrawableRes placeholderId: Int? = null,
-  @DrawableRes errorId: Int? = null
+  @DrawableRes errorId: Int? = null,
+  crossfadeSpec: FiniteAnimationSpec<Float> = tween(200),
+  placeholder: @Composable (() -> Unit)? = null,
+  error: @Composable ((Exception) -> Unit)? = null
 ) {
+  var exception by remember<MutableState<Exception?>>(key) { mutableStateOf(null) }
   val picassoPainter = picasso.value.rememberPainter(
     request = {
       request(it).apply {
-        errorId?.let(::error)
-        placeholderId?.let(::placeholder)
-
         if (targetImageSize.isSpecified) {
           resize(targetImageSize.width.toInt(), targetImageSize.height.toInt())
+          onlyScaleDown()
         }
+
+        noFade()
       }
     },
-    key = key,
-    onError = onError,
+    onError = { onError?.invoke(it); exception = it },
     optimizeCanvasSize = targetImageSize.isUnspecified
   )
 
-  Image(
-    modifier = modifier,
-    painter = picassoPainter,
-    contentDescription = contentDescription,
-    alignment = alignment,
-    contentScale = contentScale,
-    alpha = alpha,
-    colorFilter = colorFilter
-  )
+  Box {
+    val scope = rememberCoroutineScope()
+    var removePlaceholder by remember(key) { mutableStateOf(false) }
+    var firstFrame by remember(key) { mutableStateOf(true) }
+    val placeholderFade by remember(key) {
+      derivedStateOf {
+        if (!removePlaceholder && picassoPainter.intrinsicSize.isSpecified) {
+          Animatable(1F).also {
+            scope.launch {
+              it.animateTo(0F, animationSpec = crossfadeSpec)
+              if (placeholder != null) {
+                removePlaceholder = true
+              }
+            }
+          }
+        } else null
+      }
+    }
+
+    Image(
+      modifier = modifier
+        .graphicsLayer { placeholderFade?.let { this.alpha = 1F - it.value } }
+        .drawWithContent {
+          drawContent()
+          if (firstFrame) {
+            if (picassoPainter.intrinsicSize.isSpecified) {
+              removePlaceholder = true
+            }
+            firstFrame = false
+          }
+        },
+      painter = picassoPainter,
+      contentDescription = contentDescription,
+      alignment = alignment,
+      contentScale = contentScale,
+      alpha = alpha,
+      colorFilter = colorFilter
+    )
+
+    @Composable
+    fun ResourceImage(id: Int) = Image(
+      modifier = modifier,
+      painter = painterResource(id = id),
+      contentDescription = contentDescription,
+      alignment = alignment,
+      contentScale = contentScale,
+      alpha = alpha,
+      colorFilter = colorFilter
+    )
+
+    val placeholderComposable = placeholder ?: placeholderId?.let { id -> { ResourceImage(id = id) } }
+    placeholderComposable?.let { placeholder ->
+      if (!removePlaceholder) {
+        Box(
+          modifier = modifier
+            .graphicsLayer { this.alpha = placeholderFade?.value ?: 1F }
+            .drawWithContent {
+              if (!removePlaceholder) {
+                drawContent()
+              }
+            }
+        ) {
+          placeholder.invoke()
+        }
+      }
+    }
+
+    val errorComposable = error ?: errorId?.let { id -> { ResourceImage(id = id) } }
+    errorComposable?.let { error ->
+      exception?.let {
+        val animateIn = remember(key) { Animatable(0F) }
+        LaunchedEffect(key) {
+          animateIn.animateTo(1F, animationSpec = crossfadeSpec)
+        }
+
+        Box(
+          modifier = modifier.graphicsLayer { this.alpha = animateIn.value }
+        ) {
+          error.invoke(it)
+        }
+      }
+    }
+  }
 }
 
 @Stable

@@ -17,14 +17,17 @@ package com.example.picasso
 
 import android.os.Bundle
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.GridCells.Adaptive
 import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale.Companion.Crop
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.squareup.picasso3.Picasso
 import com.squareup.picasso3.compose.PicassoImage
@@ -66,9 +69,23 @@ fun ImageGrid(
           .aspectRatio(1f),
         picasso = picasso,
         url = url,
-        placeholderId = R.drawable.placeholder,
-        errorId = R.drawable.error,
-        contentScale = Crop
+        contentScale = ContentScale.Crop,
+        placeholder = {
+          Image(
+            modifier = Modifier.fillMaxSize(),
+            painter = painterResource(id = R.drawable.placeholder),
+            contentScale = ContentScale.Crop,
+            contentDescription = null
+          )
+        },
+        error = {
+          Image(
+            modifier = Modifier.fillMaxSize(),
+            painter = painterResource(id = R.drawable.error),
+            contentScale = ContentScale.Crop,
+            contentDescription = null
+          )
+        }
       )
     }
   }
