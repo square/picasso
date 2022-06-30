@@ -144,23 +144,22 @@ internal object BitmapUtils {
   }
 
   fun decodeResource(context: Context, request: Request): Bitmap {
-    if (VERSION.SDK_INT >= 28) {
-      return decodeResourceP(context, request)
-    }
     val resources = Utils.getResources(context, request)
     val id = Utils.getResourceId(resources, request)
-    return decodeResourcePreP(resources, id, request)
+    return if (VERSION.SDK_INT >= 28) {
+      decodeResourceP(resources, id, request)
+    } else {
+      decodeResourcePreP(resources, id, request)
+    }
   }
 
   @RequiresApi(28)
-  private fun decodeResourceP(context: Context, request: Request): Bitmap {
-    val resourceId = request.resourceId.takeIf { it != 0 }
-      ?: Utils.getResourceId(context.resources, request)
-    val imageSource = ImageDecoder.createSource(context.resources, resourceId)
+  private fun decodeResourceP(resources: Resources, @DrawableRes id: Int, request: Request): Bitmap {
+    val imageSource = ImageDecoder.createSource(resources, id)
     return decodeImageSource(imageSource, request)
   }
 
-  private fun decodeResourcePreP(resources: Resources, id: Int, request: Request): Bitmap {
+  private fun decodeResourcePreP(resources: Resources, @DrawableRes id: Int, request: Request): Bitmap {
     val options = createBitmapOptions(request)
     if (requiresInSampleSize(options)) {
       BitmapFactory.decodeResource(resources, id, options)
