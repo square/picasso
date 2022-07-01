@@ -33,11 +33,41 @@ jobs:
           path: |
             **/build/reports/tests/test/
 
+  instrumentation-tests:
+    # We build on a Mac to get hardware acceleration for the Android emulator.
+    runs-on: macos-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        api-level: [21, 27, 28]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Configure JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: 11
+
+      - run: ./gradlew assembleAndroidTest
+
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api-level }}
+          script: ./gradlew connectedCheck
+
   publish:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
     needs:
       - build
+      - instrumentation-tests
 
     steps:
       - name: Checkout
