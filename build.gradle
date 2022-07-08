@@ -22,6 +22,7 @@ buildscript {
     androidxCursorAdapter: 'androidx.cursoradapter:cursoradapter:1.0.0',
     androidxExifInterface: 'androidx.exifinterface:exifinterface:1.3.3',
     androidxFragment: 'androidx.fragment:fragment:1.4.0',
+    androidxJunit: 'androidx.test.ext:junit:1.1.3',
     androidxLifecycle: 'androidx.lifecycle:lifecycle-common:2.4.0',
     androidxStartup: 'androidx.startup:startup-runtime:1.1.0',
     androidxTestRunner: 'androidx.test:runner:1.4.0',

@@ -15,29 +15,27 @@
  */
 package com.squareup.picasso3
 
-import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Color.RED
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.squareup.picasso3.Picasso.LoadedFrom.DISK
-import com.squareup.picasso3.Picasso.LoadedFrom.MEMORY
-import com.squareup.picasso3.TestUtils.makeBitmap
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 
-@RunWith(RobolectricTestRunner::class)
+@RunWith(AndroidJUnit4::class)
 class PicassoDrawableTest {
-  private val context: Context = RuntimeEnvironment.application
   private val placeholder: Drawable = ColorDrawable(RED)
-  private val bitmap = makeBitmap()
+  private val bitmap = Bitmap.createBitmap(10, 10, Bitmap.Config.ALPHA_8)
 
   @Test fun createWithNoPlaceholderAnimation() {
     val pd = PicassoDrawable(
-      context, bitmap,
       placeholder = null,
+      context = ApplicationProvider.getApplicationContext(),
+      bitmap = bitmap,
       loadedFrom = DISK,
       noFade = false,
       debugging = false
@@ -49,7 +47,9 @@ class PicassoDrawableTest {
 
   @Test fun createWithPlaceholderAnimation() {
     val pd = PicassoDrawable(
-      context, bitmap, placeholder,
+      context = ApplicationProvider.getApplicationContext(),
+      bitmap = bitmap,
+      placeholder,
       loadedFrom = DISK,
       noFade = false,
       debugging = false
@@ -61,8 +61,10 @@ class PicassoDrawableTest {
 
   @Test fun createWithBitmapCacheHit() {
     val pd = PicassoDrawable(
-      context, bitmap, placeholder,
-      loadedFrom = MEMORY,
+      context = ApplicationProvider.getApplicationContext(),
+      bitmap = bitmap,
+      placeholder,
+      loadedFrom = Picasso.LoadedFrom.MEMORY,
       noFade = false,
       debugging = false
     )

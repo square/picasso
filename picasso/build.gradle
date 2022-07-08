@@ -44,7 +44,9 @@ dependencies {
   testImplementation deps.mockito
   testImplementation deps.mockWebServer
 
+  androidTestImplementation deps.androidxJunit
   androidTestImplementation deps.androidxTestRunner
+  androidTestImplementation deps.truth
 }
 
 spotless {
