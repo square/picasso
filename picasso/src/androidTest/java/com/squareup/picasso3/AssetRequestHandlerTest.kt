@@ -16,12 +16,12 @@
 package com.squareup.picasso3
 
 import android.net.Uri
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 
-@RunWith(RobolectricTestRunner::class)
+@RunWith(AndroidJUnit4::class)
 class AssetRequestHandlerTest {
   @Test fun truncatesFilePrefix() {
     val uri = Uri.parse("file:///android_asset/foo/bar.png")

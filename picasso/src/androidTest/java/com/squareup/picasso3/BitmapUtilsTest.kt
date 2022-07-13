@@ -18,6 +18,7 @@ package com.squareup.picasso3
 import android.graphics.Bitmap
 import android.graphics.Bitmap.Config.RGB_565
 import android.graphics.BitmapFactory
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.squareup.picasso3.BitmapUtils.calculateInSampleSize
 import com.squareup.picasso3.BitmapUtils.createBitmapOptions
@@ -25,9 +26,8 @@ import com.squareup.picasso3.BitmapUtils.requiresInSampleSize
 import com.squareup.picasso3.TestUtils.URI_1
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 
-@RunWith(RobolectricTestRunner::class)
+@RunWith(AndroidJUnit4::class)
 class BitmapUtilsTest {
 
   @Test fun bitmapConfig() {
