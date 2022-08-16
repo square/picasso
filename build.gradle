@@ -6,12 +6,13 @@ buildscript {
     'sourceCompatibility': JavaVersion.VERSION_1_8,
     'targetCompatibility': JavaVersion.VERSION_1_8,
     'kotlin': '1.6.10',
-    'okhttp': '4.9.3',
-    'okio': '3.0.0',
+    'composeUi': '1.1.0',
+    'okhttp': '4.10.0',
+    'okio': '3.2.0',
   ]
 
   ext.deps = [
-    androidPlugin: 'com.android.tools.build:gradle:7.0.4',
+    androidPlugin: 'com.android.tools.build:gradle:7.2.2',
     kotlinPlugin: "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}",
     okhttp: "com.squareup.okhttp3:okhttp:${versions.okhttp}",
     okio: "com.squareup.okio:okio:${versions.okio}",
@@ -31,8 +32,8 @@ buildscript {
     robolectric: 'org.robolectric:robolectric:4.6.1',
     mockito: 'org.mockito:mockito-core:3.0.0',
     drawablePainter: 'com.google.accompanist:accompanist-drawablepainter:0.23.1',
-    composeUi: 'androidx.compose.ui:ui:1.1.1',
-    foundation: 'androidx.compose.foundation:foundation:1.1.1'
+    composeUi: "androidx.compose.ui:ui:${versions.composeUi}",
+    foundation: "androidx.compose.foundation:foundation:${versions.composeUi}"
   ]
 
   ext.isCi = "true" == System.getenv('CI')
@@ -46,10 +47,10 @@ buildscript {
   dependencies {
     classpath deps.androidPlugin
     classpath deps.kotlinPlugin
-    classpath 'com.github.ben-manes:gradle-versions-plugin:0.40.0'
+    classpath 'com.github.ben-manes:gradle-versions-plugin:0.42.0'
     classpath 'com.vanniktech:gradle-maven-publish-plugin:0.18.0'
     classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.3.0'
-    classpath 'org.jetbrains.kotlinx:binary-compatibility-validator:0.8.0'
+    classpath 'org.jetbrains.kotlinx:binary-compatibility-validator:0.11.0'
   }
 }
 

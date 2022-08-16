@@ -86,7 +86,7 @@ class SampleListDetailActivity : PicassoSampleActivity() {
       val urlView = view.findViewById<TextView>(R.id.url)
       val imageView = view.findViewById<ImageView>(R.id.photo)
 
-      val url = arguments!!.getString(KEY_URL)
+      val url = requireArguments().getString(KEY_URL)
       urlView.text = url
       PicassoInitializer.get()
         .load(url)
