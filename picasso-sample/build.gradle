@@ -15,7 +15,7 @@ android {
   }
 
   composeOptions {
-    kotlinCompilerExtensionVersion "1.1.1"
+    kotlinCompilerExtensionVersion versions.composeCompiler
   }
 
   compileOptions {
@@ -47,6 +47,7 @@ dependencies {
 
   implementation deps.drawablePainter
   implementation deps.composeUi
+  implementation deps.runtime
   implementation deps.foundation
 
   implementation project(':picasso')
