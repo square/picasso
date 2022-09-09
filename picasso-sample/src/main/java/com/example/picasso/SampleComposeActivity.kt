@@ -16,7 +16,6 @@
 package com.example.picasso
 
 import android.os.Bundle
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -40,12 +39,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
 import com.squareup.picasso3.Picasso
-import com.squareup.picasso3.compose.rememberPainter
+import com.squareup.picasso3.compose.PicassoImage
 
 class SampleComposeActivity : PicassoSampleActivity() {
 
@@ -97,11 +97,12 @@ fun ImageGrid(
   ) {
     items(urls.size) {
       val url = urls[it]
-      Image(
-        painter = picasso.rememberPainter(key = url) {
-          it.load(url).placeholder(R.drawable.placeholder).error(R.drawable.error)
-        },
-        contentDescription = null,
+      PicassoImage(
+        picasso = picasso,
+        url = url,
+        placeholderId = R.drawable.placeholder,
+        errorId = R.drawable.error,
+        targetImageSize = Size(250F, 250F),
         contentScale = contentScale,
         alignment = alignment,
         modifier = Modifier
