@@ -378,6 +378,7 @@ class Picasso internal constructor(
     for (deferredRequestCreator in targetToDeferredRequestCreator.values) {
       deferredRequestCreator.cancel()
     }
+    targetToAction.clear()
     targetToDeferredRequestCreator.clear()
     shutdown = true
   }
