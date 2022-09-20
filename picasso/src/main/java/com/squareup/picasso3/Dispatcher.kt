@@ -51,6 +51,7 @@ import com.squareup.picasso3.Utils.getLogIdsForHunter
 import com.squareup.picasso3.Utils.hasPermission
 import com.squareup.picasso3.Utils.isAirplaneModeOn
 import com.squareup.picasso3.Utils.log
+import java.util.WeakHashMap
 import java.util.concurrent.ExecutorService
 
 internal class Dispatcher internal constructor(
@@ -63,10 +64,10 @@ internal class Dispatcher internal constructor(
   internal val hunterMap = mutableMapOf<String, BitmapHunter>()
 
   @get:JvmName("-failedActions")
-  internal val failedActions = mutableMapOf<Any, Action>()
+  internal val failedActions = WeakHashMap<Any, Action>()
 
   @get:JvmName("-pausedActions")
-  internal val pausedActions = mutableMapOf<Any, Action>()
+  internal val pausedActions = WeakHashMap<Any, Action>()
 
   @get:JvmName("-pausedTags")
   internal val pausedTags = mutableSetOf<Any>()
