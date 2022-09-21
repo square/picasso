@@ -37,6 +37,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyZeroInteractions
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import java.lang.ref.WeakReference
 
 @RunWith(RobolectricTestRunner::class)
 class RemoteViewsActionTest {
@@ -112,7 +113,7 @@ class RemoteViewsActionTest {
     @DrawableRes errorResId: Int,
     target: RemoteViewsTarget,
     callback: Callback?
-  ) : RemoteViewsAction(picasso, data, errorResId, target, callback) {
+  ) : RemoteViewsAction(picasso, data, errorResId, WeakReference(target), callback) {
     override fun update() {}
     override fun getTarget(): Any = target
   }
