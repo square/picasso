@@ -35,7 +35,8 @@ buildscript {
     drawablePainter: 'com.google.accompanist:accompanist-drawablepainter:0.23.1',
     composeUi: "androidx.compose.ui:ui:${versions.composeUi}",
     runtime: "androidx.compose.runtime:runtime:${versions.composeUi}",
-    foundation: "androidx.compose.foundation:foundation:${versions.composeUi}"
+    foundation: "androidx.compose.foundation:foundation:${versions.composeUi}",
+    material: "androidx.compose.material:material:${versions.composeUi}",
   ]
 
   ext.isCi = "true" == System.getenv('CI')

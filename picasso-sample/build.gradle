@@ -49,6 +49,7 @@ dependencies {
   implementation deps.composeUi
   implementation deps.runtime
   implementation deps.foundation
+  implementation deps.material
 
   implementation project(':picasso')
   implementation project(':picasso-stats')
