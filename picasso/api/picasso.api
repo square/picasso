@@ -5,12 +5,6 @@ public abstract interface class com/squareup/picasso3/BitmapTarget {
 }
 
 public abstract interface class com/squareup/picasso3/Callback {
-	public abstract fun onError (Ljava/lang/Throwable;)V
-	public abstract fun onSuccess ()V
-}
-
-public class com/squareup/picasso3/Callback$EmptyCallback : com/squareup/picasso3/Callback {
-	public fun <init> ()V
 	public fun onError (Ljava/lang/Throwable;)V
 	public fun onSuccess ()V
 }
@@ -28,12 +22,8 @@ public abstract interface class com/squareup/picasso3/EventListener : java/io/Cl
 	public abstract fun cacheMaxSize (I)V
 	public abstract fun cacheMiss ()V
 	public abstract fun cacheSize (I)V
-	public abstract fun close ()V
+	public fun close ()V
 	public abstract fun downloadFinished (J)V
-}
-
-public final class com/squareup/picasso3/EventListener$DefaultImpls {
-	public static fun close (Lcom/squareup/picasso3/EventListener;)V
 }
 
 public abstract interface annotation class com/squareup/picasso3/Initializer : java/lang/annotation/Annotation {
