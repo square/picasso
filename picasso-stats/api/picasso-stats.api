@@ -6,6 +6,7 @@ public final class com/squareup/picasso3/stats/StatsEventListener : com/squareup
 	public fun cacheMaxSize (I)V
 	public fun cacheMiss ()V
 	public fun cacheSize (I)V
+	public fun close ()V
 	public fun downloadFinished (J)V
 	public final fun getSnapshot ()Lcom/squareup/picasso3/stats/StatsEventListener$Snapshot;
 }
