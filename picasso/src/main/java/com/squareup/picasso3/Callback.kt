@@ -16,6 +16,10 @@
 package com.squareup.picasso3
 
 interface Callback {
-  fun onSuccess() = Unit
-  fun onError(t: Throwable) = Unit
+  fun onSuccess()
+  fun onError(t: Throwable)
+  open class EmptyCallback : Callback {
+    override fun onSuccess() = Unit
+    override fun onError(t: Throwable) = Unit
+  }
 }

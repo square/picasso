@@ -22,7 +22,7 @@ import android.provider.MediaStore.Images.Media
 import android.view.View
 import android.widget.ImageView
 import android.widget.ViewAnimator
-import com.squareup.picasso3.Callback
+import com.squareup.picasso3.Callback.EmptyCallback
 
 class SampleGalleryActivity : PicassoSampleActivity() {
   private lateinit var imageView: ImageView
@@ -78,7 +78,7 @@ class SampleGalleryActivity : PicassoSampleActivity() {
       .centerInside()
       .into(
         imageView,
-        object : Callback {
+        object : EmptyCallback() {
           override fun onSuccess() {
             // Index 0 is the image view.
             animator.displayedChild = 0
