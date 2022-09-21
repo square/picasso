@@ -41,6 +41,7 @@ import com.squareup.picasso3.Utils.checkMain
 import com.squareup.picasso3.Utils.checkNotMain
 import com.squareup.picasso3.Utils.log
 import java.io.IOException
+import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicInteger
 
 /** Fluent API for building an image download request.  */
@@ -625,7 +626,7 @@ class RequestCreator internal constructor(
 
     val action = ImageViewAction(
       picasso,
-      target,
+      WeakReference(target),
       request,
       errorDrawable,
       errorResId,

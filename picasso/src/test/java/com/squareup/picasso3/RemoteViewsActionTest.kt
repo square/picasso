@@ -28,7 +28,6 @@ import com.squareup.picasso3.TestUtils.SIMPLE_REQUEST
 import com.squareup.picasso3.TestUtils.UNUSED_CALL_FACTORY
 import com.squareup.picasso3.TestUtils.makeBitmap
 import com.squareup.picasso3.TestUtils.mockCallback
-import com.squareup.picasso3.TestUtils.mockImageViewTarget
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -91,17 +90,10 @@ class RemoteViewsActionTest {
   }
 
   @Test fun clearsCallbackOnCancel() {
-    val request = ImageViewAction(
-      picasso = picasso,
-      target = mockImageViewTarget(),
-      data = SIMPLE_REQUEST,
-      errorDrawable = null,
-      errorResId = 0,
-      noFade = false,
-      callback = mockCallback()
-    )
-    request.cancel()
-    assertThat(request.callback).isNull()
+    val callback = mockCallback()
+    val action = createAction(callback, 1)
+    action.cancel()
+    assertThat(action.callback).isNull()
   }
 
   private fun createAction(callback: Callback, errorResId: Int = 0): TestableRemoteViewsAction {

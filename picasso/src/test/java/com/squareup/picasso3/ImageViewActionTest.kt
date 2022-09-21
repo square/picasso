@@ -39,6 +39,7 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import java.lang.ref.WeakReference
 
 @RunWith(RobolectricTestRunner::class)
 class ImageViewActionTest {
@@ -56,7 +57,7 @@ class ImageViewActionTest {
     val callback = mockCallback()
     val request = ImageViewAction(
       picasso = picasso,
-      target = target,
+      target = WeakReference(target),
       data = SIMPLE_REQUEST,
       errorDrawable = null,
       errorResId = 0,
@@ -74,7 +75,7 @@ class ImageViewActionTest {
     val callback = mockCallback()
     val request = ImageViewAction(
       picasso = mockPicasso(RuntimeEnvironment.application),
-      target = target,
+      target = WeakReference(target),
       data = SIMPLE_REQUEST,
       errorDrawable = null,
       errorResId = RESOURCE_ID_1,
@@ -94,7 +95,7 @@ class ImageViewActionTest {
     val callback = mockCallback()
     val request = ImageViewAction(
       picasso = mockPicasso(RuntimeEnvironment.application),
-      target = target,
+      target = WeakReference(target),
       data = SIMPLE_REQUEST,
       errorDrawable = null,
       errorResId = RESOURCE_ID_1,
@@ -114,7 +115,7 @@ class ImageViewActionTest {
     val callback = mockCallback()
     val request = ImageViewAction(
       picasso = mockPicasso(RuntimeEnvironment.application),
-      target = target,
+      target = WeakReference(target),
       data = SIMPLE_REQUEST,
       errorDrawable = errorDrawable,
       errorResId = 0,
@@ -135,7 +136,7 @@ class ImageViewActionTest {
     val callback = mockCallback()
     val request = ImageViewAction(
       picasso = picasso,
-      target = target,
+      target = WeakReference(target),
       data = SIMPLE_REQUEST,
       errorDrawable = null,
       errorResId = 0,
@@ -153,7 +154,7 @@ class ImageViewActionTest {
     `when`(target.drawable).thenReturn(placeholder)
     val request = ImageViewAction(
       picasso = picasso,
-      target = target,
+      target = WeakReference(target),
       data = SIMPLE_REQUEST,
       errorDrawable = null,
       errorResId = 0,
