@@ -32,20 +32,23 @@ import com.squareup.picasso3.DrawableTarget
 import com.squareup.picasso3.Picasso
 import com.squareup.picasso3.Picasso.LoadedFrom
 import com.squareup.picasso3.RequestCreator
+import com.squareup.picasso3.compose.State.Error
+import com.squareup.picasso3.compose.State.Loaded
+import com.squareup.picasso3.compose.State.Loading
 
 @Composable
 fun Picasso.rememberPainter(
   key: Any? = null,
-  onError: ((Exception) -> Unit)? = null,
+  onState: ((State) -> Unit)? = null,
   request: (Picasso) -> RequestCreator,
 ): Painter {
-  return remember(key) { PicassoPainter(this, request, onError) }
+  return remember(key) { PicassoPainter(this, request, onState) }
 }
 
 internal class PicassoPainter(
   private val picasso: Picasso,
   private val request: (Picasso) -> RequestCreator,
-  private val onError: ((Exception) -> Unit)? = null
+  private val onState: ((State) -> Unit)? = null
 ) : Painter(), RememberObserver, DrawableTarget {
 
   private var painter: Painter by mutableStateOf(EmptyPainter)
@@ -89,21 +92,29 @@ internal class PicassoPainter(
 
   override fun onPrepareLoad(placeHolderDrawable: Drawable?) {
     placeHolderDrawable?.let(::setPainter)
+    onState?.invoke(Loading)
   }
 
   override fun onDrawableLoaded(drawable: Drawable, from: LoadedFrom) {
     setPainter(drawable)
+    onState?.invoke(Loaded)
   }
 
   override fun onDrawableFailed(e: Exception, errorDrawable: Drawable?) {
-    onError?.invoke(e)
     errorDrawable?.let(::setPainter)
+    onState?.invoke(Error(e))
   }
 
   private fun setPainter(drawable: Drawable) {
     (painter as? RememberObserver)?.onForgotten()
     painter = DrawablePainter(drawable).apply(DrawablePainter::onRemembered)
   }
+}
+
+sealed class State {
+  object Loading : State()
+  object Loaded : State()
+  class Error(exception: Exception) : State()
 }
 
 private object EmptyPainter : Painter() {
