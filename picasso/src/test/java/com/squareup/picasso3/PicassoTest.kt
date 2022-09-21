@@ -392,6 +392,12 @@ class PicassoTest {
     assertThat(picasso.shutdown).isTrue()
   }
 
+  @Test fun shutdownClearsTargetsToActions() {
+    picasso.targetToAction[mockImageViewTarget()] = mock(ImageViewAction::class.java)
+    picasso.shutdown()
+    assertThat(picasso.targetToAction).isEmpty()
+  }
+
   @Test fun shutdownClearsDeferredRequests() {
     val target = mockImageViewTarget()
     val creator = mockRequestCreator(picasso)
