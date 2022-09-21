@@ -16,12 +16,11 @@
 package com.example.picasso
 
 import android.os.Bundle
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.GridCells.Adaptive
-import androidx.compose.foundation.lazy.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.GridCells.Adaptive
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale.Companion.Crop
@@ -48,7 +47,6 @@ class SampleComposeActivity : PicassoSampleActivity() {
   }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ImageGrid(
   modifier: Modifier = Modifier,
@@ -56,7 +54,7 @@ fun ImageGrid(
   picasso: Picasso = PicassoInitializer.get()
 ) {
   LazyVerticalGrid(
-    cells = Adaptive(150.dp),
+    columns = Adaptive(150.dp),
     modifier = modifier,
   ) {
     items(urls.size) {
