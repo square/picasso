@@ -80,8 +80,10 @@ internal object Utils {
     |      'W'      |      'E'      |      'B'      |      'P'      |
     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
-  private val WEBP_FILE_HEADER_RIFF: ByteString = "RIFF".encodeUtf8()
-  private val WEBP_FILE_HEADER_WEBP: ByteString = "WEBP".encodeUtf8()
+  // Workaround for Okio and AndroidStudio incompatibility, change back once
+  // https://issuetracker.google.com/issues/252957464 is fixed
+  private val WEBP_FILE_HEADER_RIFF: ByteString by lazy { "RIFF".encodeUtf8() }
+  private val WEBP_FILE_HEADER_WEBP: ByteString by lazy { "WEBP".encodeUtf8() }
 
   fun <T> checkNotNull(value: T?, message: String?): T {
     if (value == null) {

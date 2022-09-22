@@ -45,8 +45,10 @@ dependencies {
   implementation deps.runtime
   implementation deps.foundation
   implementation deps.material
+  implementation deps.uiTooling
 
   implementation project(':picasso')
   implementation project(':picasso-stats')
   implementation project(':picasso-compose')
+  implementation project(':picasso-layoutlib-compat')
 }
