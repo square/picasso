@@ -45,6 +45,8 @@ dependencies {
   implementation deps.runtime
   implementation deps.foundation
   implementation deps.material
+  implementation deps.uiTooling
+  implementation deps.composeUiToolingPreview
 
   implementation project(':picasso')
   implementation project(':picasso-stats')

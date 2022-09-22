@@ -46,7 +46,6 @@ import com.squareup.picasso3.Utils.VERB_IGNORED
 import com.squareup.picasso3.Utils.VERB_PAUSED
 import com.squareup.picasso3.Utils.VERB_REPLAYING
 import com.squareup.picasso3.Utils.VERB_RETRYING
-import com.squareup.picasso3.Utils.flushStackLocalLeaks
 import com.squareup.picasso3.Utils.getLogIdsForHunter
 import com.squareup.picasso3.Utils.hasPermission
 import com.squareup.picasso3.Utils.isAirplaneModeOn
@@ -87,7 +86,6 @@ internal class Dispatcher internal constructor(
     dispatcherThread = DispatcherThread()
     dispatcherThread.start()
     val dispatcherThreadLooper = dispatcherThread.looper
-    flushStackLocalLeaks(dispatcherThreadLooper)
     handler = DispatcherHandler(dispatcherThreadLooper, this)
     scansNetworkChanges = hasPermission(context, ACCESS_NETWORK_STATE)
     receiver = NetworkBroadcastReceiver(this)

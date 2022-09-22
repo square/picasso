@@ -37,6 +37,8 @@ buildscript {
     runtime: "androidx.compose.runtime:runtime:${versions.composeUi}",
     foundation: "androidx.compose.foundation:foundation:${versions.composeUi}",
     material: "androidx.compose.material:material:${versions.composeUi}",
+    composeUiToolingPreview: "androidx.compose.ui:ui-tooling-preview:${versions.composeUi}",
+    uiTooling: "androidx.compose.ui:ui-tooling:${versions.composeUi}",
   ]
 
   ext.isCi = "true" == System.getenv('CI')

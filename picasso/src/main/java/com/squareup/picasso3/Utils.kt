@@ -21,9 +21,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.NameNotFoundException
 import android.content.res.Resources
-import android.os.Handler
 import android.os.Looper
-import android.os.Message
 import android.os.StatFs
 import android.provider.Settings.Global
 import android.util.Log
@@ -80,8 +78,8 @@ internal object Utils {
     |      'W'      |      'E'      |      'B'      |      'P'      |
     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
-  private val WEBP_FILE_HEADER_RIFF: ByteString = "RIFF".encodeUtf8()
-  private val WEBP_FILE_HEADER_WEBP: ByteString = "WEBP".encodeUtf8()
+  private val WEBP_FILE_HEADER_RIFF: ByteString by lazy { "RIFF".encodeUtf8() }
+  private val WEBP_FILE_HEADER_WEBP: ByteString by lazy { "WEBP".encodeUtf8() }
 
   fun <T> checkNotNull(value: T?, message: String?): T {
     if (value == null) {
@@ -219,19 +217,5 @@ internal object Utils {
     } catch (e: NameNotFoundException) {
       throw FileNotFoundException("Unable to obtain resources for package: " + data.uri)
     }
-  }
-
-  /**
-   * Prior to Android 5, HandlerThread always keeps a stack local reference to the last message
-   * that was sent to it. This method makes sure that stack local reference never stays there
-   * for too long by sending new messages to it every second.
-   */
-  fun flushStackLocalLeaks(looper: Looper) {
-    val handler: Handler = object : Handler(looper) {
-      override fun handleMessage(msg: Message) {
-        sendMessageDelayed(obtainMessage(), THREAD_LEAK_CLEANING_MS.toLong())
-      }
-    }
-    handler.sendMessageDelayed(handler.obtainMessage(), THREAD_LEAK_CLEANING_MS.toLong())
   }
 }

@@ -648,6 +648,19 @@ class Picasso internal constructor(
       loggingEnabled = enabled
     }
 
+    /**
+     * Removes the network from Picasso throwing an Error
+     * if it's attempted to be accessed. Useful when creating
+     * a Picasso instance for testing.
+     */
+    fun withoutNetwork() = callFactory { throw AssertionError() }
+
+    /**
+     * Sets the executor to add hooks for LayoutLib to which powers
+     * Paparazzi as well as ComposeUiToolingPreview
+     */
+    fun layoutLibWorkaround() = executor(PicassoExecutorService(threadFactory = LayoutLibThreadFactory()))
+
     /** Create the [Picasso] instance. */
     fun build(): Picasso {
       var unsharedCache: okhttp3.Cache? = null
