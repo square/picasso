@@ -192,7 +192,10 @@ class RequestCreator internal constructor(
    * Resize the image to the specified size in pixels.
    * Use 0 as desired dimension to resize keeping aspect ratio.
    */
-  fun resize(targetWidth: Int, targetHeight: Int): RequestCreator {
+  fun resize(
+    targetWidth: Int,
+    targetHeight: Int
+  ): RequestCreator {
     data.resize(targetWidth, targetHeight)
     return this
   }
@@ -242,7 +245,11 @@ class RequestCreator internal constructor(
   }
 
   /** Rotate the image by the specified degrees around a pivot point.  */
-  fun rotate(degrees: Float, pivotX: Float, pivotY: Float): RequestCreator {
+  fun rotate(
+    degrees: Float,
+    pivotX: Float,
+    pivotY: Float
+  ): RequestCreator {
     data.rotate(degrees, pivotX, pivotY)
     return this
   }
@@ -328,7 +335,10 @@ class RequestCreator internal constructor(
   /**
    * Add custom HTTP headers to the image network request, if desired
    */
-  fun addHeader(key: String, value: String): RequestCreator {
+  fun addHeader(
+    key: String,
+    value: String
+  ): RequestCreator {
     data.addHeader(key, value)
     return this
   }
@@ -363,6 +373,7 @@ class RequestCreator internal constructor(
 
     return bitmap
   }
+
   /**
    * Asynchronously fulfills the request without a [ImageView] or [BitmapTarget],
    * and invokes the target [Callback] with the result. This is useful when you want to warm
@@ -487,7 +498,14 @@ class RequestCreator internal constructor(
     }
 
     target.onPrepareLoad(placeHolderDrawable)
-    val action = DrawableTargetAction(picasso, target, request, noFade, placeHolderDrawable, errorDrawable, errorResId)
+    val action = DrawableTargetAction(
+      picasso = picasso,
+      target = WeakReference(target),
+      data = request,
+      noFade = noFade,
+      placeholderDrawable = placeHolderDrawable, errorDrawable = errorDrawable,
+      errorResId = errorResId
+    )
     picasso.enqueueAndSubmit(action)
   }
 
@@ -578,7 +596,10 @@ class RequestCreator internal constructor(
    *
    * *Note:* This method will automatically support object recycling.
    */
-  @JvmOverloads fun into(target: ImageView, callback: Callback? = null) {
+  @JvmOverloads fun into(
+    target: ImageView,
+    callback: Callback? = null
+  ) {
     val started = System.nanoTime()
     checkMain()
 
@@ -670,7 +691,10 @@ class RequestCreator internal constructor(
     return transformed
   }
 
-  private fun performRemoteViewInto(request: Request, action: RemoteViewsAction) {
+  private fun performRemoteViewInto(
+    request: Request,
+    action: RemoteViewsAction
+  ) {
     if (shouldReadFromMemoryCache(request.memoryPolicy)) {
       val bitmap = picasso.quickMemoryCacheCheck(action.request.key)
       if (bitmap != null) {

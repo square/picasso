@@ -16,7 +16,6 @@
 package com.squareup.picasso3
 
 import android.content.Context
-import android.content.res.Resources
 import android.graphics.Bitmap.Config.ARGB_8888
 import android.graphics.drawable.Drawable
 import com.google.common.truth.Truth.assertThat
@@ -33,6 +32,7 @@ import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import java.lang.ref.WeakReference
 
 @RunWith(RobolectricTestRunner::class)
 class DrawableTargetActionTest {
@@ -44,7 +44,7 @@ class DrawableTargetActionTest {
     val placeholder = mock(Drawable::class.java)
     val action = DrawableTargetAction(
       picasso = TestUtils.mockPicasso(RuntimeEnvironment.application),
-      target = target,
+      target = WeakReference(target),
       data = TestUtils.SIMPLE_REQUEST,
       noFade = false,
       placeholderDrawable = placeholder,
@@ -67,7 +67,7 @@ class DrawableTargetActionTest {
     val target = mockDrawableTarget()
     val action = DrawableTargetAction(
       picasso = TestUtils.mockPicasso(RuntimeEnvironment.application),
-      target = target,
+      target = WeakReference(target),
       data = TestUtils.SIMPLE_REQUEST,
       noFade = true,
       placeholderDrawable = null,
@@ -93,12 +93,11 @@ class DrawableTargetActionTest {
       TestUtils.NO_HANDLERS,
       TestUtils.NO_EVENT_LISTENERS, ARGB_8888, false, false
     )
-    val res = mock(Resources::class.java)
 
     val target = mockDrawableTarget()
     val action = DrawableTargetAction(
       picasso = picasso,
-      target = target,
+      target = WeakReference(target),
       data = TestUtils.SIMPLE_REQUEST,
       noFade = true,
       placeholderDrawable = null,
@@ -119,11 +118,16 @@ class DrawableTargetActionTest {
     val bitmap = makeBitmap()
     val action = DrawableTargetAction(
       picasso = picasso,
-      target = object : DrawableTarget {
-        override fun onDrawableLoaded(drawable: Drawable, from: Picasso.LoadedFrom) = (drawable as PicassoDrawable).bitmap.recycle()
-        override fun onDrawableFailed(e: Exception, errorDrawable: Drawable?) = throw AssertionError()
-        override fun onPrepareLoad(placeHolderDrawable: Drawable?) = throw AssertionError()
-      },
+      target = WeakReference(
+        object : DrawableTarget {
+          override fun onDrawableLoaded(drawable: Drawable, from: Picasso.LoadedFrom) =
+            (drawable as PicassoDrawable).bitmap.recycle()
+          override fun onDrawableFailed(e: Exception, errorDrawable: Drawable?) =
+            throw AssertionError()
+          override fun onPrepareLoad(placeHolderDrawable: Drawable?) =
+            throw AssertionError()
+        }
+      ),
       data = TestUtils.SIMPLE_REQUEST,
       noFade = true,
       placeholderDrawable = null,

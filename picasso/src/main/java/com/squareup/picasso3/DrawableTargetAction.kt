@@ -20,10 +20,11 @@ import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import com.squareup.picasso3.RequestHandler.Result
 import com.squareup.picasso3.RequestHandler.Result.Bitmap
+import java.lang.ref.WeakReference
 
 internal class DrawableTargetAction(
   picasso: Picasso,
-  private val target: DrawableTarget,
+  private val target: WeakReference<DrawableTarget>,
   data: Request,
   private val noFade: Boolean,
   private val placeholderDrawable: Drawable?,
@@ -33,18 +34,20 @@ internal class DrawableTargetAction(
   override fun complete(result: Result) {
     if (result is Bitmap) {
       val bitmap = result.bitmap
-      target.onDrawableLoaded(
-        PicassoDrawable(
-          context = picasso.context,
-          bitmap = bitmap,
-          placeholder = placeholderDrawable,
-          loadedFrom = result.loadedFrom,
-          noFade = noFade,
-          debugging = picasso.indicatorsEnabled
-        ),
-        result.loadedFrom
-      )
-      check(!bitmap.isRecycled) { "Target callback must not recycle bitmap!" }
+      target.get()?.let {
+        it.onDrawableLoaded(
+          PicassoDrawable(
+            context = picasso.context,
+            bitmap = bitmap,
+            placeholder = placeholderDrawable,
+            loadedFrom = result.loadedFrom,
+            noFade = noFade,
+            debugging = picasso.indicatorsEnabled
+          ),
+          result.loadedFrom
+        )
+        check(!bitmap.isRecycled) { "Target callback must not recycle bitmap!" }
+      }
     }
   }
 
@@ -55,7 +58,7 @@ internal class DrawableTargetAction(
       errorDrawable
     }
 
-    target.onDrawableFailed(e, drawable)
+    target.get()?.onDrawableFailed(e, drawable)
   }
 
   override fun getTarget(): Any {
