@@ -6,6 +6,7 @@ javaTarget = '1.8'
 kotlin = '1.8.21'
 okhttp = '4.10.0'
 okio = '3.2.0'
+paparazzi = '1.2.0'
 
 minSdk = '21'
 compileSdk = '33'
@@ -25,8 +26,11 @@ composeUi = { module = 'androidx.compose.ui:ui', version.ref = 'composeUi' }
 composeRuntime = { module = 'androidx.compose.runtime:runtime', version.ref = 'composeUi' }
 composeUi-foundation = { module = 'androidx.compose.foundation:foundation', version.ref = 'composeUi' }
 composeUi-material = { module = 'androidx.compose.material:material', version.ref = 'composeUi' }
+composeUi-uiTooling = { module = 'androidx.compose.ui:ui-tooling', version.ref = 'composeUi' }
 
 drawablePainter = { module = 'com.google.accompanist:accompanist-drawablepainter', version = '0.30.1' }
+
+layoutlib = { module = 'app.cash.paparazzi:layoutlib-native-jdk11', version = '2022.2.1-5128371-2' }
 
 okio = { module = "com.squareup.okio:okio", version = '3.3.0' }
 
@@ -44,3 +48,4 @@ mockito = { module = 'org.mockito:mockito-core', version = '5.3.1' }
 # Plugins
 plugin-android = { module = 'com.android.tools.build:gradle', version.ref = 'agp' }
 plugin-kotlin = { module = 'org.jetbrains.kotlin:kotlin-gradle-plugin', version.ref = 'kotlin' }
+plugin-paparazzi = { module = 'app.cash.paparazzi:paparazzi-gradle-plugin', version.ref = 'paparazzi' }

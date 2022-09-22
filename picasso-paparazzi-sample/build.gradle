@@ -1,0 +1,34 @@
+apply plugin: 'com.android.library'
+apply plugin: 'org.jetbrains.kotlin.android'
+apply plugin: 'app.cash.paparazzi'
+
+android {
+  compileSdkVersion versions.compileSdk
+
+  defaultConfig {
+    minSdkVersion versions.minSdk
+  }
+
+  compileOptions {
+    sourceCompatibility versions.sourceCompatibility
+    targetCompatibility versions.targetCompatibility
+  }
+
+  lintOptions {
+    textOutput 'stdout'
+    textReport true
+    lintConfig rootProject.file('lint.xml')
+  }
+
+  testOptions {
+    unitTests {
+      includeAndroidResources = true
+    }
+  }
+}
+
+dependencies {
+  testImplementation deps.junit
+  testImplementation project(':picasso-layoutlib-compat')
+  testImplementation project(':picasso')
+}
