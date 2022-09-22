@@ -23,7 +23,7 @@ jobs:
           java-version: 11
 
       - name: Run Tests
-        run: ./gradlew check
+        run: ./gradlew check picasso-paparazzi-sample:verifyPaparazziDebug
 
       - name: Upload Test Failures
         if: failure()
