@@ -70,7 +70,7 @@ subprojects {
     google()
   }
 
-  tasks.withType(Test) {
+  tasks.withType(Test).configureEach {
     testLogging {
       events "failed"
       exceptionFormat "full"
@@ -122,7 +122,7 @@ subprojects {
   version = VERSION_NAME
 }
 
-tasks.wrapper {
+tasks.named('wrapper').configure {
   distributionType = Wrapper.DistributionType.ALL
 }
 
