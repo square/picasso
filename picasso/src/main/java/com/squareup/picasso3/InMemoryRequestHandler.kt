@@ -33,7 +33,7 @@ class InMemoryRequestHandler : RequestHandler() {
   @Throws(IOException::class)
   override fun load(picasso: Picasso, request: Request, callback: Callback) {
     val (bitmap, loadedFrom) = requests[request.uri.toString()]!!
-    return callback.onSuccess(Result.Bitmap(bitmap, loadedFrom))
+    return callback.onSuccess(Result.Bitmap(bitmap.copy(bitmap.config, true), loadedFrom))
   }
 
   fun addRequest(

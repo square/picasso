@@ -1,5 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'org.jetbrains.kotlin.android'
+apply plugin: 'app.cash.paparazzi'
 apply plugin: 'com.vanniktech.maven.publish'
 
 android {

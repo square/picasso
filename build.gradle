@@ -10,6 +10,7 @@ buildscript {
     'composeCompiler': '1.3.1',
     'okhttp': '4.10.0',
     'okio': '3.2.0',
+    'paparazzi': '1.0.0',
   ]
 
   ext.deps = [
@@ -39,6 +40,8 @@ buildscript {
     material: "androidx.compose.material:material:${versions.composeUi}",
     composeUiToolingPreview: "androidx.compose.ui:ui-tooling-preview:${versions.composeUi}",
     uiTooling: "androidx.compose.ui:ui-tooling:${versions.composeUi}",
+    paparazzi: "app.cash.paparazzi:paparazzi:${versions.paparazzi}",
+    paparazziGradlePlugin: "app.cash.paparazzi:paparazzi-gradle-plugin:${versions.paparazzi}",
   ]
 
   ext.isCi = "true" == System.getenv('CI')
@@ -56,6 +59,7 @@ buildscript {
     classpath 'com.vanniktech:gradle-maven-publish-plugin:0.18.0'
     classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.3.0'
     classpath 'org.jetbrains.kotlinx:binary-compatibility-validator:0.11.0'
+    classpath deps.paparazziGradlePlugin
   }
 }
 
