@@ -17,11 +17,9 @@ package com.squareup.picasso3
 
 import android.graphics.Bitmap
 import android.util.LruCache
-import androidx.core.graphics.BitmapCompat
 
 /** A memory cache which uses a least-recently used eviction policy.  */
 internal class PlatformLruCache(maxByteCount: Int) {
-
   /** Create a cache with a given maximum size in bytes.  */
   val cache =
     object : LruCache<String, BitmapAndSize>(if (maxByteCount != 0) maxByteCount else 1) {
@@ -37,7 +35,7 @@ internal class PlatformLruCache(maxByteCount: Int) {
     key: String,
     bitmap: Bitmap
   ) {
-    val byteCount = BitmapCompat.getAllocationByteCount(bitmap)
+    val byteCount = bitmap.allocationByteCount
     // If the bitmap is too big for the cache, don't even attempt to store it. Doing so will cause
     // the cache to be cleared. Instead just evict an existing element with the same key if it
     // exists.
