@@ -16,18 +16,14 @@
 package com.squareup.picasso3
 
 import android.graphics.Bitmap
-import android.util.LruCache
+import androidx.core.util.lruCache
 
 /** A memory cache which uses a least-recently used eviction policy.  */
 internal class PlatformLruCache(maxByteCount: Int) {
   /** Create a cache with a given maximum size in bytes.  */
-  val cache =
-    object : LruCache<String, BitmapAndSize>(if (maxByteCount != 0) maxByteCount else 1) {
-      override fun sizeOf(
-        key: String,
-        value: BitmapAndSize
-      ): Int = value.byteCount
-    }
+  val cache = lruCache<String, BitmapAndSize>(
+    maxByteCount.coerceAtLeast(1), { _, value -> value.byteCount }
+  )
 
   operator fun get(key: String): Bitmap? = cache[key]?.bitmap
 
