@@ -72,8 +72,10 @@ internal object TestUtils {
   val FILE_KEY_1: String = Request.Builder(Uri.fromFile(FILE_1)).build().key
   val FILE_1_URL: Uri = Uri.parse("file:///" + FILE_1.path)
   val FILE_1_URL_NO_AUTHORITY: Uri = Uri.parse("file:/" + FILE_1.parent)
-  val MEDIA_STORE_CONTENT_1_URL: Uri = Images.Media.EXTERNAL_CONTENT_URI.buildUpon().appendPath("1").build()
-  val MEDIA_STORE_CONTENT_2_URL: Uri = Video.Media.EXTERNAL_CONTENT_URI.buildUpon().appendPath("1").build()
+  val MEDIA_STORE_CONTENT_1_URL: Uri =
+    Images.Media.EXTERNAL_CONTENT_URI.buildUpon().appendPath("1").build()
+  val MEDIA_STORE_CONTENT_2_URL: Uri =
+    Video.Media.EXTERNAL_CONTENT_URI.buildUpon().appendPath("1").build()
   val MEDIA_STORE_CONTENT_KEY_1: String = Request.Builder(MEDIA_STORE_CONTENT_1_URL).build().key
   val MEDIA_STORE_CONTENT_KEY_2: String = Request.Builder(MEDIA_STORE_CONTENT_2_URL).build().key
   val CONTENT_1_URL: Uri = Uri.parse("content://zip/zap/zoop.jpg")
@@ -150,7 +152,7 @@ internal object TestUtils {
     priority: Priority? = null,
     tag: String? = null,
     headers: Map<String, String> = emptyMap(),
-  ): FakeAction {
+  ): FakeAction<*> {
     val builder = Request.Builder(uri, resourceId, DEFAULT_CONFIG).stableKey(key)
     if (priority != null) {
       builder.priority(priority)
@@ -165,7 +167,11 @@ internal object TestUtils {
     return mockAction(picasso, request, target)
   }
 
-  fun mockAction(picasso: Picasso, request: Request, target: Any = mockBitmapTarget()) =
+  fun mockAction(
+    picasso: Picasso,
+    request: Request,
+    target: Any = mockBitmapTarget()
+  ) =
     FakeAction(picasso, request, target)
 
   fun mockImageViewTarget(): ImageView = mock(ImageView::class.java)
@@ -195,7 +201,7 @@ internal object TestUtils {
   ): DeferredRequestCreator {
     val observer = mock(ViewTreeObserver::class.java)
     `when`(target.viewTreeObserver).thenReturn(observer)
-    return DeferredRequestCreator(creator!!, target, null)
+    return DeferredRequestCreator(creator!!, null, target)
   }
 
   fun mockRequestCreator(picasso: Picasso) = RequestCreator(picasso, null, 0)
@@ -210,7 +216,7 @@ internal object TestUtils {
   fun mockHunter(
     picasso: Picasso,
     result: Result,
-    action: Action,
+    action: Action<*>,
     e: Exception? = null,
     shouldRetry: Boolean = false,
     supportsReplay: Boolean = false,
@@ -234,7 +240,11 @@ internal object TestUtils {
         return true
       }
 
-      override fun load(picasso: Picasso, request: Request, callback: Callback) {
+      override fun load(
+        picasso: Picasso,
+        request: Request,
+        callback: Callback
+      ) {
         val defaultResult = makeBitmap()
         val result = RequestHandler.Result.Bitmap(defaultResult, MEMORY)
         callback.onSuccess(result)
@@ -244,7 +254,10 @@ internal object TestUtils {
     return mockPicasso(context, requestHandler)
   }
 
-  fun mockPicasso(context: Context, requestHandler: RequestHandler): Picasso {
+  fun mockPicasso(
+    context: Context,
+    requestHandler: RequestHandler
+  ): Picasso {
     return Picasso.Builder(context)
       .callFactory(UNUSED_CALL_FACTORY)
       .withCacheSize(0)
@@ -259,11 +272,11 @@ internal object TestUtils {
 
   fun makeLoaderWithDrawable(drawable: Drawable?): DrawableLoader = DrawableLoader { drawable }
 
-  internal class FakeAction(
+  internal class FakeAction<T>(
     picasso: Picasso,
     request: Request,
-    private val target: Any
-  ) : Action(picasso, request) {
+    target: T,
+  ) : Action<T>(picasso, request, target) {
     var completedResult: Result? = null
     var errorException: Exception? = null
 
@@ -274,14 +287,16 @@ internal object TestUtils {
     override fun error(e: Exception) {
       errorException = e
     }
-
-    override fun getTarget(): Any = target
   }
 
   val UNUSED_CALL_FACTORY = Call.Factory { throw AssertionError() }
   val NOOP_REQUEST_HANDLER: RequestHandler = object : RequestHandler() {
     override fun canHandleRequest(data: Request): Boolean = false
-    override fun load(picasso: Picasso, request: Request, callback: Callback) = Unit
+    override fun load(
+      picasso: Picasso,
+      request: Request,
+      callback: Callback
+    ) = Unit
   }
   val NOOP_TRANSFORMER = RequestTransformer { Request.Builder(0).build() }
   private val NOOP_LISTENER = Picasso.Listener { _: Picasso, _: Uri?, _: Exception -> }
@@ -369,6 +384,7 @@ internal object TestUtils {
         throw AssertionError(e)
       }
     }
+
     override fun cancel(): Unit = throw AssertionError()
     override fun isExecuted(): Boolean = throw AssertionError()
     override fun isCanceled(): Boolean = throw AssertionError()
@@ -384,13 +400,19 @@ internal object TestUtils {
     override fun isShutdown(): Boolean = delegate.isShutdown
     override fun isTerminated(): Boolean = throw AssertionError("Not implemented.")
 
-    override fun awaitTermination(timeout: Long, unit: TimeUnit): Boolean =
+    override fun awaitTermination(
+      timeout: Long,
+      unit: TimeUnit
+    ): Boolean =
       delegate.awaitTermination(timeout, unit)
 
     override fun <T> submit(task: Callable<T>): Future<T> =
       throw AssertionError("Not implemented.")
 
-    override fun <T> submit(task: Runnable, result: T): Future<T> =
+    override fun <T> submit(
+      task: Runnable,
+      result: T
+    ): Future<T> =
       throw AssertionError("Not implemented.")
 
     override fun submit(task: Runnable): Future<*> {
@@ -410,7 +432,11 @@ internal object TestUtils {
     override fun <T> invokeAny(tasks: Collection<Callable<T>?>): T =
       throw AssertionError("Not implemented.")
 
-    override fun <T> invokeAny(tasks: Collection<Callable<T>?>, timeout: Long, unit: TimeUnit): T =
+    override fun <T> invokeAny(
+      tasks: Collection<Callable<T>?>,
+      timeout: Long,
+      unit: TimeUnit
+    ): T =
       throw AssertionError("Not implemented.")
 
     override fun execute(command: Runnable) = delegate.execute(command)

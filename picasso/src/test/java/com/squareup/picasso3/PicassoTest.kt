@@ -219,10 +219,9 @@ class PicassoTest {
 
   @Test fun resumeActionTriggersSubmitOnPausedAction() {
     val request = Request.Builder(URI_1, 0, ARGB_8888).build()
-    val action = object : Action(mockPicasso(RuntimeEnvironment.application), request) {
+    val action = object : Action<Any>(mockPicasso(RuntimeEnvironment.application), request, Any()) {
       override fun complete(result: Result) = fail("Test execution should not call this method")
       override fun error(e: Exception) = fail("Test execution should not call this method")
-      override fun getTarget(): Any = this
     }
     picasso.resumeAction(action)
     verify(dispatcher).dispatchSubmit(action)
@@ -231,7 +230,7 @@ class PicassoTest {
   @Test fun resumeActionImmediatelyCompletesCachedRequest() {
     cache[URI_KEY_1] = bitmap
     val request = Request.Builder(URI_1, 0, ARGB_8888).build()
-    val action = object : Action(mockPicasso(RuntimeEnvironment.application), request) {
+    val action = object : Action<Any>(mockPicasso(RuntimeEnvironment.application), request, Any()) {
       override fun complete(result: Result) {
         assertThat(result).isInstanceOf(Bitmap::class.java)
         val bitmapResult = result as Bitmap
@@ -241,8 +240,6 @@ class PicassoTest {
 
       override fun error(e: Exception) =
         fail("Reading from memory cache should not throw an exception")
-
-      override fun getTarget(): Any = this
     }
 
     picasso.resumeAction(action)
@@ -526,7 +523,7 @@ class PicassoTest {
     )
   }
 
-  private fun verifyActionComplete(action: FakeAction) {
+  private fun verifyActionComplete(action: FakeAction<*>) {
     val result = action.completedResult
     assertThat(result).isNotNull()
     assertThat(result).isInstanceOf(RequestHandler.Result.Bitmap::class.java)

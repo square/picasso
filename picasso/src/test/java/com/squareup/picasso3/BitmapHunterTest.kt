@@ -1033,7 +1033,7 @@ class BitmapHunterTest {
     picasso: Picasso,
     dispatcher: Dispatcher,
     cache: PlatformLruCache,
-    action: Action,
+    action: Action<*>,
     result: android.graphics.Bitmap? = null,
     exception: Exception? = null,
     shouldRetry: Boolean = false,

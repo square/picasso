@@ -46,8 +46,8 @@ class BitmapTargetActionTest {
     val target = mockBitmapTarget()
     val request = BitmapTargetAction(
       picasso = mockPicasso(RuntimeEnvironment.application),
-      target = target,
       data = SIMPLE_REQUEST,
+      target = target,
       errorDrawable = null,
       errorResId = 0
     )
@@ -60,8 +60,8 @@ class BitmapTargetActionTest {
     val target = mockBitmapTarget()
     val request = BitmapTargetAction(
       picasso = mockPicasso(RuntimeEnvironment.application),
-      target = target,
       data = SIMPLE_REQUEST,
+      target = target,
       errorDrawable = errorDrawable,
       errorResId = 0
     )
@@ -84,8 +84,8 @@ class BitmapTargetActionTest {
     )
     val request = BitmapTargetAction(
       picasso = picasso,
-      target = target,
       data = SIMPLE_REQUEST,
+      target = target,
       errorDrawable = null,
       errorResId = RESOURCE_ID_1
     )

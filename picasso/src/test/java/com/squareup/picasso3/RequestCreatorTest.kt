@@ -71,7 +71,7 @@ import java.util.concurrent.CountDownLatch
 
 @RunWith(RobolectricTestRunner::class)
 class RequestCreatorTest {
-  private val actionCaptor = argumentCaptor<Action>()
+  private val actionCaptor = argumentCaptor<Action<*>>()
   private val picasso = spy(mockPicasso(RuntimeEnvironment.application))
   private val bitmap = makeBitmap()
 

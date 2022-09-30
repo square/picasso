@@ -93,8 +93,8 @@ class RemoteViewsActionTest {
   @Test fun clearsCallbackOnCancel() {
     val request = ImageViewAction(
       picasso = picasso,
-      target = mockImageViewTarget(),
       data = SIMPLE_REQUEST,
+      target = mockImageViewTarget(),
       errorDrawable = null,
       errorResId = 0,
       noFade = false,
@@ -108,8 +108,8 @@ class RemoteViewsActionTest {
     return TestableRemoteViewsAction(
       picasso = picasso,
       data = SIMPLE_REQUEST,
-      errorResId = errorResId,
       target = RemoteViewsTarget(remoteViews, 1),
+      errorResId = errorResId,
       callback = callback
     )
   }
@@ -117,11 +117,10 @@ class RemoteViewsActionTest {
   private class TestableRemoteViewsAction(
     picasso: Picasso,
     data: Request,
-    @DrawableRes errorResId: Int,
     target: RemoteViewsTarget,
-    callback: Callback?
-  ) : RemoteViewsAction(picasso, data, errorResId, target, callback) {
+    @DrawableRes errorResId: Int,
+    callback: Callback?,
+  ) : RemoteViewsAction(picasso, data, target, errorResId, callback) {
     override fun update() {}
-    override fun getTarget(): Any = target
   }
 }

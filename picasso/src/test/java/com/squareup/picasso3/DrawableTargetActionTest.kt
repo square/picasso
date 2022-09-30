@@ -16,7 +16,6 @@
 package com.squareup.picasso3
 
 import android.content.Context
-import android.content.res.Resources
 import android.graphics.Bitmap.Config.ARGB_8888
 import android.graphics.drawable.Drawable
 import com.google.common.truth.Truth.assertThat
@@ -44,8 +43,8 @@ class DrawableTargetActionTest {
     val placeholder = mock(Drawable::class.java)
     val action = DrawableTargetAction(
       picasso = TestUtils.mockPicasso(RuntimeEnvironment.application),
-      target = target,
       data = TestUtils.SIMPLE_REQUEST,
+      target = target,
       noFade = false,
       placeholderDrawable = placeholder,
       errorDrawable = null,
@@ -67,8 +66,8 @@ class DrawableTargetActionTest {
     val target = mockDrawableTarget()
     val action = DrawableTargetAction(
       picasso = TestUtils.mockPicasso(RuntimeEnvironment.application),
-      target = target,
       data = TestUtils.SIMPLE_REQUEST,
+      target = target,
       noFade = true,
       placeholderDrawable = null,
       errorDrawable = errorDrawable,
@@ -93,13 +92,12 @@ class DrawableTargetActionTest {
       TestUtils.NO_HANDLERS,
       TestUtils.NO_EVENT_LISTENERS, ARGB_8888, false, false
     )
-    val res = mock(Resources::class.java)
 
     val target = mockDrawableTarget()
     val action = DrawableTargetAction(
       picasso = picasso,
-      target = target,
       data = TestUtils.SIMPLE_REQUEST,
+      target = target,
       noFade = true,
       placeholderDrawable = null,
       errorDrawable = null,

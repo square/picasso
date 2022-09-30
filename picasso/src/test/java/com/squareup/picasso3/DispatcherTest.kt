@@ -57,7 +57,6 @@ import org.mockito.Mockito.verifyZeroInteractions
 import org.mockito.MockitoAnnotations.initMocks
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
-import java.lang.AssertionError
 import java.lang.Exception
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.FutureTask
@@ -185,7 +184,7 @@ class DispatcherTest {
     val hunter = mockHunter(picasso, RequestHandler.Result.Bitmap(bitmap1, MEMORY), action)
     dispatcher.hunterMap[URI_KEY_1 + Request.KEY_SEPARATOR] = hunter
     dispatcher.pausedTags.add("tag")
-    dispatcher.pausedActions[action.getTarget()] = action
+    dispatcher.pausedActions[action.target!!] = action
     dispatcher.performCancel(action)
     assertThat(hunter.action).isNull()
     assertThat(dispatcher.pausedTags).containsExactly("tag")
@@ -423,9 +422,9 @@ class DispatcherTest {
     dispatcher.hunterMap[URI_KEY_1] = hunter
     assertThat(dispatcher.pausedActions).isEmpty()
     dispatcher.performPauseTag("tag")
-    assertThat(dispatcher.pausedActions).containsEntry(action.getTarget(), action)
+    assertThat(dispatcher.pausedActions).containsEntry(action.target!!, action)
     dispatcher.performPauseTag("tag")
-    assertThat(dispatcher.pausedActions).containsEntry(action.getTarget(), action)
+    assertThat(dispatcher.pausedActions).containsEntry(action.target!!, action)
   }
 
   @Test fun performPauseTagQueuesNewRequestDoesNotSubmit() {
@@ -558,11 +557,10 @@ class DispatcherTest {
     return Dispatcher(context, service, Handler(getMainLooper()), cache)
   }
 
-  private fun noopAction(data: Request): Action {
-    return object : Action(picasso, data) {
+  private fun noopAction(data: Request): Action<*> {
+    return object : Action<Any>(picasso, data, Unit) {
       override fun complete(result: RequestHandler.Result) = Unit
       override fun error(e: Exception) = Unit
-      override fun getTarget(): Any = throw AssertionError()
     }
   }
 }
