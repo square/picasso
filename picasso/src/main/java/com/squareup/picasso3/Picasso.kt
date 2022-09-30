@@ -93,7 +93,7 @@ class Picasso internal constructor(
   internal val eventListeners: List<EventListener> = eventListeners.toList()
 
   @get:JvmName("-targetToAction")
-  internal val targetToAction = WeakHashMap<Any, Action>()
+  internal val targetToAction = WeakHashMap<Any, Action<*>>()
 
   @get:JvmName("-targetToDeferredRequestCreator")
   internal val targetToDeferredRequestCreator = WeakHashMap<ImageView, DeferredRequestCreator>()
@@ -129,7 +129,7 @@ class Picasso internal constructor(
 
     val actions = targetToAction.values.toList()
     for (i in actions.indices) {
-      cancelExistingRequest(actions[i].getTarget())
+      actions[i].target?.let(::cancelExistingRequest)
     }
 
     val deferredRequestCreators = targetToDeferredRequestCreator.values.toList()
@@ -177,7 +177,7 @@ class Picasso internal constructor(
     for (i in actions.indices) {
       val action = actions[i]
       if (tag == action.tag) {
-        cancelExistingRequest(action.getTarget())
+        action.target?.let(::cancelExistingRequest)
       }
     }
 
@@ -404,8 +404,8 @@ class Picasso internal constructor(
   }
 
   @JvmName("-enqueueAndSubmit")
-  internal fun enqueueAndSubmit(action: Action) {
-    val target = action.getTarget()
+  internal fun enqueueAndSubmit(action: Action<*>) {
+    val target = action.target ?: return
     if (targetToAction[target] !== action) {
       // This will also check we are on the main thread.
       cancelExistingRequest(target)
@@ -415,7 +415,7 @@ class Picasso internal constructor(
   }
 
   @JvmName("-submit")
-  internal fun submit(action: Action) {
+  internal fun submit(action: Action<*>) {
     dispatcher.dispatchSubmit(action)
   }
 
@@ -459,7 +459,7 @@ class Picasso internal constructor(
   }
 
   @JvmName("-resumeAction")
-  internal fun resumeAction(action: Action) {
+  internal fun resumeAction(action: Action<*>) {
     val bitmap = if (shouldReadFromMemoryCache(action.request.memoryPolicy)) {
       quickMemoryCacheCheck(action.request.key)
     } else null
@@ -488,12 +488,12 @@ class Picasso internal constructor(
     }
   }
 
-  private fun deliverAction(result: Result?, action: Action, e: Exception?) {
+  private fun deliverAction(result: Result?, action: Action<*>, e: Exception?) {
     if (action.cancelled) {
       return
     }
     if (!action.willReplay) {
-      targetToAction.remove(action.getTarget())
+      action.target?.run(targetToAction::remove)
     }
     if (result != null) {
       action.complete(result)
@@ -790,6 +790,7 @@ class Picasso internal constructor(
   }
 
   internal companion object {
+    @Suppress("UNCHECKED_CAST")
     @get:JvmName("-handler")
     internal val HANDLER: Handler = object : Handler(Looper.getMainLooper()) {
       override fun handleMessage(msg: Message) {
@@ -799,7 +800,7 @@ class Picasso internal constructor(
             hunter.picasso.complete(hunter)
           }
           REQUEST_BATCH_RESUME -> {
-            val batch = msg.obj as List<Action>
+            val batch = msg.obj as List<Action<*>>
             for (i in batch.indices) {
               val action = batch[i]
               action.picasso.resumeAction(action)

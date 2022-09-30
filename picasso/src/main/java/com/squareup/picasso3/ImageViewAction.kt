@@ -23,33 +23,33 @@ import com.squareup.picasso3.RequestHandler.Result
 
 internal class ImageViewAction(
   picasso: Picasso,
-  val target: ImageView,
   data: Request,
+  target: ImageView,
   val errorDrawable: Drawable?,
   @DrawableRes val errorResId: Int,
   val noFade: Boolean,
   var callback: Callback?
-) : Action(picasso, data) {
+) : Action<ImageView>(picasso, data, target) {
   override fun complete(result: Result) {
-    PicassoDrawable.setResult(target, picasso.context, result, noFade, picasso.indicatorsEnabled)
+    target?.let {
+      PicassoDrawable.setResult(it, picasso.context, result, noFade, picasso.indicatorsEnabled)
+    }
     callback?.onSuccess()
   }
 
   override fun error(e: Exception) {
-    val placeholder = target.drawable
+    val placeholder = target?.drawable
     if (placeholder is Animatable) {
       (placeholder as Animatable).stop()
     }
-    if (errorResId != 0) {
-      target.setImageResource(errorResId)
-    } else if (errorDrawable != null) {
-      target.setImageDrawable(errorDrawable)
+    target?.run {
+      if (errorResId != 0) {
+        setImageResource(errorResId)
+      } else if (errorDrawable != null) {
+        setImageDrawable(errorDrawable)
+      }
     }
     callback?.onError(e)
-  }
-
-  override fun getTarget(): Any {
-    return target
   }
 
   override fun cancel() {

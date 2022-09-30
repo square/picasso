@@ -64,10 +64,10 @@ internal class Dispatcher internal constructor(
   internal val hunterMap = mutableMapOf<String, BitmapHunter>()
 
   @get:JvmName("-failedActions")
-  internal val failedActions = WeakHashMap<Any, Action>()
+  internal val failedActions = WeakHashMap<Any, Action<*>>()
 
   @get:JvmName("-pausedActions")
-  internal val pausedActions = WeakHashMap<Any, Action>()
+  internal val pausedActions = WeakHashMap<Any, Action<*>>()
 
   @get:JvmName("-pausedTags")
   internal val pausedTags = mutableSetOf<Any>()
@@ -102,11 +102,11 @@ internal class Dispatcher internal constructor(
     Picasso.HANDLER.post { receiver.unregister() }
   }
 
-  fun dispatchSubmit(action: Action) {
+  fun dispatchSubmit(action: Action<*>) {
     handler.sendMessage(handler.obtainMessage(REQUEST_SUBMIT, action))
   }
 
-  fun dispatchCancel(action: Action) {
+  fun dispatchCancel(action: Action<*>) {
     handler.sendMessage(handler.obtainMessage(REQUEST_CANCEL, action))
   }
 
@@ -144,9 +144,10 @@ internal class Dispatcher internal constructor(
     )
   }
 
-  fun performSubmit(action: Action, dismissFailed: Boolean = true) {
+  fun performSubmit(action: Action<*>, dismissFailed: Boolean = true) {
+    val target = action.target ?: return
     if (action.tag in pausedTags) {
-      pausedActions[action.getTarget()] = action
+      pausedActions[target] = action
       if (action.picasso.isLoggingEnabled) {
         log(
           owner = OWNER_DISPATCHER,
@@ -180,7 +181,7 @@ internal class Dispatcher internal constructor(
     hunter.future = service.submit(hunter)
     hunterMap[action.request.key] = hunter
     if (dismissFailed) {
-      failedActions.remove(action.getTarget())
+      failedActions.remove(target)
     }
 
     if (action.picasso.isLoggingEnabled) {
@@ -188,7 +189,8 @@ internal class Dispatcher internal constructor(
     }
   }
 
-  fun performCancel(action: Action) {
+  fun performCancel(action: Action<*>) {
+    val target = action.target ?: return
     val key = action.request.key
     val hunter = hunterMap[key]
     if (hunter != null) {
@@ -202,7 +204,7 @@ internal class Dispatcher internal constructor(
     }
 
     if (action.tag in pausedTags) {
-      pausedActions.remove(action.getTarget())
+      pausedActions.remove(target)
       if (action.picasso.isLoggingEnabled) {
         log(
           owner = OWNER_DISPATCHER,
@@ -213,7 +215,7 @@ internal class Dispatcher internal constructor(
       }
     }
 
-    val remove = failedActions.remove(action.getTarget())
+    val remove = failedActions.remove(target)
     if (remove != null && remove.picasso.isLoggingEnabled) {
       log(OWNER_DISPATCHER, VERB_CANCELED, remove.request.logId(), "from replaying")
     }
@@ -233,17 +235,18 @@ internal class Dispatcher internal constructor(
       val loggingEnabled = hunter.picasso.isLoggingEnabled
 
       val single = hunter.action
+      val singleTarget = single?.target
       val joined = hunter.actions
       val hasMultiple = !joined.isNullOrEmpty()
 
       // Hunter has no requests, bail early.
-      if (single == null && !hasMultiple) {
+      if ((single == null || singleTarget == null) && !hasMultiple) {
         continue
       }
 
       if (single != null && single.tag == tag) {
         hunter.detach(single)
-        pausedActions[single.getTarget()] = single
+        pausedActions[singleTarget] = single
         if (loggingEnabled) {
           log(
             owner = OWNER_DISPATCHER,
@@ -257,11 +260,12 @@ internal class Dispatcher internal constructor(
       if (joined != null) {
         for (i in joined.indices.reversed()) {
           val action = joined[i]
-          if (action.tag != tag) {
+          val actionTarget = action.target
+          if (action.tag != tag || actionTarget == null) {
             continue
           }
           hunter.detach(action)
-          pausedActions[action.getTarget()] = action
+          pausedActions[actionTarget] = action
           if (loggingEnabled) {
             log(
               owner = OWNER_DISPATCHER,
@@ -295,7 +299,7 @@ internal class Dispatcher internal constructor(
       return
     }
 
-    val batch = mutableListOf<Action>()
+    val batch = mutableListOf<Action<*>>()
     val iterator = pausedActions.values.iterator()
     while (iterator.hasNext()) {
       val action = iterator.next()
@@ -408,8 +412,8 @@ internal class Dispatcher internal constructor(
     }
   }
 
-  private fun markForReplay(action: Action) {
-    val target = action.getTarget()
+  private fun markForReplay(action: Action<*>) {
+    val target = action.target ?: return
     action.willReplay = true
     failedActions[target] = action
   }
@@ -453,11 +457,11 @@ internal class Dispatcher internal constructor(
     override fun handleMessage(msg: Message) {
       when (msg.what) {
         REQUEST_SUBMIT -> {
-          val action = msg.obj as Action
+          val action = msg.obj as Action<*>
           dispatcher.performSubmit(action)
         }
         REQUEST_CANCEL -> {
-          val action = msg.obj as Action
+          val action = msg.obj as Action<*>
           dispatcher.performCancel(action)
         }
         TAG_PAUSE -> {

@@ -21,19 +21,20 @@ import android.appwidget.AppWidgetManager
 import android.widget.RemoteViews
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
+import com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget
 import com.squareup.picasso3.RequestHandler.Result
 import com.squareup.picasso3.RequestHandler.Result.Bitmap
 
 internal abstract class RemoteViewsAction(
   picasso: Picasso,
   data: Request,
+  target: RemoteViewsTarget,
   @DrawableRes val errorResId: Int,
-  val target: RemoteViewsTarget,
   var callback: Callback?
-) : Action(picasso, data) {
+) : Action<RemoteViewsTarget>(picasso, data, target) {
   override fun complete(result: Result) {
     if (result is Bitmap) {
-      target.remoteViews.setImageViewBitmap(target.viewId, result.bitmap)
+      target?.let { it.remoteViews.setImageViewBitmap(it.viewId, result.bitmap) }
       update()
       callback?.onSuccess()
     }
@@ -52,7 +53,7 @@ internal abstract class RemoteViewsAction(
   }
 
   fun setImageResource(resId: Int) {
-    target.remoteViews.setImageViewResource(target.viewId, resId)
+    target?.let { it.remoteViews.setImageViewResource(it.viewId, resId) }
     update()
   }
 
@@ -78,18 +79,14 @@ internal abstract class RemoteViewsAction(
   internal class AppWidgetAction(
     picasso: Picasso,
     data: Request,
-    @DrawableRes errorResId: Int,
     target: RemoteViewsTarget,
+    @DrawableRes errorResId: Int,
     private val appWidgetIds: IntArray,
     callback: Callback?
-  ) : RemoteViewsAction(picasso, data, errorResId, target, callback) {
+  ) : RemoteViewsAction(picasso, data, target, errorResId, callback) {
     override fun update() {
       val manager = AppWidgetManager.getInstance(picasso.context)
-      manager.updateAppWidget(appWidgetIds, target.remoteViews)
-    }
-
-    override fun getTarget(): Any {
-      return target
+      target?.let { manager.updateAppWidget(appWidgetIds, it.remoteViews) }
     }
   }
 
@@ -102,16 +99,12 @@ internal abstract class RemoteViewsAction(
     private val notification: Notification,
     private val notificationTag: String?,
     callback: Callback?
-  ) : RemoteViewsAction(picasso, data, errorResId, target, callback) {
+  ) : RemoteViewsAction(picasso, data, target, errorResId, callback) {
     override fun update() {
       val manager = ContextCompat.getSystemService(
         picasso.context, NotificationManager::class.java
       )
       manager?.notify(notificationTag, notificationId, notification)
-    }
-
-    override fun getTarget(): Any {
-      return target
     }
   }
 }

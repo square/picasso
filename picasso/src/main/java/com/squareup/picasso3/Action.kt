@@ -16,18 +16,20 @@
 package com.squareup.picasso3
 
 import com.squareup.picasso3.RequestHandler.Result
+import java.lang.ref.WeakReference
 
-internal abstract class Action(
+internal abstract class Action<T>(
   val picasso: Picasso,
-  val request: Request
+  val request: Request,
+  target: T,
 ) {
+  private val targetRef = WeakReference(target)
+
   var willReplay = false
   var cancelled = false
 
   abstract fun complete(result: Result)
   abstract fun error(e: Exception)
-
-  abstract fun getTarget(): Any
 
   open fun cancel() {
     cancelled = true
@@ -35,4 +37,7 @@ internal abstract class Action(
 
   val tag: Any
     get() = request.tag ?: this
+
+  val target: T?
+    get() = targetRef.get()
 }

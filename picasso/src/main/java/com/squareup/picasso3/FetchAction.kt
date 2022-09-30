@@ -21,7 +21,8 @@ internal class FetchAction(
   picasso: Picasso,
   data: Request,
   private var callback: Callback?
-) : Action(picasso, data) {
+) : Action<Any>(picasso, data, Any()) {
+
   override fun complete(result: Result) {
     callback?.onSuccess()
   }
@@ -29,8 +30,6 @@ internal class FetchAction(
   override fun error(e: Exception) {
     callback?.onError(e)
   }
-
-  override fun getTarget() = this
 
   override fun cancel() {
     super.cancel()

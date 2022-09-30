@@ -17,11 +17,10 @@ package com.squareup.picasso3
 
 import com.squareup.picasso3.RequestHandler.Result
 
-internal class GetAction(
+internal class `GetAction`(
   picasso: Picasso,
-  data: Request
-) : Action(picasso, data) {
+  data: Request,
+) : Action<Any>(picasso, data, Unit) {
   override fun complete(result: Result) = Unit
   override fun error(e: Exception) = Unit
-  override fun getTarget() = throw AssertionError()
 }

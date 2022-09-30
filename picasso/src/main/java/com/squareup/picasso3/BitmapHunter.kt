@@ -40,7 +40,7 @@ internal open class BitmapHunter(
   val picasso: Picasso,
   private val dispatcher: Dispatcher,
   private val cache: PlatformLruCache,
-  action: Action,
+  action: Action<*>,
   val requestHandler: RequestHandler
 ) : Runnable {
   val sequence: Int = SEQUENCE_GENERATOR.incrementAndGet()
@@ -49,9 +49,9 @@ internal open class BitmapHunter(
   val key: String = action.request.key
   var retryCount: Int = requestHandler.retryCount
 
-  var action: Action? = action
+  var action: Action<*>? = action
     private set
-  var actions: MutableList<Action>? = null
+  var actions: MutableList<Action<*>>? = null
     private set
 
   var future: Future<*>? = null
@@ -160,7 +160,7 @@ internal open class BitmapHunter(
     return transformedResult
   }
 
-  fun attach(action: Action) {
+  fun attach(action: Action<*>) {
     val loggingEnabled = picasso.isLoggingEnabled
     val request = action.request
     if (this.action == null) {
@@ -191,7 +191,7 @@ internal open class BitmapHunter(
     }
   }
 
-  fun detach(action: Action) {
+  fun detach(action: Action<*>) {
     val detached = when {
       this.action === action -> {
         this.action = null
@@ -267,7 +267,7 @@ internal open class BitmapHunter(
       picasso: Picasso,
       dispatcher: Dispatcher,
       cache: PlatformLruCache,
-      action: Action
+      action: Action<*>
     ): BitmapHunter {
       val request = action.request
       val requestHandlers = picasso.requestHandlers

@@ -23,15 +23,15 @@ import com.squareup.picasso3.RequestHandler.Result.Bitmap
 
 internal class BitmapTargetAction(
   picasso: Picasso,
-  private val target: BitmapTarget,
   data: Request,
+  target: BitmapTarget,
   private val errorDrawable: Drawable?,
   @DrawableRes val errorResId: Int
-) : Action(picasso, data) {
+) : Action<BitmapTarget>(picasso, data, target) {
   override fun complete(result: Result) {
     if (result is Bitmap) {
       val bitmap = result.bitmap
-      target.onBitmapLoaded(bitmap, result.loadedFrom)
+      target?.onBitmapLoaded(bitmap, result.loadedFrom)
       check(!bitmap.isRecycled) { "Target callback must not recycle bitmap!" }
     }
   }
@@ -43,10 +43,6 @@ internal class BitmapTargetAction(
       errorDrawable
     }
 
-    target.onBitmapFailed(e, drawable)
-  }
-
-  override fun getTarget(): Any {
-    return target
+    target?.onBitmapFailed(e, drawable)
   }
 }

@@ -19,11 +19,12 @@ import android.view.View
 import android.view.View.OnAttachStateChangeListener
 import android.view.ViewTreeObserver
 import android.widget.ImageView
+import java.lang.ref.WeakReference
 
 internal class DeferredRequestCreator(
   private val creator: RequestCreator,
-  internal val target: ImageView,
-  internal var callback: Callback?
+  internal var callback: Callback?,
+  target: ImageView,
 ) : ViewTreeObserver.OnPreDrawListener, OnAttachStateChangeListener {
   init {
     target.addOnAttachStateChangeListener(this)
@@ -35,6 +36,8 @@ internal class DeferredRequestCreator(
     }
   }
 
+  private val target = WeakReference(target)
+
   override fun onViewAttachedToWindow(view: View) {
     view.viewTreeObserver.addOnPreDrawListener(this)
   }
@@ -44,8 +47,9 @@ internal class DeferredRequestCreator(
   }
 
   override fun onPreDraw(): Boolean {
-    val vto = target.viewTreeObserver
-    if (!vto.isAlive) {
+    val target = target.get()
+    val vto = target?.viewTreeObserver
+    if (vto?.isAlive != true) {
       return true
     }
 
@@ -67,12 +71,10 @@ internal class DeferredRequestCreator(
     creator.clearTag()
     callback = null
 
-    target.removeOnAttachStateChangeListener(this)
-
-    val vto = target.viewTreeObserver
-    if (vto.isAlive) {
-      vto.removeOnPreDrawListener(this)
-    }
+    target.get()?.removeOnAttachStateChangeListener(this)
+    target.get()?.viewTreeObserver
+      ?.takeIf { it.isAlive }
+      ?.removeOnPreDrawListener(this)
   }
 
   val tag: Any?
