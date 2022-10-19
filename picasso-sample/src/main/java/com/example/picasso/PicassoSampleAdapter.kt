@@ -16,8 +16,6 @@
 package com.example.picasso
 
 import android.app.Activity
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -29,7 +27,9 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.RemoteViews
 import android.widget.TextView
+import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import java.util.Random
 
 internal class PicassoSampleAdapter(context: Context?) : BaseAdapter() {
@@ -48,25 +48,22 @@ internal class PicassoSampleAdapter(context: Context?) : BaseAdapter() {
 
         val intent = Intent(activity, SampleGridViewActivity::class.java)
 
+        val flags = if (VERSION.SDK_INT >= VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
         val notification =
           NotificationCompat.Builder(activity, CHANNEL_ID)
             .setSmallIcon(R.drawable.icon)
-            .setContentIntent(PendingIntent.getActivity(activity, -1, intent, 0))
+            .setContentIntent(PendingIntent.getActivity(activity, -1, intent, flags))
             .setContent(remoteViews)
             .setAutoCancel(true)
             .setChannelId(CHANNEL_ID)
             .build()
 
-        val notificationManager =
-          activity.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager = NotificationManagerCompat.from(activity)
 
-        if (VERSION.SDK_INT >= VERSION_CODES.O) {
-          val channel = NotificationChannel(
-            CHANNEL_ID, "Picasso Notification Channel",
-            NotificationManager.IMPORTANCE_DEFAULT
-          )
-          notificationManager.createNotificationChannel(channel)
-        }
+        val channel = NotificationChannelCompat
+          .Builder(CHANNEL_ID, NotificationManagerCompat.IMPORTANCE_DEFAULT)
+          .setName("Picasso Notification Channel")
+        notificationManager.createNotificationChannel(channel.build())
 
         notificationManager.notify(NOTIFICATION_ID, notification)
 
