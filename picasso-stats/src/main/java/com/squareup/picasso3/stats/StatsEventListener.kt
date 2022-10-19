@@ -17,7 +17,6 @@ package com.squareup.picasso3.stats
 
 import android.graphics.Bitmap
 import android.util.Log
-import androidx.core.graphics.BitmapCompat
 import com.squareup.picasso3.EventListener
 import com.squareup.picasso3.TAG
 import okio.Buffer
@@ -66,7 +65,7 @@ class StatsEventListener : EventListener {
   }
 
   override fun bitmapDecoded(bitmap: Bitmap) {
-    val bitmapSize = BitmapCompat.getAllocationByteCount(bitmap)
+    val bitmapSize = bitmap.allocationByteCount
 
     originalBitmapCount++
     totalOriginalBitmapSize += bitmapSize
@@ -74,7 +73,7 @@ class StatsEventListener : EventListener {
   }
 
   override fun bitmapTransformed(bitmap: Bitmap) {
-    val bitmapSize = BitmapCompat.getAllocationByteCount(bitmap)
+    val bitmapSize = bitmap.allocationByteCount
 
     transformedBitmapCount++
     totalTransformedBitmapSize += bitmapSize
