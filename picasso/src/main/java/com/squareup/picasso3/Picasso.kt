@@ -129,7 +129,8 @@ class Picasso internal constructor(
 
     val actions = targetToAction.values.toList()
     for (i in actions.indices) {
-      cancelExistingRequest(actions[i].getTarget())
+      val target = actions[i].getTarget() ?: continue
+      cancelExistingRequest(target)
     }
 
     val deferredRequestCreators = targetToDeferredRequestCreator.values.toList()
@@ -177,7 +178,8 @@ class Picasso internal constructor(
     for (i in actions.indices) {
       val action = actions[i]
       if (tag == action.tag) {
-        cancelExistingRequest(action.getTarget())
+        val target = action.getTarget() ?: continue
+        cancelExistingRequest(target)
       }
     }
 
@@ -405,7 +407,7 @@ class Picasso internal constructor(
 
   @JvmName("-enqueueAndSubmit")
   internal fun enqueueAndSubmit(action: Action) {
-    val target = action.getTarget()
+    val target = action.getTarget() ?: return
     if (targetToAction[target] !== action) {
       // This will also check we are on the main thread.
       cancelExistingRequest(target)

@@ -27,7 +27,7 @@ internal abstract class Action(
   abstract fun complete(result: Result)
   abstract fun error(e: Exception)
 
-  abstract fun getTarget(): Any
+  abstract fun getTarget(): Any?
 
   open fun cancel() {
     cancelled = true
