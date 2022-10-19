@@ -20,15 +20,20 @@ import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import com.squareup.picasso3.RequestHandler.Result
 import com.squareup.picasso3.RequestHandler.Result.Bitmap
+import java.lang.ref.WeakReference
 
 internal class BitmapTargetAction(
   picasso: Picasso,
-  private val target: BitmapTarget,
+  target: BitmapTarget,
   data: Request,
   private val errorDrawable: Drawable?,
   @DrawableRes val errorResId: Int
 ) : Action(picasso, data) {
+  private val targetReference = WeakReference(target)
+
   override fun complete(result: Result) {
+    val target = targetReference.get() ?: return
+
     if (result is Bitmap) {
       val bitmap = result.bitmap
       target.onBitmapLoaded(bitmap, result.loadedFrom)
@@ -37,6 +42,8 @@ internal class BitmapTargetAction(
   }
 
   override fun error(e: Exception) {
+    val target = targetReference.get() ?: return
+
     val drawable = if (errorResId != 0) {
       ContextCompat.getDrawable(picasso.context, errorResId)
     } else {
@@ -46,7 +53,7 @@ internal class BitmapTargetAction(
     target.onBitmapFailed(e, drawable)
   }
 
-  override fun getTarget(): Any {
-    return target
+  override fun getTarget(): BitmapTarget? {
+    return targetReference.get()
   }
 }
