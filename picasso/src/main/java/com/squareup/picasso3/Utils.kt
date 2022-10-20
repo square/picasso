@@ -222,9 +222,11 @@ internal object Utils {
   }
 
   /**
-   * Prior to Android 5, HandlerThread always keeps a stack local reference to the last message
+   * Prior to Android 12, HandlerThread always keeps a stack local reference to the last message
    * that was sent to it. This method makes sure that stack local reference never stays there
    * for too long by sending new messages to it every second.
+   *
+   * https://github.com/square/leakcanary/blob/main/plumber-android-core/src/main/java/leakcanary/AndroidLeakFixes.kt#L153
    */
   fun flushStackLocalLeaks(looper: Looper) {
     val handler: Handler = object : Handler(looper) {
