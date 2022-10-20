@@ -24,11 +24,16 @@ import com.squareup.picasso3.BitmapUtils.calculateInSampleSize
 import com.squareup.picasso3.BitmapUtils.createBitmapOptions
 import com.squareup.picasso3.BitmapUtils.requiresInSampleSize
 import com.squareup.picasso3.TestUtils.URI_1
+import leakcanary.DetectLeaksAfterTestSuccess
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class BitmapUtilsTest {
+
+  @get:Rule
+  val rule = DetectLeaksAfterTestSuccess()
 
   @Test fun bitmapConfig() {
     for (config in Bitmap.Config.values()) {

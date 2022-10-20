@@ -39,6 +39,7 @@ buildscript {
     foundation: "androidx.compose.foundation:foundation:${versions.composeUi}",
     material: "androidx.compose.material:material:${versions.composeUi}",
     leakCanary: "com.squareup.leakcanary:leakcanary-android:${versions.leakCanary}",
+    leakCanaryInstrumentation: "com.squareup.leakcanary:leakcanary-android-instrumentation:${versions.leakCanary}",
   ]
 
   ext.isCi = "true" == System.getenv('CI')

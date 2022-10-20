@@ -19,11 +19,17 @@ import android.graphics.Bitmap
 import android.graphics.Bitmap.Config.ALPHA_8
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import leakcanary.DetectLeaksAfterTestSuccess
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class PlatformLruCacheTest {
+
+  @get:Rule
+  val rule = DetectLeaksAfterTestSuccess()
+
   // The use of ALPHA_8 simplifies the size math in tests since only one byte is used per-pixel.
   private val A = Bitmap.createBitmap(1, 1, ALPHA_8)
   private val B = Bitmap.createBitmap(1, 1, ALPHA_8)

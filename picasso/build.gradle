@@ -46,6 +46,7 @@ dependencies {
 
   androidTestImplementation deps.androidxJunit
   androidTestImplementation deps.androidxTestRunner
+  androidTestImplementation deps.leakCanaryInstrumentation
   androidTestImplementation deps.truth
 }
 

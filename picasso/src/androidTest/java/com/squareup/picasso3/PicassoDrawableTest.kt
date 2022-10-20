@@ -23,11 +23,17 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.squareup.picasso3.Picasso.LoadedFrom.DISK
+import leakcanary.DetectLeaksAfterTestSuccess
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class PicassoDrawableTest {
+
+  @get:Rule
+  val rule = DetectLeaksAfterTestSuccess()
+
   private val placeholder: Drawable = ColorDrawable(RED)
   private val bitmap = Bitmap.createBitmap(10, 10, Bitmap.Config.ALPHA_8)
 

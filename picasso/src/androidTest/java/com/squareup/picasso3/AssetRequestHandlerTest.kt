@@ -18,11 +18,17 @@ package com.squareup.picasso3
 import android.net.Uri
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import leakcanary.DetectLeaksAfterTestSuccess
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class AssetRequestHandlerTest {
+
+  @get:Rule
+  val rule = DetectLeaksAfterTestSuccess()
+
   @Test fun truncatesFilePrefix() {
     val uri = Uri.parse("file:///android_asset/foo/bar.png")
     val request = Request.Builder(uri).build()
