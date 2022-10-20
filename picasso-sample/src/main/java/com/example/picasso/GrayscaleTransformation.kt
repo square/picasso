@@ -15,7 +15,6 @@
  */
 package com.example.picasso
 
-import android.graphics.Bitmap.createBitmap
 import android.graphics.BitmapShader
 import android.graphics.Canvas
 import android.graphics.ColorMatrix
@@ -25,6 +24,7 @@ import android.graphics.Paint.ANTI_ALIAS_FLAG
 import android.graphics.PorterDuff.Mode.MULTIPLY
 import android.graphics.PorterDuffXfermode
 import android.graphics.Shader.TileMode.REPEAT
+import androidx.core.graphics.createBitmap
 import com.squareup.picasso3.Picasso
 import com.squareup.picasso3.RequestHandler.Result
 import com.squareup.picasso3.Transformation

@@ -35,6 +35,7 @@ import android.util.TypedValue
 import android.view.ViewTreeObserver
 import android.widget.ImageView
 import android.widget.RemoteViews
+import androidx.core.graphics.createBitmap
 import com.squareup.picasso3.BitmapHunterTest.TestableBitmapHunter
 import com.squareup.picasso3.Picasso.LoadedFrom.MEMORY
 import com.squareup.picasso3.Picasso.Priority
@@ -252,12 +253,9 @@ internal object TestUtils {
       .build()
   }
 
-  fun makeBitmap(
-    width: Int = 10,
-    height: Int = 10
-  ): android.graphics.Bitmap = android.graphics.Bitmap.createBitmap(width, height, ALPHA_8)
+  fun makeBitmap(width: Int = 10, height: Int = 10) = createBitmap(width, height, ALPHA_8)
 
-  fun makeLoaderWithDrawable(drawable: Drawable?): DrawableLoader = DrawableLoader { drawable }
+  fun makeLoaderWithDrawable(drawable: Drawable?) = DrawableLoader { drawable }
 
   internal class FakeAction(
     picasso: Picasso,

@@ -16,16 +16,16 @@
 package com.squareup.picasso3
 
 import android.graphics.Bitmap
-import android.graphics.Bitmap.Config.ARGB_8888
+import androidx.core.graphics.createBitmap
 
 internal class TestTransformation(
   private val key: String,
-  private val result: Bitmap? = Bitmap.createBitmap(10, 10, ARGB_8888)
+  private val result: Bitmap = createBitmap(10, 10)
 ) : Transformation {
   override fun transform(source: RequestHandler.Result.Bitmap): RequestHandler.Result.Bitmap {
     val bitmap = source.bitmap
     bitmap.recycle()
-    return RequestHandler.Result.Bitmap(result!!, source.loadedFrom, source.exifRotation)
+    return RequestHandler.Result.Bitmap(result, source.loadedFrom, source.exifRotation)
   }
 
   override fun key(): String = key
