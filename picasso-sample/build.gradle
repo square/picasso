@@ -49,4 +49,6 @@ dependencies {
   implementation project(':picasso')
   implementation project(':picasso-stats')
   implementation project(':picasso-compose')
+
+  debugImplementation deps.leakCanary
 }
