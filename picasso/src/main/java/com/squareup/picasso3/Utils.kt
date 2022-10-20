@@ -21,7 +21,9 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.NameNotFoundException
 import android.content.res.Resources
+import android.os.Handler
 import android.os.Looper
+import android.os.Message
 import android.os.StatFs
 import android.provider.Settings.Global
 import android.util.Log
@@ -40,6 +42,7 @@ internal object Utils {
   private const val PICASSO_CACHE = "picasso-cache"
   private const val MIN_DISK_CACHE_SIZE = 5 * 1024 * 1024 // 5MB
   private const val MAX_DISK_CACHE_SIZE = 50 * 1024 * 1024 // 50MB
+  const val THREAD_LEAK_CLEANING_MS = 1000
 
   /** Thread confined to main thread for key creation.  */
   val MAIN_THREAD_KEY_BUILDER = StringBuilder()
@@ -216,5 +219,19 @@ internal object Utils {
     } catch (e: NameNotFoundException) {
       throw FileNotFoundException("Unable to obtain resources for package: " + data.uri)
     }
+  }
+
+  /**
+   * Prior to Android 5, HandlerThread always keeps a stack local reference to the last message
+   * that was sent to it. This method makes sure that stack local reference never stays there
+   * for too long by sending new messages to it every second.
+   */
+  fun flushStackLocalLeaks(looper: Looper) {
+    val handler: Handler = object : Handler(looper) {
+      override fun handleMessage(msg: Message) {
+        sendMessageDelayed(obtainMessage(), THREAD_LEAK_CLEANING_MS.toLong())
+      }
+    }
+    handler.sendMessageDelayed(handler.obtainMessage(), THREAD_LEAK_CLEANING_MS.toLong())
   }
 }
