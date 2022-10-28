@@ -19,7 +19,6 @@ import android.graphics.drawable.Drawable
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import com.squareup.picasso3.RequestHandler.Result
-import com.squareup.picasso3.RequestHandler.Result.Bitmap
 
 internal class DrawableTargetAction(
   picasso: Picasso,
@@ -31,20 +30,28 @@ internal class DrawableTargetAction(
   @DrawableRes val errorResId: Int
 ) : Action(picasso, data) {
   override fun complete(result: Result) {
-    if (result is Bitmap) {
-      val bitmap = result.bitmap
-      target.onDrawableLoaded(
-        PicassoDrawable(
-          context = picasso.context,
-          bitmap = bitmap,
-          placeholder = placeholderDrawable,
-          loadedFrom = result.loadedFrom,
-          noFade = noFade,
-          debugging = picasso.indicatorsEnabled
-        ),
-        result.loadedFrom
-      )
-      check(!bitmap.isRecycled) { "Target callback must not recycle bitmap!" }
+    when (result) {
+      is Result.Bitmap -> {
+        val bitmap = result.bitmap
+        target.onDrawableLoaded(
+          PicassoDrawable(
+            context = picasso.context,
+            bitmap = bitmap,
+            placeholder = placeholderDrawable,
+            loadedFrom = result.loadedFrom,
+            noFade = noFade,
+            debugging = picasso.indicatorsEnabled
+          ),
+          result.loadedFrom
+        )
+        check(!bitmap.isRecycled) { "Target callback must not recycle bitmap!" }
+      }
+      is Result.Drawable -> {
+        target.onDrawableLoaded(
+          result.drawable,
+          result.loadedFrom
+        )
+      }
     }
   }
 
