@@ -44,6 +44,7 @@ class PicassoPaparazziTest {
         scaleType = CENTER
         picasso.load("fake:///zkaAooq.png")
           .resize(200, 200)
+          .placeholder(R.drawable.placeholder)
           .centerInside()
           .onlyScaleDown()
           .into(this)
