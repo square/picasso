@@ -82,6 +82,8 @@ internal object Utils {
   */
   private val WEBP_FILE_HEADER_RIFF: ByteString = "RIFF".encodeUtf8()
   private val WEBP_FILE_HEADER_WEBP: ByteString = "WEBP".encodeUtf8()
+  private val GIF_FILE_HEADER_87A: ByteString = "GIF87a".encodeUtf8()
+  private val GIF_FILE_HEADER_89A: ByteString = "GIF89a".encodeUtf8()
 
   fun <T> checkNotNull(value: T?, message: String?): T {
     if (value == null) {
@@ -176,6 +178,11 @@ internal object Utils {
   fun isWebPFile(source: BufferedSource): Boolean {
     return source.rangeEquals(0, WEBP_FILE_HEADER_RIFF) &&
       source.rangeEquals(8, WEBP_FILE_HEADER_WEBP)
+  }
+
+  fun isGifFile(source: BufferedSource): Boolean {
+    return source.rangeEquals(0, GIF_FILE_HEADER_87A) ||
+      source.rangeEquals(0, GIF_FILE_HEADER_89A)
   }
 
   fun getResourceId(resources: Resources, data: Request): Int {

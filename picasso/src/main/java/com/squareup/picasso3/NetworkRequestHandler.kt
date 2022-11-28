@@ -16,12 +16,14 @@
 package com.squareup.picasso3
 
 import android.net.NetworkInfo
+import com.squareup.picasso3.BitmapUtils.decodeDrawableStream
 import com.squareup.picasso3.BitmapUtils.decodeStream
 import com.squareup.picasso3.NetworkPolicy.Companion.isOfflineOnly
 import com.squareup.picasso3.NetworkPolicy.Companion.shouldReadFromDiskCache
 import com.squareup.picasso3.NetworkPolicy.Companion.shouldWriteToDiskCache
 import com.squareup.picasso3.Picasso.LoadedFrom.DISK
 import com.squareup.picasso3.Picasso.LoadedFrom.NETWORK
+import com.squareup.picasso3.Utils.isGifFile
 import okhttp3.CacheControl
 import okhttp3.Call
 import okhttp3.Response
@@ -67,8 +69,15 @@ internal class NetworkRequestHandler(
             picasso.downloadFinished(body.contentLength())
           }
           try {
-            val bitmap = decodeStream(body!!.source(), request)
-            callback.onSuccess(Result.Bitmap(bitmap, loadedFrom))
+            val bufferedSource = body!!.source()
+            val result = if (isGifFile(bufferedSource)) {
+              val drawable = decodeDrawableStream(bufferedSource, request)
+              Result.Drawable(drawable, loadedFrom)
+            } else {
+              val bitmap = decodeStream(bufferedSource, request)
+              Result.Bitmap(bitmap, loadedFrom)
+            }
+            callback.onSuccess(result)
           } catch (e: IOException) {
             body!!.close()
             callback.onError(e)

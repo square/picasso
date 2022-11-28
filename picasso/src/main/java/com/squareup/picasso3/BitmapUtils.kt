@@ -21,10 +21,14 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
+import android.graphics.Movie
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.os.Build.VERSION
 import android.util.TypedValue
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
+import com.squareup.picasso3.Utils.isGifFile
 import okio.Buffer
 import okio.BufferedSource
 import okio.ForwardingSource
@@ -172,6 +176,45 @@ internal object BitmapUtils {
   private fun decodeImageSource(imageSource: ImageDecoder.Source, request: Request): Bitmap {
     return ImageDecoder.decodeBitmap(imageSource) { imageDecoder, imageInfo, source ->
       imageDecoder.isMutableRequired = true
+      if (request.hasSize()) {
+        val size = imageInfo.size
+        val width = size.width
+        val height = size.height
+        val targetWidth = request.targetWidth
+        val targetHeight = request.targetHeight
+        if (shouldResize(request.onlyScaleDown, width, height, targetWidth, targetHeight)) {
+          val ratio = ratio(targetWidth, targetHeight, width, height, request)
+          imageDecoder.setTargetSize(width / ratio, height / ratio)
+        }
+      }
+    }
+  }
+
+  /**
+   * Decode a byte stream into a Drawable. This method will take into account additional information
+   * about the supplied request in order to do the decoding efficiently.
+   */
+  fun decodeDrawableStream(source: Source, request: Request): Drawable {
+    val exceptionCatchingSource = ExceptionCatchingSource(source)
+    val bufferedSource = exceptionCatchingSource.buffer()
+    val drawable = if (VERSION.SDK_INT >= 28) {
+      val imageSource = ImageDecoder.createSource(ByteBuffer.wrap(bufferedSource.readByteArray()))
+      decodeDrawableSourceP(imageSource, request)
+    } else {
+      if (isGifFile(bufferedSource)) {
+        val movie = Movie.decodeStream(bufferedSource.inputStream())
+        MovieDrawable(movie)
+      } else {
+        BitmapDrawable(decodeStreamPreP(request, bufferedSource))
+      }
+    }
+    exceptionCatchingSource.throwIfCaught()
+    return drawable
+  }
+
+  @RequiresApi(28)
+  fun decodeDrawableSourceP(imageSource: ImageDecoder.Source, request: Request): Drawable {
+    return ImageDecoder.decodeDrawable(imageSource) { imageDecoder, imageInfo, source ->
       if (request.hasSize()) {
         val size = imageInfo.size
         val width = size.width
