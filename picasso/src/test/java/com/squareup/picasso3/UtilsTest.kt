@@ -21,6 +21,7 @@ import com.squareup.picasso3.TestUtils.RESOURCE_ID_URI
 import com.squareup.picasso3.TestUtils.RESOURCE_TYPE_URI
 import com.squareup.picasso3.TestUtils.URI_1
 import com.squareup.picasso3.TestUtils.mockPackageResourceContext
+import com.squareup.picasso3.Utils.isGifFile
 import com.squareup.picasso3.Utils.isWebPFile
 import okio.Buffer
 import org.junit.Test
@@ -59,6 +60,11 @@ class UtilsTest {
     assertThat(isWebPFile(Buffer().writeUtf8("ABCDxxxxWEBP"))).isFalse()
     assertThat(isWebPFile(Buffer().writeUtf8("RIFFxxxxABCD"))).isFalse()
     assertThat(isWebPFile(Buffer().writeUtf8("RIFFxxWEBP"))).isFalse()
+  }
+
+  @Test fun detectGifFile() {
+    assertThat(isGifFile(Buffer().writeUtf8("GIF87a"))).isTrue()
+    assertThat(isGifFile(Buffer().writeUtf8("GIF89a"))).isTrue()
   }
 
   @Test fun ensureBuilderIsCleared() {
