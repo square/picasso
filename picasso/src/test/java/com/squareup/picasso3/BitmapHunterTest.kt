@@ -21,6 +21,7 @@ import android.net.NetworkInfo
 import android.net.Uri
 import android.os.Looper
 import android.view.Gravity
+import androidx.core.graphics.createBitmap
 import androidx.exifinterface.media.ExifInterface
 import androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_90
 import com.google.common.truth.Truth.assertThat
@@ -420,7 +421,7 @@ class BitmapHunterTest {
 
   @Test fun exifRotation() {
     val data = Request.Builder(URI_1).rotate(-45f).build()
-    val source = android.graphics.Bitmap.createBitmap(10, 10, ARGB_8888)
+    val source = createBitmap(10, 10)
     val result = transformResult(data, source, ORIENTATION_ROTATE_90)
     val shadowBitmap = shadowOf(result)
     assertThat(shadowBitmap.createdFromBitmap).isSameInstanceAs(source)
@@ -432,7 +433,7 @@ class BitmapHunterTest {
 
   @Test fun exifRotationSizing() {
     val data = Request.Builder(URI_1).resize(5, 10).build()
-    val source = android.graphics.Bitmap.createBitmap(10, 10, ARGB_8888)
+    val source = createBitmap(10, 10)
     val result = transformResult(data, source, ORIENTATION_ROTATE_90)
     val shadowBitmap = shadowOf(result)
     assertThat(shadowBitmap.createdFromBitmap).isSameInstanceAs(source)
@@ -444,7 +445,7 @@ class BitmapHunterTest {
 
   @Test fun exifRotationNoSizing() {
     val data = Request.Builder(URI_1).build()
-    val source = android.graphics.Bitmap.createBitmap(10, 10, ARGB_8888)
+    val source = createBitmap(10, 10)
     val result = transformResult(data, source, ORIENTATION_ROTATE_90)
     val shadowBitmap = shadowOf(result)
     assertThat(shadowBitmap.createdFromBitmap).isSameInstanceAs(source)
@@ -456,7 +457,7 @@ class BitmapHunterTest {
 
   @Test fun rotation90Sizing() {
     val data = Request.Builder(URI_1).rotate(90f).resize(5, 10).build()
-    val source = android.graphics.Bitmap.createBitmap(10, 10, ARGB_8888)
+    val source = createBitmap(10, 10)
     val result = transformResult(data, source, 0)
     val shadowBitmap = shadowOf(result)
     assertThat(shadowBitmap.createdFromBitmap).isSameInstanceAs(source)
@@ -468,7 +469,7 @@ class BitmapHunterTest {
 
   @Test fun rotation180Sizing() {
     val data = Request.Builder(URI_1).rotate(180f).resize(5, 10).build()
-    val source = android.graphics.Bitmap.createBitmap(10, 10, ARGB_8888)
+    val source = createBitmap(10, 10)
     val result = transformResult(data, source, 0)
     val shadowBitmap = shadowOf(result)
     assertThat(shadowBitmap.createdFromBitmap).isSameInstanceAs(source)
@@ -480,7 +481,7 @@ class BitmapHunterTest {
 
   @Test fun rotation90WithPivotSizing() {
     val data = Request.Builder(URI_1).rotate(90f, 0f, 10f).resize(5, 10).build()
-    val source = android.graphics.Bitmap.createBitmap(10, 10, ARGB_8888)
+    val source = createBitmap(10, 10)
     val result = transformResult(data, source, 0)
     val shadowBitmap = shadowOf(result)
     assertThat(shadowBitmap.createdFromBitmap).isSameInstanceAs(source)
@@ -492,7 +493,7 @@ class BitmapHunterTest {
 
   @Test fun exifVerticalFlip() {
     val data = Request.Builder(URI_1).rotate(-45f).build()
-    val source = android.graphics.Bitmap.createBitmap(10, 10, ARGB_8888)
+    val source = createBitmap(10, 10)
     val result = transformResult(data, source, ExifInterface.ORIENTATION_FLIP_VERTICAL)
     val shadowBitmap = shadowOf(result)
     assertThat(shadowBitmap.createdFromBitmap).isSameInstanceAs(source)
@@ -505,7 +506,7 @@ class BitmapHunterTest {
 
   @Test fun exifHorizontalFlip() {
     val data = Request.Builder(URI_1).rotate(-45f).build()
-    val source = android.graphics.Bitmap.createBitmap(10, 10, ARGB_8888)
+    val source = createBitmap(10, 10)
     val result = transformResult(data, source, ExifInterface.ORIENTATION_FLIP_HORIZONTAL)
     val shadowBitmap = shadowOf(result)
     assertThat(shadowBitmap.createdFromBitmap).isSameInstanceAs(source)
@@ -520,7 +521,7 @@ class BitmapHunterTest {
 
   @Test fun exifTranspose() {
     val data = Request.Builder(URI_1).rotate(-45f).build()
-    val source = android.graphics.Bitmap.createBitmap(10, 10, ARGB_8888)
+    val source = createBitmap(10, 10)
     val result = transformResult(data, source, ExifInterface.ORIENTATION_TRANSPOSE)
     val shadowBitmap = shadowOf(result)
     assertThat(shadowBitmap.createdFromBitmap).isSameInstanceAs(source)
@@ -533,7 +534,7 @@ class BitmapHunterTest {
 
   @Test fun exifTransverse() {
     val data = Request.Builder(URI_1).rotate(-45f).build()
-    val source = android.graphics.Bitmap.createBitmap(10, 10, ARGB_8888)
+    val source = createBitmap(10, 10)
     val result = transformResult(data, source, ExifInterface.ORIENTATION_TRANSVERSE)
     val shadowBitmap = shadowOf(result)
     assertThat(shadowBitmap.createdFromBitmap).isSameInstanceAs(source)
@@ -546,7 +547,7 @@ class BitmapHunterTest {
 
   @Test fun keepsAspectRationWhileResizingWhenDesiredWidthIs0() {
     val request = Request.Builder(URI_1).resize(20, 0).build()
-    val source = android.graphics.Bitmap.createBitmap(40, 20, ARGB_8888)
+    val source = createBitmap(40, 20)
 
     val result = transformResult(request, source, 0)
 
@@ -558,7 +559,7 @@ class BitmapHunterTest {
 
   @Test fun keepsAspectRationWhileResizingWhenDesiredHeightIs0() {
     val request = Request.Builder(URI_1).resize(0, 10).build()
-    val source = android.graphics.Bitmap.createBitmap(40, 20, ARGB_8888)
+    val source = createBitmap(40, 20)
 
     val result = transformResult(request, source, 0)
 
@@ -570,7 +571,7 @@ class BitmapHunterTest {
 
   @Test fun centerCropResultMatchesTargetSize() {
     val request = Request.Builder(URI_1).resize(1080, 642).centerCrop().build()
-    val source = android.graphics.Bitmap.createBitmap(640, 640, ARGB_8888)
+    val source = createBitmap(640, 640)
 
     val result = transformResult(request, source, 0)
 
@@ -580,7 +581,7 @@ class BitmapHunterTest {
 
   @Test fun centerCropResultMatchesTargetSizeWhileDesiredWidthIs0() {
     val request = Request.Builder(URI_1).resize(0, 642).centerCrop().build()
-    val source = android.graphics.Bitmap.createBitmap(640, 640, ARGB_8888)
+    val source = createBitmap(640, 640)
 
     val result = transformResult(request, source, 0)
 
@@ -590,7 +591,7 @@ class BitmapHunterTest {
 
   @Test fun centerCropResultMatchesTargetSizeWhileDesiredHeightIs0() {
     val request = Request.Builder(URI_1).resize(1080, 0).centerCrop().build()
-    val source = android.graphics.Bitmap.createBitmap(640, 640, ARGB_8888)
+    val source = createBitmap(640, 640)
 
     val result = transformResult(request, source, 0)
 
@@ -600,7 +601,7 @@ class BitmapHunterTest {
 
   @Test fun centerInsideResultMatchesTargetSizeWhileDesiredWidthIs0() {
     val request = Request.Builder(URI_1).resize(0, 642).centerInside().build()
-    val source = android.graphics.Bitmap.createBitmap(640, 640, ARGB_8888)
+    val source = createBitmap(640, 640)
 
     val result = transformResult(request, source, 0)
 
@@ -610,7 +611,7 @@ class BitmapHunterTest {
 
   @Test fun centerInsideResultMatchesTargetSizeWhileDesiredHeightIs0() {
     val request = Request.Builder(URI_1).resize(1080, 0).centerInside().build()
-    val source = android.graphics.Bitmap.createBitmap(640, 640, ARGB_8888)
+    val source = createBitmap(640, 640)
 
     val result = transformResult(request, source, 0)
 
@@ -619,7 +620,7 @@ class BitmapHunterTest {
   }
 
   @Test fun exifRotationWithManualRotation() {
-    val source = android.graphics.Bitmap.createBitmap(10, 10, ARGB_8888)
+    val source = createBitmap(10, 10)
     val data = Request.Builder(URI_1).rotate(-45f).build()
 
     val result = transformResult(data, source, ORIENTATION_ROTATE_90)
@@ -634,7 +635,7 @@ class BitmapHunterTest {
   }
 
   @Test fun rotation() {
-    val source = android.graphics.Bitmap.createBitmap(10, 10, ARGB_8888)
+    val source = createBitmap(10, 10)
     val data = Request.Builder(URI_1).rotate(-45f).build()
 
     val result = transformResult(data, source, 0)
@@ -648,7 +649,7 @@ class BitmapHunterTest {
   }
 
   @Test fun pivotRotation() {
-    val source = android.graphics.Bitmap.createBitmap(10, 10, ARGB_8888)
+    val source = createBitmap(10, 10)
     val data = Request.Builder(URI_1).rotate(-45f, 10f, 10f).build()
 
     val result = transformResult(data, source, 0)
@@ -662,7 +663,7 @@ class BitmapHunterTest {
   }
 
   @Test fun resize() {
-    val source = android.graphics.Bitmap.createBitmap(10, 10, ARGB_8888)
+    val source = createBitmap(10, 10)
     val data = Request.Builder(URI_1).resize(20, 15).build()
 
     val result = transformResult(data, source, 0)
@@ -676,7 +677,7 @@ class BitmapHunterTest {
   }
 
   @Test fun centerCropTallTooSmall() {
-    val source = android.graphics.Bitmap.createBitmap(10, 20, ARGB_8888)
+    val source = createBitmap(10, 20)
     val data = Request.Builder(URI_1).resize(40, 40).centerCrop().build()
 
     val result = transformResult(data, source, 0)
@@ -694,7 +695,7 @@ class BitmapHunterTest {
   }
 
   @Test fun centerCropTallTooLarge() {
-    val source = android.graphics.Bitmap.createBitmap(100, 200, ARGB_8888)
+    val source = createBitmap(100, 200)
     val data = Request.Builder(URI_1).resize(50, 50).centerCrop().build()
 
     val result = transformResult(data, source, 0)
@@ -712,7 +713,7 @@ class BitmapHunterTest {
   }
 
   @Test fun centerCropWideTooSmall() {
-    val source = android.graphics.Bitmap.createBitmap(20, 10, ARGB_8888)
+    val source = createBitmap(20, 10)
     val data = Request.Builder(URI_1).resize(40, 40).centerCrop().build()
 
     val result = transformResult(data, source, 0)
@@ -730,7 +731,7 @@ class BitmapHunterTest {
   }
 
   @Test fun centerCropWithGravityHorizontalLeft() {
-    val source = android.graphics.Bitmap.createBitmap(20, 10, ARGB_8888)
+    val source = createBitmap(20, 10)
     val data = Request.Builder(URI_1).resize(40, 40).centerCrop(Gravity.LEFT).build()
 
     val result = transformResult(data, source, 0)
@@ -748,7 +749,7 @@ class BitmapHunterTest {
   }
 
   @Test fun centerCropWithGravityHorizontalRight() {
-    val source = android.graphics.Bitmap.createBitmap(20, 10, ARGB_8888)
+    val source = createBitmap(20, 10)
     val data = Request.Builder(URI_1).resize(40, 40).centerCrop(Gravity.RIGHT).build()
 
     val result = transformResult(data, source, 0)
@@ -766,7 +767,7 @@ class BitmapHunterTest {
   }
 
   @Test fun centerCropWithGravityVerticalTop() {
-    val source = android.graphics.Bitmap.createBitmap(10, 20, ARGB_8888)
+    val source = createBitmap(10, 20)
     val data = Request.Builder(URI_1).resize(40, 40).centerCrop(Gravity.TOP).build()
 
     val result = transformResult(data, source, 0)
@@ -784,7 +785,7 @@ class BitmapHunterTest {
   }
 
   @Test fun centerCropWithGravityVerticalBottom() {
-    val source = android.graphics.Bitmap.createBitmap(10, 20, ARGB_8888)
+    val source = createBitmap(10, 20)
     val data = Request.Builder(URI_1).resize(40, 40).centerCrop(Gravity.BOTTOM).build()
 
     val result = transformResult(data, source, 0)
@@ -802,7 +803,7 @@ class BitmapHunterTest {
   }
 
   @Test fun centerCropWideTooLarge() {
-    val source = android.graphics.Bitmap.createBitmap(200, 100, ARGB_8888)
+    val source = createBitmap(200, 100)
     val data = Request.Builder(URI_1).resize(50, 50).centerCrop().build()
 
     val result = transformResult(data, source, 0)
@@ -820,7 +821,7 @@ class BitmapHunterTest {
   }
 
   @Test fun centerInsideTallTooSmall() {
-    val source = android.graphics.Bitmap.createBitmap(20, 10, ARGB_8888)
+    val source = createBitmap(20, 10)
     val data = Request.Builder(URI_1).resize(50, 50).centerInside().build()
 
     val result = transformResult(data, source, 0)
@@ -834,7 +835,7 @@ class BitmapHunterTest {
   }
 
   @Test fun centerInsideTallTooLarge() {
-    val source = android.graphics.Bitmap.createBitmap(100, 50, ARGB_8888)
+    val source = createBitmap(100, 50)
     val data = Request.Builder(URI_1).resize(50, 50).centerInside().build()
 
     val result = transformResult(data, source, 0)
@@ -848,7 +849,7 @@ class BitmapHunterTest {
   }
 
   @Test fun centerInsideWideTooSmall() {
-    val source = android.graphics.Bitmap.createBitmap(10, 20, ARGB_8888)
+    val source = createBitmap(10, 20)
     val data = Request.Builder(URI_1).resize(50, 50).centerInside().build()
 
     val result = transformResult(data, source, 0)
@@ -862,7 +863,7 @@ class BitmapHunterTest {
   }
 
   @Test fun centerInsideWideTooLarge() {
-    val source = android.graphics.Bitmap.createBitmap(50, 100, ARGB_8888)
+    val source = createBitmap(50, 100)
     val data = Request.Builder(URI_1).resize(50, 50).centerInside().build()
 
     val result = transformResult(data, source, 0)
@@ -877,7 +878,7 @@ class BitmapHunterTest {
   }
 
   @Test fun onlyScaleDownOriginalBigger() {
-    val source = android.graphics.Bitmap.createBitmap(100, 100, ARGB_8888)
+    val source = createBitmap(100, 100)
     val data = Request.Builder(URI_1).resize(50, 50).onlyScaleDown().build()
     val result = transformResult(data, source, 0)
 
@@ -891,7 +892,7 @@ class BitmapHunterTest {
   }
 
   @Test fun onlyScaleDownOriginalSmaller() {
-    val source = android.graphics.Bitmap.createBitmap(50, 50, ARGB_8888)
+    val source = createBitmap(50, 50)
     val data = Request.Builder(URI_1).resize(100, 100).onlyScaleDown().build()
     val result = transformResult(data, source, 0)
     assertThat(result).isSameInstanceAs(source)
@@ -902,7 +903,7 @@ class BitmapHunterTest {
   }
 
   @Test fun onlyScaleDownOriginalSmallerWidthIs0() {
-    val source = android.graphics.Bitmap.createBitmap(50, 50, ARGB_8888)
+    val source = createBitmap(50, 50)
     val data = Request.Builder(URI_1).resize(0, 60).onlyScaleDown().build()
     val result = transformResult(data, source, 0)
     assertThat(result).isSameInstanceAs(source)
@@ -912,7 +913,7 @@ class BitmapHunterTest {
   }
 
   @Test fun onlyScaleDownOriginalSmallerHeightIs0() {
-    val source = android.graphics.Bitmap.createBitmap(50, 50, ARGB_8888)
+    val source = createBitmap(50, 50)
     val data = Request.Builder(URI_1).resize(60, 0).onlyScaleDown().build()
     val result = transformResult(data, source, 0)
     assertThat(result).isSameInstanceAs(source)
@@ -922,7 +923,7 @@ class BitmapHunterTest {
   }
 
   @Test fun onlyScaleDownOriginalBiggerWidthIs0() {
-    val source = android.graphics.Bitmap.createBitmap(50, 50, ARGB_8888)
+    val source = createBitmap(50, 50)
     val data = Request.Builder(URI_1).resize(0, 40).onlyScaleDown().build()
     val result = transformResult(data, source, 0)
 
@@ -936,7 +937,7 @@ class BitmapHunterTest {
   }
 
   @Test fun onlyScaleDownOriginalBiggerHeightIs0() {
-    val source = android.graphics.Bitmap.createBitmap(50, 50, ARGB_8888)
+    val source = createBitmap(50, 50)
     val data = Request.Builder(URI_1).resize(40, 0).onlyScaleDown().build()
     val result = transformResult(data, source, 0)
 
@@ -951,7 +952,7 @@ class BitmapHunterTest {
 
   @Test fun reusedBitmapIsNotRecycled() {
     val data = Request.Builder(URI_1).build()
-    val source = android.graphics.Bitmap.createBitmap(10, 10, ARGB_8888)
+    val source = createBitmap(10, 10)
     val result = transformResult(data, source, 0)
     assertThat(result).isSameInstanceAs(source)
     assertThat(result.isRecycled).isFalse()
@@ -968,8 +969,8 @@ class BitmapHunterTest {
       }
     }
     val transformations = listOf(badTransformation)
-    val original = android.graphics.Bitmap.createBitmap(10, 10, ARGB_8888)
-    val result = RequestHandler.Result.Bitmap(original, MEMORY, 0)
+    val original = createBitmap(10, 10)
+    val result = Bitmap(original, MEMORY, 0)
     val data = Request.Builder(URI_1).build()
     try {
       applyTransformations(picasso, data, transformations, result)
@@ -994,8 +995,8 @@ class BitmapHunterTest {
       }
     }
     val transformations = listOf(badTransformation)
-    val original = android.graphics.Bitmap.createBitmap(10, 10, ARGB_8888)
-    val result = RequestHandler.Result.Bitmap(original, MEMORY, 0)
+    val original = createBitmap(10, 10)
+    val result = Bitmap(original, MEMORY, 0)
     val data = Request.Builder(URI_1).build()
     try {
       applyTransformations(picasso, data, transformations, result)
@@ -1079,7 +1080,7 @@ class BitmapHunterTest {
     }
 
     override fun load(picasso: Picasso, request: Request, callback: Callback) {
-      callback.onSuccess(Result.Bitmap(bitmap, MEMORY))
+      callback.onSuccess(Bitmap(bitmap, MEMORY))
     }
   }
 }

@@ -16,7 +16,6 @@
 package com.squareup.picasso3
 
 import android.content.Context
-import android.graphics.Bitmap.Config.ALPHA_8
 import android.graphics.Bitmap.Config.ARGB_8888
 import android.net.Uri
 import android.widget.RemoteViews
@@ -457,7 +456,7 @@ class PicassoTest {
 
   @Test fun evictAll() {
     val picasso = Picasso.Builder(RuntimeEnvironment.application).indicatorsEnabled(true).build()
-    picasso.cache["key"] = android.graphics.Bitmap.createBitmap(1, 1, ALPHA_8)
+    picasso.cache["key"] = makeBitmap(1, 1)
     assertThat(picasso.cache.size()).isEqualTo(1)
     picasso.evictAll()
     assertThat(picasso.cache.size()).isEqualTo(0)
