@@ -107,6 +107,6 @@ internal class PicassoPainter(
 }
 
 private object EmptyPainter : Painter() {
-  override val intrinsicSize = Size.Zero
+  override val intrinsicSize = Size.Unspecified
   override fun DrawScope.onDraw() = Unit
 }
