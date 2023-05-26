@@ -31,7 +31,7 @@ buildscript {
     junit: 'junit:junit:4.13.2',
     truth: 'com.google.truth:truth:1.1.3',
     robolectric: 'org.robolectric:robolectric:4.6.1',
-    mockito: 'org.mockito:mockito-core:3.0.0',
+    mockito: 'org.mockito:mockito-core:3.12.4',
     drawablePainter: 'com.google.accompanist:accompanist-drawablepainter:0.30.1',
     composeUi: "androidx.compose.ui:ui:${versions.composeUi}",
     runtime: "androidx.compose.runtime:runtime:${versions.composeUi}",
