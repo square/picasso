@@ -38,6 +38,7 @@ import com.squareup.picasso3.TestUtils.URI_1
 import com.squareup.picasso3.TestUtils.URI_2
 import com.squareup.picasso3.TestUtils.URI_KEY_1
 import com.squareup.picasso3.TestUtils.URI_KEY_2
+import com.squareup.picasso3.TestUtils.any
 import com.squareup.picasso3.TestUtils.makeBitmap
 import com.squareup.picasso3.TestUtils.mockAction
 import com.squareup.picasso3.TestUtils.mockBitmapTarget
@@ -51,7 +52,9 @@ import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
+import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyZeroInteractions
 import org.mockito.MockitoAnnotations.initMocks
@@ -60,6 +63,7 @@ import org.robolectric.Shadows.shadowOf
 import java.lang.AssertionError
 import java.lang.Exception
 import java.util.concurrent.ExecutorService
+import java.util.concurrent.Future
 import java.util.concurrent.FutureTask
 
 @RunWith(RobolectricTestRunner::class)
@@ -71,13 +75,15 @@ class DispatcherTest {
   private lateinit var picasso: Picasso
   private lateinit var dispatcher: Dispatcher
 
+  private val executorService = spy(PicassoExecutorService())
   private val cache = PlatformLruCache(2048)
-  private val service = TestDelegatingService(PicassoExecutorService())
+  private val service = TestDelegatingService(executorService)
   private val bitmap1 = makeBitmap()
 
   @Before fun setUp() {
     initMocks(this)
     `when`(context.applicationContext).thenReturn(context)
+    doReturn(mock(Future::class.java)).`when`(executorService).submit(any(Runnable::class.java))
     picasso = mockPicasso(context)
     dispatcher = createDispatcher(service)
   }
