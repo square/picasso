@@ -81,9 +81,6 @@ subprojects {
   }
 
   plugins.withId('com.vanniktech.maven.publish') {
-    mavenPublish {
-      sonatypeHost = 'S01'
-    }
     publishing {
       repositories {
         /**
@@ -96,7 +93,7 @@ subprojects {
          */
         maven {
           name = "internal"
-          url = providers.gradleProperty("internalUrl").forUseAtConfigurationTime()
+          url = providers.gradleProperty("internalUrl")
           credentials(PasswordCredentials)
         }
       }
