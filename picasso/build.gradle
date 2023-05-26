@@ -17,6 +17,10 @@ android {
     targetCompatibility versions.targetCompatibility
   }
 
+  kotlinOptions {
+    jvmTarget = versions.targetCompatibility
+  }
+
   lintOptions {
     textOutput 'stdout'
     textReport true

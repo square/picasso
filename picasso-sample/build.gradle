@@ -23,6 +23,10 @@ android {
     targetCompatibility versions.targetCompatibility
   }
 
+  kotlinOptions {
+    jvmTarget = versions.targetCompatibility
+  }
+
   lintOptions {
     lintConfig file('lint.xml')
     textOutput 'stdout'
