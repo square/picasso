@@ -3,6 +3,8 @@ apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'com.vanniktech.maven.publish'
 
 android {
+  namespace 'com.squareup.picasso3.pollexor'
+
   compileSdkVersion versions.compileSdk
 
   defaultConfig {
