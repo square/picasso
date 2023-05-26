@@ -2,6 +2,8 @@ apply plugin: 'com.android.application'
 apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
+  namespace 'com.example.picasso'
+
   compileSdkVersion versions.compileSdk
 
   defaultConfig {
