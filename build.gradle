@@ -51,7 +51,7 @@ buildscript {
     classpath deps.androidPlugin
     classpath deps.kotlinPlugin
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.46.0'
-    classpath 'com.vanniktech:gradle-maven-publish-plugin:0.18.0'
+    classpath 'com.vanniktech:gradle-maven-publish-plugin:0.25.2'
     classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.3.0'
     classpath 'org.jetbrains.kotlinx:binary-compatibility-validator:0.13.1'
   }
