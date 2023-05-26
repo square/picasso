@@ -54,7 +54,7 @@ import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyZeroInteractions
+import org.mockito.Mockito.verifyNoInteractions
 import org.mockito.MockitoAnnotations.initMocks
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
@@ -254,7 +254,7 @@ class PicassoTest {
     assertThat(action.cancelled).isFalse()
     picasso.cancelRequest(target)
     assertThat(action.cancelled).isFalse()
-    verifyZeroInteractions(dispatcher)
+    verifyNoInteractions(dispatcher)
   }
 
   @Test fun cancelExistingRequestWithImageViewTarget() {

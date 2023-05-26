@@ -56,7 +56,7 @@ import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyZeroInteractions
+import org.mockito.Mockito.verifyNoInteractions
 import org.mockito.MockitoAnnotations.initMocks
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
@@ -511,7 +511,7 @@ class DispatcherTest {
     val dispatcher = mock(Dispatcher::class.java)
     val receiver = NetworkBroadcastReceiver(dispatcher)
     receiver.onReceive(context, null)
-    verifyZeroInteractions(dispatcher)
+    verifyNoInteractions(dispatcher)
   }
 
   @Test fun nullExtrasOnReceiveConnectivityAreOk() {
@@ -529,7 +529,7 @@ class DispatcherTest {
     val dispatcher = mock(Dispatcher::class.java)
     val receiver = NetworkBroadcastReceiver(dispatcher)
     receiver.onReceive(context, Intent(ACTION_AIRPLANE_MODE_CHANGED))
-    verifyZeroInteractions(dispatcher)
+    verifyNoInteractions(dispatcher)
   }
 
   @Test fun correctExtrasOnReceiveAirplaneDispatches() {

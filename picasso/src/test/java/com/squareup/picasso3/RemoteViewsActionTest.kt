@@ -35,7 +35,7 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyZeroInteractions
+import org.mockito.Mockito.verifyNoInteractions
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 
@@ -77,7 +77,7 @@ class RemoteViewsActionTest {
     val action = createAction(callback)
     val e = RuntimeException()
     action.error(e)
-    verifyZeroInteractions(remoteViews)
+    verifyNoInteractions(remoteViews)
     verify(callback).onError(e)
   }
 
