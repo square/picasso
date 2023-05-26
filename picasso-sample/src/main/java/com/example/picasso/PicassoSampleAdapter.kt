@@ -15,18 +15,23 @@
  */
 package com.example.picasso
 
+import android.Manifest.permission.POST_NOTIFICATIONS
 import android.app.Activity
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
+import android.os.Build.VERSION_CODES.TIRAMISU
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.RemoteViews
 import android.widget.TextView
+import androidx.core.app.ActivityCompat.checkSelfPermission
+import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -65,6 +70,12 @@ internal class PicassoSampleAdapter(context: Context?) : BaseAdapter() {
           .setName("Picasso Notification Channel")
         notificationManager.createNotificationChannel(channel.build())
 
+        if (VERSION.SDK_INT >= TIRAMISU &&
+          checkSelfPermission(activity, POST_NOTIFICATIONS) != PERMISSION_GRANTED
+        ) {
+          requestPermissions(activity, arrayOf(POST_NOTIFICATIONS), 200)
+          return
+        }
         notificationManager.notify(NOTIFICATION_ID, notification)
 
         // Now load an image for this notification.
