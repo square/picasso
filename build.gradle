@@ -12,7 +12,7 @@ buildscript {
     classpath libs.plugin.kotlin
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.46.0'
     classpath 'com.vanniktech:gradle-maven-publish-plugin:0.25.2'
-    classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.19.0'
+    classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.18.0'
     classpath 'org.jetbrains.kotlinx:binary-compatibility-validator:0.13.1'
   }
 }
@@ -66,11 +66,13 @@ subprojects {
       target('**/*.kt')
       licenseHeaderFile(rootProject.file('gradle/license-header.txt'))
       // Spotless doesn't read .editorconfig yet: https://github.com/diffplug/spotless/issues/142
-      ktlint('0.41.0').userData([
+      ktlint('0.46.1').editorConfigOverride([
           'insert_final_newline': 'true',
           'end_of_line': 'lf',
           'charset': 'utf-8',
           'indent_size': '2',
+          'trim_trailing_whitespace': 'true',
+          'ij_kotlin_imports_layout': '*,java.**,javax.**,kotlin.**,kotlinx.**,^'
       ])
     }
   }

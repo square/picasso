@@ -48,10 +48,10 @@ import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mockito
-import org.mockito.Mockito.`when`
 import org.mockito.Mockito.doAnswer
 import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when`
 import org.mockito.invocation.InvocationOnMock
 import java.io.File
 import java.io.IOException
@@ -149,7 +149,7 @@ internal object TestUtils {
     resourceId: Int = 0,
     priority: Priority? = null,
     tag: String? = null,
-    headers: Map<String, String> = emptyMap(),
+    headers: Map<String, String> = emptyMap()
   ): FakeAction {
     val builder = Request.Builder(uri, resourceId, DEFAULT_CONFIG).stableKey(key)
     if (priority != null) {
@@ -214,7 +214,7 @@ internal object TestUtils {
     e: Exception? = null,
     shouldRetry: Boolean = false,
     supportsReplay: Boolean = false,
-    dispatcher: Dispatcher = mock(Dispatcher::class.java),
+    dispatcher: Dispatcher = mock(Dispatcher::class.java)
   ): BitmapHunter =
     TestableBitmapHunter(
       picasso = picasso,
@@ -425,7 +425,7 @@ internal object TestUtils {
   }
 
   class KArgumentCaptor<T>(
-    private val captor: ArgumentCaptor<T>,
+    private val captor: ArgumentCaptor<T>
   ) {
     val value: T
       get() = captor.value

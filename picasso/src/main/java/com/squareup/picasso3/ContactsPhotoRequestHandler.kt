@@ -32,10 +32,13 @@ internal class ContactsPhotoRequestHandler(private val context: Context) : Reque
   companion object {
     /** A lookup uri (e.g. content://com.android.contacts/contacts/lookup/3570i61d948d30808e537) */
     private const val ID_LOOKUP = 1
+
     /** A contact thumbnail uri (e.g. content://com.android.contacts/contacts/38/photo) */
     private const val ID_THUMBNAIL = 2
+
     /** A contact uri (e.g. content://com.android.contacts/contacts/38) */
     private const val ID_CONTACT = 3
+
     /**
      * A contact display photo (high resolution) uri
      * (e.g. content://com.android.contacts/display_photo/5)

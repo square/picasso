@@ -89,11 +89,11 @@ fun ImageGrid(
   urls: List<String>,
   contentScale: ContentScale,
   alignment: Alignment,
-  picasso: Picasso = PicassoInitializer.get(),
+  picasso: Picasso = PicassoInitializer.get()
 ) {
   LazyVerticalGrid(
     columns = Adaptive(150.dp),
-    modifier = modifier,
+    modifier = modifier
   ) {
     items(urls.size) {
       val url = urls[it]
@@ -166,6 +166,7 @@ fun Options(
     }
   }
 }
+
 @Composable
 private fun OptionText(modifier: Modifier, key: String, selected: Boolean, onClick: () -> Unit) {
   Box(modifier = modifier) {
@@ -188,7 +189,7 @@ private val CONTENT_SCALES = mapOf(
   Pair("Fill Width", ContentScale.FillWidth),
   Pair("Fill Height", ContentScale.FillHeight),
   Pair("Fill Bounds", ContentScale.FillBounds),
-  Pair("None", ContentScale.None),
+  Pair("None", ContentScale.None)
 )
 
 private val ALIGNMENTS = mapOf(

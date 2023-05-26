@@ -66,8 +66,11 @@ class PicassoTest {
   val temporaryFolder = TemporaryFolder()
 
   @Mock internal lateinit var context: Context
+
   @Mock internal lateinit var dispatcher: Dispatcher
+
   @Mock internal lateinit var requestHandler: RequestHandler
+
   @Mock internal lateinit var listener: Listener
 
   private val cache = PlatformLruCache(2048)

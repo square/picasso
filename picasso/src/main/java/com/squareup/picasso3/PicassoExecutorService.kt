@@ -31,7 +31,12 @@ class PicassoExecutorService(
   threadCount: Int = DEFAULT_THREAD_COUNT,
   threadFactory: ThreadFactory = PicassoThreadFactory()
 ) : ThreadPoolExecutor(
-  threadCount, threadCount, 0, MILLISECONDS, PriorityBlockingQueue(), threadFactory
+  threadCount,
+  threadCount,
+  0,
+  MILLISECONDS,
+  PriorityBlockingQueue(),
+  threadFactory
 ) {
   override fun submit(task: Runnable): Future<*> {
     val ftask = PicassoFutureTask(task as BitmapHunter)

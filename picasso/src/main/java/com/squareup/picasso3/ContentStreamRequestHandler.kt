@@ -35,7 +35,6 @@ internal open class ContentStreamRequestHandler(val context: Context) : RequestH
     request: Request,
     callback: Callback
   ) {
-
     var signaledCallback = false
     try {
       val requestUri = checkNotNull(request.uri)

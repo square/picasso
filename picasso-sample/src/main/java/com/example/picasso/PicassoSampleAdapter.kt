@@ -110,8 +110,9 @@ internal class PicassoSampleAdapter(context: Context?) : BaseAdapter() {
   ): View {
     val view = if (convertView == null) {
       inflater.inflate(R.layout.picasso_sample_activity_item, parent, false) as TextView
-    } else
+    } else {
       convertView as TextView
+    }
 
     view.text = getItem(position).label
     return view

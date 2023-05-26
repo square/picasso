@@ -74,9 +74,9 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations.initMocks
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
@@ -87,6 +87,7 @@ import java.util.concurrent.FutureTask
 @RunWith(RobolectricTestRunner::class)
 class BitmapHunterTest {
   @Mock internal lateinit var context: Context
+
   @Mock internal lateinit var dispatcher: Dispatcher
   private lateinit var picasso: Picasso
 
@@ -123,7 +124,12 @@ class BitmapHunterTest {
   @Test fun responseExceptionDispatchFailed() {
     val action = mockAction(picasso, URI_KEY_1, URI_1)
     val hunter = TestableBitmapHunter(
-      picasso, dispatcher, cache, action, null, ResponseException(504, 0)
+      picasso,
+      dispatcher,
+      cache,
+      action,
+      null,
+      ResponseException(504, 0)
     )
     hunter.run()
     verify(dispatcher).dispatchFailed(hunter)
@@ -1039,7 +1045,10 @@ class BitmapHunterTest {
     shouldRetry: Boolean = false,
     supportsReplay: Boolean = false
   ) : BitmapHunter(
-    picasso, dispatcher, cache, action,
+    picasso,
+    dispatcher,
+    cache,
+    action,
     TestableRequestHandler(result, exception, shouldRetry, supportsReplay)
   )
 

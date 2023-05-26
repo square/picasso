@@ -777,6 +777,7 @@ class Picasso internal constructor(
   enum class Priority {
     LOW,
     NORMAL,
+
     /**
      * High priority requests will post to the front of main thread's message queue when
      * they complete loading and their images need to be rendered.

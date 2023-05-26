@@ -51,12 +51,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mock
-import org.mockito.Mockito.`when`
 import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoInteractions
+import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations.initMocks
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
@@ -69,7 +69,9 @@ import java.util.concurrent.FutureTask
 @RunWith(RobolectricTestRunner::class)
 class DispatcherTest {
   @Mock lateinit var context: Context
+
   @Mock lateinit var connectivityManager: ConnectivityManager
+
   @Mock lateinit var serviceMock: ExecutorService
 
   private lateinit var picasso: Picasso
@@ -314,7 +316,9 @@ class DispatcherTest {
       picasso,
       RequestHandler.Result.Bitmap(bitmap1, MEMORY),
       mockAction(picasso, URI_KEY_1, URI_1),
-      e = null, shouldRetry = false, supportsReplay = true
+      e = null,
+      shouldRetry = false,
+      supportsReplay = true
     )
     val dispatcher = createDispatcher(false)
     dispatcher.performRetry(hunter)
@@ -330,7 +334,9 @@ class DispatcherTest {
       picasso,
       RequestHandler.Result.Bitmap(bitmap1, MEMORY),
       action,
-      e = null, shouldRetry = false, supportsReplay = true
+      e = null,
+      shouldRetry = false,
+      supportsReplay = true
     )
     `when`(connectivityManager.activeNetworkInfo).thenReturn(networkInfo)
     dispatcher.performRetry(hunter)
@@ -344,7 +350,8 @@ class DispatcherTest {
       picasso,
       RequestHandler.Result.Bitmap(bitmap1, MEMORY),
       mockAction(picasso, URI_KEY_1, URI_1),
-      e = null, shouldRetry = true
+      e = null,
+      shouldRetry = true
     )
     val dispatcher = createDispatcher(false)
     dispatcher.performRetry(hunter)
@@ -356,8 +363,12 @@ class DispatcherTest {
   @Test fun performRetryMarksForReplayIfSupportsReplayAndShouldNotRetry() {
     val action = mockAction(picasso, URI_KEY_1, URI_1, mockBitmapTarget())
     val hunter = mockHunter(
-      picasso, RequestHandler.Result.Bitmap(bitmap1, MEMORY), action,
-      e = null, shouldRetry = false, supportsReplay = true
+      picasso,
+      RequestHandler.Result.Bitmap(bitmap1, MEMORY),
+      action,
+      e = null,
+      shouldRetry = false,
+      supportsReplay = true
     )
     dispatcher.performRetry(hunter)
     assertThat(dispatcher.hunterMap).isEmpty()
@@ -368,8 +379,11 @@ class DispatcherTest {
   @Test fun performRetryRetriesIfShouldRetry() {
     val action = mockAction(picasso, URI_KEY_1, URI_1, mockBitmapTarget())
     val hunter = mockHunter(
-      picasso, RequestHandler.Result.Bitmap(bitmap1, MEMORY), action,
-      e = null, shouldRetry = true
+      picasso,
+      RequestHandler.Result.Bitmap(bitmap1, MEMORY),
+      action,
+      e = null,
+      shouldRetry = true
     )
     dispatcher.performRetry(hunter)
     assertThat(dispatcher.hunterMap).isEmpty()
@@ -455,7 +469,10 @@ class DispatcherTest {
 
   @Test fun performPauseDetachesRequestAndCancelsHunter() {
     val action = mockAction(
-      picasso = picasso, key = URI_KEY_1, uri = URI_1, tag = "tag"
+      picasso = picasso,
+      key = URI_KEY_1,
+      uri = URI_1,
+      tag = "tag"
     )
     val hunter = mockHunter(
       picasso = picasso,
@@ -474,10 +491,18 @@ class DispatcherTest {
 
   @Test fun performPauseOnlyDetachesPausedRequest() {
     val action1 = mockAction(
-      picasso = picasso, key = URI_KEY_1, uri = URI_1, target = mockBitmapTarget(), tag = "tag1"
+      picasso = picasso,
+      key = URI_KEY_1,
+      uri = URI_1,
+      target = mockBitmapTarget(),
+      tag = "tag1"
     )
     val action2 = mockAction(
-      picasso = picasso, key = URI_KEY_1, uri = URI_1, target = mockBitmapTarget(), tag = "tag2"
+      picasso = picasso,
+      key = URI_KEY_1,
+      uri = URI_1,
+      target = mockBitmapTarget(),
+      tag = "tag2"
     )
     val hunter = mockHunter(picasso, RequestHandler.Result.Bitmap(bitmap1, MEMORY), action1)
     hunter.attach(action2)
