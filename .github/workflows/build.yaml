@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-java@v3.11.0
         with:
           distribution: 'zulu'
-          java-version: 11
+          java-version: 17
 
       - name: Run Tests
         run: ./gradlew check
@@ -53,7 +53,7 @@ jobs:
         uses: actions/setup-java@v3.11.0
         with:
           distribution: 'zulu'
-          java-version: 11
+          java-version: 17
 
       - run: ./gradlew assembleAndroidTest
 
@@ -77,7 +77,7 @@ jobs:
         uses: actions/setup-java@v3.11.0
         with:
           distribution: 'zulu'
-          java-version: 11
+          java-version: 17
 
       - name: Publish Artifacts
         run: ./gradlew publishMavenPublicationToMavenCentralRepository
