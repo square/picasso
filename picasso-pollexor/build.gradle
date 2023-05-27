@@ -5,19 +5,19 @@ apply plugin: 'com.vanniktech.maven.publish'
 android {
   namespace 'com.squareup.picasso3.pollexor'
 
-  compileSdkVersion versions.compileSdk
+  compileSdkVersion libs.versions.compileSdk.get() as int
 
   defaultConfig {
-    minSdkVersion versions.minSdk
+    minSdkVersion libs.versions.minSdk.get() as int
   }
 
   compileOptions {
-    sourceCompatibility versions.sourceCompatibility
-    targetCompatibility versions.targetCompatibility
+    sourceCompatibility libs.versions.javaTarget.get()
+    targetCompatibility libs.versions.javaTarget.get()
   }
 
   kotlinOptions {
-    jvmTarget = versions.targetCompatibility
+    jvmTarget = libs.versions.javaTarget.get()
   }
 
   lintOptions {
@@ -29,10 +29,10 @@ android {
 
 dependencies {
   api project(':picasso')
-  api deps.pollexor
-  compileOnly deps.androidxAnnotations
-  testImplementation deps.junit
-  testImplementation deps.robolectric
-  testImplementation deps.truth
-  testImplementation deps.pollexor
+  api libs.pollexor
+  compileOnly libs.androidx.annotations
+  testImplementation libs.junit
+  testImplementation libs.robolectric
+  testImplementation libs.truth
+  testImplementation libs.pollexor
 }
