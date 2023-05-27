@@ -28,7 +28,7 @@ android {
 }
 
 dependencies {
-  api project(':picasso')
+  api projects.picasso
   api libs.pollexor
   compileOnly libs.androidx.annotations
   testImplementation libs.junit

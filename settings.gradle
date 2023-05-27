@@ -5,3 +5,5 @@ include 'picasso-compose'
 include 'picasso-pollexor'
 include 'picasso-sample'
 include 'picasso-stats'
+
+enableFeaturePreview('TYPESAFE_PROJECT_ACCESSORS')

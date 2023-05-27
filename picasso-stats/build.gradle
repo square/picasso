@@ -31,5 +31,5 @@ dependencies {
   implementation libs.androidx.core
   api libs.okio
 
-  api project(':picasso')
+  api projects.picasso
 }
