@@ -50,8 +50,10 @@ dependencies {
   implementation libs.composeRuntime
   implementation libs.composeUi.foundation
   implementation libs.composeUi.material
+  implementation libs.composeUi.uiTooling
 
   implementation projects.picasso
   implementation projects.picassoStats
   implementation projects.picassoCompose
+  implementation projects.picassoLayoutlibCompat
 }

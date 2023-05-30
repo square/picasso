@@ -15,6 +15,9 @@
  */
 package com.example.picasso
 
+import android.graphics.Bitmap
+import android.graphics.Bitmap.Config
+import android.graphics.Canvas
 import android.os.Bundle
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -41,11 +44,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.squareup.picasso3.Picasso
+import com.squareup.picasso3.Picasso.LoadedFrom.MEMORY
+import com.squareup.picasso3.Request
+import com.squareup.picasso3.RequestHandler
 import com.squareup.picasso3.compose.rememberPainter
+import com.squareup.picasso3.layoutlib.LayoutlibExecutorService
 
 class SampleComposeActivity : PicassoSampleActivity() {
 
@@ -58,28 +69,34 @@ class SampleComposeActivity : PicassoSampleActivity() {
       Data.URLS.toMutableList().shuffled()
 
     composeView.setContent {
-      var contentScale by remember { mutableStateOf(ContentScale.Crop) }
-      var alignment by remember { mutableStateOf(Alignment.Center) }
-
-      Column {
-        ImageGrid(
-          modifier = Modifier.weight(1F),
-          urls = urls,
-          contentScale = contentScale,
-          alignment = alignment
-        )
-
-        Options(
-          modifier = Modifier
-            .background(Color.DarkGray)
-            .padding(vertical = 4.dp),
-          onContentScaleSelected = { contentScale = it },
-          onAlignmentSelected = { alignment = it }
-        )
-      }
+      Content(urls)
     }
 
     setContentView(composeView)
+  }
+}
+
+@Composable
+fun Content(urls: List<String>, picasso: Picasso = PicassoInitializer.get()) {
+  var contentScale by remember { mutableStateOf(ContentScale.Inside) }
+  var alignment by remember { mutableStateOf(Alignment.Center) }
+
+  Column {
+    ImageGrid(
+      modifier = Modifier.weight(1F),
+      urls = urls,
+      contentScale = contentScale,
+      alignment = alignment,
+      picasso = picasso
+    )
+
+    Options(
+      modifier = Modifier
+        .background(Color.DarkGray)
+        .padding(vertical = 4.dp),
+      onContentScaleSelected = { contentScale = it },
+      onAlignmentSelected = { alignment = it }
+    )
   }
 }
 
@@ -118,7 +135,7 @@ fun Options(
   onContentScaleSelected: (ContentScale) -> Unit,
   onAlignmentSelected: (Alignment) -> Unit
 ) {
-  var contentScaleKey by remember { mutableStateOf("Crop") }
+  var contentScaleKey by remember { mutableStateOf("Inside") }
   var alignmentKey by remember { mutableStateOf("Center") }
   Column(modifier = modifier) {
     CONTENT_SCALES.entries.chunked(4).forEach { entries ->
@@ -203,3 +220,44 @@ private val ALIGNMENTS = mapOf(
   Pair("BottomCenter", Alignment.BottomCenter),
   Pair("BottomEnd", Alignment.BottomEnd)
 )
+
+@Preview
+@Composable
+private fun ContentPreview() {
+  val images = listOf(
+    Color.Blue.toArgb() to IntSize(200, 100),
+    Color.Red.toArgb() to IntSize(100, 200),
+    Color.Green.toArgb() to IntSize(100, 100),
+    Color.Yellow.toArgb() to IntSize(300, 100),
+    Color.Black.toArgb() to IntSize(100, 300),
+    Color.LightGray.toArgb() to IntSize(400, 100),
+    Color.Cyan.toArgb() to IntSize(100, 100),
+    Color.White.toArgb() to IntSize(100, 400)
+  ).associateBy { (color) -> "https://cash.app/$color.png" }
+
+  val context = LocalContext.current
+  Content(
+    urls = images.keys.toList(),
+    picasso = remember {
+      Picasso.Builder(context)
+        .callFactory { throw AssertionError() } // Removes network
+        .executor(LayoutlibExecutorService()) // Synchronously execute RequestHandler
+        .addRequestHandler(
+          object : RequestHandler() {
+            override fun canHandleRequest(data: Request) = data.uri?.toString()?.run(images::containsKey) == true
+            override fun load(picasso: Picasso, request: Request, callback: Callback) {
+              val (color, size) = images[request.uri!!.toString()]!!
+              val bitmap = Bitmap.createBitmap(size.width, size.height, Config.ARGB_8888).apply {
+                Canvas(this).apply {
+                  drawColor(color)
+                }
+              }
+
+              callback.onSuccess(Result.Bitmap(bitmap, MEMORY))
+            }
+          }
+        )
+        .build()
+    }
+  )
+}
