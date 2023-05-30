@@ -5,22 +5,22 @@ apply plugin: 'com.vanniktech.maven.publish'
 android {
   namespace 'com.squareup.picasso3'
 
-  compileSdkVersion versions.compileSdk
+  compileSdkVersion libs.versions.compileSdk.get() as int
 
   defaultConfig {
-    minSdkVersion versions.minSdk
+    minSdkVersion libs.versions.minSdk.get() as int
     consumerProguardFiles 'consumer-proguard-rules.txt'
 
     testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
   }
 
   compileOptions {
-    sourceCompatibility versions.sourceCompatibility
-    targetCompatibility versions.targetCompatibility
+    sourceCompatibility libs.versions.javaTarget.get()
+    targetCompatibility libs.versions.javaTarget.get()
   }
 
   kotlinOptions {
-    jvmTarget = versions.targetCompatibility
+    jvmTarget = libs.versions.javaTarget.get()
   }
 
   lintOptions {
@@ -37,22 +37,22 @@ android {
 }
 
 dependencies {
-  api deps.okhttp
-  api deps.okio
-  api deps.androidxLifecycle
-  implementation deps.androidxAnnotations
-  implementation deps.androidxCore
-  implementation deps.androidxExifInterface
+  api libs.okhttp
+  api libs.okio
+  api libs.androidx.lifecycle
+  implementation libs.androidx.annotations
+  implementation libs.androidx.core
+  implementation libs.androidx.exifInterface
 
-  testImplementation deps.junit
-  testImplementation deps.truth
-  testImplementation deps.robolectric
-  testImplementation deps.mockito
-  testImplementation deps.mockWebServer
+  testImplementation libs.junit
+  testImplementation libs.truth
+  testImplementation libs.robolectric
+  testImplementation libs.mockito
+  testImplementation libs.okhttp.mockWebServer
 
-  androidTestImplementation deps.androidxJunit
-  androidTestImplementation deps.androidxTestRunner
-  androidTestImplementation deps.truth
+  androidTestImplementation libs.androidx.junit
+  androidTestImplementation libs.androidx.testRunner
+  androidTestImplementation libs.truth
 }
 
 spotless {

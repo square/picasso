@@ -1,44 +1,4 @@
 buildscript {
-  ext.versions = [
-    'compileSdk': 33,
-    'minSdk': 21,
-    'targetSdk': 33,
-    'sourceCompatibility': JavaVersion.VERSION_1_8,
-    'targetCompatibility': JavaVersion.VERSION_1_8,
-    'kotlin': '1.8.21',
-    'composeUi': '1.4.3',
-    'composeCompiler': '1.4.7',
-    'okhttp': '4.10.0',
-    'okio': '3.2.0',
-  ]
-
-  ext.deps = [
-    androidPlugin: 'com.android.tools.build:gradle:8.0.2',
-    kotlinPlugin: "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}",
-    okhttp: "com.squareup.okhttp3:okhttp:${versions.okhttp}",
-    okio: "com.squareup.okio:okio:${versions.okio}",
-    mockWebServer: "com.squareup.okhttp3:mockwebserver:${versions.okhttp}",
-    pollexor: 'com.squareup:pollexor:3.0.0',
-    androidxAnnotations: 'androidx.annotation:annotation:1.6.0',
-    androidxCore: 'androidx.core:core:1.10.1',
-    androidxCursorAdapter: 'androidx.cursoradapter:cursoradapter:1.0.0',
-    androidxExifInterface: 'androidx.exifinterface:exifinterface:1.3.6',
-    androidxFragment: 'androidx.fragment:fragment:1.5.7',
-    androidxJunit: 'androidx.test.ext:junit:1.1.5',
-    androidxLifecycle: 'androidx.lifecycle:lifecycle-common:2.6.1',
-    androidxStartup: 'androidx.startup:startup-runtime:1.1.1',
-    androidxTestRunner: 'androidx.test:runner:1.5.2',
-    junit: 'junit:junit:4.13.2',
-    truth: 'com.google.truth:truth:1.1.3',
-    robolectric: 'org.robolectric:robolectric:4.7',
-    mockito: 'org.mockito:mockito-core:5.3.1',
-    drawablePainter: 'com.google.accompanist:accompanist-drawablepainter:0.30.1',
-    composeUi: "androidx.compose.ui:ui:${versions.composeUi}",
-    runtime: "androidx.compose.runtime:runtime:${versions.composeUi}",
-    foundation: "androidx.compose.foundation:foundation:${versions.composeUi}",
-    material: "androidx.compose.material:material:${versions.composeUi}",
-  ]
-
   ext.isCi = "true" == System.getenv('CI')
 
   repositories {
@@ -48,8 +8,8 @@ buildscript {
   }
 
   dependencies {
-    classpath deps.androidPlugin
-    classpath deps.kotlinPlugin
+    classpath libs.plugin.android
+    classpath libs.plugin.kotlin
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.46.0'
     classpath 'com.vanniktech:gradle-maven-publish-plugin:0.25.2'
     classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.3.0'

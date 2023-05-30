@@ -5,19 +5,19 @@ apply plugin: 'com.vanniktech.maven.publish'
 android {
   namespace 'com.squareup.picasso3.stats'
 
-  compileSdkVersion versions.compileSdk
+  compileSdkVersion libs.versions.compileSdk.get() as int
 
   defaultConfig {
-    minSdkVersion versions.minSdk
+    minSdkVersion libs.versions.minSdk.get() as int
   }
 
   compileOptions {
-    sourceCompatibility versions.sourceCompatibility
-    targetCompatibility versions.targetCompatibility
+    sourceCompatibility libs.versions.javaTarget.get()
+    targetCompatibility libs.versions.javaTarget.get()
   }
 
   kotlinOptions {
-    jvmTarget = versions.targetCompatibility
+    jvmTarget = libs.versions.javaTarget.get()
   }
 
   lintOptions {
@@ -28,8 +28,8 @@ android {
 }
 
 dependencies {
-  implementation deps.androidxCore
-  api deps.okio
+  implementation libs.androidx.core
+  api libs.okio
 
   api project(':picasso')
 }

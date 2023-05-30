@@ -5,10 +5,10 @@ apply plugin: 'com.vanniktech.maven.publish'
 android {
   namespace 'com.squareup.picasso3.compose'
 
-  compileSdkVersion versions.compileSdk
+  compileSdkVersion libs.versions.compileSdk.get() as int
 
   defaultConfig {
-    minSdkVersion versions.minSdk
+    minSdkVersion libs.versions.minSdk.get() as int
   }
 
   buildFeatures {
@@ -16,16 +16,16 @@ android {
   }
 
   composeOptions {
-    kotlinCompilerExtensionVersion versions.composeCompiler
+    kotlinCompilerExtensionVersion libs.versions.composeCompiler.get()
   }
 
   compileOptions {
-    sourceCompatibility versions.sourceCompatibility
-    targetCompatibility versions.targetCompatibility
+    sourceCompatibility libs.versions.javaTarget.get()
+    targetCompatibility libs.versions.javaTarget.get()
   }
 
   kotlinOptions {
-    jvmTarget = versions.targetCompatibility
+    jvmTarget = libs.versions.javaTarget.get()
   }
 
   lintOptions {
@@ -38,9 +38,9 @@ android {
 dependencies {
   api project(':picasso')
 
-  implementation deps.drawablePainter
-  implementation deps.composeUi
-  implementation deps.foundation
+  implementation libs.drawablePainter
+  implementation libs.composeUi
+  implementation libs.composeUi.foundation
 
-  compileOnly deps.androidxAnnotations
+  compileOnly libs.androidx.annotations
 }

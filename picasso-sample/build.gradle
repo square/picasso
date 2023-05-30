@@ -4,11 +4,10 @@ apply plugin: 'org.jetbrains.kotlin.android'
 android {
   namespace 'com.example.picasso'
 
-  compileSdkVersion versions.compileSdk
+  compileSdkVersion libs.versions.compileSdk.get() as int
 
   defaultConfig {
-    minSdkVersion versions.minSdk
-    targetSdkVersion versions.targetSdk
+    minSdkVersion libs.versions.minSdk.get() as int
     applicationId 'com.example.picasso'
   }
 
@@ -17,16 +16,16 @@ android {
   }
 
   composeOptions {
-    kotlinCompilerExtensionVersion versions.composeCompiler
+    kotlinCompilerExtensionVersion libs.versions.composeCompiler.get()
   }
 
   compileOptions {
-    sourceCompatibility versions.sourceCompatibility
-    targetCompatibility versions.targetCompatibility
+    sourceCompatibility libs.versions.javaTarget.get()
+    targetCompatibility libs.versions.javaTarget.get()
   }
 
   kotlinOptions {
-    jvmTarget = versions.targetCompatibility
+    jvmTarget = libs.versions.javaTarget.get()
   }
 
   lintOptions {
@@ -40,17 +39,17 @@ android {
 }
 
 dependencies {
-  compileOnly deps.androidxAnnotations
-  implementation deps.androidxCore
-  implementation deps.androidxCursorAdapter
-  implementation deps.androidxFragment
-  implementation deps.androidxStartup
+  compileOnly libs.androidx.annotations
+  implementation libs.androidx.core
+  implementation libs.androidx.cursorAdapter
+  implementation libs.androidx.fragment
+  implementation libs.androidx.startup
 
-  implementation deps.drawablePainter
-  implementation deps.composeUi
-  implementation deps.runtime
-  implementation deps.foundation
-  implementation deps.material
+  implementation libs.drawablePainter
+  implementation libs.composeUi
+  implementation libs.composeRuntime
+  implementation libs.composeUi.foundation
+  implementation libs.composeUi.material
 
   implementation project(':picasso')
   implementation project(':picasso-stats')
