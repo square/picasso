@@ -51,7 +51,7 @@ dependencies {
   implementation libs.composeUi.foundation
   implementation libs.composeUi.material
 
-  implementation project(':picasso')
-  implementation project(':picasso-stats')
-  implementation project(':picasso-compose')
+  implementation projects.picasso
+  implementation projects.picassoStats
+  implementation projects.picassoCompose
 }

@@ -36,7 +36,7 @@ android {
 }
 
 dependencies {
-  api project(':picasso')
+  api projects.picasso
 
   implementation libs.drawablePainter
   implementation libs.composeUi
