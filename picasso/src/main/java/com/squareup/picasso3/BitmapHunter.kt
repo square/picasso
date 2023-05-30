@@ -313,7 +313,8 @@ internal open class BitmapHunter(
         } catch (e: RuntimeException) {
           Picasso.HANDLER.post {
             throw RuntimeException(
-              "Transformation ${transformation.key()} crashed with exception.", e
+              "Transformation ${transformation.key()} crashed with exception.",
+              e
             )
           }
 

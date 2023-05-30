@@ -54,7 +54,9 @@ class RequestCreator internal constructor(
   private var noFade = false
   private var deferred = false
   private var setPlaceholder = true
+
   @DrawableRes private var placeholderResId = 0
+
   @DrawableRes private var errorResId = 0
   private var placeholderDrawable: Drawable? = null
   private var errorDrawable: Drawable? = null
@@ -179,7 +181,7 @@ class RequestCreator internal constructor(
    */
   fun resizeDimen(
     @DimenRes targetWidthResId: Int,
-    @DimenRes targetHeightResId: Int,
+    @DimenRes targetHeightResId: Int
   ): RequestCreator {
     val resources = picasso.context.resources
     val targetWidth = resources.getDimensionPixelSize(targetWidthResId)
@@ -306,7 +308,7 @@ class RequestCreator internal constructor(
    */
   fun memoryPolicy(
     policy: MemoryPolicy,
-    vararg additional: MemoryPolicy,
+    vararg additional: MemoryPolicy
   ): RequestCreator {
     data.memoryPolicy(policy, *additional)
     return this
@@ -318,7 +320,7 @@ class RequestCreator internal constructor(
    */
   fun networkPolicy(
     policy: NetworkPolicy,
-    vararg additional: NetworkPolicy,
+    vararg additional: NetworkPolicy
   ): RequestCreator {
     data.networkPolicy(policy, *additional)
     return this
@@ -362,6 +364,7 @@ class RequestCreator internal constructor(
 
     return bitmap
   }
+
   /**
    * Asynchronously fulfills the request without a [ImageView] or [BitmapTarget],
    * and invokes the target [Callback] with the result. This is useful when you want to warm
@@ -501,7 +504,7 @@ class RequestCreator internal constructor(
     notificationId: Int,
     notification: Notification,
     notificationTag: String? = null,
-    callback: Callback? = null,
+    callback: Callback? = null
   ) {
     val started = System.nanoTime()
     check(!deferred) { "Fit cannot be used with RemoteViews." }
@@ -531,7 +534,7 @@ class RequestCreator internal constructor(
     remoteViews: RemoteViews,
     @IdRes viewId: Int,
     appWidgetId: Int,
-    callback: Callback? = null,
+    callback: Callback? = null
   ) {
     into(remoteViews, viewId, intArrayOf(appWidgetId), callback)
   }
@@ -545,7 +548,7 @@ class RequestCreator internal constructor(
     remoteViews: RemoteViews,
     @IdRes viewId: Int,
     appWidgetIds: IntArray,
-    callback: Callback? = null,
+    callback: Callback? = null
   ) {
     val started = System.nanoTime()
     check(!deferred) { "Fit cannot be used with remote views." }

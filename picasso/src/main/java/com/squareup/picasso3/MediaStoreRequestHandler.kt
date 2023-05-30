@@ -59,8 +59,12 @@ internal class MediaStoreRequestHandler(context: Context) : ContentStreamRequest
         options.inJustDecodeBounds = true
 
         calculateInSampleSize(
-          request.targetWidth, request.targetHeight, picassoKind.width,
-          picassoKind.height, options, request
+          request.targetWidth,
+          request.targetHeight,
+          picassoKind.width,
+          picassoKind.height,
+          options,
+          request
         )
 
         val bitmap = if (isVideo) {

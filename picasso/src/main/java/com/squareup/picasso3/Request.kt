@@ -284,6 +284,7 @@ class Request internal constructor(builder: Builder) {
     var transformations: MutableList<Transformation>? = null
     var config: Config? = null
     var priority: Priority? = null
+
     /** Internal use only. Used by [DeferredRequestCreator]. */
     var tag: Any? = null
     var memoryPolicy = 0

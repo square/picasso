@@ -30,10 +30,12 @@ class PollexorRequestTransformerTest {
   private val transformer = PollexorRequestTransformer(Thumbor.create(HOST))
   private val secureTransformer = PollexorRequestTransformer(Thumbor.create(HOST, KEY))
   private val alwaysResizeTransformer = PollexorRequestTransformer(
-    Thumbor.create(HOST), alwaysTransform = true
+    Thumbor.create(HOST),
+    alwaysTransform = true
   )
   private val callbackTransformer = PollexorRequestTransformer(
-    Thumbor.create(HOST), callback = { it.filter("custom") }
+    Thumbor.create(HOST),
+    callback = { it.filter("custom") }
   )
 
   @Test fun resourceIdRequestsAreNotTransformed() {

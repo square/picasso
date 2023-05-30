@@ -8,4 +8,4 @@ trim_trailing_whitespace = true
 insert_final_newline = true
 
 [*.{kt,kts}]
-ij_kotlin_imports_layout=*
+ij_kotlin_imports_layout = *,java.**,javax.**,kotlin.**,kotlinx.**,^

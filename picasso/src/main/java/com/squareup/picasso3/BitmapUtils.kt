@@ -63,7 +63,12 @@ internal object BitmapUtils {
     request: Request
   ) {
     calculateInSampleSize(
-      reqWidth, reqHeight, options.outWidth, options.outHeight, options, request
+      reqWidth,
+      reqHeight,
+      options.outWidth,
+      options.outHeight,
+      options,
+      request
     )
   }
 
@@ -101,10 +106,11 @@ internal object BitmapUtils {
     val exceptionCatchingSource = ExceptionCatchingSource(source)
     val bufferedSource = exceptionCatchingSource.buffer()
     val bitmap =
-      if (VERSION.SDK_INT >= 28)
+      if (VERSION.SDK_INT >= 28) {
         decodeStreamP(request, bufferedSource)
-      else
+      } else {
         decodeStreamPreP(request, bufferedSource)
+      }
     exceptionCatchingSource.throwIfCaught()
     return bitmap
   }
@@ -201,10 +207,11 @@ internal object BitmapUtils {
       } else {
         val heightRatio = height / requestHeight
         val widthRatio = width / requestWidth
-        if (request.centerInside)
+        if (request.centerInside) {
           max(heightRatio, widthRatio)
-        else
+        } else {
           min(heightRatio, widthRatio)
+        }
       }
       if (ratio != 0) ratio else 1
     } else {

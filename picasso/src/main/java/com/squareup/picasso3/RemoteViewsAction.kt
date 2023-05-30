@@ -105,7 +105,8 @@ internal abstract class RemoteViewsAction(
   ) : RemoteViewsAction(picasso, data, errorResId, target, callback) {
     override fun update() {
       val manager = ContextCompat.getSystemService(
-        picasso.context, NotificationManager::class.java
+        picasso.context,
+        NotificationManager::class.java
       )
       manager?.notify(notificationTag, notificationId, notification)
     }
