@@ -3,15 +3,21 @@ apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'app.cash.paparazzi'
 
 android {
-  compileSdkVersion versions.compileSdk
+  namespace 'com.example.picasso.paparazzi'
+
+  compileSdkVersion libs.versions.compileSdk.get() as int
 
   defaultConfig {
-    minSdkVersion versions.minSdk
+    minSdkVersion libs.versions.minSdk.get() as int
   }
 
   compileOptions {
-    sourceCompatibility versions.sourceCompatibility
-    targetCompatibility versions.targetCompatibility
+    sourceCompatibility libs.versions.javaTarget.get()
+    targetCompatibility libs.versions.javaTarget.get()
+  }
+
+  kotlinOptions {
+    jvmTarget = libs.versions.javaTarget.get()
   }
 
   lintOptions {
@@ -28,7 +34,13 @@ android {
 }
 
 dependencies {
-  testImplementation deps.junit
-  testImplementation project(':picasso-layoutlib-compat')
-  testImplementation project(':picasso')
+  testImplementation libs.junit
+
+  testImplementation projects.picasso
+  testImplementation projects.picassoLayoutlibCompat
+}
+
+// https://github.com/diffplug/spotless/issues/1572
+tasks.withType(com.diffplug.gradle.spotless.SpotlessTask).configureEach {
+  dependsOn(tasks.withType(Test))
 }

@@ -232,7 +232,7 @@ private fun ContentPreview() {
     Color.Black.toArgb() to IntSize(100, 300),
     Color.LightGray.toArgb() to IntSize(400, 100),
     Color.Cyan.toArgb() to IntSize(100, 100),
-    Color.White.toArgb() to IntSize(100, 400),
+    Color.White.toArgb() to IntSize(100, 400)
   ).associateBy { (color) -> "https://cash.app/$color.png" }
 
   val context = LocalContext.current
