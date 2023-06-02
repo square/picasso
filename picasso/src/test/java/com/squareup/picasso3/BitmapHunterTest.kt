@@ -17,6 +17,7 @@ package com.squareup.picasso3
 
 import android.content.Context
 import android.graphics.Bitmap.Config.ARGB_8888
+import android.graphics.drawable.BitmapDrawable
 import android.net.NetworkInfo
 import android.net.Uri
 import android.os.Looper
@@ -35,6 +36,7 @@ import com.squareup.picasso3.Picasso.Priority.LOW
 import com.squareup.picasso3.Picasso.Priority.NORMAL
 import com.squareup.picasso3.Request.Companion.KEY_SEPARATOR
 import com.squareup.picasso3.RequestHandler.Result.Bitmap
+import com.squareup.picasso3.RequestHandler.Result.Drawable
 import com.squareup.picasso3.TestUtils.ASSET_KEY_1
 import com.squareup.picasso3.TestUtils.ASSET_URI_1
 import com.squareup.picasso3.TestUtils.BITMAP_RESOURCE_VALUE
@@ -151,7 +153,7 @@ class BitmapHunterTest {
     val result = hunter.hunt()
     assertThat(cache.missCount()).isEqualTo(1)
     assertThat(result).isNotNull()
-    assertThat(result!!.bitmap).isEqualTo(bitmap)
+    assertThat((result as Bitmap).bitmap).isEqualTo(bitmap)
     assertThat(result.loadedFrom).isEqualTo(NETWORK)
     assertThat(eventRecorder.decodedBitmap).isEqualTo(bitmap)
   }
@@ -166,7 +168,7 @@ class BitmapHunterTest {
     val result = hunter.hunt()
     assertThat(cache.hitCount()).isEqualTo(1)
     assertThat(result).isNotNull()
-    assertThat(result!!.bitmap).isEqualTo(bitmap)
+    assertThat((result as Bitmap).bitmap).isEqualTo(bitmap)
     assertThat(result.loadedFrom).isEqualTo(MEMORY)
     assertThat(eventRecorder.decodedBitmap).isNull()
   }
@@ -181,12 +183,12 @@ class BitmapHunterTest {
     }
   }
 
-  @Test fun huntDecodesWithRequestHandler() {
+  @Test fun huntDecodesDrawableWithRequestHandler() {
     val picasso = mockPicasso(context, CustomRequestHandler())
     val action = mockAction(picasso, CUSTOM_URI_KEY, CUSTOM_URI)
     val hunter = forRequest(picasso, dispatcher, cache, action)
     val result = hunter.hunt()
-    assertThat(result!!.bitmap).isEqualTo(bitmap)
+    assertThat(((result as Drawable).drawable as BitmapDrawable).bitmap).isEqualTo(bitmap)
   }
 
   @Test fun attachSingleRequest() {
@@ -1088,7 +1090,7 @@ class BitmapHunterTest {
     }
 
     override fun load(picasso: Picasso, request: Request, callback: Callback) {
-      callback.onSuccess(Result.Bitmap(bitmap, MEMORY))
+      callback.onSuccess(Drawable(BitmapDrawable(context.resources, bitmap), MEMORY))
     }
   }
 }

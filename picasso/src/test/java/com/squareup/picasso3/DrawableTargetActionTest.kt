@@ -137,4 +137,25 @@ class DrawableTargetActionTest {
     } catch (ignored: IllegalStateException) {
     }
   }
+
+  @Test fun returnsResultDrawableToTarget() {
+    val target = mockDrawableTarget()
+    val drawableCaptor = argumentCaptor<Drawable>()
+
+    val action = DrawableTargetAction(
+      picasso = TestUtils.mockPicasso(RuntimeEnvironment.application),
+      target = target,
+      data = TestUtils.SIMPLE_REQUEST,
+      noFade = false,
+      placeholderDrawable = null,
+      errorDrawable = null,
+      errorResId = 0
+    )
+
+    val drawable = mock(Drawable::class.java)
+    action.complete(RequestHandler.Result.Drawable(drawable, NETWORK))
+
+    Mockito.verify(target).onDrawableLoaded(drawableCaptor.capture(), eq(NETWORK))
+    assertThat(drawableCaptor.value).isEqualTo(drawable)
+  }
 }

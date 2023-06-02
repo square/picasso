@@ -35,6 +35,7 @@ import com.squareup.picasso3.PicassoDrawable.Companion.setResult
 import com.squareup.picasso3.RemoteViewsAction.AppWidgetAction
 import com.squareup.picasso3.RemoteViewsAction.NotificationAction
 import com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget
+import com.squareup.picasso3.RequestHandler.Result
 import com.squareup.picasso3.Utils.OWNER_MAIN
 import com.squareup.picasso3.Utils.VERB_COMPLETED
 import com.squareup.picasso3.Utils.checkMain
@@ -355,7 +356,7 @@ class RequestCreator internal constructor(
     val request = createRequest(started)
     val action = GetAction(picasso, request)
     val result =
-      forRequest(picasso, picasso.dispatcher, picasso.cache, action).hunt() ?: return null
+      forRequest(picasso, picasso.dispatcher, picasso.cache, action).hunt() as? Result.Bitmap ?: return null
 
     val bitmap = result.bitmap
     if (shouldWriteToMemoryCache(request.memoryPolicy)) {

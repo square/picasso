@@ -18,6 +18,7 @@ package com.squareup.picasso3
 import android.net.NetworkInfo
 import com.squareup.picasso3.MemoryPolicy.Companion.shouldReadFromMemoryCache
 import com.squareup.picasso3.Picasso.LoadedFrom
+import com.squareup.picasso3.RequestHandler.Result
 import com.squareup.picasso3.RequestHandler.Result.Bitmap
 import com.squareup.picasso3.Utils.OWNER_HUNTER
 import com.squareup.picasso3.Utils.THREAD_IDLE_NAME
@@ -88,7 +89,7 @@ internal open class BitmapHunter(
     }
   }
 
-  fun hunt(): Bitmap? {
+  fun hunt(): Result? {
     if (shouldReadFromMemoryCache(data.memoryPolicy)) {
       cache[key]?.let { bitmap ->
         picasso.cacheHit()
@@ -104,7 +105,7 @@ internal open class BitmapHunter(
       data = data.newBuilder().networkPolicy(NetworkPolicy.OFFLINE).build()
     }
 
-    val resultReference = AtomicReference<RequestHandler.Result?>()
+    val resultReference = AtomicReference<Result?>()
     val exceptionReference = AtomicReference<Throwable>()
 
     val latch = CountDownLatch(1)
@@ -113,7 +114,7 @@ internal open class BitmapHunter(
         picasso = picasso,
         request = data,
         callback = object : RequestHandler.Callback {
-          override fun onSuccess(result: RequestHandler.Result?) {
+          override fun onSuccess(result: Result?) {
             resultReference.set(result)
             latch.countDown()
           }
@@ -139,7 +140,7 @@ internal open class BitmapHunter(
       }
     }
 
-    val result = resultReference.get() as? Bitmap ?: return null
+    val result = resultReference.get() as? Bitmap ?: return resultReference.get()
     val bitmap = result.bitmap
     if (picasso.isLoggingEnabled) {
       log(OWNER_HUNTER, VERB_DECODED, data.logId())
