@@ -18,57 +18,71 @@ package com.squareup.picasso3
 import android.content.Context
 import android.net.NetworkInfo
 import android.os.Handler
-import java.util.concurrent.ExecutorService
+import com.squareup.picasso3.Dispatcher.Companion.RETRY_DELAY
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class InternalCoroutineDispatcher internal constructor(
   context: Context,
-  service: ExecutorService,
   mainThreadHandler: Handler,
   cache: PlatformLruCache,
-  val picassoDispatcher: CoroutineDispatcher
-) : Dispatcher(context, service, mainThreadHandler, cache) {
+  val mainDispatcher: CoroutineDispatcher,
+  val backgroundDispatcher: CoroutineDispatcher
+) : BaseDispatcher(context, mainThreadHandler, cache) {
 
-  @OptIn(ExperimentalCoroutinesApi::class)
-  private val scope = CoroutineScope(picassoDispatcher.limitedParallelism(1))
+  private val scope = CoroutineScope(SupervisorJob() + backgroundDispatcher)
+  private val channel = Channel<() -> Unit>(capacity = Channel.UNLIMITED)
+
+  init {
+    // Using a channel to enforce sequential access for this class' internal state
+    scope.launch {
+      while (!channel.isClosedForReceive) {
+        channel.receive().invoke()
+      }
+    }
+  }
 
   override fun shutdown() {
     super.shutdown()
+    channel.close()
     scope.cancel()
   }
 
   override fun dispatchSubmit(action: Action) {
-    scope.launch {
+    channel.trySend {
       performSubmit(action)
     }
   }
 
   override fun dispatchCancel(action: Action) {
-    scope.launch {
+    channel.trySend {
       performCancel(action)
     }
   }
 
   override fun dispatchPauseTag(tag: Any) {
-    scope.launch {
+    channel.trySend {
       performPauseTag(tag)
     }
   }
 
   override fun dispatchResumeTag(tag: Any) {
-    scope.launch {
+    channel.trySend {
       performResumeTag(tag)
     }
   }
 
   override fun dispatchComplete(hunter: BitmapHunter) {
-    scope.launch {
+    channel.trySend {
       performComplete(hunter)
     }
   }
@@ -76,37 +90,47 @@ internal class InternalCoroutineDispatcher internal constructor(
   override fun dispatchRetry(hunter: BitmapHunter) {
     scope.launch {
       delay(RETRY_DELAY)
-      performRetry(hunter)
+      channel.send {
+        performRetry(hunter)
+      }
     }
   }
 
   override fun dispatchFailed(hunter: BitmapHunter) {
-    scope.launch {
+    channel.trySend {
       performError(hunter)
     }
   }
 
   override fun dispatchNetworkStateChange(info: NetworkInfo) {
-    scope.launch {
+    channel.trySend {
       performNetworkStateChange(info)
     }
   }
 
   override fun dispatchAirplaneModeChange(airplaneMode: Boolean) {
-    scope.launch {
+    channel.trySend {
       performAirplaneModeChange(airplaneMode)
     }
   }
 
   override fun dispatchCompleteMain(hunter: BitmapHunter) {
-    scope.launch(Dispatchers.Main) {
+    scope.launch(mainDispatcher) {
       performCompleteMain(hunter)
     }
   }
 
   override fun dispatchBatchResumeMain(batch: MutableList<Action>) {
-    scope.launch(Dispatchers.Main) {
+    scope.launch(mainDispatcher) {
       performBatchResumeMain(batch)
     }
   }
+
+  override fun dispatchSubmit(hunter: BitmapHunter) {
+    hunter.job = scope.launch(CoroutineName(hunter.getName())) {
+      hunter.run()
+    }
+  }
+
+  override fun isShutdown() = !scope.isActive
 }

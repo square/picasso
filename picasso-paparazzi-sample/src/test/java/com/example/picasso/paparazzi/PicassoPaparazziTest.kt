@@ -23,7 +23,6 @@ import com.squareup.picasso3.Picasso
 import com.squareup.picasso3.Picasso.LoadedFrom.MEMORY
 import com.squareup.picasso3.Request
 import com.squareup.picasso3.RequestHandler
-import com.squareup.picasso3.layoutlib.LayoutlibExecutorService
 import org.junit.Rule
 import org.junit.Test
 import kotlinx.coroutines.Dispatchers
@@ -35,8 +34,10 @@ class PicassoPaparazziTest {
   fun loadsUrlIntoImageView() {
     val picasso = Picasso.Builder(paparazzi.context)
       .callFactory { throw AssertionError() } // Removes network
-      .executor(LayoutlibExecutorService())
-      .dispatcher(Dispatchers.Main)
+      .dispatchers(
+        mainDispatcher = Dispatchers.Unconfined,
+        backgroundDispatcher = Dispatchers.Unconfined
+      )
       .addRequestHandler(FakeRequestHandler())
       .build()
 

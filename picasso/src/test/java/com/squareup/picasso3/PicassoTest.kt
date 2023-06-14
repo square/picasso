@@ -509,7 +509,7 @@ class PicassoTest {
 
     assertThat(child.context).isEqualTo(parent.context)
     assertThat(child.callFactory).isEqualTo(parent.callFactory)
-    assertThat(child.dispatcher.service).isEqualTo(parent.dispatcher.service)
+    assertThat((child.dispatcher as HandlerDispatcher).service).isEqualTo((parent.dispatcher as HandlerDispatcher).service)
     assertThat(child.cache).isEqualTo(parent.cache)
     assertThat(child.listener).isEqualTo(parent.listener)
     assertThat(child.requestTransformers).isEqualTo(parent.requestTransformers)
@@ -527,6 +527,20 @@ class PicassoTest {
     assertThat(child.targetToDeferredRequestCreator).isEqualTo(
       parent.targetToDeferredRequestCreator
     )
+  }
+
+  @Test fun cloneSharesCoroutineDispatchers() {
+    val parent =
+      defaultPicasso(RuntimeEnvironment.application, true, true)
+        .newBuilder()
+        .dispatchers()
+        .build()
+    val child = parent.newBuilder().build()
+
+    val parentDispatcher = parent.dispatcher as InternalCoroutineDispatcher
+    val childDispatcher = child.dispatcher as InternalCoroutineDispatcher
+    assertThat(childDispatcher.mainDispatcher).isEqualTo(parentDispatcher.mainDispatcher)
+    assertThat(childDispatcher.backgroundDispatcher).isEqualTo(parentDispatcher.backgroundDispatcher)
   }
 
   private fun verifyActionComplete(action: FakeAction) {
