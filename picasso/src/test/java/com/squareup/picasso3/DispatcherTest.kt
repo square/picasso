@@ -586,7 +586,7 @@ class DispatcherTest {
     `when`(context.checkCallingOrSelfPermission(anyString())).thenReturn(
       if (scansNetworkChanges) PERMISSION_GRANTED else PERMISSION_DENIED
     )
-    return Dispatcher(context, service, Handler(getMainLooper()), cache)
+    return HandlerDispatcher(context, service, Handler(getMainLooper()), cache)
   }
 
   private fun noopAction(data: Request): Action {

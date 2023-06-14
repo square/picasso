@@ -668,7 +668,7 @@ class Picasso internal constructor(
         service = PicassoExecutorService()
       }
 
-      val dispatcher = Dispatcher(context, service!!, HANDLER, cache!!)
+      val dispatcher = HandlerDispatcher(context, service!!, HANDLER, cache!!)
 
       return Picasso(
         context, dispatcher, callFactory!!, unsharedCache, cache!!, listener,
