@@ -66,9 +66,28 @@ import java.lang.Exception
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
 import java.util.concurrent.FutureTask
+import kotlinx.coroutines.Dispatchers
 
 @RunWith(RobolectricTestRunner::class)
-class DispatcherTest {
+class HandlerDispatcherTest : DispatcherTest() {
+  override fun createDispatcher(
+    context: Context,
+    service: ExecutorService,
+    cache: PlatformLruCache
+  ) = HandlerDispatcher(context, service, Handler(getMainLooper()), cache)
+}
+
+@RunWith(RobolectricTestRunner::class)
+class CoroutineDispatcherTest : DispatcherTest() {
+  override fun createDispatcher(
+    context: Context,
+    service: ExecutorService,
+    cache: PlatformLruCache
+  ) = InternalCoroutineDispatcher(context, service, Handler(getMainLooper()), cache, Dispatchers.Main)
+}
+
+abstract class DispatcherTest {
+
   @Mock lateinit var context: Context
 
   @Mock lateinit var connectivityManager: ConnectivityManager
@@ -610,8 +629,10 @@ class DispatcherTest {
     `when`(context.checkCallingOrSelfPermission(anyString())).thenReturn(
       if (scansNetworkChanges) PERMISSION_GRANTED else PERMISSION_DENIED
     )
-    return HandlerDispatcher(context, service, Handler(getMainLooper()), cache)
+    return createDispatcher(context, service, cache)
   }
+
+  internal abstract fun createDispatcher(context: Context, service: ExecutorService, cache: PlatformLruCache): Dispatcher
 
   private fun noopAction(data: Request, onComplete: () -> Unit = { }): Action {
     return object : Action(picasso, data) {

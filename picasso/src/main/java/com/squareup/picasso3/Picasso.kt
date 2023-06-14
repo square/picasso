@@ -51,6 +51,7 @@ import java.io.File
 import java.io.IOException
 import java.util.WeakHashMap
 import java.util.concurrent.ExecutorService
+import kotlinx.coroutines.CoroutineDispatcher
 
 /**
  * Image downloading, transformation, and caching manager.
@@ -537,6 +538,7 @@ class Picasso internal constructor(
     private val context: Context
     private var callFactory: Call.Factory? = null
     private var service: ExecutorService? = null
+    private var picassoDispatcher: CoroutineDispatcher? = null
     private var cache: PlatformLruCache? = null
     private var listener: Listener? = null
     private val requestTransformers = mutableListOf<RequestTransformer>()
@@ -555,6 +557,7 @@ class Picasso internal constructor(
       context = picasso.context
       callFactory = picasso.callFactory
       service = picasso.dispatcher.service
+      picassoDispatcher = (picasso.dispatcher as? InternalCoroutineDispatcher)?.picassoDispatcher
       cache = picasso.cache
       listener = picasso.listener
       requestTransformers += picasso.requestTransformers
@@ -647,6 +650,13 @@ class Picasso internal constructor(
       loggingEnabled = enabled
     }
 
+    /**
+     * Sets the dispatcher used internally for synchronizing access internally
+     */
+    fun dispatcher(picassoDispatcher: CoroutineDispatcher) = apply {
+      this.picassoDispatcher = picassoDispatcher
+    }
+
     /** Create the [Picasso] instance. */
     fun build(): Picasso {
       var unsharedCache: okhttp3.Cache? = null
@@ -665,7 +675,9 @@ class Picasso internal constructor(
         service = PicassoExecutorService()
       }
 
-      val dispatcher = HandlerDispatcher(context, service!!, HANDLER, cache!!)
+      val dispatcher = picassoDispatcher?.let {
+        InternalCoroutineDispatcher(context, service!!, HANDLER, cache!!, it)
+      } ?: HandlerDispatcher(context, service!!, HANDLER, cache!!)
 
       return Picasso(
         context, dispatcher, callFactory!!, unsharedCache, cache!!, listener,

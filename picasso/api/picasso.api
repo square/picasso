@@ -107,6 +107,7 @@ public final class com/squareup/picasso3/Picasso$Builder {
 	public final fun callFactory (Lokhttp3/Call$Factory;)Lcom/squareup/picasso3/Picasso$Builder;
 	public final fun client (Lokhttp3/OkHttpClient;)Lcom/squareup/picasso3/Picasso$Builder;
 	public final fun defaultBitmapConfig (Landroid/graphics/Bitmap$Config;)Lcom/squareup/picasso3/Picasso$Builder;
+	public final fun dispatcher (Lkotlinx/coroutines/CoroutineDispatcher;)Lcom/squareup/picasso3/Picasso$Builder;
 	public final fun executor (Ljava/util/concurrent/ExecutorService;)Lcom/squareup/picasso3/Picasso$Builder;
 	public final fun indicatorsEnabled (Z)Lcom/squareup/picasso3/Picasso$Builder;
 	public final fun listener (Lcom/squareup/picasso3/Picasso$Listener;)Lcom/squareup/picasso3/Picasso$Builder;
