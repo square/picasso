@@ -26,11 +26,8 @@ import android.net.ConnectivityManager
 import android.net.ConnectivityManager.CONNECTIVITY_ACTION
 import android.net.NetworkInfo
 import android.os.Handler
-import android.os.HandlerThread
-import android.os.Looper
-import android.os.Message
-import android.os.Process.THREAD_PRIORITY_BACKGROUND
 import android.util.Log
+import androidx.annotation.CallSuper
 import androidx.core.content.ContextCompat
 import com.squareup.picasso3.BitmapHunter.Companion.forRequest
 import com.squareup.picasso3.MemoryPolicy.Companion.shouldWriteToMemoryCache
@@ -46,7 +43,6 @@ import com.squareup.picasso3.Utils.VERB_IGNORED
 import com.squareup.picasso3.Utils.VERB_PAUSED
 import com.squareup.picasso3.Utils.VERB_REPLAYING
 import com.squareup.picasso3.Utils.VERB_RETRYING
-import com.squareup.picasso3.Utils.flushStackLocalLeaks
 import com.squareup.picasso3.Utils.getLogIdsForHunter
 import com.squareup.picasso3.Utils.hasPermission
 import com.squareup.picasso3.Utils.isAirplaneModeOn
@@ -54,7 +50,7 @@ import com.squareup.picasso3.Utils.log
 import java.util.WeakHashMap
 import java.util.concurrent.ExecutorService
 
-internal class Dispatcher internal constructor(
+internal abstract class Dispatcher internal constructor(
   private val context: Context,
   @get:JvmName("-service") internal val service: ExecutorService,
   private val mainThreadHandler: Handler,
@@ -79,70 +75,38 @@ internal class Dispatcher internal constructor(
   @set:JvmName("-airplaneMode")
   internal var airplaneMode = isAirplaneModeOn(context)
 
-  private val dispatcherThread: DispatcherThread
-  private val handler: Handler
   private val scansNetworkChanges: Boolean
 
   init {
-    dispatcherThread = DispatcherThread()
-    dispatcherThread.start()
-    val dispatcherThreadLooper = dispatcherThread.looper
-    flushStackLocalLeaks(dispatcherThreadLooper)
-    handler = DispatcherHandler(dispatcherThreadLooper, this)
     scansNetworkChanges = hasPermission(context, ACCESS_NETWORK_STATE)
     receiver = NetworkBroadcastReceiver(this)
     receiver.register()
   }
 
-  fun shutdown() {
+  @CallSuper open fun shutdown() {
     // Shutdown the thread pool only if it is the one created by Picasso.
     (service as? PicassoExecutorService)?.shutdown()
-    dispatcherThread.quit()
     // Unregister network broadcast receiver on the main thread.
     Picasso.HANDLER.post { receiver.unregister() }
   }
 
-  fun dispatchSubmit(action: Action) {
-    handler.sendMessage(handler.obtainMessage(REQUEST_SUBMIT, action))
-  }
+  abstract fun dispatchSubmit(action: Action)
 
-  fun dispatchCancel(action: Action) {
-    handler.sendMessage(handler.obtainMessage(REQUEST_CANCEL, action))
-  }
+  abstract fun dispatchCancel(action: Action)
 
-  fun dispatchPauseTag(tag: Any) {
-    handler.sendMessage(handler.obtainMessage(TAG_PAUSE, tag))
-  }
+  abstract fun dispatchPauseTag(tag: Any)
 
-  fun dispatchResumeTag(tag: Any) {
-    handler.sendMessage(handler.obtainMessage(TAG_RESUME, tag))
-  }
+  abstract fun dispatchResumeTag(tag: Any)
 
-  fun dispatchComplete(hunter: BitmapHunter) {
-    handler.sendMessage(handler.obtainMessage(HUNTER_COMPLETE, hunter))
-  }
+  abstract fun dispatchComplete(hunter: BitmapHunter)
 
-  fun dispatchRetry(hunter: BitmapHunter) {
-    handler.sendMessageDelayed(handler.obtainMessage(HUNTER_RETRY, hunter), RETRY_DELAY)
-  }
+  abstract fun dispatchRetry(hunter: BitmapHunter)
 
-  fun dispatchFailed(hunter: BitmapHunter) {
-    handler.sendMessage(handler.obtainMessage(HUNTER_DECODE_FAILED, hunter))
-  }
+  abstract fun dispatchFailed(hunter: BitmapHunter)
 
-  fun dispatchNetworkStateChange(info: NetworkInfo) {
-    handler.sendMessage(handler.obtainMessage(NETWORK_STATE_CHANGE, info))
-  }
+  abstract fun dispatchNetworkStateChange(info: NetworkInfo)
 
-  fun dispatchAirplaneModeChange(airplaneMode: Boolean) {
-    handler.sendMessage(
-      handler.obtainMessage(
-        AIRPLANE_MODE_CHANGE,
-        if (airplaneMode) AIRPLANE_MODE_ON else AIRPLANE_MODE_OFF,
-        0
-      )
-    )
-  }
+  abstract fun dispatchAirplaneModeChange(airplaneMode: Boolean)
 
   fun performSubmit(action: Action, dismissFailed: Boolean = true) {
     if (action.tag in pausedTags) {
@@ -446,61 +410,6 @@ internal class Dispatcher internal constructor(
     }
   }
 
-  private class DispatcherHandler(
-    looper: Looper,
-    private val dispatcher: Dispatcher
-  ) : Handler(looper) {
-    override fun handleMessage(msg: Message) {
-      when (msg.what) {
-        REQUEST_SUBMIT -> {
-          val action = msg.obj as Action
-          dispatcher.performSubmit(action)
-        }
-        REQUEST_CANCEL -> {
-          val action = msg.obj as Action
-          dispatcher.performCancel(action)
-        }
-        TAG_PAUSE -> {
-          val tag = msg.obj
-          dispatcher.performPauseTag(tag)
-        }
-        TAG_RESUME -> {
-          val tag = msg.obj
-          dispatcher.performResumeTag(tag)
-        }
-        HUNTER_COMPLETE -> {
-          val hunter = msg.obj as BitmapHunter
-          dispatcher.performComplete(hunter)
-        }
-        HUNTER_RETRY -> {
-          val hunter = msg.obj as BitmapHunter
-          dispatcher.performRetry(hunter)
-        }
-        HUNTER_DECODE_FAILED -> {
-          val hunter = msg.obj as BitmapHunter
-          dispatcher.performError(hunter)
-        }
-        NETWORK_STATE_CHANGE -> {
-          val info = msg.obj as NetworkInfo
-          dispatcher.performNetworkStateChange(info)
-        }
-        AIRPLANE_MODE_CHANGE -> {
-          dispatcher.performAirplaneModeChange(msg.arg1 == AIRPLANE_MODE_ON)
-        }
-        else -> {
-          Picasso.HANDLER.post {
-            throw AssertionError("Unknown handler message received: ${msg.what}")
-          }
-        }
-      }
-    }
-  }
-
-  internal class DispatcherThread : HandlerThread(
-    Utils.THREAD_PREFIX + DISPATCHER_THREAD_NAME,
-    THREAD_PRIORITY_BACKGROUND
-  )
-
   internal class NetworkBroadcastReceiver(
     private val dispatcher: Dispatcher
   ) : BroadcastReceiver() {
@@ -558,19 +467,9 @@ internal class Dispatcher internal constructor(
   }
 
   internal companion object {
-    private const val RETRY_DELAY = 500L
-    private const val AIRPLANE_MODE_ON = 1
-    private const val AIRPLANE_MODE_OFF = 0
-    private const val REQUEST_SUBMIT = 1
-    private const val REQUEST_CANCEL = 2
+    const val RETRY_DELAY = 500L
     const val HUNTER_COMPLETE = 4
-    private const val HUNTER_RETRY = 5
-    private const val HUNTER_DECODE_FAILED = 6
     const val NETWORK_STATE_CHANGE = 9
-    private const val AIRPLANE_MODE_CHANGE = 10
-    private const val TAG_PAUSE = 11
-    private const val TAG_RESUME = 12
     const val REQUEST_BATCH_RESUME = 13
-    private const val DISPATCHER_THREAD_NAME = "Dispatcher"
   }
 }
