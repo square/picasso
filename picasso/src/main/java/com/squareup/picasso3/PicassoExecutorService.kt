@@ -49,6 +49,7 @@ class PicassoExecutorService(
 
     private class PicassoThread(r: Runnable) : Thread(r) {
       override fun run() {
+        name = Utils.THREAD_IDLE_NAME
         Process.setThreadPriority(THREAD_PRIORITY_BACKGROUND)
         super.run()
       }
