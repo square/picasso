@@ -28,12 +28,12 @@ import android.net.NetworkInfo
 import android.os.Handler
 import android.util.Log
 import androidx.annotation.CallSuper
+import androidx.annotation.MainThread
 import androidx.core.content.ContextCompat
 import com.squareup.picasso3.BitmapHunter.Companion.forRequest
 import com.squareup.picasso3.MemoryPolicy.Companion.shouldWriteToMemoryCache
 import com.squareup.picasso3.NetworkPolicy.NO_CACHE
 import com.squareup.picasso3.NetworkRequestHandler.ContentLengthException
-import com.squareup.picasso3.Picasso.Priority.HIGH
 import com.squareup.picasso3.RequestHandler.Result.Bitmap
 import com.squareup.picasso3.Utils.OWNER_DISPATCHER
 import com.squareup.picasso3.Utils.VERB_CANCELED
@@ -87,7 +87,7 @@ internal abstract class Dispatcher internal constructor(
     // Shutdown the thread pool only if it is the one created by Picasso.
     (service as? PicassoExecutorService)?.shutdown()
     // Unregister network broadcast receiver on the main thread.
-    Picasso.HANDLER.post { receiver.unregister() }
+    mainThreadHandler.post { receiver.unregister() }
   }
 
   abstract fun dispatchSubmit(action: Action)
@@ -107,6 +107,10 @@ internal abstract class Dispatcher internal constructor(
   abstract fun dispatchNetworkStateChange(info: NetworkInfo)
 
   abstract fun dispatchAirplaneModeChange(airplaneMode: Boolean)
+
+  abstract fun dispatchCompleteMain(hunter: BitmapHunter)
+
+  abstract fun dispatchBatchResumeMain(batch: MutableList<Action>)
 
   fun performSubmit(action: Action, dismissFailed: Boolean = true) {
     if (action.tag in pausedTags) {
@@ -270,7 +274,7 @@ internal abstract class Dispatcher internal constructor(
     }
 
     if (batch.isNotEmpty()) {
-      mainThreadHandler.sendMessage(mainThreadHandler.obtainMessage(REQUEST_BATCH_RESUME, batch))
+      dispatchBatchResumeMain(batch)
     }
   }
 
@@ -343,6 +347,19 @@ internal abstract class Dispatcher internal constructor(
     }
   }
 
+  @MainThread
+  fun performCompleteMain(hunter: BitmapHunter) {
+    hunter.picasso.complete(hunter)
+  }
+
+  @MainThread
+  fun performBatchResumeMain(batch: List<Action>) {
+    for (i in batch.indices) {
+      val action = batch[i]
+      action.picasso.resumeAction(action)
+    }
+  }
+
   private fun flushFailedActions() {
     if (failedActions.isNotEmpty()) {
       val iterator = failedActions.values.iterator()
@@ -390,12 +407,8 @@ internal abstract class Dispatcher internal constructor(
       }
     }
 
-    val message = mainThreadHandler.obtainMessage(HUNTER_COMPLETE, hunter)
-    if (hunter.priority == HIGH) {
-      mainThreadHandler.sendMessageAtFrontOfQueue(message)
-    } else {
-      mainThreadHandler.sendMessage(message)
-    }
+    dispatchCompleteMain(hunter)
+
     logDelivery(hunter)
   }
 

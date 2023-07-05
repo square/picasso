@@ -22,6 +22,7 @@ import android.os.HandlerThread
 import android.os.Looper
 import android.os.Message
 import android.os.Process.THREAD_PRIORITY_BACKGROUND
+import com.squareup.picasso3.Picasso.Priority.HIGH
 import com.squareup.picasso3.Utils.flushStackLocalLeaks
 import java.util.concurrent.ExecutorService
 
@@ -34,6 +35,7 @@ internal class HandlerDispatcher internal constructor(
 
   private val dispatcherThread: DispatcherThread
   private val handler: Handler
+  private val mainHandler: Handler
 
   init {
     dispatcherThread = DispatcherThread()
@@ -41,6 +43,7 @@ internal class HandlerDispatcher internal constructor(
     val dispatcherThreadLooper = dispatcherThread.looper
     flushStackLocalLeaks(dispatcherThreadLooper)
     handler = DispatcherHandler(dispatcherThreadLooper, this)
+    mainHandler = MainDispatcherHandler(mainThreadHandler.looper, this)
   }
 
   override fun shutdown() {
@@ -91,9 +94,22 @@ internal class HandlerDispatcher internal constructor(
     )
   }
 
+  override fun dispatchCompleteMain(hunter: BitmapHunter) {
+    val message = mainHandler.obtainMessage(HUNTER_COMPLETE, hunter)
+    if (hunter.priority == HIGH) {
+      mainHandler.sendMessageAtFrontOfQueue(message)
+    } else {
+      mainHandler.sendMessage(message)
+    }
+  }
+
+  override fun dispatchBatchResumeMain(batch: MutableList<Action>) {
+    mainHandler.sendMessage(mainHandler.obtainMessage(REQUEST_BATCH_RESUME, batch))
+  }
+
   private class DispatcherHandler(
     looper: Looper,
-    private val dispatcher: Dispatcher
+    private val dispatcher: HandlerDispatcher
   ) : Handler(looper) {
     override fun handleMessage(msg: Message) {
       when (msg.what) {
@@ -133,10 +149,29 @@ internal class HandlerDispatcher internal constructor(
           dispatcher.performAirplaneModeChange(msg.arg1 == AIRPLANE_MODE_ON)
         }
         else -> {
-          Picasso.HANDLER.post {
+          dispatcher.mainHandler.post {
             throw AssertionError("Unknown handler message received: ${msg.what}")
           }
         }
+      }
+    }
+  }
+
+  private class MainDispatcherHandler(
+    looper: Looper,
+    val dispatcher: Dispatcher
+  ) : Handler(looper) {
+    override fun handleMessage(msg: Message) {
+      when (msg.what) {
+        HUNTER_COMPLETE -> {
+          val hunter = msg.obj as BitmapHunter
+          dispatcher.performCompleteMain(hunter)
+        }
+        REQUEST_BATCH_RESUME -> {
+          val batch = msg.obj as List<Action>
+          dispatcher.performBatchResumeMain(batch)
+        }
+        else -> throw AssertionError("Unknown handler message received: " + msg.what)
       }
     }
   }

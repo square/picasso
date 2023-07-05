@@ -22,7 +22,6 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
-import android.os.Message
 import android.widget.ImageView
 import android.widget.RemoteViews
 import androidx.annotation.DrawableRes
@@ -32,8 +31,6 @@ import androidx.lifecycle.Lifecycle.Event.ON_START
 import androidx.lifecycle.Lifecycle.Event.ON_STOP
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
-import com.squareup.picasso3.Dispatcher.Companion.HUNTER_COMPLETE
-import com.squareup.picasso3.Dispatcher.Companion.REQUEST_BATCH_RESUME
 import com.squareup.picasso3.MemoryPolicy.Companion.shouldReadFromMemoryCache
 import com.squareup.picasso3.Picasso.LoadedFrom.MEMORY
 import com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget
@@ -794,24 +791,7 @@ class Picasso internal constructor(
 
   internal companion object {
     @get:JvmName("-handler")
-    internal val HANDLER: Handler = object : Handler(Looper.getMainLooper()) {
-      override fun handleMessage(msg: Message) {
-        when (msg.what) {
-          HUNTER_COMPLETE -> {
-            val hunter = msg.obj as BitmapHunter
-            hunter.picasso.complete(hunter)
-          }
-          REQUEST_BATCH_RESUME -> {
-            val batch = msg.obj as List<Action>
-            for (i in batch.indices) {
-              val action = batch[i]
-              action.picasso.resumeAction(action)
-            }
-          }
-          else -> throw AssertionError("Unknown handler message received: " + msg.what)
-        }
-      }
-    }
+    internal val HANDLER = Handler(Looper.getMainLooper())
   }
 }
 

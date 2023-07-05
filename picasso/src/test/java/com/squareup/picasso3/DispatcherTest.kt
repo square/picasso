@@ -33,6 +33,7 @@ import com.squareup.picasso3.MemoryPolicy.NO_STORE
 import com.squareup.picasso3.NetworkRequestHandler.ContentLengthException
 import com.squareup.picasso3.Picasso.LoadedFrom.MEMORY
 import com.squareup.picasso3.Picasso.LoadedFrom.NETWORK
+import com.squareup.picasso3.Request.Builder
 import com.squareup.picasso3.TestUtils.TestDelegatingService
 import com.squareup.picasso3.TestUtils.URI_1
 import com.squareup.picasso3.TestUtils.URI_2
@@ -60,7 +61,7 @@ import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations.initMocks
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
-import java.lang.AssertionError
+import org.robolectric.shadows.ShadowLooper
 import java.lang.Exception
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
@@ -231,48 +232,63 @@ class DispatcherTest {
 
   @Test fun performCompleteCleansUpAndPostsToMain() {
     val data = Request.Builder(URI_1).build()
-    val action = noopAction(data)
+    var completed = false
+    val action = noopAction(data, onComplete = { completed = true })
     val hunter = mockHunter(picasso, RequestHandler.Result.Bitmap(bitmap1, MEMORY), action)
     hunter.run()
 
     dispatcher.performComplete(hunter)
+    ShadowLooper.idleMainLooper()
 
     assertThat(dispatcher.hunterMap).isEmpty()
-    // TODO verify post to main thread.
+    assertThat(completed).isTrue()
   }
 
   @Test fun performCompleteCleansUpAndDoesNotPostToMainIfCancelled() {
     val data = Request.Builder(URI_1).build()
-    val action = noopAction(data)
+    var completed = false
+    val action = noopAction(data, onComplete = { completed = true })
     val hunter = mockHunter(picasso, RequestHandler.Result.Bitmap(bitmap1, MEMORY), action)
     hunter.run()
     hunter.future = FutureTask<Any>(mock(Runnable::class.java), null)
     hunter.future!!.cancel(false)
 
     dispatcher.performComplete(hunter)
+    ShadowLooper.idleMainLooper()
 
     assertThat(dispatcher.hunterMap).isEmpty()
-    // TODO verify no main thread interactions.
+    assertThat(completed).isFalse()
   }
 
   @Test fun performErrorCleansUpAndPostsToMain() {
+    val exception = RuntimeException()
     val action = mockAction(picasso, URI_KEY_1, URI_1, mockBitmapTarget(), tag = "tag")
-    val hunter = mockHunter(picasso, RequestHandler.Result.Bitmap(bitmap1, MEMORY), action)
+    val hunter = mockHunter(picasso, RequestHandler.Result.Bitmap(bitmap1, MEMORY), action, exception)
     dispatcher.hunterMap[hunter.key] = hunter
+    hunter.run()
+
     dispatcher.performError(hunter)
+    ShadowLooper.idleMainLooper()
+
     assertThat(dispatcher.hunterMap).isEmpty()
-    // TODO verify post to main thread.
+    assertThat(action.errorException).isSameInstanceAs(exception)
   }
 
   @Test fun performErrorCleansUpAndDoesNotPostToMainIfCancelled() {
+    val exception = RuntimeException()
     val action = mockAction(picasso, URI_KEY_1, URI_1, mockBitmapTarget(), tag = "tag")
-    val hunter = mockHunter(picasso, RequestHandler.Result.Bitmap(bitmap1, MEMORY), action)
+    val hunter = mockHunter(picasso, RequestHandler.Result.Bitmap(bitmap1, MEMORY), action, exception)
     hunter.future = FutureTask(mock(Runnable::class.java), mock(Any::class.java))
     hunter.future!!.cancel(false)
     dispatcher.hunterMap[hunter.key] = hunter
+    hunter.run()
+
     dispatcher.performError(hunter)
+    ShadowLooper.idleMainLooper()
+
     assertThat(dispatcher.hunterMap).isEmpty()
-    // TODO verify no main thread interactions.
+    assertThat(action.errorException).isNull()
+    assertThat(action.completedResult).isNull()
   }
 
   @Test fun performRetrySkipsIfHunterIsCancelled() {
@@ -516,9 +532,17 @@ class DispatcherTest {
     assertThat(hunter.actions).containsExactly(action2)
   }
 
-  @Test fun performResumeTagIsIdempotent() {
+  @Test fun performResumeTagResumesPausedActions() {
+    val action = noopAction(Builder(URI_1).tag("tag").build())
+    val hunter = mockHunter(picasso, RequestHandler.Result.Bitmap(bitmap1, MEMORY), action)
+    dispatcher.hunterMap[URI_KEY_1] = hunter
+    assertThat(dispatcher.pausedActions).isEmpty()
+    dispatcher.performPauseTag("tag")
+    assertThat(dispatcher.pausedActions).containsEntry(action.getTarget(), action)
+
     dispatcher.performResumeTag("tag")
-    // TODO verify no main thread interactions.
+
+    assertThat(dispatcher.pausedActions).isEmpty()
   }
 
   @Test fun performNetworkStateChangeFlushesFailedHunters() {
@@ -589,11 +613,11 @@ class DispatcherTest {
     return HandlerDispatcher(context, service, Handler(getMainLooper()), cache)
   }
 
-  private fun noopAction(data: Request): Action {
+  private fun noopAction(data: Request, onComplete: () -> Unit = { }): Action {
     return object : Action(picasso, data) {
-      override fun complete(result: RequestHandler.Result) = Unit
+      override fun complete(result: RequestHandler.Result) = onComplete()
       override fun error(e: Exception) = Unit
-      override fun getTarget(): Any = throw AssertionError()
+      override fun getTarget(): Any = this
     }
   }
 }
