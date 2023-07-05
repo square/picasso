@@ -34,6 +34,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
+import kotlinx.coroutines.Job
 
 internal open class BitmapHunter(
   val picasso: Picasso,
@@ -54,18 +55,21 @@ internal open class BitmapHunter(
     private set
 
   var future: Future<*>? = null
+
+  var job: Job? = null
+
   var result: RequestHandler.Result? = null
     private set
   var exception: Exception? = null
     private set
 
   val isCancelled: Boolean
-    get() = future?.isCancelled ?: false
+    get() = future?.isCancelled ?: job?.isCancelled ?: false
 
   override fun run() {
     val originalName = Thread.currentThread().name
     try {
-      updateThreadName(data)
+      Thread.currentThread().name = getName()
 
       if (picasso.isLoggingEnabled) {
         log(OWNER_HUNTER, VERB_EXECUTING, getLogIdsForHunter(this))
@@ -87,6 +91,12 @@ internal open class BitmapHunter(
       Thread.currentThread().name = originalName
     }
   }
+
+  fun getName() = NAME_BUILDER.get()!!.also {
+    val name = data.name
+    it.ensureCapacity(THREAD_PREFIX.length + name.length)
+    it.replace(THREAD_PREFIX.length, it.length, name)
+  }.toString()
 
   fun hunt(): Bitmap? {
     if (shouldReadFromMemoryCache(data.memoryPolicy)) {
@@ -212,7 +222,7 @@ internal open class BitmapHunter(
   }
 
   fun cancel(): Boolean =
-    action == null && actions.isNullOrEmpty() && future?.cancel(false) ?: false
+    action == null && actions.isNullOrEmpty() && future?.cancel(false) ?: job?.let { it.cancel(); true } ?: false
 
   fun shouldRetry(airplaneMode: Boolean, info: NetworkInfo?): Boolean {
     val hasRetries = retryCount > 0
@@ -281,16 +291,6 @@ internal open class BitmapHunter(
       }
 
       return BitmapHunter(picasso, dispatcher, cache, action, ERRORING_HANDLER)
-    }
-
-    fun updateThreadName(data: Request) {
-      val name = data.name
-      val builder = NAME_BUILDER.get()!!.also {
-        it.ensureCapacity(THREAD_PREFIX.length + name.length)
-        it.replace(THREAD_PREFIX.length, it.length, name)
-      }
-
-      Thread.currentThread().name = builder.toString()
     }
 
     fun applyTransformations(

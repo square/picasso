@@ -17,18 +17,13 @@ package com.squareup.picasso3
 
 import android.content.Context
 import android.content.Context.CONNECTIVITY_SERVICE
-import android.content.Intent
-import android.content.Intent.ACTION_AIRPLANE_MODE_CHANGED
 import android.content.pm.PackageManager.PERMISSION_DENIED
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.net.ConnectivityManager
-import android.net.ConnectivityManager.CONNECTIVITY_ACTION
 import android.net.NetworkInfo
 import android.os.Handler
 import android.os.Looper.getMainLooper
 import com.google.common.truth.Truth.assertThat
-import com.squareup.picasso3.Dispatcher.NetworkBroadcastReceiver
-import com.squareup.picasso3.Dispatcher.NetworkBroadcastReceiver.Companion.EXTRA_AIRPLANE_STATE
 import com.squareup.picasso3.MemoryPolicy.NO_STORE
 import com.squareup.picasso3.NetworkRequestHandler.ContentLengthException
 import com.squareup.picasso3.Picasso.LoadedFrom.MEMORY
@@ -56,7 +51,6 @@ import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyNoInteractions
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations.initMocks
 import org.robolectric.RobolectricTestRunner
@@ -66,28 +60,9 @@ import java.lang.Exception
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
 import java.util.concurrent.FutureTask
-import kotlinx.coroutines.Dispatchers
 
 @RunWith(RobolectricTestRunner::class)
-class HandlerDispatcherTest : DispatcherTest() {
-  override fun createDispatcher(
-    context: Context,
-    service: ExecutorService,
-    cache: PlatformLruCache
-  ) = HandlerDispatcher(context, service, Handler(getMainLooper()), cache)
-}
-
-@RunWith(RobolectricTestRunner::class)
-class CoroutineDispatcherTest : DispatcherTest() {
-  override fun createDispatcher(
-    context: Context,
-    service: ExecutorService,
-    cache: PlatformLruCache
-  ) = InternalCoroutineDispatcher(context, service, Handler(getMainLooper()), cache, Dispatchers.Main)
-}
-
-abstract class DispatcherTest {
-
+class HandlerDispatcherTest {
   @Mock lateinit var context: Context
 
   @Mock lateinit var connectivityManager: ConnectivityManager
@@ -95,7 +70,7 @@ abstract class DispatcherTest {
   @Mock lateinit var serviceMock: ExecutorService
 
   private lateinit var picasso: Picasso
-  private lateinit var dispatcher: Dispatcher
+  private lateinit var dispatcher: HandlerDispatcher
 
   private val executorService = spy(PicassoExecutorService())
   private val cache = PlatformLruCache(2048)
@@ -575,53 +550,14 @@ abstract class DispatcherTest {
     assertThat(dispatcher.failedActions).isEmpty()
   }
 
-  @Test fun nullIntentOnReceiveDoesNothing() {
-    val dispatcher = mock(Dispatcher::class.java)
-    val receiver = NetworkBroadcastReceiver(dispatcher)
-    receiver.onReceive(context, null)
-    verifyNoInteractions(dispatcher)
-  }
-
-  @Test fun nullExtrasOnReceiveConnectivityAreOk() {
-    val connectivityManager = mock(ConnectivityManager::class.java)
-    val networkInfo = mockNetworkInfo()
-    `when`(connectivityManager.activeNetworkInfo).thenReturn(networkInfo)
-    `when`(context.getSystemService(CONNECTIVITY_SERVICE)).thenReturn(connectivityManager)
-    val dispatcher = mock(Dispatcher::class.java)
-    val receiver = NetworkBroadcastReceiver(dispatcher)
-    receiver.onReceive(context, Intent(CONNECTIVITY_ACTION))
-    verify(dispatcher).dispatchNetworkStateChange(networkInfo)
-  }
-
-  @Test fun nullExtrasOnReceiveAirplaneDoesNothing() {
-    val dispatcher = mock(Dispatcher::class.java)
-    val receiver = NetworkBroadcastReceiver(dispatcher)
-    receiver.onReceive(context, Intent(ACTION_AIRPLANE_MODE_CHANGED))
-    verifyNoInteractions(dispatcher)
-  }
-
-  @Test fun correctExtrasOnReceiveAirplaneDispatches() {
-    setAndVerifyAirplaneMode(false)
-    setAndVerifyAirplaneMode(true)
-  }
-
-  private fun setAndVerifyAirplaneMode(airplaneOn: Boolean) {
-    val dispatcher = mock(Dispatcher::class.java)
-    val receiver = NetworkBroadcastReceiver(dispatcher)
-    val intent = Intent(ACTION_AIRPLANE_MODE_CHANGED)
-    intent.putExtra(EXTRA_AIRPLANE_STATE, airplaneOn)
-    receiver.onReceive(context, intent)
-    verify(dispatcher).dispatchAirplaneModeChange(airplaneOn)
-  }
-
-  private fun createDispatcher(scansNetworkChanges: Boolean): Dispatcher {
+  private fun createDispatcher(scansNetworkChanges: Boolean): HandlerDispatcher {
     return createDispatcher(service, scansNetworkChanges)
   }
 
   private fun createDispatcher(
     service: ExecutorService,
     scansNetworkChanges: Boolean = true
-  ): Dispatcher {
+  ): HandlerDispatcher {
     `when`(connectivityManager.activeNetworkInfo).thenReturn(
       if (scansNetworkChanges) mock(NetworkInfo::class.java) else null
     )
@@ -629,10 +565,8 @@ abstract class DispatcherTest {
     `when`(context.checkCallingOrSelfPermission(anyString())).thenReturn(
       if (scansNetworkChanges) PERMISSION_GRANTED else PERMISSION_DENIED
     )
-    return createDispatcher(context, service, cache)
+    return HandlerDispatcher(context, service, Handler(getMainLooper()), cache)
   }
-
-  internal abstract fun createDispatcher(context: Context, service: ExecutorService, cache: PlatformLruCache): Dispatcher
 
   private fun noopAction(data: Request, onComplete: () -> Unit = { }): Action {
     return object : Action(picasso, data) {

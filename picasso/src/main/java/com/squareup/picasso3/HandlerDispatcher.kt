@@ -28,10 +28,10 @@ import java.util.concurrent.ExecutorService
 
 internal class HandlerDispatcher internal constructor(
   context: Context,
-  service: ExecutorService,
+  @get:JvmName("-service") val service: ExecutorService,
   mainThreadHandler: Handler,
   cache: PlatformLruCache
-) : Dispatcher(context, service, mainThreadHandler, cache) {
+) : BaseDispatcher(context, mainThreadHandler, cache) {
 
   private val dispatcherThread: DispatcherThread
   private val handler: Handler
@@ -48,6 +48,8 @@ internal class HandlerDispatcher internal constructor(
 
   override fun shutdown() {
     super.shutdown()
+    // Shutdown the thread pool only if it is the one created by Picasso.
+    (service as? PicassoExecutorService)?.shutdown()
 
     dispatcherThread.quit()
   }
@@ -94,6 +96,10 @@ internal class HandlerDispatcher internal constructor(
     )
   }
 
+  override fun dispatchSubmit(hunter: BitmapHunter) {
+    hunter.future = service.submit(hunter)
+  }
+
   override fun dispatchCompleteMain(hunter: BitmapHunter) {
     val message = mainHandler.obtainMessage(HUNTER_COMPLETE, hunter)
     if (hunter.priority == HIGH) {
@@ -106,6 +112,7 @@ internal class HandlerDispatcher internal constructor(
   override fun dispatchBatchResumeMain(batch: MutableList<Action>) {
     mainHandler.sendMessage(mainHandler.obtainMessage(REQUEST_BATCH_RESUME, batch))
   }
+  override fun isShutdown() = service.isShutdown
 
   private class DispatcherHandler(
     looper: Looper,
@@ -159,7 +166,7 @@ internal class HandlerDispatcher internal constructor(
 
   private class MainDispatcherHandler(
     looper: Looper,
-    val dispatcher: Dispatcher
+    val dispatcher: HandlerDispatcher
   ) : Handler(looper) {
     override fun handleMessage(msg: Message) {
       when (msg.what) {
@@ -186,11 +193,14 @@ internal class HandlerDispatcher internal constructor(
     private const val AIRPLANE_MODE_OFF = 0
     private const val REQUEST_SUBMIT = 1
     private const val REQUEST_CANCEL = 2
+    private const val HUNTER_COMPLETE = 4
     private const val HUNTER_RETRY = 5
     private const val HUNTER_DECODE_FAILED = 6
+    private const val NETWORK_STATE_CHANGE = 9
     private const val AIRPLANE_MODE_CHANGE = 10
     private const val TAG_PAUSE = 11
     private const val TAG_RESUME = 12
+    private const val REQUEST_BATCH_RESUME = 13
     private const val DISPATCHER_THREAD_NAME = "Dispatcher"
   }
 }

@@ -44,6 +44,7 @@ dependencies {
   implementation libs.androidx.core
   implementation libs.androidx.exifInterface
 
+  testImplementation libs.coroutines.test
   testImplementation libs.junit
   testImplementation libs.truth
   testImplementation libs.robolectric

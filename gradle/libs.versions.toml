@@ -1,5 +1,6 @@
 [versions]
 agp = '8.0.2'
+coroutines = '1.7.2'
 composeCompiler = '1.4.7'
 composeUi = '1.4.3'
 javaTarget = '1.8'
@@ -21,6 +22,8 @@ androidx-junit = { module = 'androidx.test.ext:junit', version = '1.1.5' }
 androidx-lifecycle = { module = 'androidx.lifecycle:lifecycle-common', version = '2.6.1' }
 androidx-startup = { module = 'androidx.startup:startup-runtime', version = '1.1.1' }
 androidx-testRunner = { module = 'androidx.test:runner', version = '1.5.2' }
+
+coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = 'coroutines' }
 
 composeUi = { module = 'androidx.compose.ui:ui', version.ref = 'composeUi' }
 composeRuntime = { module = 'androidx.compose.runtime:runtime', version.ref = 'composeUi' }

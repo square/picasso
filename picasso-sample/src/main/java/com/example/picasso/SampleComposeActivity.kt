@@ -56,7 +56,7 @@ import com.squareup.picasso3.Picasso.LoadedFrom.MEMORY
 import com.squareup.picasso3.Request
 import com.squareup.picasso3.RequestHandler
 import com.squareup.picasso3.compose.rememberPainter
-import com.squareup.picasso3.layoutlib.LayoutlibExecutorService
+import kotlinx.coroutines.Dispatchers
 
 class SampleComposeActivity : PicassoSampleActivity() {
 
@@ -241,7 +241,10 @@ private fun ContentPreview() {
     picasso = remember {
       Picasso.Builder(context)
         .callFactory { throw AssertionError() } // Removes network
-        .executor(LayoutlibExecutorService()) // Synchronously execute RequestHandler
+        .dispatchers(
+          mainDispatcher = Dispatchers.Unconfined,
+          backgroundDispatcher = Dispatchers.Unconfined
+        )
         .addRequestHandler(
           object : RequestHandler() {
             override fun canHandleRequest(data: Request) = data.uri?.toString()?.run(images::containsKey) == true
