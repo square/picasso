@@ -20,7 +20,6 @@ import com.squareup.picasso3.MemoryPolicy.Companion.shouldReadFromMemoryCache
 import com.squareup.picasso3.Picasso.LoadedFrom
 import com.squareup.picasso3.RequestHandler.Result.Bitmap
 import com.squareup.picasso3.Utils.OWNER_HUNTER
-import com.squareup.picasso3.Utils.THREAD_IDLE_NAME
 import com.squareup.picasso3.Utils.THREAD_PREFIX
 import com.squareup.picasso3.Utils.VERB_DECODED
 import com.squareup.picasso3.Utils.VERB_EXECUTING
@@ -64,6 +63,7 @@ internal open class BitmapHunter(
     get() = future?.isCancelled ?: false
 
   override fun run() {
+    val originalName = Thread.currentThread().name
     try {
       updateThreadName(data)
 
@@ -84,7 +84,7 @@ internal open class BitmapHunter(
       exception = e
       dispatcher.dispatchFailed(this)
     } finally {
-      Thread.currentThread().name = THREAD_IDLE_NAME
+      Thread.currentThread().name = originalName
     }
   }
 
