@@ -26,6 +26,7 @@ import com.squareup.picasso3.RequestHandler
 import com.squareup.picasso3.layoutlib.LayoutlibExecutorService
 import org.junit.Rule
 import org.junit.Test
+import kotlinx.coroutines.Dispatchers
 
 class PicassoPaparazziTest {
   @get:Rule val paparazzi = Paparazzi()
@@ -35,6 +36,7 @@ class PicassoPaparazziTest {
     val picasso = Picasso.Builder(paparazzi.context)
       .callFactory { throw AssertionError() } // Removes network
       .executor(LayoutlibExecutorService())
+      .dispatcher(Dispatchers.Main)
       .addRequestHandler(FakeRequestHandler())
       .build()
 
