@@ -51,7 +51,7 @@ import java.io.File
 import java.io.IOException
 import java.util.WeakHashMap
 import java.util.concurrent.ExecutorService
-import kotlinx.coroutines.CoroutineDispatcher
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 
 /**
@@ -539,8 +539,8 @@ class Picasso internal constructor(
     private val context: Context
     private var callFactory: Call.Factory? = null
     private var service: ExecutorService? = null
-    private var mainDispatcher: CoroutineDispatcher? = null
-    private var backgroundDispatcher: CoroutineDispatcher? = null
+    private var mainContext: CoroutineContext? = null
+    private var backgroundContext: CoroutineContext? = null
     private var cache: PlatformLruCache? = null
     private var listener: Listener? = null
     private val requestTransformers = mutableListOf<RequestTransformer>()
@@ -559,8 +559,8 @@ class Picasso internal constructor(
       context = picasso.context
       callFactory = picasso.callFactory
       service = (picasso.dispatcher as? HandlerDispatcher)?.service
-      mainDispatcher = (picasso.dispatcher as? InternalCoroutineDispatcher)?.mainDispatcher
-      backgroundDispatcher = (picasso.dispatcher as? InternalCoroutineDispatcher)?.backgroundDispatcher
+      mainContext = (picasso.dispatcher as? InternalCoroutineDispatcher)?.mainContext
+      backgroundContext = (picasso.dispatcher as? InternalCoroutineDispatcher)?.backgroundContext
       cache = picasso.cache
       listener = picasso.listener
       requestTransformers += picasso.requestTransformers
@@ -657,11 +657,11 @@ class Picasso internal constructor(
      * Sets the CoroutineDispatchers used internally
      */
     fun dispatchers(
-      mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
-      backgroundDispatcher: CoroutineDispatcher = Dispatchers.IO
+      mainContext: CoroutineContext = Dispatchers.Main,
+      backgroundContext: CoroutineContext = Dispatchers.IO
     ) = apply {
-      this.mainDispatcher = mainDispatcher
-      this.backgroundDispatcher = backgroundDispatcher
+      this.mainContext = mainContext
+      this.backgroundContext = backgroundContext
     }
 
     /** Create the [Picasso] instance. */
@@ -679,8 +679,8 @@ class Picasso internal constructor(
         cache = PlatformLruCache(calculateMemoryCacheSize(context))
       }
 
-      val dispatcher = if (backgroundDispatcher != null) {
-        InternalCoroutineDispatcher(context, HANDLER, cache!!, mainDispatcher!!, backgroundDispatcher!!)
+      val dispatcher = if (backgroundContext != null) {
+        InternalCoroutineDispatcher(context, HANDLER, cache!!, mainContext!!, backgroundContext!!)
       } else {
         if (service == null) {
           service = PicassoExecutorService()
