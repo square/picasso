@@ -242,8 +242,8 @@ private fun ContentPreview() {
       Picasso.Builder(context)
         .callFactory { throw AssertionError() } // Removes network
         .dispatchers(
-          mainDispatcher = Dispatchers.Unconfined,
-          backgroundDispatcher = Dispatchers.Unconfined
+          mainContext = Dispatchers.Unconfined,
+          backgroundContext = Dispatchers.Unconfined
         )
         .addRequestHandler(
           object : RequestHandler() {

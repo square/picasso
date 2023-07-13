@@ -539,8 +539,8 @@ class PicassoTest {
 
     val parentDispatcher = parent.dispatcher as InternalCoroutineDispatcher
     val childDispatcher = child.dispatcher as InternalCoroutineDispatcher
-    assertThat(childDispatcher.mainDispatcher).isEqualTo(parentDispatcher.mainDispatcher)
-    assertThat(childDispatcher.backgroundDispatcher).isEqualTo(parentDispatcher.backgroundDispatcher)
+    assertThat(childDispatcher.mainContext).isEqualTo(parentDispatcher.mainContext)
+    assertThat(childDispatcher.backgroundContext).isEqualTo(parentDispatcher.backgroundContext)
   }
 
   private fun verifyActionComplete(action: FakeAction) {

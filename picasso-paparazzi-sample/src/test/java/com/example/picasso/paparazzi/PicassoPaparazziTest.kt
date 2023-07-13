@@ -35,8 +35,8 @@ class PicassoPaparazziTest {
     val picasso = Picasso.Builder(paparazzi.context)
       .callFactory { throw AssertionError() } // Removes network
       .dispatchers(
-        mainDispatcher = Dispatchers.Unconfined,
-        backgroundDispatcher = Dispatchers.Unconfined
+        mainContext = Dispatchers.Unconfined,
+        backgroundContext = Dispatchers.Unconfined
       )
       .addRequestHandler(FakeRequestHandler())
       .build()

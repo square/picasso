@@ -19,7 +19,7 @@ import android.content.Context
 import android.net.NetworkInfo
 import android.os.Handler
 import com.squareup.picasso3.Dispatcher.Companion.RETRY_DELAY
-import kotlinx.coroutines.CoroutineDispatcher
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -35,11 +35,11 @@ internal class InternalCoroutineDispatcher internal constructor(
   context: Context,
   mainThreadHandler: Handler,
   cache: PlatformLruCache,
-  val mainDispatcher: CoroutineDispatcher,
-  val backgroundDispatcher: CoroutineDispatcher
+  val mainContext: CoroutineContext,
+  val backgroundContext: CoroutineContext
 ) : BaseDispatcher(context, mainThreadHandler, cache) {
 
-  private val scope = CoroutineScope(SupervisorJob() + backgroundDispatcher)
+  private val scope = CoroutineScope(SupervisorJob() + backgroundContext)
   private val channel = Channel<() -> Unit>(capacity = Channel.UNLIMITED)
 
   init {
@@ -115,13 +115,13 @@ internal class InternalCoroutineDispatcher internal constructor(
   }
 
   override fun dispatchCompleteMain(hunter: BitmapHunter) {
-    scope.launch(mainDispatcher) {
+    scope.launch(mainContext) {
       performCompleteMain(hunter)
     }
   }
 
   override fun dispatchBatchResumeMain(batch: MutableList<Action>) {
-    scope.launch(mainDispatcher) {
+    scope.launch(mainContext) {
       performBatchResumeMain(batch)
     }
   }
