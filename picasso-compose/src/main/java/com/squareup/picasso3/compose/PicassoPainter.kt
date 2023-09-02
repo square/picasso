@@ -40,31 +40,14 @@ fun Picasso.rememberPainter(
   request: (Picasso) -> RequestCreator
 ): Painter {
   return remember(key) { PicassoPainter(this, request, onError) }
-    .also { painter ->
-      DisposableEffect(painter) {
-        painter.start()
-        onDispose(painter::stop)
-      }
-    }
 }
 
 internal class PicassoPainter(
   private val picasso: Picasso,
-  request: (Picasso) -> RequestCreator,
+  private val request: (Picasso) -> RequestCreator,
   private val onError: ((Exception) -> Unit)? = null
 ) : Painter(), RememberObserver, DrawableTarget {
 
-  private val stateObserver = SnapshotStateObserver(onChangeExecutor = { callback ->
-      if (Looper.myLooper == Looper.mainLooper) {
-        callback()
-      } else {
-        postToMainThread(callback)
-      }
-    })
-  private val request: RequestCreator by derivedStateOf { request.invoke(picasso) }
-  // This is technically written to from composition once, by onRemembered. However it's
-  // never written to from composition again so it doesn't need to be snapshot state.
-  private var lastRequest: RequestCreator? = null
   private var painter: Painter by mutableStateOf(EmptyPainter)
   private var alpha: Float by mutableStateOf(DefaultAlpha)
   private var colorFilter: ColorFilter? by mutableStateOf(null)
@@ -89,7 +72,7 @@ internal class PicassoPainter(
   }
 
   override fun onRemembered() {
-    loadRequest()
+    request.invoke(picasso).into(this)
   }
 
   override fun onAbandoned() {
@@ -102,39 +85,6 @@ internal class PicassoPainter(
     (painter as? RememberObserver)?.onForgotten()
     painter = EmptyPainter
     picasso.cancelRequest(this)
-  }
-
-  fun start() {
-    stateObserver.start()
-    // Even though loadRequest was called in onRemembered, we need to call it
-    // again now that the observer is started to observe state reads.
-    loadRequest()
-  }
-
-  fun stop() {
-    stateObserver.stop()
-    stateObserver.clear()
-    // Picasso state will be cleaned up by onForgotten, we don't need to
-    // do it here.
-  }
-
-  private fun loadRequest() {
-    // Because this will get called from composition, and we don't care about
-    // lastRequest changing and are handling request reads ourself.
-    // It will get called again from start() and that will observe the reads.
-    Snapshot.withoutReadObservation {
-      // The first time this is called, from composition, the observer won't
-      // have been started yet so this will run the block but not observe it.
-      val newRequest = stateObserver.observeReads(this, onCommitAffectingRequest) {
-        request
-      }
-      // Can be != if RequestCreators are comparable. Identity comparison works
-      // because derivedStateOf will return a cached instance if nothing changed.
-      if (newRequest !== lastRequest) {
-        lastRequest = newRequest
-        newRequest.into(this)
-      }
-    }
   }
 
   override fun onPrepareLoad(placeHolderDrawable: Drawable?) {
@@ -153,12 +103,6 @@ internal class PicassoPainter(
   private fun setPainter(drawable: Drawable) {
     (painter as? RememberObserver)?.onForgotten()
     painter = DrawablePainter(drawable).apply(DrawablePainter::onRemembered)
-  }
-
-  private companion object {
-    val onCommitAffectingRequest: (PicassoPainter) -> Unit = { painter ->
-      painter.loadRequest()
-    }
   }
 }
 
