@@ -30,6 +30,7 @@ composeRuntime = { module = 'androidx.compose.runtime:runtime', version.ref = 'c
 composeUi-foundation = { module = 'androidx.compose.foundation:foundation', version.ref = 'composeUi' }
 composeUi-material = { module = 'androidx.compose.material:material', version.ref = 'composeUi' }
 composeUi-uiTooling = { module = 'androidx.compose.ui:ui-tooling', version.ref = 'composeUi' }
+composeUi-test = { module = 'androidx.compose.ui:ui-test-junit4', version.ref = 'composeUi' }
 
 drawablePainter = { module = 'com.google.accompanist:accompanist-drawablepainter', version = '0.30.1' }
 

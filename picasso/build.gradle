@@ -23,6 +23,14 @@ android {
     jvmTarget = libs.versions.javaTarget.get()
   }
 
+  // For tests.
+  buildFeatures {
+    compose true
+  }
+  composeOptions {
+    kotlinCompilerExtensionVersion libs.versions.composeCompiler.get()
+  }
+
   lintOptions {
     textOutput 'stdout'
     textReport true
@@ -51,8 +59,11 @@ dependencies {
   testImplementation libs.mockito
   testImplementation libs.okhttp.mockWebServer
 
+  androidTestImplementation project(":picasso-compose")
   androidTestImplementation libs.androidx.junit
   androidTestImplementation libs.androidx.testRunner
+  androidTestImplementation libs.composeUi.foundation
+  androidTestImplementation libs.composeUi.test
   androidTestImplementation libs.truth
 }
 
