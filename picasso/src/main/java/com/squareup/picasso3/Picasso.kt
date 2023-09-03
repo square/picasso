@@ -26,11 +26,8 @@ import android.widget.ImageView
 import android.widget.RemoteViews
 import androidx.annotation.DrawableRes
 import androidx.annotation.IdRes
-import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
-import androidx.lifecycle.Lifecycle.Event.ON_START
-import androidx.lifecycle.Lifecycle.Event.ON_STOP
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import com.squareup.picasso3.MemoryPolicy.Companion.shouldReadFromMemoryCache
 import com.squareup.picasso3.Picasso.LoadedFrom.MEMORY
 import com.squareup.picasso3.RemoteViewsAction.RemoteViewsTarget
@@ -81,7 +78,7 @@ class Picasso internal constructor(
    * be used for debugging purposes. Do NOT pass `BuildConfig.DEBUG`.
    */
   @Volatile var isLoggingEnabled: Boolean
-) : LifecycleObserver {
+) : DefaultLifecycleObserver {
   @get:JvmName("-requestTransformers")
   internal val requestTransformers: List<RequestTransformer> = requestTransformers.toList()
 
@@ -121,7 +118,11 @@ class Picasso internal constructor(
     }
   }
 
-  @OnLifecycleEvent(ON_DESTROY)
+  override fun onDestroy(owner: LifecycleOwner) {
+    super.onDestroy(owner)
+    cancelAll()
+  }
+
   @JvmName("-cancelAll")
   internal fun cancelAll() {
     checkMain()
@@ -191,7 +192,12 @@ class Picasso internal constructor(
     }
   }
 
-  @OnLifecycleEvent(ON_STOP)
+  override fun onStop(owner: LifecycleOwner) {
+    super.onStop(owner)
+    pauseAll()
+  }
+
+
   @JvmName("-pauseAll")
   internal fun pauseAll() {
     checkMain()
@@ -221,7 +227,10 @@ class Picasso internal constructor(
     dispatcher.dispatchPauseTag(tag)
   }
 
-  @OnLifecycleEvent(ON_START)
+  override fun onStart(owner: LifecycleOwner) {
+     resumeAll()
+  }
+
   @JvmName("-resumeAll")
   internal fun resumeAll() {
     checkMain()
