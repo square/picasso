@@ -74,7 +74,7 @@ public final class com/squareup/picasso3/NetworkPolicy$Companion {
 	public final fun shouldWriteToDiskCache (I)Z
 }
 
-public final class com/squareup/picasso3/Picasso : androidx/lifecycle/LifecycleObserver {
+public final class com/squareup/picasso3/Picasso : androidx/lifecycle/DefaultLifecycleObserver {
 	public final fun cancelRequest (Landroid/widget/ImageView;)V
 	public final fun cancelRequest (Landroid/widget/RemoteViews;I)V
 	public final fun cancelRequest (Lcom/squareup/picasso3/BitmapTarget;)V
@@ -91,6 +91,9 @@ public final class com/squareup/picasso3/Picasso : androidx/lifecycle/LifecycleO
 	public final fun load (Ljava/io/File;)Lcom/squareup/picasso3/RequestCreator;
 	public final fun load (Ljava/lang/String;)Lcom/squareup/picasso3/RequestCreator;
 	public final fun newBuilder ()Lcom/squareup/picasso3/Picasso$Builder;
+	public fun onDestroy (Landroidx/lifecycle/LifecycleOwner;)V
+	public fun onStart (Landroidx/lifecycle/LifecycleOwner;)V
+	public fun onStop (Landroidx/lifecycle/LifecycleOwner;)V
 	public final fun pauseTag (Ljava/lang/Object;)V
 	public final fun resumeTag (Ljava/lang/Object;)V
 	public final fun setIndicatorsEnabled (Z)V
