@@ -330,6 +330,7 @@ class Request internal constructor(builder: Builder) {
       priority = request.priority
       memoryPolicy = request.memoryPolicy
       networkPolicy = request.networkPolicy
+      headers = request.headers
     }
 
     fun hasImage(): Boolean {
