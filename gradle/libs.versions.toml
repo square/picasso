@@ -35,7 +35,7 @@ drawablePainter = { module = 'com.google.accompanist:accompanist-drawablepainter
 
 layoutlib = { module = 'app.cash.paparazzi:layoutlib-native-jdk11', version = '2022.2.1-5128371-2' }
 
-okio = { module = "com.squareup.okio:okio", version = '3.4.0' }
+okio = { module = "com.squareup.okio:okio", version = '3.5.0' }
 
 okhttp = { module = 'com.squareup.okhttp3:okhttp', version.ref = 'okhttp' }
 okhttp-mockWebServer = { module = 'com.squareup.okhttp3:mockwebserver', version.ref = 'okhttp' }
