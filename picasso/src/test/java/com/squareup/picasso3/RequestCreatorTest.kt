@@ -710,4 +710,15 @@ class RequestCreatorTest {
     assertThat(actionCaptor.value.request.headers!![CUSTOM_HEADER_NAME])
       .isEqualTo(CUSTOM_HEADER_VALUE)
   }
+
+  @Test fun imageViewActionWithCustomHeadersCopiesHeaders() {
+    RequestCreator(picasso, URI_1, 0)
+      .addHeader(CUSTOM_HEADER_NAME, CUSTOM_HEADER_VALUE)
+      .into(mockImageViewTarget())
+    verify(picasso).enqueueAndSubmit(actionCaptor.capture())
+
+    val newRequest = actionCaptor.value.request.newBuilder().build()
+
+    assertThat(newRequest.headers!![CUSTOM_HEADER_NAME]).isEqualTo(CUSTOM_HEADER_VALUE)
+  }
 }
