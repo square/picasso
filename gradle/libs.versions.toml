@@ -31,7 +31,7 @@ composeUi-foundation = { module = 'androidx.compose.foundation:foundation', vers
 composeUi-material = { module = 'androidx.compose.material:material', version.ref = 'composeUi' }
 composeUi-uiTooling = { module = 'androidx.compose.ui:ui-tooling', version.ref = 'composeUi' }
 
-drawablePainter = { module = 'com.google.accompanist:accompanist-drawablepainter', version = '0.30.1' }
+drawablePainter = { module = 'com.google.accompanist:accompanist-drawablepainter', version = '0.32.0' }
 
 layoutlib = { module = 'app.cash.paparazzi:layoutlib-native-jdk11', version = '2022.2.1-5128371-2' }
 
