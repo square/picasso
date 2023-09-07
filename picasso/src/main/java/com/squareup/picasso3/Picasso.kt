@@ -197,7 +197,6 @@ class Picasso internal constructor(
     pauseAll()
   }
 
-
   @JvmName("-pauseAll")
   internal fun pauseAll() {
     checkMain()
@@ -228,7 +227,7 @@ class Picasso internal constructor(
   }
 
   override fun onStart(owner: LifecycleOwner) {
-     resumeAll()
+    resumeAll()
   }
 
   @JvmName("-resumeAll")
