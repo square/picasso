@@ -9,6 +9,8 @@ android {
 
   defaultConfig {
     minSdkVersion libs.versions.minSdk.get() as int
+
+    testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
   }
 
   buildFeatures {
@@ -41,6 +43,12 @@ dependencies {
   implementation libs.drawablePainter
   implementation libs.composeUi
   implementation libs.composeUi.foundation
+  implementation libs.composeRuntime
+
+  debugImplementation libs.composeUi.testManifest
+
+  androidTestImplementation libs.composeUi.test
+  androidTestImplementation libs.truth
 
   compileOnly libs.androidx.annotations
 }

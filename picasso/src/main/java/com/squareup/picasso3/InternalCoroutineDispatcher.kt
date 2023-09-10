@@ -19,7 +19,12 @@ import android.content.Context
 import android.net.NetworkInfo
 import android.os.Handler
 import com.squareup.picasso3.Dispatcher.Companion.RETRY_DELAY
+import com.squareup.picasso3.Picasso.Priority.HIGH
+import com.squareup.picasso3.Utils.OWNER_DISPATCHER
+import com.squareup.picasso3.Utils.VERB_CANCELED
+import com.squareup.picasso3.Utils.log
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -127,8 +132,22 @@ internal class InternalCoroutineDispatcher internal constructor(
   }
 
   override fun dispatchSubmit(hunter: BitmapHunter) {
-    hunter.job = scope.launch(CoroutineName(hunter.getName())) {
-      hunter.run()
+    val highPriority = hunter.action?.request?.priority == HIGH
+    val context = if (highPriority) EmptyCoroutineContext else mainContext
+
+    scope.launch(context) {
+      channel.trySend {
+        if (hunter.action != null) {
+          hunter.job = scope.launch(CoroutineName(hunter.getName())) {
+            hunter.run()
+          }
+        } else {
+          hunterMap.remove(hunter.key)
+          if (hunter.picasso.isLoggingEnabled) {
+            log(OWNER_DISPATCHER, VERB_CANCELED, hunter.key)
+          }
+        }
+      }
     }
   }
 

@@ -26,6 +26,7 @@ import com.squareup.picasso3.MemoryPolicy.NO_STORE
 import com.squareup.picasso3.NetworkRequestHandler.ContentLengthException
 import com.squareup.picasso3.Picasso.LoadedFrom.MEMORY
 import com.squareup.picasso3.Picasso.LoadedFrom.NETWORK
+import com.squareup.picasso3.Picasso.Priority.HIGH
 import com.squareup.picasso3.Request.Builder
 import com.squareup.picasso3.RequestHandler.Result.Bitmap
 import org.junit.Before
@@ -39,6 +40,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
 import java.lang.Exception
 import java.lang.RuntimeException
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestDispatcher
@@ -678,8 +680,56 @@ class InternalCoroutineDispatcherTest {
     assertThat(dispatcher.failedActions).isEmpty()
   }
 
+  @Test fun syncCancelWithMainBeforeHunting() {
+    val mainDispatcher = StandardTestDispatcher()
+    val dispatcher = createDispatcher(mainContext = mainDispatcher)
+
+    var completed = false
+    val action = noopAction(Request.Builder(TestUtils.URI_1).build()) { completed = true }
+
+    // Submit action, will be gated by main
+    dispatcher.dispatchSubmit(action)
+    testDispatcher.scheduler.runCurrent()
+    assertThat(dispatcher.hunterMap[action.request.key]).isNotNull()
+
+    // Cancel action, detaches from hunter but hunter is queued to be submitted
+    dispatcher.dispatchCancel(action)
+    testDispatcher.scheduler.runCurrent()
+    assertThat(dispatcher.hunterMap[action.request.key]).isNotNull()
+    assertThat(dispatcher.hunterMap[action.request.key]?.action).isNull()
+
+    // Run main, syncs Dispatcher with main
+    mainDispatcher.scheduler.runCurrent()
+    // Dispatches the submitted hunter to run
+    testDispatcher.scheduler.runCurrent()
+
+    // It isn't hanging around
+    assertThat(dispatcher.hunterMap[action.request.key]).isNull()
+
+    // The action is not completed because the hunter never ran
+    mainDispatcher.scheduler.runCurrent()
+    assertThat(completed).isFalse()
+  }
+
+  @Test fun doesntSyncWithMainIfHighPriorityRequestBeforeHunting() {
+    val mainDispatcher = StandardTestDispatcher()
+    val dispatcher = createDispatcher(mainContext = mainDispatcher)
+
+    var completed = false
+    val action = noopAction(Request.Builder(TestUtils.URI_1).priority(HIGH).build()) { completed = true }
+    // Submit action
+    dispatcher.dispatchSubmit(action)
+    testDispatcher.scheduler.runCurrent()
+    assertThat(dispatcher.hunterMap[action.request.key]).isNull()
+
+    // Deliver result to main
+    mainDispatcher.scheduler.runCurrent()
+    assertThat(completed).isTrue()
+  }
+
   private fun createDispatcher(
-    scansNetworkChanges: Boolean = true
+    scansNetworkChanges: Boolean = true,
+    mainContext: CoroutineContext? = null
   ): InternalCoroutineDispatcher {
     Mockito.`when`(connectivityManager.activeNetworkInfo).thenReturn(
       if (scansNetworkChanges) Mockito.mock(NetworkInfo::class.java) else null
@@ -690,12 +740,12 @@ class InternalCoroutineDispatcherTest {
     )
 
     testDispatcher = StandardTestDispatcher()
-    picasso = TestUtils.mockPicasso(context).newBuilder().dispatchers(testDispatcher, testDispatcher).build()
+    picasso = TestUtils.mockPicasso(context).newBuilder().dispatchers(mainContext ?: testDispatcher, testDispatcher).build()
     return InternalCoroutineDispatcher(
       context,
       Handler(Looper.getMainLooper()),
       cache,
-      testDispatcher,
+      mainContext ?: testDispatcher,
       testDispatcher
     )
   }
