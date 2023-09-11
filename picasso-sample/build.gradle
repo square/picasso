@@ -55,5 +55,4 @@ dependencies {
   implementation projects.picasso
   implementation projects.picassoStats
   implementation projects.picassoCompose
-  implementation projects.picassoLayoutlibCompat
 }
