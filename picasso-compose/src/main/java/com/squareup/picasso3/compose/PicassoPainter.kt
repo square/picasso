@@ -18,10 +18,12 @@ package com.squareup.picasso3.compose
 import android.graphics.drawable.Drawable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.RememberObserver
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.DefaultAlpha
@@ -48,12 +50,19 @@ internal class PicassoPainter(
   private val onError: ((Exception) -> Unit)? = null
 ) : Painter(), RememberObserver, DrawableTarget {
 
+  private var lastRequestCreator: RequestCreator? by mutableStateOf(null)
+  private val requestCreator: RequestCreator by derivedStateOf { request(picasso) }
   private var painter: Painter by mutableStateOf(EmptyPainter)
   private var alpha: Float by mutableStateOf(DefaultAlpha)
   private var colorFilter: ColorFilter? by mutableStateOf(null)
 
   override val intrinsicSize: Size
-    get() = painter.intrinsicSize
+    get() {
+      // Make sure we're using the latest request. If the request function reads any state, it will
+      // invalidate whatever scope this property is being read from.
+      load()
+      return painter.intrinsicSize
+    }
 
   override fun applyAlpha(alpha: Float): Boolean {
     this.alpha = alpha
@@ -66,13 +75,18 @@ internal class PicassoPainter(
   }
 
   override fun DrawScope.onDraw() {
+    // Make sure we're using the latest request. If the request function reads any state, it will
+    // invalidate this draw scope when it changes.
+    load()
     with(painter) {
       draw(size, alpha, colorFilter)
     }
   }
 
   override fun onRemembered() {
-    request.invoke(picasso).into(this)
+    // This is called from composition, but if the request provider function reads any state we
+    // don't want that to invalidate composition. It will invalidate draw, later.
+    Snapshot.withoutReadObservation { load() }
   }
 
   override fun onAbandoned() {
@@ -98,6 +112,22 @@ internal class PicassoPainter(
   override fun onDrawableFailed(e: Exception, errorDrawable: Drawable?) {
     onError?.invoke(e)
     errorDrawable?.let(::setPainter)
+  }
+
+  private fun load() {
+    // This derived state read will return the same instance of RequestCreator if one has been
+    // cached and none of the state dependencies have since changed.
+    val requestCreator = requestCreator
+    // lastRequestCreator is just used for diffing, we don't want it to invalidate anything.
+    val lastRequestCreator = Snapshot.withoutReadObservation { lastRequestCreator }
+
+    // Only launch a new request if anything has actually changed. RequestCreator does not
+    // currently implement an equals method, relying here on reference equality, future improvement
+    // will be to implement equals which can prevent further re-requests.
+    if (requestCreator != lastRequestCreator) {
+      this.lastRequestCreator = requestCreator
+      requestCreator.into(this)
+    }
   }
 
   private fun setPainter(drawable: Drawable) {
