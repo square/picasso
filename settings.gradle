@@ -2,7 +2,6 @@ rootProject.name = 'picasso-root'
 
 include 'picasso'
 include 'picasso-compose'
-include 'picasso-layoutlib-compat'
 include 'picasso-paparazzi-sample'
 include 'picasso-pollexor'
 include 'picasso-sample'

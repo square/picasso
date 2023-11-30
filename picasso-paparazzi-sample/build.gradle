@@ -37,7 +37,6 @@ dependencies {
   testImplementation libs.junit
 
   testImplementation projects.picasso
-  testImplementation projects.picassoLayoutlibCompat
 }
 
 // https://github.com/diffplug/spotless/issues/1572
