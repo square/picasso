@@ -10,7 +10,7 @@ buildscript {
   dependencies {
     classpath libs.plugin.android
     classpath libs.plugin.kotlin
-    classpath 'com.github.ben-manes:gradle-versions-plugin:0.47.0'
+    classpath 'com.github.ben-manes:gradle-versions-plugin:0.50.0'
     classpath 'com.vanniktech:gradle-maven-publish-plugin:0.25.3'
     classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.18.0'
     classpath 'org.jetbrains.kotlinx:binary-compatibility-validator:0.13.2'
