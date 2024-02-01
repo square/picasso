@@ -1,5 +1,5 @@
 [versions]
-agp = '8.0.2'
+agp = '8.2.2'
 coroutines = '1.7.3'
 composeCompiler = '1.4.7'
 composeUi = '1.4.3'
