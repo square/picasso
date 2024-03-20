@@ -14,7 +14,7 @@ compileSdk = '33'
 
 [libraries]
 androidx-annotations = { module = 'androidx.annotation:annotation', version = '1.7.1' }
-androidx-core = { module = 'androidx.core:core', version = '1.10.1' }
+androidx-core = { module = 'androidx.core:core', version = '1.12.0' }
 androidx-cursorAdapter = { module = 'androidx.cursoradapter:cursoradapter', version = '1.0.0' }
 androidx-exifInterface = { module = 'androidx.exifinterface:exifinterface', version = '1.3.7' }
 androidx-fragment = { module = 'androidx.fragment:fragment', version = '1.6.2' }
