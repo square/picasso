@@ -33,7 +33,7 @@ composeUi-uiTooling = { module = 'androidx.compose.ui:ui-tooling', version.ref =
 composeUi-test = { module = 'androidx.compose.ui:ui-test-junit4', version.ref = 'composeUi' }
 composeUi-testManifest = { module = 'androidx.compose.ui:ui-test-manifest', version.ref = 'composeUi' }
 
-drawablePainter = { module = 'com.google.accompanist:accompanist-drawablepainter', version = '0.30.1' }
+drawablePainter = { module = 'com.google.accompanist:accompanist-drawablepainter', version = '0.34.0' }
 
 okio = { module = "com.squareup.okio:okio", version = '3.8.0' }
 
