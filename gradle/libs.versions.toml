@@ -2,7 +2,7 @@
 agp = '8.3.1'
 coroutines = '1.8.0'
 composeCompiler = '1.4.7'
-composeUi = '1.4.3'
+composeUi = '1.6.4'
 javaTarget = '1.8'
 kotlin = '1.8.21'
 okhttp = '4.12.0'
