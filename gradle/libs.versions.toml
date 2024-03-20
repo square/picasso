@@ -54,5 +54,5 @@ plugin-binaryCompatibilityValidator = { module = "org.jetbrains.kotlinx:binary-c
 plugin-kotlin = { module = 'org.jetbrains.kotlin:kotlin-gradle-plugin', version.ref = 'kotlin' }
 plugin-paparazzi = { module = 'app.cash.paparazzi:paparazzi-gradle-plugin', version.ref = 'paparazzi' }
 plugin-publish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = '0.27.0' }
-plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = '6.18.0' }
+plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = '6.25.0' }
 plugin-test-aggregation = { module = "io.github.gmazzo.test.aggregation:plugin", version = '2.2.0' }
