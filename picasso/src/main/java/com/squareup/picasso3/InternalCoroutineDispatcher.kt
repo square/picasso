@@ -27,15 +27,14 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class InternalCoroutineDispatcher internal constructor(
   context: Context,
   mainThreadHandler: Handler,
@@ -50,8 +49,8 @@ internal class InternalCoroutineDispatcher internal constructor(
   init {
     // Using a channel to enforce sequential access for this class' internal state
     scope.launch {
-      while (!channel.isClosedForReceive) {
-        channel.receive().invoke()
+      channel.receiveAsFlow().collect {
+        it.invoke()
       }
     }
   }

@@ -41,6 +41,7 @@ import org.robolectric.Shadows
 import java.lang.Exception
 import java.lang.RuntimeException
 import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestDispatcher
@@ -72,6 +73,17 @@ class InternalCoroutineDispatcherTest {
 
     dispatcher.shutdown()
     testDispatcher.scheduler.runCurrent()
+
+    assertThat(dispatcher.isShutdown()).isEqualTo(true)
+    assertThat(action.completedResult).isNull()
+  }
+
+  @Test fun shutdownPreventsFurtherChannelUse() {
+    val dispatcher = createDispatcher(true, backgroundContext = Dispatchers.IO)
+    val action = TestUtils.mockAction(picasso, TestUtils.URI_KEY_1, TestUtils.URI_1)
+    dispatcher.shutdown()
+
+    dispatcher.dispatchSubmit(action)
 
     assertThat(dispatcher.isShutdown()).isEqualTo(true)
     assertThat(action.completedResult).isNull()
@@ -729,7 +741,8 @@ class InternalCoroutineDispatcherTest {
 
   private fun createDispatcher(
     scansNetworkChanges: Boolean = true,
-    mainContext: CoroutineContext? = null
+    mainContext: CoroutineContext? = null,
+    backgroundContext: CoroutineContext? = null
   ): InternalCoroutineDispatcher {
     Mockito.`when`(connectivityManager.activeNetworkInfo).thenReturn(
       if (scansNetworkChanges) Mockito.mock(NetworkInfo::class.java) else null
@@ -742,11 +755,11 @@ class InternalCoroutineDispatcherTest {
     testDispatcher = StandardTestDispatcher()
     picasso = TestUtils.mockPicasso(context).newBuilder().dispatchers(mainContext ?: testDispatcher, testDispatcher).build()
     return InternalCoroutineDispatcher(
-      context,
-      Handler(Looper.getMainLooper()),
-      cache,
-      mainContext ?: testDispatcher,
-      testDispatcher
+      context = context,
+      mainThreadHandler = Handler(Looper.getMainLooper()),
+      cache = cache,
+      mainContext = mainContext ?: testDispatcher,
+      backgroundContext = backgroundContext ?: testDispatcher
     )
   }
 
