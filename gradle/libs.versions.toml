@@ -35,7 +35,7 @@ composeUi-testManifest = { module = 'androidx.compose.ui:ui-test-manifest', vers
 
 drawablePainter = { module = 'com.google.accompanist:accompanist-drawablepainter', version = '0.30.1' }
 
-okio = { module = "com.squareup.okio:okio", version = '3.8.0' }
+okio = { module = "com.squareup.okio:okio", version = '3.9.0' }
 
 okhttp = { module = 'com.squareup.okhttp3:okhttp', version.ref = 'okhttp' }
 okhttp-mockWebServer = { module = 'com.squareup.okhttp3:mockwebserver', version.ref = 'okhttp' }
