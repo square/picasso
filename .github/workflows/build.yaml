@@ -15,14 +15,16 @@ jobs:
         with:
           lfs: true
 
-      - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@v2
-
       - name: Configure JDK
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: 17
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          validate-wrappers: true
 
       - name: Run Tests
         run: ./gradlew check picasso-paparazzi-sample:verifyPaparazziDebug
@@ -47,14 +49,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@v2
-
       - name: Configure JDK
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: 17
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          validate-wrappers: true
 
       - run: ./gradlew assembleAndroidTest
 
