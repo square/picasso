@@ -44,7 +44,7 @@ internal class PicassoDrawable(
   var placeholder: Drawable? = null
   var startTimeMillis: Long = 0
   var animating = false
-  private var _alpha = 0xFF
+  private var alpha = 0xFF
 
   init {
     val fade = loadedFrom != MEMORY && !noFade
@@ -70,10 +70,10 @@ internal class PicassoDrawable(
         }
 
         // setAlpha will call invalidateSelf and drive the animation.
-        val partialAlpha = (_alpha * normalized).toInt()
+        val partialAlpha = (alpha * normalized).toInt()
         super.setAlpha(partialAlpha)
         super.draw(canvas)
-        super.setAlpha(_alpha)
+        super.setAlpha(alpha)
       }
     }
 
@@ -83,7 +83,7 @@ internal class PicassoDrawable(
   }
 
   override fun setAlpha(alpha: Int) {
-    this._alpha = alpha
+    this.alpha = alpha
     if (placeholder != null) {
       placeholder!!.alpha = alpha
     }

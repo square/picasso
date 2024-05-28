@@ -103,7 +103,7 @@ internal class MediaStoreRequestHandler(context: Context) : ContentStreamRequest
   internal enum class PicassoKind(val androidKind: Int, val width: Int, val height: Int) {
     MICRO(MediaStore.Images.Thumbnails.MICRO_KIND, 96, 96),
     MINI(MediaStore.Images.Thumbnails.MINI_KIND, 512, 384),
-    FULL(MediaStore.Images.Thumbnails.FULL_SCREEN_KIND, -1, -1);
+    FULL(MediaStore.Images.Thumbnails.FULL_SCREEN_KIND, -1, -1)
   }
 
   companion object {

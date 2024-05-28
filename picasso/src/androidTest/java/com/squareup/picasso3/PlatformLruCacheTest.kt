@@ -25,11 +25,11 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class PlatformLruCacheTest {
   // The use of ALPHA_8 simplifies the size math in tests since only one byte is used per-pixel.
-  private val A = Bitmap.createBitmap(1, 1, ALPHA_8)
-  private val B = Bitmap.createBitmap(1, 1, ALPHA_8)
-  private val C = Bitmap.createBitmap(1, 1, ALPHA_8)
-  private val D = Bitmap.createBitmap(1, 1, ALPHA_8)
-  private val E = Bitmap.createBitmap(1, 1, ALPHA_8)
+  private val bitmapA = Bitmap.createBitmap(1, 1, ALPHA_8)
+  private val bitmapB = Bitmap.createBitmap(1, 1, ALPHA_8)
+  private val bitmapC = Bitmap.createBitmap(1, 1, ALPHA_8)
+  private val bitmapD = Bitmap.createBitmap(1, 1, ALPHA_8)
+  private val bitmapE = Bitmap.createBitmap(1, 1, ALPHA_8)
 
   private var expectedPutCount = 0
   private var expectedHitCount = 0
@@ -40,55 +40,55 @@ class PlatformLruCacheTest {
     val cache = PlatformLruCache(3)
     assertStatistics(cache)
 
-    cache["a"] = A
+    cache["a"] = bitmapA
     expectedPutCount++
     assertStatistics(cache)
-    assertHit(cache, "a", A)
+    assertHit(cache, "a", bitmapA)
 
-    cache["b"] = B
+    cache["b"] = bitmapB
     expectedPutCount++
     assertStatistics(cache)
-    assertHit(cache, "a", A)
-    assertHit(cache, "b", B)
-    assertSnapshot(cache, "a", A, "b", B)
+    assertHit(cache, "a", bitmapA)
+    assertHit(cache, "b", bitmapB)
+    assertSnapshot(cache, "a", bitmapA, "b", bitmapB)
 
-    cache["c"] = C
+    cache["c"] = bitmapC
     expectedPutCount++
     assertStatistics(cache)
-    assertHit(cache, "a", A)
-    assertHit(cache, "b", B)
-    assertHit(cache, "c", C)
-    assertSnapshot(cache, "a", A, "b", B, "c", C)
+    assertHit(cache, "a", bitmapA)
+    assertHit(cache, "b", bitmapB)
+    assertHit(cache, "c", bitmapC)
+    assertSnapshot(cache, "a", bitmapA, "b", bitmapB, "c", bitmapC)
 
-    cache["d"] = D
+    cache["d"] = bitmapD
     expectedPutCount++
     expectedEvictionCount++ // a should have been evicted
     assertStatistics(cache)
     assertMiss(cache, "a")
-    assertHit(cache, "b", B)
-    assertHit(cache, "c", C)
-    assertHit(cache, "d", D)
-    assertHit(cache, "b", B)
-    assertHit(cache, "c", C)
-    assertSnapshot(cache, "d", D, "b", B, "c", C)
+    assertHit(cache, "b", bitmapB)
+    assertHit(cache, "c", bitmapC)
+    assertHit(cache, "d", bitmapD)
+    assertHit(cache, "b", bitmapB)
+    assertHit(cache, "c", bitmapC)
+    assertSnapshot(cache, "d", bitmapD, "b", bitmapB, "c", bitmapC)
 
-    cache["e"] = E
+    cache["e"] = bitmapE
     expectedPutCount++
     expectedEvictionCount++ // d should have been evicted
     assertStatistics(cache)
     assertMiss(cache, "d")
     assertMiss(cache, "a")
-    assertHit(cache, "e", E)
-    assertHit(cache, "b", B)
-    assertHit(cache, "c", C)
-    assertSnapshot(cache, "e", E, "b", B, "c", C)
+    assertHit(cache, "e", bitmapE)
+    assertHit(cache, "b", bitmapB)
+    assertHit(cache, "c", bitmapC)
+    assertSnapshot(cache, "e", bitmapE, "b", bitmapB, "c", bitmapC)
   }
 
   @Test fun evictionWithSingletonCache() {
     val cache = PlatformLruCache(1)
-    cache["a"] = A
-    cache["b"] = B
-    assertSnapshot(cache, "b", B)
+    cache["a"] = bitmapA
+    cache["b"] = bitmapB
+    assertSnapshot(cache, "b", bitmapB)
   }
 
   /**
@@ -98,18 +98,18 @@ class PlatformLruCacheTest {
   @Test fun putCauseEviction() {
     val cache = PlatformLruCache(3)
 
-    cache["a"] = A
-    cache["b"] = B
-    cache["c"] = C
-    cache["b"] = D
-    assertSnapshot(cache, "a", A, "c", C, "b", D)
+    cache["a"] = bitmapA
+    cache["b"] = bitmapB
+    cache["c"] = bitmapC
+    cache["b"] = bitmapD
+    assertSnapshot(cache, "a", bitmapA, "c", bitmapC, "b", bitmapD)
   }
 
   @Test fun evictAll() {
     val cache = PlatformLruCache(4)
-    cache["a"] = A
-    cache["b"] = B
-    cache["c"] = C
+    cache["a"] = bitmapA
+    cache["b"] = bitmapB
+    cache["c"] = bitmapC
     cache.clear()
     assertThat(cache.cache.snapshot()).isEmpty()
   }
@@ -117,10 +117,10 @@ class PlatformLruCacheTest {
   @Test fun clearPrefixedKey() {
     val cache = PlatformLruCache(3)
 
-    cache["Hello\nAlice!"] = A
-    cache["Hello\nBob!"] = B
-    cache["Hello\nEve!"] = C
-    cache["Hellos\nWorld!"] = D
+    cache["Hello\nAlice!"] = bitmapA
+    cache["Hello\nBob!"] = bitmapB
+    cache["Hello\nEve!"] = bitmapC
+    cache["Hellos\nWorld!"] = bitmapD
 
     cache.clearKeyUri("Hello")
     assertThat(cache.cache.snapshot()).hasSize(1)
@@ -129,7 +129,7 @@ class PlatformLruCacheTest {
 
   @Test fun invalidate() {
     val cache = PlatformLruCache(3)
-    cache["Hello\nAlice!"] = A
+    cache["Hello\nAlice!"] = bitmapA
     assertThat(cache.size()).isEqualTo(1)
     cache.clearKeyUri("Hello")
     assertThat(cache.size()).isEqualTo(0)

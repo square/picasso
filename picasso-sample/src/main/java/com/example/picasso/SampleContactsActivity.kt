@@ -87,7 +87,9 @@ class SampleContactsActivity : PicassoSampleActivity(), LoaderCallbacks<Cursor> 
         null,
         ContactsQuery.SORT_ORDER
       )
-    } else throw RuntimeException("this shouldn't happen")
+    } else {
+      throw RuntimeException("this shouldn't happen")
+    }
   }
 
   override fun onLoadFinished(

@@ -79,7 +79,7 @@ internal object Utils {
     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     |      'W'      |      'E'      |      'B'      |      'P'      |
     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-  */
+   */
   private val WEBP_FILE_HEADER_RIFF: ByteString = "RIFF".encodeUtf8()
   private val WEBP_FILE_HEADER_WEBP: ByteString = "WEBP".encodeUtf8()
 

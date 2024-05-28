@@ -471,7 +471,9 @@ class Picasso internal constructor(
   internal fun resumeAction(action: Action) {
     val bitmap = if (shouldReadFromMemoryCache(action.request.memoryPolicy)) {
       quickMemoryCacheCheck(action.request.key)
-    } else null
+    } else {
+      null
+    }
 
     if (bitmap != null) {
       // Resumed action is cached, complete immediately.
@@ -816,7 +818,7 @@ class Picasso internal constructor(
   enum class LoadedFrom(@get:JvmName("-debugColor") internal val debugColor: Int) {
     MEMORY(Color.GREEN),
     DISK(Color.BLUE),
-    NETWORK(Color.RED);
+    NETWORK(Color.RED)
   }
 
   internal companion object {

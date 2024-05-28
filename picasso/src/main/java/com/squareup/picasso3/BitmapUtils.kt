@@ -49,7 +49,9 @@ internal object BitmapUtils {
           inPreferredConfig = data.config
         }
       }
-    } else null
+    } else {
+      null
+    }
   }
 
   fun requiresInSampleSize(options: BitmapFactory.Options?): Boolean {

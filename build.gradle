@@ -64,15 +64,8 @@ subprojects {
     kotlin {
       target('**/*.kt')
       licenseHeaderFile(rootProject.file('gradle/license-header.txt'))
-      // Spotless doesn't read .editorconfig yet: https://github.com/diffplug/spotless/issues/142
-      ktlint('0.46.1').editorConfigOverride([
-          'insert_final_newline': 'true',
-          'end_of_line': 'lf',
-          'charset': 'utf-8',
-          'indent_size': '2',
-          'trim_trailing_whitespace': 'true',
-          'ij_kotlin_imports_layout': '*,java.**,javax.**,kotlin.**,kotlinx.**,^'
-      ])
+      ktlint(libs.versions.ktlint.get())
+        .setEditorConfigPath(rootProject.file(".editorconfig"))
     }
   }
 
