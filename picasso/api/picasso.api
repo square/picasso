@@ -43,6 +43,7 @@ public final class com/squareup/picasso3/MemoryPolicy : java/lang/Enum {
 	public static final field Companion Lcom/squareup/picasso3/MemoryPolicy$Companion;
 	public static final field NO_CACHE Lcom/squareup/picasso3/MemoryPolicy;
 	public static final field NO_STORE Lcom/squareup/picasso3/MemoryPolicy;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public final fun getIndex ()I
 	public static final fun shouldReadFromMemoryCache (I)Z
 	public static final fun shouldWriteToMemoryCache (I)Z
@@ -60,6 +61,7 @@ public final class com/squareup/picasso3/NetworkPolicy : java/lang/Enum {
 	public static final field NO_CACHE Lcom/squareup/picasso3/NetworkPolicy;
 	public static final field NO_STORE Lcom/squareup/picasso3/NetworkPolicy;
 	public static final field OFFLINE Lcom/squareup/picasso3/NetworkPolicy;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public final fun getIndex ()I
 	public static final fun isOfflineOnly (I)Z
 	public static final fun shouldReadFromDiskCache (I)Z
@@ -127,6 +129,7 @@ public final class com/squareup/picasso3/Picasso$LoadedFrom : java/lang/Enum {
 	public static final field DISK Lcom/squareup/picasso3/Picasso$LoadedFrom;
 	public static final field MEMORY Lcom/squareup/picasso3/Picasso$LoadedFrom;
 	public static final field NETWORK Lcom/squareup/picasso3/Picasso$LoadedFrom;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lcom/squareup/picasso3/Picasso$LoadedFrom;
 	public static fun values ()[Lcom/squareup/picasso3/Picasso$LoadedFrom;
 }
@@ -135,6 +138,7 @@ public final class com/squareup/picasso3/Picasso$Priority : java/lang/Enum {
 	public static final field HIGH Lcom/squareup/picasso3/Picasso$Priority;
 	public static final field LOW Lcom/squareup/picasso3/Picasso$Priority;
 	public static final field NORMAL Lcom/squareup/picasso3/Picasso$Priority;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lcom/squareup/picasso3/Picasso$Priority;
 	public static fun values ()[Lcom/squareup/picasso3/Picasso$Priority;
 }
