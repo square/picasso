@@ -222,7 +222,12 @@ internal open class BitmapHunter(
   }
 
   fun cancel(): Boolean =
-    action == null && actions.isNullOrEmpty() && future?.cancel(false) ?: job?.let { it.cancel(); true } ?: false
+    action == null && actions.isNullOrEmpty() && future?.cancel(false)
+      ?: job?.let {
+        it.cancel()
+        true
+      }
+      ?: false
 
   fun shouldRetry(airplaneMode: Boolean, info: NetworkInfo?): Boolean {
     val hasRetries = retryCount > 0
