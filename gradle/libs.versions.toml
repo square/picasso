@@ -1,6 +1,6 @@
 [versions]
 agp = '8.4.1'
-coroutines = '1.8.0'
+coroutines = '1.8.1'
 composeCompiler = '1.4.7'
 composeUi = '1.6.7'
 javaTarget = '1.8'
