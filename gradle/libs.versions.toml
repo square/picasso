@@ -1,10 +1,9 @@
 [versions]
 agp = '8.4.1'
 coroutines = '1.8.1'
-composeCompiler = '1.5.14'
 composeUi = '1.6.7'
 javaTarget = '1.8'
-kotlin = '1.9.24'
+kotlin = '2.0.0'
 ktlint = '1.2.1'
 okhttp = '4.12.0'
 okio = '3.2.0'
@@ -53,6 +52,7 @@ mockito = { module = 'org.mockito:mockito-core', version = '5.12.0' }
 plugin-android = { module = 'com.android.tools.build:gradle', version.ref = 'agp' }
 plugin-binaryCompatibilityValidator = { module = "org.jetbrains.kotlinx:binary-compatibility-validator", version = '0.14.0' }
 plugin-kotlin = { module = 'org.jetbrains.kotlin:kotlin-gradle-plugin', version.ref = 'kotlin' }
+plugin-kotlin-compose = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
 plugin-paparazzi = { module = 'app.cash.paparazzi:paparazzi-gradle-plugin', version.ref = 'paparazzi' }
 plugin-publish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = '0.28.0' }
 plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = '6.25.0' }

@@ -1,5 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'org.jetbrains.kotlin.android'
+apply plugin: 'org.jetbrains.kotlin.plugin.compose'
 apply plugin: 'com.vanniktech.maven.publish'
 
 android {
@@ -15,10 +16,6 @@ android {
 
   buildFeatures {
     compose true
-  }
-
-  composeOptions {
-    kotlinCompilerExtensionVersion libs.versions.composeCompiler.get()
   }
 
   compileOptions {

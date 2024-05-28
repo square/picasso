@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'org.jetbrains.kotlin.android'
+apply plugin: 'org.jetbrains.kotlin.plugin.compose'
 
 android {
   namespace 'com.example.picasso'
@@ -13,10 +14,6 @@ android {
 
   buildFeatures {
     compose true
-  }
-
-  composeOptions {
-    kotlinCompilerExtensionVersion libs.versions.composeCompiler.get()
   }
 
   compileOptions {
