@@ -10,6 +10,7 @@ buildscript {
   dependencies {
     classpath libs.plugin.android
     classpath libs.plugin.kotlin
+    classpath libs.plugin.kotlin.compose
     classpath libs.plugin.publish
     classpath libs.plugin.spotless
     classpath libs.plugin.binaryCompatibilityValidator
