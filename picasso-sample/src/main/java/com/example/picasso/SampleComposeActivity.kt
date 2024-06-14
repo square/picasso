@@ -19,6 +19,7 @@ import android.graphics.Bitmap
 import android.graphics.Bitmap.Config
 import android.graphics.Canvas
 import android.os.Bundle
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -51,6 +52,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import com.squareup.picasso3.Callback
 import com.squareup.picasso3.Picasso
 import com.squareup.picasso3.Picasso.LoadedFrom.MEMORY
 import com.squareup.picasso3.Request
@@ -115,7 +117,17 @@ fun ImageGrid(
     items(urls.size) {
       val url = urls[it]
       Image(
-        painter = picasso.rememberPainter(key = url) {
+        painter = picasso.rememberPainter(key = url, callback = object : Callback {
+          override fun onSuccess() {
+            // Image was loaded successfully
+          }
+
+          override fun onError(t: Throwable) {
+            // Unable to Load Image
+            Log.e(this.javaClass.name,t.message,t)
+          }
+
+        }) {
           it.load(url).placeholder(R.drawable.placeholder).error(R.drawable.error)
         },
         contentDescription = null,
