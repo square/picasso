@@ -44,7 +44,7 @@ pollexor = { module = 'com.squareup:pollexor', version = '3.0.0' }
 
 # Test libraries
 junit = { module = 'junit:junit', version = '4.13.2' }
-truth = { module = 'com.google.truth:truth', version = '1.4.2' }
+truth = { module = 'com.google.truth:truth', version = '1.4.3' }
 robolectric = { module = 'org.robolectric:robolectric', version = '4.7' }
 mockito = { module = 'org.mockito:mockito-core', version = '5.12.0' }
 
