@@ -21,7 +21,7 @@ androidx-fragment = { module = 'androidx.fragment:fragment', version = '1.8.1' }
 androidx-junit = { module = 'androidx.test.ext:junit', version = '1.1.5' }
 androidx-lifecycle = { module = 'androidx.lifecycle:lifecycle-common', version = '2.8.2' }
 androidx-startup = { module = 'androidx.startup:startup-runtime', version = '1.1.1' }
-androidx-testRunner = { module = 'androidx.test:runner', version = '1.5.2' }
+androidx-testRunner = { module = 'androidx.test:runner', version = '1.6.2' }
 
 coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = 'coroutines' }
 
