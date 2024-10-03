@@ -353,14 +353,8 @@ internal abstract class BaseDispatcher internal constructor(
   }
 
   private fun markForReplay(hunter: BitmapHunter) {
-    val action = hunter.action
-    action?.let { markForReplay(it) }
-    val joined = hunter.actions
-    if (joined != null) {
-      for (i in joined.indices) {
-        markForReplay(joined[i])
-      }
-    }
+    hunter.action?.let { markForReplay(it) }
+    hunter.actions?.forEach { markForReplay(it) }
   }
 
   private fun markForReplay(action: Action) {
