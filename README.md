@@ -4,7 +4,7 @@ Picasso
 **Attention**: This library is deprecated.
 Please use alternatives like [Coil](https://coil-kt.github.io/coil/) for future projects, and start planning to migrate existing projects, espeically if they rely on Compose UI.
 Existing versions will continue to function, but no new work is planned.
-While some changes may land in the repo as we support internal legacy usage and migmration, there will be no more public releases to Maven Central.
+While some changes may land in the repo as we support internal legacy usage and migration, there will be no more public releases to Maven Central.
 
 Thank you to all who used and/or contributed to Picasso over its decade of image loading.
 
