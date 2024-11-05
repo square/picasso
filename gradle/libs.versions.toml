@@ -50,7 +50,7 @@ mockito = { module = 'org.mockito:mockito-core', version = '5.12.0' }
 
 # Plugins
 plugin-android = { module = 'com.android.tools.build:gradle', version.ref = 'agp' }
-plugin-binaryCompatibilityValidator = { module = "org.jetbrains.kotlinx:binary-compatibility-validator", version = '0.14.0' }
+plugin-binaryCompatibilityValidator = { module = "org.jetbrains.kotlinx:binary-compatibility-validator", version = '0.16.3' }
 plugin-kotlin = { module = 'org.jetbrains.kotlin:kotlin-gradle-plugin', version.ref = 'kotlin' }
 plugin-kotlin-compose = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
 plugin-paparazzi = { module = 'app.cash.paparazzi:paparazzi-gradle-plugin', version.ref = 'paparazzi' }
