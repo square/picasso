@@ -1,5 +1,5 @@
 [versions]
-agp = '8.4.1'
+agp = '8.7.2'
 coroutines = '1.8.1'
 composeUi = '1.6.8'
 javaTarget = '1.8'
