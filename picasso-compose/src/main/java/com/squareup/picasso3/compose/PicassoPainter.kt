@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.DefaultAlpha
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.painter.Painter
 import com.google.accompanist.drawablepainter.DrawablePainter
+import com.squareup.picasso3.Callback
 import com.squareup.picasso3.DrawableTarget
 import com.squareup.picasso3.Picasso
 import com.squareup.picasso3.Picasso.LoadedFrom
@@ -39,15 +40,17 @@ import com.squareup.picasso3.RequestCreator
 fun Picasso.rememberPainter(
   key: Any? = null,
   onError: ((Exception) -> Unit)? = null,
-  request: (Picasso) -> RequestCreator
+  callback: Callback? = null,
+  request: (Picasso) -> RequestCreator,
 ): Painter {
-  return remember(key) { PicassoPainter(this, request, onError) }
+  return remember(key) { PicassoPainter(this, request, onError, callback) }
 }
 
 internal class PicassoPainter(
   private val picasso: Picasso,
   private val request: (Picasso) -> RequestCreator,
-  private val onError: ((Exception) -> Unit)? = null
+  private val onError: ((Exception) -> Unit)? = null,
+  private val callback: Callback? = null
 ) : Painter(), RememberObserver, DrawableTarget {
 
   private var lastRequestCreator: RequestCreator? by mutableStateOf(null)
@@ -106,10 +109,12 @@ internal class PicassoPainter(
   }
 
   override fun onDrawableLoaded(drawable: Drawable, from: LoadedFrom) {
+    callback?.onSuccess()
     setPainter(drawable)
   }
 
   override fun onDrawableFailed(e: Exception, errorDrawable: Drawable?) {
+    callback?.onError(e)
     onError?.invoke(e)
     errorDrawable?.let(::setPainter)
   }
