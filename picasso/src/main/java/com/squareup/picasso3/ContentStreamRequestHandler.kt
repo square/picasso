@@ -15,9 +15,11 @@
  */
 package com.squareup.picasso3
 
+import android.annotation.SuppressLint
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
+import android.os.DeadObjectException
 import androidx.exifinterface.media.ExifInterface
 import androidx.exifinterface.media.ExifInterface.ORIENTATION_NORMAL
 import androidx.exifinterface.media.ExifInterface.TAG_ORIENTATION
@@ -25,6 +27,7 @@ import com.squareup.picasso3.Picasso.LoadedFrom.DISK
 import okio.Source
 import okio.source
 import java.io.FileNotFoundException
+import java.io.IOException
 
 internal open class ContentStreamRequestHandler(val context: Context) : RequestHandler() {
   override fun canHandleRequest(data: Request): Boolean =
@@ -50,11 +53,21 @@ internal open class ContentStreamRequestHandler(val context: Context) : RequestH
     }
   }
 
+  @SuppressLint("Recycle")
   fun getSource(uri: Uri): Source {
-    val contentResolver = context.contentResolver
-    val inputStream = contentResolver.openInputStream(uri)
-      ?: throw FileNotFoundException("can't open input stream, uri: $uri")
-    return inputStream.source()
+    return if (ContentResolver.SCHEME_CONTENT == uri.scheme) {
+      context.contentResolver.acquireContentProviderClient(uri)?.use {
+        try {
+          it.openTypedAssetFileDescriptor(uri, "r", null)?.createInputStream()
+        } catch (e: IOException) {
+          null
+        } catch (e: DeadObjectException) {
+          null
+        }
+      }
+    } else {
+      context.contentResolver.openInputStream(uri)
+    }?.source() ?: throw FileNotFoundException("can't open input stream, uri: $uri")
   }
 
   protected open fun getExifOrientation(uri: Uri): Int {
