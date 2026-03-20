@@ -188,6 +188,36 @@ class NetworkRequestHandlerTest {
     assertThat(latch.await(10, SECONDS)).isTrue()
   }
 
+  @Test fun oversizedNetworkResponseThrowsAndClosesBody() {
+    val closed = AtomicBoolean()
+    val body = object : ResponseBody() {
+      override fun contentType(): MediaType? = null
+      override fun contentLength(): Long = 50L * 1024 * 1024 + 1L
+      override fun source(): BufferedSource = Buffer()
+      override fun close() {
+        closed.set(true)
+        super.close()
+      }
+    }
+    responses += responseOf(body)
+    val action = TestUtils.mockAction(picasso, URI_KEY_1, URI_1)
+    val latch = CountDownLatch(1)
+    networkHandler.load(
+      picasso = picasso,
+      request = action.request,
+      callback = object : RequestHandler.Callback {
+        override fun onSuccess(result: Result?): Unit = throw AssertionError()
+
+        override fun onError(t: Throwable) {
+          assertThat(t).isInstanceOf(NetworkRequestHandler.ContentLengthException::class.java)
+          assertTrue(closed.get())
+          latch.countDown()
+        }
+      }
+    )
+    assertThat(latch.await(10, SECONDS)).isTrue()
+  }
+
   @Test fun cachedResponseDoesNotDispatchToStats() {
     val eventRecorder = EventRecorder()
     val picasso = picasso.newBuilder().addEventListener(eventRecorder).build()

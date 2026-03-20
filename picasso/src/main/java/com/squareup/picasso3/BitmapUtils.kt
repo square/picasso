@@ -104,14 +104,14 @@ internal object BitmapUtils {
    * about the supplied request in order to do the decoding efficiently (such as through leveraging
    * `inSampleSize`).
    */
-  fun decodeStream(source: Source, request: Request): Bitmap {
+  fun decodeStream(source: Source, request: Request, maxByteCount: Long = Long.MAX_VALUE): Bitmap {
     val exceptionCatchingSource = ExceptionCatchingSource(source)
     val bufferedSource = exceptionCatchingSource.buffer()
     val bitmap =
       if (VERSION.SDK_INT >= 28) {
-        decodeStreamP(request, bufferedSource)
+        decodeStreamP(request, bufferedSource, maxByteCount)
       } else {
-        decodeStreamPreP(request, bufferedSource)
+        decodeStreamPreP(request, bufferedSource, maxByteCount)
       }
     exceptionCatchingSource.throwIfCaught()
     return bitmap
@@ -119,19 +119,28 @@ internal object BitmapUtils {
 
   @RequiresApi(28)
   @SuppressLint("Override")
-  private fun decodeStreamP(request: Request, bufferedSource: BufferedSource): Bitmap {
-    val imageSource = ImageDecoder.createSource(ByteBuffer.wrap(bufferedSource.readByteArray()))
+  private fun decodeStreamP(
+    request: Request,
+    bufferedSource: BufferedSource,
+    maxByteCount: Long
+  ): Bitmap {
+    val bytes = readByteArrayWithLimit(bufferedSource, maxByteCount)
+    val imageSource = ImageDecoder.createSource(ByteBuffer.wrap(bytes))
     return decodeImageSource(imageSource, request)
   }
 
-  private fun decodeStreamPreP(request: Request, bufferedSource: BufferedSource): Bitmap {
+  private fun decodeStreamPreP(
+    request: Request,
+    bufferedSource: BufferedSource,
+    maxByteCount: Long
+  ): Bitmap {
     val isWebPFile = Utils.isWebPFile(bufferedSource)
     val options = createBitmapOptions(request)
     val calculateSize = requiresInSampleSize(options)
     // We decode from a byte array because, when decoding a WebP network stream, BitmapFactory
     // throws a JNI Exception, so we workaround by decoding a byte array.
     val bitmap = if (isWebPFile) {
-      val bytes = bufferedSource.readByteArray()
+      val bytes = readByteArrayWithLimit(bufferedSource, maxByteCount)
       if (calculateSize) {
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
         calculateInSampleSize(request.targetWidth, request.targetHeight, options!!, request)
@@ -149,6 +158,25 @@ internal object BitmapUtils {
       throw IOException("Failed to decode bitmap.")
     }
     return bitmap
+  }
+
+  @Throws(IOException::class)
+  private fun readByteArrayWithLimit(source: BufferedSource, maxByteCount: Long): ByteArray {
+    if (maxByteCount == Long.MAX_VALUE) {
+      return source.readByteArray()
+    }
+    require(maxByteCount > 0L) { "maxByteCount must be > 0." }
+    val sink = Buffer()
+    var totalRead = 0L
+    while (true) {
+      val read = source.read(sink, 8 * 1024L)
+      if (read == -1L) break
+      totalRead += read
+      if (totalRead > maxByteCount) {
+        throw IOException("Source exceeds max size of $maxByteCount bytes.")
+      }
+    }
+    return sink.readByteArray()
   }
 
   fun decodeResource(context: Context, request: Request): Bitmap {

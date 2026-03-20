@@ -63,11 +63,21 @@ internal class NetworkRequestHandler(
             )
             return
           }
+          if (body!!.contentLength() > MAX_RESPONSE_BODY_SIZE) {
+            body.close()
+            callback.onError(
+              ContentLengthException(
+                "Received response with content-length ${body.contentLength()} bytes " +
+                  "that exceeds max size of $MAX_RESPONSE_BODY_SIZE bytes."
+              )
+            )
+            return
+          }
           if (loadedFrom == NETWORK && body!!.contentLength() > 0) {
             picasso.downloadFinished(body.contentLength())
           }
           try {
-            val bitmap = decodeStream(body!!.source(), request)
+            val bitmap = decodeStream(body!!.source(), request, MAX_RESPONSE_BODY_SIZE)
             callback.onSuccess(Result.Bitmap(bitmap, loadedFrom))
           } catch (e: IOException) {
             body!!.close()
@@ -128,5 +138,6 @@ internal class NetworkRequestHandler(
   private companion object {
     private const val SCHEME_HTTP = "http"
     private const val SCHEME_HTTPS = "https"
+    private const val MAX_RESPONSE_BODY_SIZE = 50L * 1024 * 1024 // 50MB
   }
 }
